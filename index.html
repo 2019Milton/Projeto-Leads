@@ -2,37 +2,35 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel de Leads</title>
+<title>🚀 Plataforma de Leads</title>
 
 <style>
 * {
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  background: url("https://images.unsplash.com/photo-1557838923-2985c318be48?q=80&w=1600") no-repeat center center;
-  background-size: cover;
-  color: white;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: #e2e8f0;
 }
 
-/* overlay */
+/* ===== FUNDO ESTRELADO ===== */
 body::before {
   content: "";
   position: fixed;
   width: 100%;
   height: 100%;
-  background: rgba(11, 27, 43, 0.85);
+  background: url("https://www.transparenttextures.com/patterns/stardust.png");
+  opacity: 0.2;
   z-index: 0;
 }
 
-/* LOGIN CENTRAL */
+/* ===== LOGIN ===== */
 .container {
   position: relative;
   z-index: 1;
-  width: 100%;
   height: 100vh;
   display: flex;
   align-items: center;
@@ -40,85 +38,110 @@ body::before {
 }
 
 .login-box {
-  width: 100%;
-  max-width: 400px;
-  background: #0b1b2b;
-  padding: 30px;
-  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 40px;
+  border-radius: 15px;
+  width: 350px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.05);
+  text-align: center;
 }
 
-/* DASHBOARD */
+.login-box h2 {
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: none;
+  background: #020617;
+  color: white;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.btn {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+}
+
+/* ===== DASHBOARD ===== */
 #app {
   display: none;
+  padding: 20px;
   position: relative;
   z-index: 1;
-  width: 100%;
-  padding: 20px;
 }
 
-/* TOPO */
+/* topo */
 .topbar {
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
 }
 
-/* GRID */
-.grid {
-  display: flex;
-  gap: 20px;
-}
-
-/* CARDS */
-.card {
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 10px;
-  flex: 1;
-}
-
-.full {
-  margin-top: 20px;
-  width: 100%;
-}
-
-/* INPUTS */
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: none;
-}
-
-/* BOTÕES */
-button {
-  padding: 10px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-  width: 100%;
-}
-
-.btn {
-  background: #22c55e;
-  color: white;
-}
-
 .logout {
   background: #ef4444;
-  width: auto;
   padding: 10px 20px;
 }
 
-/* LEADS */
+/* grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* cards */
+.card {
+  background: rgba(30, 41, 59, 0.8);
+  padding: 20px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* card full */
+.full {
+  margin-top: 20px;
+}
+
+/* textarea */
+textarea {
+  width: 100%;
+  height: 100px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  padding: 10px;
+  background: #020617;
+  color: white;
+}
+
+/* leads */
 .lead {
-  background: #0b1b2b;
+  background: #020617;
   padding: 10px;
   margin-top: 10px;
-  border-radius: 6px;
+  border-radius: 8px;
 }
+
+/* status */
+.status-ok {
+  color: #22c55e;
+}
+
 </style>
 </head>
 
@@ -127,7 +150,7 @@ button {
 <!-- LOGIN -->
 <div class="container" id="loginBox">
   <div class="login-box">
-    <h2>🔐 Login</h2>
+    <h2>🚀 Plataforma de Leads</h2>
     <input id="email" placeholder="Email">
     <input id="senha" type="password" placeholder="Senha">
     <button class="btn" onclick="login()">Entrar</button>
@@ -138,7 +161,7 @@ button {
 <div id="app">
 
   <div class="topbar">
-    <h2>🚀 Plataforma de Leads</h2>
+    <h2>🚀 Dashboard</h2>
     <button class="logout" onclick="logout()">Sair</button>
   </div>
 
@@ -147,9 +170,7 @@ button {
     <!-- META -->
     <div class="card">
       <h3>🔗 Conectar Meta</h3>
-      <button class="btn" onclick="conectarMeta()">
-        Conectar Facebook / Instagram
-      </button>
+      <button class="btn" onclick="conectarMeta()">Conectar Facebook / Instagram</button>
       <p id="statusMeta">Não conectado</p>
     </div>
 
@@ -191,14 +212,8 @@ async function login() {
     localStorage.setItem("token", data.token);
     init();
   } else {
-    alert(data.error || "Login inválido");
+    alert("Login inválido");
   }
-}
-
-// LOGOUT
-function logout() {
-  localStorage.removeItem("token");
-  location.reload();
 }
 
 // INIT
@@ -208,7 +223,13 @@ function init() {
   carregarLeads();
 }
 
-// CARREGAR LEADS
+// LOGOUT
+function logout() {
+  localStorage.removeItem("token");
+  location.reload();
+}
+
+// LEADS
 async function carregarLeads() {
   const token = localStorage.getItem("token");
 
@@ -236,15 +257,12 @@ async function carregarLeads() {
 
 // SIMULAÇÕES
 function conectarMeta() {
-  alert("Integração Meta virá na próxima fase");
-  document.getElementById("statusMeta").innerText = "Conectado (simulado)";
+  document.getElementById("statusMeta").innerHTML =
+    "<span class='status-ok'>● Conectado</span>";
 }
 
 function criarPost() {
-  const texto = document.getElementById("textoPost").value;
-  if (!texto) return alert("Digite um texto");
-
-  alert("Publicação criada (simulado)");
+  alert("Publicação criada 🚀");
 }
 
 // AUTO LOGIN

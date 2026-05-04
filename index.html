@@ -1,63 +1,49 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Painel de Leads</title>
   <style>
-    body {
-      font-family: Arial;
-      background: #0f172a;
-      color: white;
-      padding: 20px;
-    }
-    input, button {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 5px;
-      border: none;
-    }
-    button {
-      background: #22c55e;
-      color: white;
-      cursor: pointer;
-    }
-    .card {
-      background: #1e293b;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-    }
+    body { font-family: Arial; background:#0b1b2b; color:white; padding:20px; }
+    input { padding:10px; margin:5px; border-radius:5px; border:none; }
+    button { padding:10px; border:none; border-radius:5px; cursor:pointer; }
+    .btn { background:#22c55e; color:white; }
+    .logout { background:#ef4444; }
+    .box { margin-bottom:20px; }
+    .lead { background:#1e293b; padding:10px; margin:10px 0; border-radius:8px; }
   </style>
 </head>
 <body>
 
 <h2>🔐 Login</h2>
-<input id="email" placeholder="Email">
-<input id="senha" placeholder="Senha" type="password">
-<button onclick="login()">Entrar</button>
 
-<hr>
+<div id="loginBox" class="box">
+  <input id="email" placeholder="Email">
+  <input id="senha" type="password" placeholder="Senha">
+  <button class="btn" onclick="login()">Entrar</button>
+</div>
 
-<h2>📊 Leads</h2>
+<div id="app" style="display:none;">
 
-<input id="nome" placeholder="Nome">
-<input id="telefone" placeholder="Telefone">
-<input id="emailLead" placeholder="Email">
-<button onclick="criarLead()">Criar Lead</button>
+  <button class="logout" onclick="logout()">Sair</button>
 
-<div id="leads"></div>
+  <h2>📊 Leads</h2>
+
+  <div class="box">
+    <input id="nome" placeholder="Nome">
+    <input id="telefone" placeholder="Telefone">
+    <input id="emailLead" placeholder="Email">
+    <button class="btn" onclick="criarLead()">Criar Lead</button>
+  </div>
+
+  <div id="lista"></div>
+
+</div>
 
 <script>
 const API = "https://function-bun-production-446a.up.railway.app";
 
-function salvarToken(token) {
-  localStorage.setItem("token", token);
-}
-
-function pegarToken() {
-  return localStorage.getItem("token");
-}
-
+// 🔐 LOGIN
 async function login() {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
@@ -66,41 +52,55 @@ async function login() {
   const data = await res.json();
 
   if (data.token) {
-    salvarToken(data.token);
-    alert("Login OK 🚀");
-    carregarLeads();
+    localStorage.setItem("token", data.token);
+    init();
   } else {
-    alert("Erro no login");
+    alert("Login inválido");
   }
 }
 
+// 🚪 LOGOUT
+function logout() {
+  localStorage.removeItem("token");
+  location.reload();
+}
+
+// 🚀 INICIAR APP
+function init() {
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  carregarLeads();
+}
+
+// 📥 LISTAR LEADS
 async function carregarLeads() {
-  const token = pegarToken();
+  const token = localStorage.getItem("token");
 
   const res = await fetch(`${API}/leads`, {
     headers: {
-      Authorization: "Bearer " + token
+      "Authorization": "Bearer " + token
     }
   });
 
   const data = await res.json();
 
-  const div = document.getElementById("leads");
-  div.innerHTML = "";
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
 
   data.forEach(l => {
-    div.innerHTML += `
-      <div class="card">
+    lista.innerHTML += `
+      <div class="lead">
         <b>${l.nome}</b><br>
         📞 ${l.telefone}<br>
-        ✉️ ${l.email}
+        📧 ${l.email}
       </div>
     `;
   });
 }
 
+// ➕ CRIAR LEAD
 async function criarLead() {
-  const token = pegarToken();
+  const token = localStorage.getItem("token");
 
   const nome = document.getElementById("nome").value;
   const telefone = document.getElementById("telefone").value;
@@ -110,18 +110,18 @@ async function criarLead() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + token
+      "Authorization": "Bearer " + token
     },
     body: JSON.stringify({ nome, telefone, email })
   });
 
-  alert("Lead criado 🚀");
   carregarLeads();
 }
 
-// auto carregar se já tiver token
-if (pegarToken()) {
-  carregarLeads();
+// 🔒 AUTO LOGIN
+const token = localStorage.getItem("token");
+if (token) {
+  init();
 }
 </script>
 

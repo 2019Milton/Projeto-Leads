@@ -12,18 +12,18 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #0f172a, #020617);
+  background: radial-gradient(circle at top, #020617, #020617);
   color: #e2e8f0;
 }
 
-/* ===== FUNDO ESTRELADO ===== */
+/* FUNDO ESTRELADO */
 body::before {
   content: "";
   position: fixed;
   width: 100%;
   height: 100%;
   background: url("https://www.transparenttextures.com/patterns/stardust.png");
-  opacity: 0.2;
+  opacity: 0.15;
   z-index: 0;
 }
 
@@ -38,41 +38,44 @@ body::before {
 }
 
 .login-box {
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.85);
   padding: 40px;
   border-radius: 15px;
   width: 350px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.05);
   text-align: center;
+  box-shadow: 0 0 40px rgba(34,197,94,0.1);
 }
 
-.login-box h2 {
-  margin-bottom: 20px;
-}
-
-input {
+input, textarea {
   width: 100%;
   padding: 12px;
   margin: 8px 0;
   border-radius: 8px;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.05);
   background: #020617;
   color: white;
 }
 
+/* BOTÕES */
 button {
-  width: 100%;
   padding: 12px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  margin-top: 10px;
 }
 
 .btn {
   background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
+  width: 100%;
+}
+
+.logout {
+  background: #ef4444;
+  padding: 8px 16px;
+  font-size: 14px;
 }
 
 /* ===== DASHBOARD ===== */
@@ -83,65 +86,58 @@ button {
   z-index: 1;
 }
 
-/* topo */
+/* TOPO */
 .topbar {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
-.logout {
-  background: #ef4444;
-  padding: 10px 20px;
-}
-
-/* grid */
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
-/* cards */
+/* CARDS DARK PREMIUM */
 .card {
-  background: rgba(30, 41, 59, 0.8);
+  background: linear-gradient(145deg, #020617, #020617);
   padding: 20px;
   border-radius: 15px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.05);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 
+    0 0 0 1px rgba(255,255,255,0.02),
+    0 10px 30px rgba(0,0,0,0.7);
+  transition: 0.2s;
 }
 
-/* card full */
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 0 0 1px rgba(34,197,94,0.2),
+    0 10px 40px rgba(34,197,94,0.1);
+}
+
+/* FULL */
 .full {
   margin-top: 20px;
 }
 
-/* textarea */
-textarea {
-  width: 100%;
-  height: 100px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
-  padding: 10px;
-  background: #020617;
-  color: white;
-}
-
-/* leads */
+/* LEADS */
 .lead {
   background: #020617;
-  padding: 10px;
+  padding: 12px;
   margin-top: 10px;
   border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.03);
 }
 
-/* status */
+/* STATUS */
 .status-ok {
   color: #22c55e;
 }
-
 </style>
 </head>
 

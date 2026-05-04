@@ -104,17 +104,37 @@ button {
   <div id="app">
 
     <button class="logout" onclick="logout()">Sair</button>
-
-    <h2>📊 Leads</h2>
-
-    <input id="nome" placeholder="Nome">
-    <input id="telefone" placeholder="Telefone">
-    <input id="emailLead" placeholder="Email">
-    <button class="btn" onclick="criarLead()">Criar Lead</button>
-
-    <div id="lista"></div>
-
-  </div>
+  
+    <div class="dashboard">
+  
+      <!-- 🔗 CONEXÃO META -->
+      <div class="card">
+        <h3>🔗 Conectar Meta</h3>
+        <button class="btn" onclick="conectarMeta()">
+          Conectar Facebook / Instagram
+        </button>
+        <p id="statusMeta">Não conectado</p>
+      </div>
+  
+      <!-- 📢 CRIAR PUBLICAÇÃO -->
+      <div class="card">
+        <h3>📢 Criar Publicação</h3>
+  
+        <input type="file" id="imagem">
+        <textarea id="textoPost" placeholder="Texto do anúncio"></textarea>
+  
+        <button class="btn" onclick="criarPost()">
+          Publicar
+        </button>
+      </div>
+  
+    </div>
+  
+    <!-- 📊 CAMPANHAS / LEADS -->
+    <div class="card full">
+      <h3>📊 Campanhas e Leads</h3>
+      <div id="lista"></div>
+    </div>
 
 </div>
 

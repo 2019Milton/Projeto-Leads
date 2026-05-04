@@ -10,15 +10,69 @@
   font-family: Arial, sans-serif;
 }
 
-.dashboard {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: url("https://images.unsplash.com/photo-1557838923-2985c318be48?q=80&w=1600") no-repeat center center;
+  background-size: cover;
+  color: white;
 }
 
+/* overlay */
+body::before {
+  content: "";
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: rgba(11, 27, 43, 0.85);
+  z-index: 0;
+}
+
+/* LOGIN CENTRAL */
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  background: #0b1b2b;
+  padding: 30px;
+  border-radius: 12px;
+}
+
+/* DASHBOARD */
+#app {
+  display: none;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 20px;
+}
+
+/* TOPO */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* GRID */
+.grid {
+  display: flex;
+  gap: 20px;
+}
+
+/* CARDS */
 .card {
   background: #1e293b;
-  padding: 15px;
+  padding: 20px;
   border-radius: 10px;
   flex: 1;
 }
@@ -28,71 +82,23 @@
   width: 100%;
 }
 
-textarea {
+/* INPUTS */
+input, textarea {
   width: 100%;
-  height: 80px;
+  padding: 10px;
   margin-top: 10px;
   border-radius: 6px;
   border: none;
-  padding: 10px;
 }
 
-body {
-  margin: 0;
-  height: 100vh;
-  background: url("https://images.unsplash.com/photo-1557838923-2985c318be48?q=80&w=1600") no-repeat center center;
-  background-size: cover;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* overlay escuro */
-body::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: rgba(11, 27, 43, 0.85);
-  z-index: 0;
-}
-
-/* container */
-.container {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 400px;
-  background: #0b1b2b;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-}
-
-/* app depois login */
-#app {
-  display: none;
-  width: 100%;
-  max-width: 700px;
-}
-
-/* inputs */
-input {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 6px;
-  border: none;
-}
-
-/* botões */
+/* BOTÕES */
 button {
-  width: 100%;
-  padding: 12px;
+  padding: 10px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
   margin-top: 10px;
+  width: 100%;
 }
 
 .btn {
@@ -102,82 +108,80 @@ button {
 
 .logout {
   background: #ef4444;
+  width: auto;
+  padding: 10px 20px;
 }
 
-/* leads */
+/* LEADS */
 .lead {
-  background: #1e293b;
+  background: #0b1b2b;
   padding: 10px;
-  margin: 10px 0;
-  border-radius: 8px;
+  margin-top: 10px;
+  border-radius: 6px;
 }
 </style>
-
 </head>
 
 <body>
 
-<div class="container">
-
-  <!-- LOGIN -->
-  <div id="loginBox">
+<!-- LOGIN -->
+<div class="container" id="loginBox">
+  <div class="login-box">
     <h2>🔐 Login</h2>
     <input id="email" placeholder="Email">
     <input id="senha" type="password" placeholder="Senha">
     <button class="btn" onclick="login()">Entrar</button>
   </div>
+</div>
 
-  <!-- APP -->
-  <div id="app">
+<!-- DASHBOARD -->
+<div id="app">
 
+  <div class="topbar">
+    <h2>🚀 Plataforma de Leads</h2>
     <button class="logout" onclick="logout()">Sair</button>
-  
-    <div class="dashboard">
-  
-      <!-- 🔗 CONEXÃO META -->
-      <div class="card">
-        <h3>🔗 Conectar Meta</h3>
-        <button class="btn" onclick="conectarMeta()">
-          Conectar Facebook / Instagram
-        </button>
-        <p id="statusMeta">Não conectado</p>
-      </div>
-  
-      <!-- 📢 CRIAR PUBLICAÇÃO -->
-      <div class="card">
-        <h3>📢 Criar Publicação</h3>
-  
-        <input type="file" id="imagem">
-        <textarea id="textoPost" placeholder="Texto do anúncio"></textarea>
-  
-        <button class="btn" onclick="criarPost()">
-          Publicar
-        </button>
-      </div>
-  
+  </div>
+
+  <div class="grid">
+
+    <!-- META -->
+    <div class="card">
+      <h3>🔗 Conectar Meta</h3>
+      <button class="btn" onclick="conectarMeta()">
+        Conectar Facebook / Instagram
+      </button>
+      <p id="statusMeta">Não conectado</p>
     </div>
-  
-    <!-- 📊 CAMPANHAS / LEADS -->
-    <div class="card full">
-      <h3>📊 Campanhas e Leads</h3>
-      <div id="lista"></div>
+
+    <!-- PUBLICAÇÃO -->
+    <div class="card">
+      <h3>📢 Criar Publicação</h3>
+      <input type="file">
+      <textarea id="textoPost" placeholder="Texto do anúncio"></textarea>
+      <button class="btn" onclick="criarPost()">Publicar</button>
     </div>
+
+  </div>
+
+  <!-- LEADS -->
+  <div class="card full">
+    <h3>📊 Leads</h3>
+    <div id="lista"></div>
+  </div>
 
 </div>
 
 <script>
 const API = "https://function-bun-production-446a.up.railway.app";
 
-// 🔐 LOGIN (AGORA CORRETO COM POST)
+// LOGIN
 async function login() {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
 
   const res = await fetch(`${API}/login`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ email, senha })
   });
 
@@ -191,20 +195,20 @@ async function login() {
   }
 }
 
-// 🚪 LOGOUT
+// LOGOUT
 function logout() {
   localStorage.removeItem("token");
   location.reload();
 }
 
-// 🚀 INICIAR APP
+// INIT
 function init() {
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("app").style.display = "block";
   carregarLeads();
 }
 
-// 📥 LISTAR LEADS
+// CARREGAR LEADS
 async function carregarLeads() {
   const token = localStorage.getItem("token");
 
@@ -230,52 +234,22 @@ async function carregarLeads() {
   });
 }
 
-// ➕ CRIAR LEAD
-async function criarLead() {
-  const token = localStorage.getItem("token");
-
-  const nome = document.getElementById("nome").value;
-  const telefone = document.getElementById("telefone").value;
-  const email = document.getElementById("emailLead").value;
-
-  await fetch(`${API}/leads`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + token
-    },
-    body: JSON.stringify({ nome, telefone, email })
-  });
-
-  carregarLeads();
-}
-
-// 🔗 conectar meta (simulação por enquanto)
+// SIMULAÇÕES
 function conectarMeta() {
-  alert("🔗 Aqui vai conectar com Meta Ads (próximo passo)");
+  alert("Integração Meta virá na próxima fase");
   document.getElementById("statusMeta").innerText = "Conectado (simulado)";
 }
 
-// 📢 criar post (simulação)
 function criarPost() {
   const texto = document.getElementById("textoPost").value;
+  if (!texto) return alert("Digite um texto");
 
-  if (!texto) {
-    alert("Digite o texto do anúncio");
-    return;
-  }
-
-  alert("📢 Publicação criada (simulado)");
-
-  // FUTURO: enviar para API Meta Ads
+  alert("Publicação criada (simulado)");
 }
 
-
-// 🔒 AUTO LOGIN
+// AUTO LOGIN
 const token = localStorage.getItem("token");
-if (token) {
-  init();
-}
+if (token) init();
 </script>
 
 </body>

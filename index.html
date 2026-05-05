@@ -350,9 +350,10 @@ async function criarCampanhaCompleta() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ usuario_id: 1 })
   });
-
-  const campanha = await campanhaRes.json();
-
+  
+  const campanha = await campanhaRes.json(); ✅
+  const campanha_id = campanha.id;
+  
   console.log("Campanha:", campanha);
 
   // 2️⃣ CRIA FORMULÁRIO
@@ -380,7 +381,7 @@ async function criarCampanhaCompleta() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       usuario_id: 1,
-      campaign_id: campanha.id,
+      campaign_id: campanha_id,
       page_id,
       form_id
     })

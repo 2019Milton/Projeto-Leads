@@ -354,6 +354,8 @@ async function criarCampanhaCompleta() {
   const campanha = await campanhaRes.json();
     
   console.log("Campanha:", campanha);
+
+  const campanha_id = campanha.id;
   
   // 2️⃣ CRIA FORMULÁRIO
   const formRes = await fetch(`${API}/meta/formulario`, {

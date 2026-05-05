@@ -366,6 +366,7 @@ async function criarCampanhaCompleta() {
   });
   
   const form = await formRes.json();
+  const form_id = form.id;
   console.log("FORM:", form);
   
   // 2️⃣ PEGA PAGE ID
@@ -380,7 +381,8 @@ async function criarCampanhaCompleta() {
     body: JSON.stringify({
       usuario_id: 1,
       campaign_id: campanha.id,
-      page_id
+      page_id,
+      form_id
     })
   });
 

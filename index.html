@@ -388,6 +388,19 @@ async function criarCampanhaCompleta() {
 
   const adset = await adsetRes.json();
 
+  const anuncioRes = await fetch(`${API}/meta/anuncio`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      usuario_id: 1,
+      adset_id: adset.id,
+      page_id
+    })
+  });
+  
+  const anuncio = await anuncioRes.json();
+  console.log("ANUNCIO:", anuncio);
+
   console.log("AdSet:", adset);
 
   alert("Campanha + AdSet criados (SEM GASTO) 🚀");

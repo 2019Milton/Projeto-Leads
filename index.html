@@ -355,6 +355,19 @@ async function criarCampanhaCompleta() {
 
   console.log("Campanha:", campanha);
 
+  // 2️⃣ CRIA FORMULÁRIO
+  const formRes = await fetch(`${API}/meta/formulario`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      usuario_id: 1,
+      page_id: "1034479299759718"
+    })
+  });
+  
+  const form = await formRes.json();
+  console.log("FORM:", form);
+  
   // 2️⃣ PEGA PAGE ID
   const pages = await fetch(`${API}/meta/teste`).then(r => r.json());
 

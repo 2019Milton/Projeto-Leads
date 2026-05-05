@@ -332,8 +332,11 @@ async function carregarLeads() {
 
 // SIMULAÇÕES
 function conectarMeta() {
-  document.getElementById("statusMeta").innerHTML =
-    "<span class='status-ok'>● Conectado</span>";
+  window.open(
+    "https://function-bun-production-446a.up.railway.app/auth/meta/login",
+    "_blank",
+    "width=500,height=700"
+  );
 }
 
 function criarPost() {

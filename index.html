@@ -339,8 +339,41 @@ function conectarMeta() {
   );
 }
 
-function criarPost() {
-  alert("Publicação criada 🚀");
+async function criarCampanhaCompleta() {
+  const token = localStorage.getItem("token");
+
+  // 1️⃣ CRIA CAMPANHA
+  const campanhaRes = await fetch(`${API}/meta/campanha`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usuario_id: 1 })
+  });
+
+  const campanha = await campanhaRes.json();
+
+  console.log("Campanha:", campanha);
+
+  // 2️⃣ PEGA PAGE ID
+  const pages = await fetch(`${API}/meta/teste`).then(r => r.json());
+
+  const page_id = pages.data[0].id;
+
+  // 3️⃣ CRIA ADSET
+  const adsetRes = await fetch(`${API}/meta/adset`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      usuario_id: 1,
+      campaign_id: campanha.id,
+      page_id
+    })
+  });
+
+  const adset = await adsetRes.json();
+
+  console.log("AdSet:", adset);
+
+  alert("Campanha + AdSet criados (SEM GASTO) 🚀");
 }
 
 // AUTO LOGIN

@@ -355,6 +355,12 @@ async function criarCampanhaCompleta() {
     
   console.log("Campanha:", campanha);
 
+  if (!campanha || !campanha.id) {
+    console.error("Erro ao criar campanha:", campanha);
+    alert("Erro ao criar campanha");
+    return;
+  }
+  
   const campanha_id = campanha.id;
   
   // 2️⃣ CRIA FORMULÁRIO

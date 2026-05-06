@@ -790,6 +790,8 @@ async function sincronizarCampanhas() {
 
   const token = localStorage.getItem("token");
 
+  console.log("TOKEN LOGIN:", token);
+
   const res = await fetch(`${API}/meta/sincronizar-campanhas`, {
     method: "POST",
     headers: {
@@ -806,7 +808,6 @@ async function sincronizarCampanhas() {
     return;
   }
 
-  // 🔥 RECARREGA CAMPANHAS
   await carregarCampanhas();
 
   alert("Campanhas sincronizadas 🚀");

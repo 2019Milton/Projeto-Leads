@@ -410,7 +410,7 @@ function init() {
 
   carregarLeads();
 
-  carregarStatusMeta();
+  ;
   
   carregarCampanhas();
   }
@@ -447,7 +447,7 @@ function init() {
     });
   }
 
-carregarStatusMeta();
+;
 
 // SIMULAÇÕES
 function conectarMeta() {
@@ -639,62 +639,90 @@ async function criarCampanhaCompleta() {
 
 async function carregarStatusMeta() {
 
-  const res = await fetch(
-    `${API}/meta/status-completo/1`
-  );
+  try {
 
-  const data = await res.json();
+    const token = localStorage.getItem("token");
 
-  console.log("STATUS META:", data);
-
-  const div = document.getElementById("status_meta");
-
-  div.innerHTML = `
-  
-    <p>
-      ${data.conectado ? "🟢" : "🔴"}
-      Meta conectada
-    </p>
-
-    <p>
-      ${data.conta_anuncios?.ativa ? "🟢" : "🔴"}
-      Conta de anúncios ativa
-    </p>
-
-    <p>
-      ${data.conta_anuncios?.possui_pagamento ? "🟢" : "🔴"}
-      Forma de pagamento
-    </p>
-
-    <p>
-      ${data.paginas?.length > 0 ? "🟢" : "🔴"}
-      Página conectada
-    </p>
-
-    <hr>
-
-    <h4>
-      ${
-        data.pronto_para_anunciar
-          ? "🚀 Pronto para anunciar"
-          : "⚠️ Ajustes necessários"
+    const res = await fetch(
+      `${API}/meta/status-completo`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
-    </h4>
-  `;
+    );
 
-  const select = document.getElementById("pagina_select");
+    const data = await res.json();
 
-  select.innerHTML = "";
-  
-  data.paginas.forEach(p => {
-  
-    select.innerHTML += `
-      <option value="${p.id}">
-        ${p.name}
-      </option>
+    console.log("STATUS META:", data);
+
+    // 🔒 valida elemento
+    const div = document.getElementById("status_meta");
+
+    if (!div) {
+      console.error("Elemento #status_meta não encontrado");
+      return;
+    }
+
+    div.innerHTML = `
+    
+      <p>
+        ${data.conectado ? "🟢" : "🔴"}
+        Meta conectada
+      </p>
+
+      <p>
+        ${data.conta_anuncios?.ativa ? "🟢" : "🔴"}
+        Conta de anúncios ativa
+      </p>
+
+      <p>
+        ${data.conta_anuncios?.possui_pagamento ? "🟢" : "🔴"}
+        Forma de pagamento
+      </p>
+
+      <p>
+        ${(data.paginas || []).length > 0 ? "🟢" : "🔴"}
+        Página conectada
+      </p>
+
+      <hr>
+
+      <h4>
+        ${
+          data.pronto_para_anunciar
+            ? "🚀 Pronto para anunciar"
+            : "⚠️ Ajustes necessários"
+        }
+      </h4>
     `;
-  
-  });
+
+    // 🔒 valida select
+    const select = document.getElementById("pagina_select");
+
+    if (!select) {
+      console.error("Elemento #pagina_select não encontrado");
+      return;
+    }
+
+    select.innerHTML = "";
+
+    // 🔒 evita undefined
+    (data.paginas || []).forEach(p => {
+
+      select.innerHTML += `
+        <option value="${p.id}">
+          ${p.name}
+        </option>
+      `;
+
+    });
+
+  } catch (err) {
+
+    console.error("ERRO STATUS META:", err);
+
+  }
 }
 
 

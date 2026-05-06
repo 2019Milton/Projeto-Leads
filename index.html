@@ -261,9 +261,21 @@ button {
     <!-- PUBLICAÇÃO -->
     <div class="card">
       <h3>📢 Criar Publicação</h3>
+    
+      <label>Página Facebook</label>
+    
+      <select id="pagina_select">
+        <option>Carregando páginas...</option>
+      </select>
+    
       <input type="file">
-      <textarea id="textoPost" placeholder="Texto do anúncio"></textarea>
-      <button class="btn" onclick="criarCampanhaCompleta()">
+    
+      <textarea id="textoPost"
+        placeholder="Texto do anúncio">
+      </textarea>
+    
+      <button class="btn"
+        onclick="criarCampanhaCompleta()">
         Criar Campanha de Leads 🚀
       </button>
     </div>
@@ -354,77 +366,172 @@ function conectarMeta() {
 }
 
 async function criarCampanhaCompleta() {
-  const token = localStorage.getItem("token");
 
-  // 1️⃣ CRIA CAMPANHA
-  const campanhaRes = await fetch(`${API}/meta/campanha`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ usuario_id: 1 })
-  });
-  
-  const campanha = await campanhaRes.json();
-    
-  console.log("Campanha:", campanha);
+  try {
 
-  if (!campanha || !campanha.id) {
-    console.error("Erro ao criar campanha:", campanha);
-    alert("Erro ao criar campanha");
-    return;
+    // 🔐 token login
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Usuário não autenticado");
+      return;
+    }
+
+    // 🔐 pega usuário do token
+    const payload = atob(token);
+    const usuario_id = payload.split(":")[0];
+
+    // 📄 página selecionada
+    const page_id =
+      document.getElementById("pagina_select").value;
+
+    if (!page_id) {
+      alert("Selecione uma página");
+      return;
+    }
+
+    // =========================================
+    // 1️⃣ CRIA CAMPANHA
+    // =========================================
+
+    const campanhaRes = await fetch(`${API}/meta/campanha`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        usuario_id
+      })
+    });
+
+    const campanha = await campanhaRes.json();
+
+    console.log("Campanha:", campanha);
+
+    if (!campanha.id) {
+      console.error(campanha);
+
+      alert(
+        campanha?.error?.message ||
+        "Erro ao criar campanha"
+      );
+
+      return;
+    }
+
+    const campanha_id = campanha.id;
+
+    // =========================================
+    // 2️⃣ CRIA FORMULÁRIO
+    // =========================================
+
+    const formRes = await fetch(`${API}/meta/formulario`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        usuario_id,
+        page_id
+      })
+    });
+
+    const form = await formRes.json();
+
+    console.log("FORM:", form);
+
+    if (!form.id) {
+      console.error(form);
+
+      alert(
+        form?.error ||
+        "Erro ao criar formulário"
+      );
+
+      return;
+    }
+
+    const form_id = form.id;
+
+    // =========================================
+    // 3️⃣ CRIA ADSET
+    // =========================================
+
+    const adsetRes = await fetch(`${API}/meta/adset`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanha_id,
+        page_id,
+        form_id
+      })
+    });
+
+    const adset = await adsetRes.json();
+
+    console.log("AdSet:", adset);
+
+    if (!adset.id) {
+      console.error(adset);
+
+      alert(
+        adset?.error?.message ||
+        adset?.error_user_msg ||
+        "Erro ao criar conjunto de anúncios"
+      );
+
+      return;
+    }
+
+    // =========================================
+    // 4️⃣ CRIA ANÚNCIO
+    // =========================================
+
+    const anuncioRes = await fetch(`${API}/meta/anuncio`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        usuario_id,
+        adset_id: adset.id,
+        page_id,
+        form_id
+      })
+    });
+
+    const anuncio = await anuncioRes.json();
+
+    console.log("ANUNCIO:", anuncio);
+
+    if (!anuncio.id) {
+      console.error(anuncio);
+
+      alert(
+        anuncio?.error?.message ||
+        anuncio?.error_user_msg ||
+        "Erro ao criar anúncio"
+      );
+
+      return;
+    }
+
+    // =========================================
+    // ✅ SUCESSO
+    // =========================================
+
+    alert("Campanha completa criada 🚀");
+
+  } catch (err) {
+
+    console.error("ERRO GERAL:", err);
+
+    alert("Erro interno ao criar campanha");
+
   }
-  
-  const campanha_id = campanha.id;
-  
-  // 2️⃣ CRIA FORMULÁRIO
-  const formRes = await fetch(`${API}/meta/formulario`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      usuario_id: 1,
-      page_id: "1034479299759718"
-    })
-  });
-  
-  const form = await formRes.json();
-  const form_id = form.id;
-  
-  console.log("FORM:", form);
-  
-  // 3️⃣ ADSET
-  const page_id = "1034479299759718";
-  
-  const adsetRes = await fetch(`${API}/meta/adset`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      usuario_id: 1,
-      campaign_id: campanha_id,
-      page_id,
-      form_id
-    })
-  });
-  
-  const adset = await adsetRes.json();
-  
-  console.log("AdSet:", adset);
-  
-  // 4️⃣ ANÚNCIO
-  const anuncioRes = await fetch(`${API}/meta/anuncio`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      usuario_id: 1,
-      adset_id: adset.id,
-      page_id,
-      form_id
-    })
-  });
-  
-  const anuncio = await anuncioRes.json();
-  
-  console.log("ANUNCIO:", anuncio);
-  
-  alert("Campanha completa criada 🚀");
 }
 
 async function carregarStatusMeta() {
@@ -471,6 +578,19 @@ async function carregarStatusMeta() {
       }
     </h4>
   `;
+
+  const select = document.getElementById("pagina_select");
+
+  select.innerHTML = "";
+  
+  data.paginas.forEach(p => {
+  
+    select.innerHTML += `
+      <option value="${p.id}">
+        ${p.name}
+      </option>
+    `;
+  });
 }
 
 // AUTO LOGIN

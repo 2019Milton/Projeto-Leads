@@ -249,6 +249,15 @@ button {
       <p id="statusMeta">Não conectado</p>
     </div>
 
+    <!-- 🔥 NOVO CARD -->
+    <div class="card">
+      <h3>📊 Status Meta</h3>
+  
+      <div id="status_meta">
+        Carregando status...
+      </div>
+    </div>
+
     <!-- PUBLICAÇÃO -->
     <div class="card">
       <h3>📢 Criar Publicação</h3>
@@ -297,7 +306,10 @@ async function login() {
 function init() {
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("app").style.display = "block";
+
   carregarLeads();
+
+  carregarStatusMeta();
 }
 
 // LOGOUT
@@ -413,6 +425,52 @@ async function criarCampanhaCompleta() {
   console.log("ANUNCIO:", anuncio);
   
   alert("Campanha completa criada 🚀");
+}
+
+async function carregarStatusMeta() {
+
+  const res = await fetch(
+    `${API}/meta/status-completo/1`
+  );
+
+  const data = await res.json();
+
+  console.log("STATUS META:", data);
+
+  const div = document.getElementById("status_meta");
+
+  div.innerHTML = `
+  
+    <p>
+      ${data.conectado ? "🟢" : "🔴"}
+      Meta conectada
+    </p>
+
+    <p>
+      ${data.conta_anuncios?.ativa ? "🟢" : "🔴"}
+      Conta de anúncios ativa
+    </p>
+
+    <p>
+      ${data.conta_anuncios?.possui_pagamento ? "🟢" : "🔴"}
+      Forma de pagamento
+    </p>
+
+    <p>
+      ${data.paginas?.length > 0 ? "🟢" : "🔴"}
+      Página conectada
+    </p>
+
+    <hr>
+
+    <h4>
+      ${
+        data.pronto_para_anunciar
+          ? "🚀 Pronto para anunciar"
+          : "⚠️ Ajustes necessários"
+      }
+    </h4>
+  `;
 }
 
 // AUTO LOGIN

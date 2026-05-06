@@ -231,6 +231,68 @@ button {
   background: rgba(255,255,255,0.03);
 }
 
+.campanhas-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+}
+
+.btn-sync {
+
+  background: #2563eb;
+
+  border: none;
+
+  color: white;
+
+  padding: 10px 16px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-weight: bold;
+}
+
+.btn-sync:hover {
+
+  opacity: 0.9;
+}
+
+.origem-badge {
+
+  display: inline-block;
+
+  padding: 4px 10px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+
+  font-weight: bold;
+
+  margin-top: 10px;
+}
+
+.origem-plataforma {
+
+  background: rgba(34,197,94,0.2);
+
+  color: #22c55e;
+}
+
+.origem-meta {
+
+  background: rgba(59,130,246,0.2);
+
+  color: #60a5fa;
+}
+
   
 </style>
 </head>
@@ -299,7 +361,20 @@ button {
 
   <!-- LEADS -->
   <div class="card full">
-    <h3>📢 Minhas Campanhas</h3>
+    <div class="campanhas-header">
+
+      <h3>📢 Minhas Campanhas</h3>
+    
+      <button
+        class="btn-sync"
+        onclick="sincronizarCampanhas()"
+      >
+        🔄 Sincronizar
+      </button>
+    
+    </div>
+    
+    <div id="listaCampanhas"></div>
 
     <div id="listaCampanhas"></div>
   </div>
@@ -609,63 +684,125 @@ async function carregarStatusMeta() {
 
   async function carregarCampanhas() {
 
-  try {
-
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(`${API}/campanhas`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+    try {
+  
+      const token = localStorage.getItem("token");
+  
+      const res = await fetch(`${API}/campanhas`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+  
+      const campanhas = await res.json();
+  
+      console.log("CAMPANHAS:", campanhas);
+  
+      const div =
+        document.getElementById("listaCampanhas");
+  
+      div.innerHTML = "";
+  
+      if (!campanhas.length) {
+  
+        div.innerHTML = `
+          <p>Nenhuma campanha criada ainda.</p>
+        `;
+  
+        return;
       }
-    });
-
-    const campanhas = await res.json();
-
-    console.log("CAMPANHAS:", campanhas);
-
-    const div =
-      document.getElementById("listaCampanhas");
-
-    div.innerHTML = "";
-
-    if (!campanhas.length) {
-
-      div.innerHTML = `
-        <p>Nenhuma campanha criada ainda.</p>
-      `;
-
-      return;
-    }
-
-    campanhas.forEach(c => {
-
-      div.innerHTML += `
-        <div class="campanha-item">
-
-          <div>
-            <strong>${c.nome}</strong>
-          </div>
-
-          <div>
-            Status:
-            ${c.status}
-          </div>
-
-          <div>
-            Criado em:
-            ${new Date(c.criado_em)
-              .toLocaleString("pt-BR")}
-          </div>
-
+  
+      campanhas.forEach(c => {
+  
+    const origemClass =
+      c.origem === "plataforma"
+        ? "origem-plataforma"
+        : "origem-meta";
+  
+    const origemTexto =
+      c.origem === "plataforma"
+        ? "🚀 Plataforma"
+        : "🔵 Meta";
+  
+    div.innerHTML += `
+      <div class="campanha-item">
+  
+        <div>
+  
+          <strong>
+            ${c.nome}
+          </strong>
+  
         </div>
-      `;
-    });
+  
+        <div style="margin-top:10px;">
+  
+          Status:
+          ${c.status}
+  
+        </div>
+  
+        <div class="
+          origem-badge
+          ${origemClass}
+        ">
+  
+          ${origemTexto}
+  
+        </div>
+  
+        <div style="margin-top:10px;">
+  
+          Criado em:
+          ${new Date(c.criado_em)
+            .toLocaleString("pt-BR")}
+  
+        </div>
+  
+      </div>
+    `;
+  });
 
   } catch (err) {
 
     console.error(err);
 
   }
+
+  async function sincronizarCampanhas() {
+
+    try {
+  
+      const token = localStorage.getItem("token");
+  
+      const res = await fetch(
+        `${API}/meta/sincronizar-campanhas`,
+        {
+          method: "POST",
+  
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+  
+      const data = await res.json();
+  
+      console.log(data);
+  
+      alert("Campanhas sincronizadas 🚀");
+  
+      carregarCampanhas();
+  
+    } catch (err) {
+  
+      console.error(err);
+  
+      alert("Erro ao sincronizar");
+  
+    }
+  }
+  
 }
 
   

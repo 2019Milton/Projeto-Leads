@@ -313,7 +313,7 @@ button {
 <div id="app">
 
   <div class="topbar">
-    <h2>🚀 Dashboard</h2>
+    <h2>🚀 Central de Leads</h2>
     <button class="logout" onclick="logout()">Sair</button>
   </div>
 
@@ -323,7 +323,9 @@ button {
     <div class="card">
       <h3>🔗 Conectar Meta</h3>
       <button class="btn" onclick="conectarMeta()">Conectar Facebook / Instagram</button>
-      <p id="statusMeta">Não conectado</p>
+      <div id="meta_info">
+        Carregando conexão...
+      </div>
     </div>
 
     <!-- 🔥 NOVO CARD -->
@@ -666,6 +668,50 @@ async function carregarStatusMeta() {
     const data = await res.json();
 
     console.log("STATUS META:", data);
+
+
+    const metaInfo = document.getElementById("meta_info");
+
+    if (metaInfo) {
+    
+      if (data.conectado) {
+    
+        const conta = data.conta_anuncios;
+    
+        metaInfo.innerHTML = `
+          <div style="margin-top:15px;">
+    
+            <p style="color:#22c55e;font-weight:bold;">
+              🟢 Meta conectada
+            </p>
+    
+            <p style="margin-top:10px;">
+              <b>Conta:</b><br>
+              ${conta?.nome || "Não encontrada"}
+            </p>
+    
+            <p>
+              <b>ID:</b><br>
+              ${conta?.id || "-"}
+            </p>
+    
+            <p>
+              <b>Status:</b><br>
+              ${conta?.ativa ? "Ativa" : "Inativa"}
+            </p>
+    
+          </div>
+        `;
+    
+      } else {
+    
+        metaInfo.innerHTML = `
+          <p style="color:#ef4444;font-weight:bold;margin-top:15px;">
+            🔴 Nenhuma conta conectada
+          </p>
+        `;
+      }
+    }
 
     const div = document.getElementById("status_meta");
 

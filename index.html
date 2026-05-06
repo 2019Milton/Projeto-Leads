@@ -683,13 +683,19 @@ async function carregarStatusMeta() {
   `;
 
   const select = document.getElementById("pagina_select");
+
   select.innerHTML = "";
+  
   data.paginas.forEach(p => {
-  select.innerHTML += `
+  
+    select.innerHTML += `
       <option value="${p.id}">
         ${p.name}
       </option>
     `;
+  
+  });
+  
   }
 }
 

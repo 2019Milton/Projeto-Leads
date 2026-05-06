@@ -358,10 +358,18 @@ async function carregarLeads() {
 
 // SIMULAÇÕES
 function conectarMeta() {
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Usuário não autenticado");
+    return;
+  }
+
   window.open(
-    "https://function-bun-production-446a.up.railway.app/auth/meta/login",
+    `${API}/auth/meta/login?token=${encodeURIComponent(token)}`,
     "_blank",
-    "width=500,height=700"
+    "width=600,height=700"
   );
 }
 

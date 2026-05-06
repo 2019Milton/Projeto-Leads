@@ -438,6 +438,9 @@ async function init() {
     const data = await res.json();
   
     const lista = document.getElementById("lista");
+
+    if (!lista) return;
+    
     lista.innerHTML = "";
   
     data.forEach(l => {
@@ -647,11 +650,15 @@ async function carregarStatusMeta() {
 
     const token = localStorage.getItem("token");
 
+    // 🔥 decodifica token
+    const payload = atob(token);
+    const usuario_id = payload.split(":")[0];
+
     const res = await fetch(
-      `${API}/meta/status-completo`,
+      `${API}/meta/status-completo/${usuario_id}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`
+          "Authorization": `Bearer ${token}`
         }
       }
     );
@@ -660,16 +667,9 @@ async function carregarStatusMeta() {
 
     console.log("STATUS META:", data);
 
-    // 🔒 valida elemento
     const div = document.getElementById("status_meta");
 
-    if (!div) {
-      console.error("Elemento #status_meta não encontrado");
-      return;
-    }
-
     div.innerHTML = `
-    
       <p>
         ${data.conectado ? "🟢" : "🔴"}
         Meta conectada
@@ -686,7 +686,7 @@ async function carregarStatusMeta() {
       </p>
 
       <p>
-        ${(data.paginas || []).length > 0 ? "🟢" : "🔴"}
+        ${data.paginas?.length > 0 ? "🟢" : "🔴"}
         Página conectada
       </p>
 
@@ -701,31 +701,26 @@ async function carregarStatusMeta() {
       </h4>
     `;
 
-    // 🔒 valida select
+    // 🔥 SELECT DE PÁGINAS
     const select = document.getElementById("pagina_select");
 
-    if (!select) {
-      console.error("Elemento #pagina_select não encontrado");
-      return;
+    if (select) {
+
+      select.innerHTML = "";
+
+      data.paginas?.forEach(p => {
+
+        select.innerHTML += `
+          <option value="${p.id}">
+            ${p.name}
+          </option>
+        `;
+      });
     }
-
-    select.innerHTML = "";
-
-    // 🔒 evita undefined
-    (data.paginas || []).forEach(p => {
-
-      select.innerHTML += `
-        <option value="${p.id}">
-          ${p.name}
-        </option>
-      `;
-
-    });
 
   } catch (err) {
 
     console.error("ERRO STATUS META:", err);
-
   }
 }
 

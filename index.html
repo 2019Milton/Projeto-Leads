@@ -375,8 +375,6 @@ button {
     </div>
     
     <div id="listaCampanhas"></div>
-
-    <div id="listaCampanhas"></div>
   </div>
 
 </div>
@@ -413,6 +411,8 @@ function init() {
   carregarLeads();
 
   carregarStatusMeta();
+  
+  carregarCampanhas();
   }
   
   // LOGOUT
@@ -681,144 +681,138 @@ async function carregarStatusMeta() {
       }
     </h4>
   `;
+}
 
-  async function carregarCampanhas() {
+async function carregarCampanhas() {
 
-    try {
-  
-      const token = localStorage.getItem("token");
-  
-      const res = await fetch(`${API}/campanhas`, {
+  try {
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API}/campanhas`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const campanhas = await res.json();
+
+    console.log("CAMPANHAS:", campanhas);
+
+    const div =
+      document.getElementById("listaCampanhas");
+
+    div.innerHTML = "";
+
+    if (!campanhas.length) {
+
+      div.innerHTML = `
+        <p>Nenhuma campanha criada ainda.</p>
+      `;
+
+      return;
+    }
+
+    campanhas.forEach(c => {
+
+  const origemClass =
+    c.origem === "plataforma"
+      ? "origem-plataforma"
+      : "origem-meta";
+
+  const origemTexto =
+    c.origem === "plataforma"
+      ? "🚀 Plataforma"
+      : "🔵 Meta";
+
+  div.innerHTML += `
+    <div class="campanha-item">
+
+      <div>
+
+        <strong>
+          ${c.nome}
+        </strong>
+
+      </div>
+
+      <div style="margin-top:10px;">
+
+        Status:
+        ${c.status}
+
+      </div>
+
+      <div class="
+        origem-badge
+        ${origemClass}
+      ">
+
+        ${origemTexto}
+
+      </div>
+
+      <div style="margin-top:10px;">
+
+        Criado em:
+        ${new Date(c.criado_em)
+          .toLocaleString("pt-BR")}
+
+      </div>
+
+    </div>
+  `;
+});
+
+} catch (err) {
+
+  console.error(err);
+
+}
+
+async function sincronizarCampanhas() {
+
+  try {
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `${API}/meta/sincronizar-campanhas`,
+      {
+        method: "POST",
+
         headers: {
           Authorization: `Bearer ${token}`
         }
-      });
-  
-      const campanhas = await res.json();
-  
-      console.log("CAMPANHAS:", campanhas);
-  
-      const div =
-        document.getElementById("listaCampanhas");
-  
-      div.innerHTML = "";
-  
-      if (!campanhas.length) {
-  
-        div.innerHTML = `
-          <p>Nenhuma campanha criada ainda.</p>
-        `;
-  
-        return;
       }
-  
-      campanhas.forEach(c => {
-  
-    const origemClass =
-      c.origem === "plataforma"
-        ? "origem-plataforma"
-        : "origem-meta";
-  
-    const origemTexto =
-      c.origem === "plataforma"
-        ? "🚀 Plataforma"
-        : "🔵 Meta";
-  
-    div.innerHTML += `
-      <div class="campanha-item">
-  
-        <div>
-  
-          <strong>
-            ${c.nome}
-          </strong>
-  
-        </div>
-  
-        <div style="margin-top:10px;">
-  
-          Status:
-          ${c.status}
-  
-        </div>
-  
-        <div class="
-          origem-badge
-          ${origemClass}
-        ">
-  
-          ${origemTexto}
-  
-        </div>
-  
-        <div style="margin-top:10px;">
-  
-          Criado em:
-          ${new Date(c.criado_em)
-            .toLocaleString("pt-BR")}
-  
-        </div>
-  
-      </div>
-    `;
-  });
+    );
+
+    const data = await res.json();
+
+    console.log(data);
+
+    alert("Campanhas sincronizadas 🚀");
+
+    carregarCampanhas();
 
   } catch (err) {
 
     console.error(err);
 
-  }
+    alert("Erro ao sincronizar");
 
-  async function sincronizarCampanhas() {
-
-    try {
-  
-      const token = localStorage.getItem("token");
-  
-      const res = await fetch(
-        `${API}/meta/sincronizar-campanhas`,
-        {
-          method: "POST",
-  
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-  
-      const data = await res.json();
-  
-      console.log(data);
-  
-      alert("Campanhas sincronizadas 🚀");
-  
-      carregarCampanhas();
-  
-    } catch (err) {
-  
-      console.error(err);
-  
-      alert("Erro ao sincronizar");
-  
-    }
   }
-  
 }
-
   
 
-  const select = document.getElementById("pagina_select");
-
-  select.innerHTML = "";
-  
-  data.paginas.forEach(p => {
-  
-    select.innerHTML += `
-      <option value="${p.id}">
-        ${p.name}
-      </option>
-    `;
-  });
+const select = document.getElementById("pagina_select");
+select.innerHTML = "";
+data.paginas.forEach(p => {
+select.innerHTML += `
+    <option value="${p.id}">
+      ${p.name}
+    </option>
+  `;
 }
 
 // AUTO LOGIN

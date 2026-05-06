@@ -275,7 +275,7 @@ button {
       </textarea>
     
       <button class="btn"
-        onclick="criarCampanhaCompleta()">
+        onclick="">
         Criar Campanha de Leads 🚀
       </button>
     </div>
@@ -505,6 +505,7 @@ async function criarCampanhaCompleta() {
       },
       body: JSON.stringify({
         usuario_id,
+        campaign_id: campanha_id,
         adset_id: adset.id,
         page_id,
         form_id

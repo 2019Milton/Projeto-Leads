@@ -788,36 +788,28 @@ async function carregarCampanhas() {
 
 async function sincronizarCampanhas() {
 
-  try {
+  const token = localStorage.getItem("token");
 
-    const token = localStorage.getItem("token");
+  const res = await fetch(`${API}/meta/sincronizar-campanhas`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
 
-    const res = await fetch(
-      `${API}/meta/sincronizar-campanhas`,
-      {
-        method: "POST",
+  const data = await res.json();
 
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
+  console.log("SINCRONIZAR:", data);
 
-    const data = await res.json();
-
-    console.log(data);
-
-    alert("Campanhas sincronizadas 🚀");
-
-    carregarCampanhas();
-
-  } catch (err) {
-
-    console.error(err);
-
-    alert("Erro ao sincronizar");
-
+  if (data.error) {
+    alert(data.error);
+    return;
   }
+
+  // 🔥 RECARREGA CAMPANHAS
+  await carregarCampanhas();
+
+  alert("Campanhas sincronizadas 🚀");
 }
 
 

@@ -217,6 +217,21 @@ button {
 .status-ok {
   color: #22c55e;
 }
+
+.campanha-item {
+
+  border: 1px solid #1f2937;
+
+  border-radius: 12px;
+
+  padding: 15px;
+
+  margin-top: 15px;
+
+  background: rgba(255,255,255,0.03);
+}
+
+  
 </style>
 </head>
 
@@ -284,8 +299,9 @@ button {
 
   <!-- LEADS -->
   <div class="card full">
-    <h3>📊 Leads</h3>
-    <div id="lista"></div>
+    <h3>📢 Minhas Campanhas</h3>
+
+    <div id="listaCampanhas"></div>
   </div>
 
 </div>
@@ -322,39 +338,41 @@ function init() {
   carregarLeads();
 
   carregarStatusMeta();
-}
+  }
+  
+  // LOGOUT
+  function logout() {
+    localStorage.removeItem("token");
+    location.reload();
+  }
+  
+  // LEADS
+  async function carregarLeads() {
+    const token = localStorage.getItem("token");
+  
+    const res = await fetch(`${API}/leads`, {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+  
+    const data = await res.json();
+  
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+  
+    data.forEach(l => {
+      lista.innerHTML += `
+        <div class="lead">
+          <b>${l.nome}</b><br>
+          📞 ${l.telefone || "-"}<br>
+          📧 ${l.email || "-"}
+        </div>
+      `;
+    });
+  }
 
-// LOGOUT
-function logout() {
-  localStorage.removeItem("token");
-  location.reload();
-}
-
-// LEADS
-async function carregarLeads() {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`${API}/leads`, {
-    headers: {
-      "Authorization": "Bearer " + token
-    }
-  });
-
-  const data = await res.json();
-
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
-
-  data.forEach(l => {
-    lista.innerHTML += `
-      <div class="lead">
-        <b>${l.nome}</b><br>
-        📞 ${l.telefone || "-"}<br>
-        📧 ${l.email || "-"}
-      </div>
-    `;
-  });
-}
+carregarStatusMeta();
 
 // SIMULAÇÕES
 function conectarMeta() {
@@ -533,6 +551,7 @@ async function criarCampanhaCompleta() {
     // =========================================
 
     alert("Campanha completa criada 🚀");
+    carregarCampanhas();
 
   } catch (err) {
 
@@ -587,6 +606,69 @@ async function carregarStatusMeta() {
       }
     </h4>
   `;
+
+  async function carregarCampanhas() {
+
+  try {
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API}/campanhas`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const campanhas = await res.json();
+
+    console.log("CAMPANHAS:", campanhas);
+
+    const div =
+      document.getElementById("listaCampanhas");
+
+    div.innerHTML = "";
+
+    if (!campanhas.length) {
+
+      div.innerHTML = `
+        <p>Nenhuma campanha criada ainda.</p>
+      `;
+
+      return;
+    }
+
+    campanhas.forEach(c => {
+
+      div.innerHTML += `
+        <div class="campanha-item">
+
+          <div>
+            <strong>${c.nome}</strong>
+          </div>
+
+          <div>
+            Status:
+            ${c.status}
+          </div>
+
+          <div>
+            Criado em:
+            ${new Date(c.criado_em)
+              .toLocaleString("pt-BR")}
+          </div>
+
+        </div>
+      `;
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
+}
+
+  
 
   const select = document.getElementById("pagina_select");
 

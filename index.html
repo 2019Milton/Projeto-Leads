@@ -404,15 +404,19 @@ async function login() {
 }
 
 // INIT
-function init() {
-  document.getElementById("loginBox").style.display = "none";
-  document.getElementById("app").style.display = "block";
+async function init() {
 
-  carregarLeads();
-
-  ;
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("app").style.display = "block";
   
-  carregarCampanhas();
+    // 🔥 carrega status Meta
+    await carregarStatusMeta();
+  
+    // 🔥 carrega campanhas
+    await carregarCampanhas();
+  
+    // 🔥 carrega leads
+    await carregarLeads();
   }
   
   // LOGOUT

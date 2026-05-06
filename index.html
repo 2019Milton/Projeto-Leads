@@ -679,27 +679,77 @@ async function carregarStatusMeta() {
         const conta = data.conta_anuncios;
     
         metaInfo.innerHTML = `
+
           <div style="margin-top:15px;">
-    
-            <p style="color:#22c55e;font-weight:bold;">
-              🟢 Meta conectada
-            </p>
-    
-            <p style="margin-top:10px;">
-              <b>Conta:</b><br>
-              ${conta?.nome || "Não encontrada"}
-            </p>
-    
+        
+            <div style="
+              display:flex;
+              align-items:center;
+              gap:10px;
+              margin-bottom:15px;
+            ">
+        
+              <img
+                src="${data.usuario_meta?.picture?.data?.url || ''}"
+                style="
+                  width:50px;
+                  height:50px;
+                  border-radius:50%;
+                  border:2px solid #22c55e;
+                "
+              >
+        
+              <div>
+                <div style="font-weight:bold;">
+                  ${data.usuario_meta?.name || "Usuário Meta"}
+                </div>
+        
+                <div style="color:#22c55e;">
+                  🟢 Meta conectada
+                </div>
+              </div>
+        
+            </div>
+        
             <p>
-              <b>ID:</b><br>
-              ${conta?.id || "-"}
+              <b>📘 Página:</b><br>
+              ${data.paginas?.[0]?.name || "-"}
             </p>
-    
+        
             <p>
-              <b>Status:</b><br>
-              ${conta?.ativa ? "Ativa" : "Inativa"}
+              <b>📸 Instagram:</b><br>
+              ${
+                data.instagram?.username
+                  ? '@' + data.instagram.username
+                  : "Não conectado"
+              }
             </p>
-    
+        
+            <p>
+              <b>📢 Campanhas:</b><br>
+              ${data.metricas?.campanhas || 0}
+            </p>
+        
+            <p>
+              <b>🟢 Ativas:</b><br>
+              ${data.metricas?.campanhas_ativas || 0}
+            </p>
+        
+            <p>
+              <b>💰 Gasto hoje:</b><br>
+              ${data.metricas?.gasto_hoje || "R$ 0,00"}
+            </p>
+        
+            <p>
+              <b>🧲 Leads hoje:</b><br>
+              ${data.metricas?.leads_hoje || 0}
+            </p>
+        
+            <p>
+              <b>🕒 Último sync:</b><br>
+              ${new Date(data.metricas?.ultimo_sync).toLocaleString()}
+            </p>
+        
           </div>
         `;
     

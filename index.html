@@ -352,7 +352,7 @@ button {
       </textarea>
     
       <button class="btn"
-        onclick="">
+        onclick="criarCampanhaCompleta()">
         Criar Campanha de Leads 🚀
       </button>
     </div>
@@ -681,6 +681,16 @@ async function carregarStatusMeta() {
       }
     </h4>
   `;
+
+  const select = document.getElementById("pagina_select");
+  select.innerHTML = "";
+  data.paginas.forEach(p => {
+  select.innerHTML += `
+      <option value="${p.id}">
+        ${p.name}
+      </option>
+    `;
+  }
 }
 
 async function carregarCampanhas() {
@@ -769,6 +779,7 @@ async function carregarCampanhas() {
   console.error(err);
 
 }
+}
 
 async function sincronizarCampanhas() {
 
@@ -803,17 +814,9 @@ async function sincronizarCampanhas() {
 
   }
 }
-  
 
-const select = document.getElementById("pagina_select");
-select.innerHTML = "";
-data.paginas.forEach(p => {
-select.innerHTML += `
-    <option value="${p.id}">
-      ${p.name}
-    </option>
-  `;
-}
+
+
 
 // AUTO LOGIN
 const token = localStorage.getItem("token");

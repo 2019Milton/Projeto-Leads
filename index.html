@@ -619,170 +619,142 @@ async function criarCampanhaCompleta() {
 
   try {
 
-    // 🔐 token login
     const token = localStorage.getItem("token");
 
-    if (!token) {
-      alert("Usuário não autenticado");
-      return;
-    }
-
-    // 🔐 pega usuário do token
+    // 🔐 USER ID
     const payload = atob(token);
     const usuario_id = payload.split(":")[0];
 
-    // 📄 página selecionada
+    // 📝 CAMPOS
+    const campanha_nome =
+      document.getElementById("campanha_nome").value;
+
+    const objetivo =
+      document.getElementById("objetivo_select").value;
+
     const page_id =
       document.getElementById("pagina_select").value;
 
-    if (!page_id) {
-      alert("Selecione uma página");
+    const texto =
+      document.getElementById("texto").value;
+
+    const cta =
+      document.getElementById("cta_select").value;
+
+    const orcamento =
+      document.getElementById("orcamento").value;
+
+    if (!campanha_nome) {
+      alert("Digite o nome da campanha");
       return;
     }
 
-    // =========================================
-    // 1️⃣ CRIA CAMPANHA
-    // =========================================
-
-    const campanhaRes = await fetch(`${API}/meta/campanha`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        usuario_id
-      })
-    });
+    // 🔥 CAMPANHA
+    const campanhaRes = await fetch(
+      `${API}/meta/campanha`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          usuario_id,
+          nome: campanha_nome,
+          objetivo
+        })
+      }
+    );
 
     const campanha = await campanhaRes.json();
 
     console.log("Campanha:", campanha);
 
     if (!campanha.id) {
-      console.error(campanha);
-
-      alert(
-        campanha?.error?.message ||
-        "Erro ao criar campanha"
-      );
-
+      alert("Erro ao criar campanha");
       return;
     }
 
-    const campanha_id = campanha.id;
-
-    // =========================================
-    // 2️⃣ CRIA FORMULÁRIO
-    // =========================================
-
-    const formRes = await fetch(`${API}/meta/formulario`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        usuario_id,
-        page_id
-      })
-    });
+    // 🔥 FORM
+    const formRes = await fetch(
+      `${API}/meta/formulario`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          usuario_id,
+          page_id
+        })
+      }
+    );
 
     const form = await formRes.json();
 
     console.log("FORM:", form);
 
-    if (!form.id) {
-      console.error(form);
-
-      alert(
-        form?.error ||
-        "Erro ao criar formulário"
-      );
-
-      return;
-    }
-
-    const form_id = form.id;
-
-    // =========================================
-    // 3️⃣ CRIA ADSET
-    // =========================================
-
-    const adsetRes = await fetch(`${API}/meta/adset`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        usuario_id,
-        campaign_id: campanha_id,
-        page_id,
-        form_id
-      })
-    });
+    // 🔥 ADSET
+    const adsetRes = await fetch(
+      `${API}/meta/adset`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          usuario_id,
+          campaign_id: campanha.id,
+          page_id,
+          form_id: form.id,
+          daily_budget: Number(orcamento) * 100
+        })
+      }
+    );
 
     const adset = await adsetRes.json();
 
-    console.log("AdSet:", adset);
+    console.log("ADSET:", adset);
 
-    if (!adset.id) {
-      console.error(adset);
-
-      alert(
-        adset?.error?.message ||
-        adset?.error_user_msg ||
-        "Erro ao criar conjunto de anúncios"
-      );
-
-      return;
-    }
-
-    // =========================================
-    // 4️⃣ CRIA ANÚNCIO
-    // =========================================
-
-    const anuncioRes = await fetch(`${API}/meta/anuncio`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        usuario_id,
-        campaign_id: campanha_id,
-        adset_id: adset.id,
-        page_id,
-        form_id
-      })
-    });
+    // 🔥 ANÚNCIO
+    const anuncioRes = await fetch(
+      `${API}/meta/anuncio`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          usuario_id,
+          adset_id: adset.id,
+          page_id,
+          form_id: form.id,
+          texto,
+          cta
+        })
+      }
+    );
 
     const anuncio = await anuncioRes.json();
 
     console.log("ANUNCIO:", anuncio);
 
-    if (!anuncio.id) {
-      console.error(anuncio);
+    if (anuncio.error) {
 
-      alert(
-        anuncio?.error?.message ||
-        anuncio?.error_user_msg ||
-        "Erro ao criar anúncio"
-      );
+      alert("Erro ao criar anúncio");
 
       return;
     }
 
-    // =========================================
-    // ✅ SUCESSO
-    // =========================================
+    // 🔄 RELOAD
+    await sincronizarCampanhas();
 
-    alert("Campanha completa criada 🚀");
-    carregarCampanhas();
+    alert("🚀 Campanha criada com sucesso");
 
   } catch (err) {
 
-    console.error("ERRO GERAL:", err);
+    console.error(err);
 
-    alert("Erro interno ao criar campanha");
-
+    alert("Erro ao criar campanha");
   }
 }
 

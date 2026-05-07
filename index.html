@@ -1249,14 +1249,14 @@ async function carregarStatusMeta() {
       "ultimo_sync_texto"
     ).innerHTML =
     
-      data.metricas?.ultimo_sync
+      data.ultimo_sync
         ? new Date(
-            data.metricas.ultimo_sync
+            data.ultimo_sync
           ).toLocaleString()
         : "Nunca sincronizado";
     
     atualizarTempoSync(
-      data.metricas?.ultimo_sync
+      data.ultimo_sync
     );
 
     // 🔥 SELECT DE PÁGINAS

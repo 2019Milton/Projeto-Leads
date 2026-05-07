@@ -1260,7 +1260,7 @@ async function carregarStatusMeta() {
     }
    
     atualizarTempoSync(
-      data.ultimo_sync
+      data.metricas?.ultimo_sync
     );
 
     // 🔥 SELECT DE PÁGINAS
@@ -1456,8 +1456,11 @@ async function sincronizarCampanhas() {
     document.getElementById("btn-sync");
 
   if (btn) {
+
     btn.disabled = true;
-    btn.innerHTML = "🔄 Sincronizando...";
+
+    btn.innerHTML =
+      "🔄 Sincronizando...";
   }
 
   try {
@@ -1485,6 +1488,8 @@ async function sincronizarCampanhas() {
 
     await carregarCampanhas();
 
+    await carregarStatusMeta();
+
     alert("Campanhas sincronizadas 🚀");
 
   } catch (err) {
@@ -1493,9 +1498,15 @@ async function sincronizarCampanhas() {
 
     alert("Erro ao sincronizar");
 
-  if (btn) {
-    btn.disabled = false;
-    btn.innerHTML = "🔄 Sincronizar";
+  } finally {
+
+    if (btn) {
+
+      btn.disabled = false;
+
+      btn.innerHTML =
+        "🔄 Sincronizar";
+    }
   }
 }
 

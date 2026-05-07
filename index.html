@@ -468,6 +468,29 @@ button {
 
   transform: translateX(24px);
 }
+
+.btn-excluir {
+
+  background: #dc2626;
+
+  border: none;
+
+  color: white;
+
+  border-radius: 10px;
+
+  padding: 8px 12px;
+
+  cursor: pointer;
+
+  font-size: 16px;
+}
+
+.btn-excluir:hover {
+
+  background: #ef4444;
+}
+
   
 </style>
 </head>
@@ -1092,6 +1115,17 @@ async function carregarCampanhas() {
               <span class="slider"></span>
           
             </label>
+
+            <button
+              class="btn-excluir"
+              onclick="
+                excluirCampanha(
+                  '${c.campaign_id}'
+                )
+              "
+            >
+              🗑️
+            </button>
           
           </div>
 
@@ -1236,7 +1270,52 @@ async function toggleCampanha(campaign_id, statusAtual) {
   await carregarCampanhas();
 }
 
+async function excluirCampanha(campaign_id) {
 
+  const confirmar = confirm(
+    "Deseja realmente excluir esta campanha?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/meta/excluir-campanha`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+
+      body: JSON.stringify({
+        campaign_id
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  console.log("EXCLUIR:", data);
+
+  if (data.error) {
+
+    alert(data.error);
+    return;
+  }
+
+  await carregarCampanhas();
+
+  alert("Campanha excluída 🚀");
+}
+
+
+
+  
 // AUTO LOGIN
 const token = localStorage.getItem("token");
 if (token) init();

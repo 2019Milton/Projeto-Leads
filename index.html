@@ -533,21 +533,24 @@ button {
   </div>
 
   <!-- LEADS -->
-  <div class="card full">
-    <div class="campanhas-header">
+  <div class="card campanhas-card">
 
+    <div class="campanhas-header">
+  
       <h3>📢 Minhas Campanhas</h3>
-    
-      <button
-        class="btn-sync"
-        onclick="sincronizarCampanhas()"
-      >
+  
+      <button onclick="sincronizarCampanhas()">
         🔄 Sincronizar
       </button>
-    
+  
     </div>
-    
-    <div id="listaCampanhas"></div>
+  
+    <div id="campanhas_lista">
+  
+      <p>Carregando campanhas...</p>
+  
+    </div>
+  
   </div>
 
 </div>

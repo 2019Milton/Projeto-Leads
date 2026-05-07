@@ -242,6 +242,47 @@ button {
   margin-bottom: 20px;
 }
 
+.metricas-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(120px, 1fr));
+
+  gap: 12px;
+
+  margin-top: 15px;
+}
+
+.metrica {
+
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  border-radius: 12px;
+
+  padding: 12px;
+
+  text-align: center;
+}
+
+.metrica span {
+
+  display: block;
+
+  font-size: 18px;
+
+  font-weight: bold;
+
+  margin-top: 6px;
+}
+
+.metrica small {
+
+  opacity: 0.7;
+}
+
 .btn-sync {
 
   background: #2563eb;
@@ -925,90 +966,118 @@ async function carregarStatusMeta() {
 
 async function carregarCampanhas() {
 
-  try {
+  const token = localStorage.getItem("token");
 
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(`${API}/campanhas`, {
+  // 🔥 busca métricas reais
+  const res = await fetch(
+    `${API}/meta/metricas-campanhas`,
+    {
       headers: {
-        Authorization: `Bearer ${token}`
+        "Authorization": `Bearer ${token}`
       }
-    });
-
-    const campanhas = await res.json();
-
-    console.log("CAMPANHAS:", campanhas);
-
-    const div =
-      document.getElementById("listaCampanhas");
-
-    div.innerHTML = "";
-
-    if (!campanhas.length) {
-
-      div.innerHTML = `
-        <p>Nenhuma campanha criada ainda.</p>
-      `;
-
-      return;
     }
+  );
 
-    campanhas.forEach(c => {
+  const campanhas = await res.json();
 
-  const origemClass =
-    c.origem === "plataforma"
-      ? "origem-plataforma"
-      : "origem-meta";
+  console.log("CAMPANHAS:", campanhas);
 
-  const origemTexto =
-    c.origem === "plataforma"
-      ? "🚀 Plataforma"
-      : "🔵 Meta";
+  const div = document.getElementById("campanhas_lista");
 
-  div.innerHTML += `
-    <div class="campanha-item">
+  div.innerHTML = "";
 
-      <div>
+  if (!campanhas.length) {
 
-        <strong>
-          ${c.nome}
-        </strong>
+    div.innerHTML = `
+      <p>Nenhuma campanha criada ainda.</p>
+    `;
+
+    return;
+  }
+
+  campanhas.forEach(c => {
+
+    div.innerHTML += `
+
+      <div class="campanha-card">
+
+        <div class="campanha-topo">
+
+          <h3>
+            ${c.nome}
+          </h3>
+
+          <span class="badge ${c.origem}">
+            ${c.origem}
+          </span>
+
+        </div>
+
+        <p>
+          Status:
+          <b>${c.status}</b>
+        </p>
+
+        <div class="metricas-grid">
+
+          <div class="metrica">
+            💰
+            <span>
+              R$ ${Number(c.gasto).toFixed(2)}
+            </span>
+            <small>Gasto</small>
+          </div>
+
+          <div class="metrica">
+            🎯
+            <span>
+              ${c.leads}
+            </span>
+            <small>Leads</small>
+          </div>
+
+          <div class="metrica">
+            👁️
+            <span>
+              ${c.impressoes}
+            </span>
+            <small>Impressões</small>
+          </div>
+
+          <div class="metrica">
+            🖱️
+            <span>
+              ${c.cliques}
+            </span>
+            <small>Cliques</small>
+          </div>
+
+          <div class="metrica">
+            📈
+            <span>
+              ${Number(c.ctr).toFixed(2)}%
+            </span>
+            <small>CTR</small>
+          </div>
+
+          <div class="metrica">
+            💵
+            <span>
+              R$ ${Number(c.cpc).toFixed(2)}
+            </span>
+            <small>CPC</small>
+          </div>
+
+        </div>
+
+        <small>
+          Criado em:
+          ${new Date(c.criado_em).toLocaleString()}
+        </small>
 
       </div>
-
-      <div style="margin-top:10px;">
-
-        Status:
-        ${c.status}
-
-      </div>
-
-      <div class="
-        origem-badge
-        ${origemClass}
-      ">
-
-        ${origemTexto}
-
-      </div>
-
-      <div style="margin-top:10px;">
-
-        Criado em:
-        ${new Date(c.criado_em)
-          .toLocaleString("pt-BR")}
-
-      </div>
-
-    </div>
-  `;
-});
-
-} catch (err) {
-
-  console.error(err);
-
-}
+    `;
+  });
 }
 
 async function sincronizarCampanhas() {

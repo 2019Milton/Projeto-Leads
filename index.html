@@ -1245,10 +1245,20 @@ async function carregarStatusMeta() {
       </h4>
     `;
 
-    document.getElementById(
-      "ultimo_sync_texto"
-    ).innerHTML =
+    const ultimoSyncTexto =
+      document.getElementById("ultimo_sync_texto");
     
+    if (ultimoSyncTexto) {
+    
+      ultimoSyncTexto.innerHTML =
+    
+        data.metricas?.ultimo_sync
+          ? new Date(
+              data.metricas.ultimo_sync
+            ).toLocaleString()
+          : "Nunca sincronizado";
+    }
+        
       data.ultimo_sync
         ? new Date(
             data.ultimo_sync

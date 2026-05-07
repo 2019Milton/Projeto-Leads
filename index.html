@@ -727,7 +727,7 @@ async function criarCampanhaCompleta() {
 
     const anuncio = await anuncioRes.json();
 
-    console.log("ANUNCIO:", anuncio);
+    console.log("ANUNCIO:", JSON.stringify(anuncio, null, 2));
 
     if (anuncio.error) {
 

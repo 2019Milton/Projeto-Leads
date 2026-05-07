@@ -1258,13 +1258,7 @@ async function carregarStatusMeta() {
             ).toLocaleString()
           : "Nunca sincronizado";
     }
-        
-      data.ultimo_sync
-        ? new Date(
-            data.ultimo_sync
-          ).toLocaleString()
-        : "Nunca sincronizado";
-    
+   
     atualizarTempoSync(
       data.ultimo_sync
     );
@@ -1461,9 +1455,10 @@ async function sincronizarCampanhas() {
   const btn =
     document.getElementById("btn-sync");
 
-  btn.disabled = true;
-
-  btn.innerHTML = "🔄 Sincronizando...";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = "🔄 Sincronizando...";
+  }
 
   try {
 
@@ -1498,10 +1493,8 @@ async function sincronizarCampanhas() {
 
     alert("Erro ao sincronizar");
 
-  } finally {
-
+  if (btn) {
     btn.disabled = false;
-
     btn.innerHTML = "🔄 Sincronizar";
   }
 }
@@ -1603,6 +1596,8 @@ async function excluirCampanha(campaign_id) {
   }
 }
 
+let syncInterval = null;
+
 function atualizarTempoSync(dataSync) {
 
   if (!dataSync) return;
@@ -1611,6 +1606,13 @@ function atualizarTempoSync(dataSync) {
     document.getElementById(
       "ultimo_sync_timer"
     );
+
+  if (!timer) return;
+
+  // 🔥 evita múltiplos intervals
+  if (syncInterval) {
+    clearInterval(syncInterval);
+  }
 
   function atualizar() {
 
@@ -1643,9 +1645,9 @@ function atualizarTempoSync(dataSync) {
 
   atualizar();
 
-  setInterval(atualizar, 1000);
+  syncInterval =
+    setInterval(atualizar, 1000);
 }
-
   
 // AUTO LOGIN
 const token = localStorage.getItem("token");

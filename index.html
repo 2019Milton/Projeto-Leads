@@ -548,6 +548,29 @@ button {
   box-shadow:
     0 0 18px rgba(239,68,68,0.45);
 }
+
+.campanhas-topo {
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#filtro_status {
+
+  background: #111827;
+  border: 1px solid #7c3aed;
+  color: white;
+
+  padding: 10px 14px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+
+  outline: none;
+}
   
 </style>
 </head>
@@ -679,14 +702,34 @@ button {
   <!-- LEADS -->
   <div class="card campanhas-card">
 
-    <div class="campanhas-header">
-  
+    <div class="campanhas-topo">
+
       <h3>📢 Minhas Campanhas</h3>
-  
-      <button onclick="sincronizarCampanhas()">
-        🔄 Sincronizar
-      </button>
-  
+    
+      <select id="filtro_status" onchange="carregarCampanhas()">
+    
+        <option value="">
+          Todas
+        </option>
+    
+        <option value="ACTIVE">
+          Ativas
+        </option>
+    
+        <option value="PAUSED">
+          Pausadas
+        </option>
+    
+        <option value="DELETED">
+          Excluídas
+        </option>
+    
+        <option value="DRAFT">
+          Rascunho
+        </option>
+    
+      </select>
+    
     </div>
   
     <div id="campanhas_lista">
@@ -1129,6 +1172,18 @@ async function carregarCampanhas() {
 
   console.log("CAMPANHAS:", campanhas);
 
+  const filtro =
+    document.getElementById("filtro_status")?.value;
+  
+  let campanhasFiltradas = campanhas;
+  
+  if (filtro) {
+  
+    campanhasFiltradas = campanhas.filter(c =>
+      c.status === filtro
+    );
+  }
+
   const div = document.getElementById("campanhas_lista");
 
   div.innerHTML = "";
@@ -1142,7 +1197,7 @@ async function carregarCampanhas() {
     return;
   }
 
-  campanhas.forEach(c => {
+  campanhasFiltradas.forEach(c => {
 
     div.innerHTML += `
 

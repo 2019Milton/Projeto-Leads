@@ -571,6 +571,44 @@ button {
 
   outline: none;
 }
+
+.campanhas-acoes {
+
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-sync {
+
+  background: linear-gradient(
+    135deg,
+    #7c3aed,
+    #2563eb
+  );
+
+  border: none;
+
+  color: white;
+
+  padding: 10px 16px;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  font-weight: bold;
+
+  transition: 0.2s;
+}
+
+.btn-sync:hover {
+
+  transform: scale(1.03);
+
+  opacity: 0.9;
+}
+
   
 </style>
 </head>
@@ -706,29 +744,44 @@ button {
 
       <h3>📢 Minhas Campanhas</h3>
     
-      <select id="filtro_status" onchange="carregarCampanhas()">
+      <div class="campanhas-acoes">
     
-        <option value="">
-          Todas
-        </option>
+        <select
+          id="filtro_status"
+          onchange="carregarCampanhas()"
+        >
     
-        <option value="ACTIVE">
-          Ativas
-        </option>
+          <option value="">
+            Todas
+          </option>
     
-        <option value="PAUSED">
-          Pausadas
-        </option>
+          <option value="ACTIVE">
+            Ativas
+          </option>
     
-        <option value="DELETED">
-          Excluídas
-        </option>
+          <option value="PAUSED">
+            Pausadas
+          </option>
     
-        <option value="DRAFT">
-          Rascunho
-        </option>
+          <option value="DELETED">
+            Excluídas
+          </option>
     
-      </select>
+          <option value="DRAFT">
+            Rascunho
+          </option>
+    
+        </select>
+    
+        <button
+          id="btn-sync"
+          class="btn-sync"
+          onclick="sincronizarCampanhas()"
+        >
+          🔄 Sincronizar
+        </button>
+    
+      </div>
     
     </div>
   
@@ -1316,29 +1369,55 @@ async function carregarCampanhas() {
 
 async function sincronizarCampanhas() {
 
-  const token = localStorage.getItem("token");
+  const token =
+    localStorage.getItem("token");
 
-  console.log("TOKEN LOGIN:", token);
+  const btn =
+    document.getElementById("btn-sync");
 
-  const res = await fetch(`${API}/meta/sincronizar-campanhas`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${token}`
+  btn.disabled = true;
+
+  btn.innerHTML = "🔄 Sincronizando...";
+
+  try {
+
+    const res = await fetch(
+      `${API}/meta/sincronizar-campanhas`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    console.log("SYNC:", data);
+
+    if (data.error) {
+
+      alert(data.error);
+
+      return;
     }
-  });
 
-  const data = await res.json();
+    await carregarCampanhas();
 
-  console.log("SINCRONIZAR:", data);
+    alert("Campanhas sincronizadas 🚀");
 
-  if (data.error) {
-    alert(data.error);
-    return;
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Erro ao sincronizar");
+
+  } finally {
+
+    btn.disabled = false;
+
+    btn.innerHTML = "🔄 Sincronizar";
   }
-
-  await carregarCampanhas();
-
-  alert("Campanhas sincronizadas 🚀");
 }
 
 

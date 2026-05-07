@@ -403,7 +403,71 @@ button {
   background: #16a34a;
 }
 
+.switch {
 
+  position: relative;
+
+  display: inline-block;
+
+  width: 50px;
+
+  height: 26px;
+}
+
+.switch input {
+
+  opacity: 0;
+
+  width: 0;
+
+  height: 0;
+}
+
+.slider {
+
+  position: absolute;
+
+  cursor: pointer;
+
+  inset: 0;
+
+  background: #444;
+
+  transition: .3s;
+
+  border-radius: 30px;
+}
+
+.slider:before {
+
+  position: absolute;
+
+  content: "";
+
+  height: 20px;
+
+  width: 20px;
+
+  left: 3px;
+
+  bottom: 3px;
+
+  background: white;
+
+  transition: .3s;
+
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+
+  background: #22c55e;
+}
+
+.switch input:checked + .slider:before {
+
+  transform: translateX(24px);
+}
   
 </style>
 </head>
@@ -1006,9 +1070,30 @@ async function carregarCampanhas() {
 
         <div class="campanha-topo">
 
-          <h3>
-            ${c.nome}
-          </h3>
+          <div class="campanha-header">
+
+            <h3>
+              ${c.nome}
+            </h3>
+          
+            <label class="switch">
+          
+              <input
+                type="checkbox"
+                ${c.status === "ACTIVE" ? "checked" : ""}
+                onchange="
+                  toggleCampanha(
+                    '${c.campaign_id}',
+                    '${c.status}'
+                  )
+                "
+              >
+          
+              <span class="slider"></span>
+          
+            </label>
+          
+          </div>
 
           <span class="badge ${c.origem}">
             ${c.origem}
@@ -1111,6 +1196,45 @@ async function sincronizarCampanhas() {
 }
 
 
+
+async function toggleCampanha(campaign_id, statusAtual) {
+
+  const token = localStorage.getItem("token");
+
+  const novoStatus =
+    statusAtual === "ACTIVE"
+      ? "PAUSED"
+      : "ACTIVE";
+
+  const res = await fetch(
+    `${API}/meta/toggle-campanha`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+
+      body: JSON.stringify({
+        campaign_id,
+        status: novoStatus
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  console.log("TOGGLE:", data);
+
+  if (data.error) {
+
+    alert(data.error);
+    return;
+  }
+
+  await carregarCampanhas();
+}
 
 
 // AUTO LOGIN

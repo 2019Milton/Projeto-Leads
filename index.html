@@ -609,6 +609,47 @@ button {
   opacity: 0.9;
 }
 
+.sync-box {
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 15px;
+}
+
+.btn-sync-manual {
+
+  background: linear-gradient(
+    135deg,
+    #7b2ff7,
+    #4a00e0
+  );
+
+  border: none;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  color: white;
+
+  font-size: 16px;
+
+  transition: 0.2s;
+}
+
+.btn-sync-manual:hover {
+
+  transform: scale(1.08);
+
+  box-shadow:
+    0 0 15px rgba(123,47,247,0.5);
+}
+
   
 </style>
 </head>
@@ -1131,10 +1172,31 @@ async function carregarStatusMeta() {
               ${data.metricas?.leads_hoje || 0}
             </p>
         
-            <p>
-              <b>🕒 Último sync:</b><br>
-              ${new Date(data.metricas?.ultimo_sync).toLocaleString()}
-            </p>
+            <div class="sync-box">
+
+              <div>
+                🕒 Último sync:
+                <br>
+            
+                <span id="ultimo_sync_texto">
+                  Nunca sincronizado
+                </span>
+            
+                <br>
+            
+                <small id="ultimo_sync_timer">
+                  -
+                </small>
+              </div>
+            
+              <button
+                class="btn-sync-manual"
+                onclick="sincronizarCampanhas()"
+              >
+                🔄
+              </button>
+            
+            </div>
         
           </div>
         `;
@@ -1182,6 +1244,20 @@ async function carregarStatusMeta() {
         }
       </h4>
     `;
+
+    document.getElementById(
+      "ultimo_sync_texto"
+    ).innerHTML =
+    
+      data.metricas?.ultimo_sync
+        ? new Date(
+            data.metricas.ultimo_sync
+          ).toLocaleString()
+        : "Nunca sincronizado";
+    
+    atualizarTempoSync(
+      data.metricas?.ultimo_sync
+    );
 
     // 🔥 SELECT DE PÁGINAS
     const select = document.getElementById("pagina_select");
@@ -1517,7 +1593,48 @@ async function excluirCampanha(campaign_id) {
   }
 }
 
+function atualizarTempoSync(dataSync) {
 
+  if (!dataSync) return;
+
+  const timer =
+    document.getElementById(
+      "ultimo_sync_timer"
+    );
+
+  function atualizar() {
+
+    const agora = new Date();
+
+    const sync =
+      new Date(dataSync);
+
+    const diff =
+      Math.floor(
+        (agora - sync) / 1000
+      );
+
+    if (diff < 60) {
+
+      timer.innerHTML =
+        `há ${diff}s`;
+
+    } else if (diff < 3600) {
+
+      timer.innerHTML =
+        `há ${Math.floor(diff / 60)} min`;
+
+    } else {
+
+      timer.innerHTML =
+        `há ${Math.floor(diff / 3600)}h`;
+    }
+  }
+
+  atualizar();
+
+  setInterval(atualizar, 1000);
+}
 
   
 // AUTO LOGIN

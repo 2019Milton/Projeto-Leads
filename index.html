@@ -937,8 +937,11 @@ async function criarCampanhaCompleta() {
     const token = localStorage.getItem("token");
 
     // 🔐 USER ID
-    const payload = atob(token);
-    const usuario_id = payload.split(":")[0];
+    const payload = JSON.parse(
+      atob(token.split(".")[1])
+    );
+    
+    const usuario_id = payload.id;
 
     // 📝 CAMPOS
     const campanha_nome =
@@ -1080,8 +1083,11 @@ async function carregarStatusMeta() {
     const token = localStorage.getItem("token");
 
     // 🔥 decodifica token
-    const payload = atob(token);
-    const usuario_id = payload.split(":")[0];
+    const payload = JSON.parse(
+      atob(token.split(".")[1])
+    );
+    
+    const usuario_id = payload.id;
 
     const res = await fetch(
       `${API}/meta/status-completo/${usuario_id}`,
@@ -1321,7 +1327,7 @@ async function carregarCampanhas() {
 
   div.innerHTML = "";
 
-  if (!campanhas.length) {
+  if (!campanhasFiltradas.length) {
 
     div.innerHTML = `
       <p>Nenhuma campanha criada ainda.</p>
@@ -1487,8 +1493,6 @@ async function sincronizarCampanhas() {
     }
 
     await carregarCampanhas();
-
-    await carregarStatusMeta();
 
     alert("Campanhas sincronizadas 🚀");
 

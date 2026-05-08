@@ -939,6 +939,9 @@ async function criarCampanhaCompleta() {
     if (!token) {
       return;
     }
+
+    const decoded = atob(token);
+    const [usuario_id] = decoded.split(":");
     
     // 📝 CAMPOS
     const campanha_nome =

@@ -940,12 +940,6 @@ async function criarCampanhaCompleta() {
       return;
     }
     
-    const payload = JSON.parse(
-      atob(token.split(".")[1])
-    );
-    
-    const usuario_id = payload.id;
-
     // 📝 CAMPOS
     const campanha_nome =
       document.getElementById("campanha_nome").value;
@@ -1088,15 +1082,9 @@ async function carregarStatusMeta() {
     if (!token) {
       return;
     }
-    
-    const payload = JSON.parse(
-      atob(token.split(".")[1])
-    );
-    
-    const usuario_id = payload.id;
 
     const res = await fetch(
-      `${API}/meta/status-completo/${usuario_id}`,
+      ``${API}/meta/status-completo``,
       {
         headers: {
           "Authorization": `Bearer ${token}`

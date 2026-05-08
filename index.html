@@ -985,10 +985,16 @@ async function criarCampanhaCompleta() {
 
     const campanha = await campanhaRes.json();
 
-    console.log("Campanha:", campanha);
-
-    if (!campanha.id) {
-      alert("Erro ao criar campanha");
+    console.log("CAMPANHA META:", campanha);
+    
+    if (campanha.error) {
+    
+      alert(
+        campanha.error?.message ||
+        campanha.error ||
+        "Erro campanha"
+      );
+    
       return;
     }
 
@@ -1009,7 +1015,18 @@ async function criarCampanhaCompleta() {
 
     const form = await formRes.json();
 
-    console.log("FORM:", form);
+    console.log("FORM META:", form);
+    
+    if (form.error) {
+    
+      alert(
+        form.error?.message ||
+        form.error ||
+        "Erro formulário"
+      );
+    
+      return;
+    }
 
     // 🔥 ADSET
     const adsetRes = await fetch(
@@ -1031,7 +1048,18 @@ async function criarCampanhaCompleta() {
 
     const adset = await adsetRes.json();
 
-    console.log("ADSET:", adset);
+    console.log("ADSET META:", adset);
+    
+    if (adset.error) {
+    
+      alert(
+        adset.error?.message ||
+        adset.error ||
+        "Erro adset"
+      );
+    
+      return;
+    }
 
     // 🔥 ANÚNCIO
     const anuncioRes = await fetch(
@@ -1047,7 +1075,8 @@ async function criarCampanhaCompleta() {
           page_id,
           form_id: form.id,
           texto,
-          cta
+          cta,
+          campanha_nome
         })
       }
     );
@@ -1058,8 +1087,14 @@ async function criarCampanhaCompleta() {
 
     if (anuncio.error) {
 
-      alert("Erro ao criar anúncio");
-
+      console.error(anuncio);
+    
+      alert(
+        anuncio.detalhe?.message ||
+        anuncio.error ||
+        "Erro ao criar anúncio"
+      );
+    
       return;
     }
 

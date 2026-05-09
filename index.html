@@ -962,10 +962,54 @@ async function criarCampanhaCompleta() {
     const orcamento =
       document.getElementById("orcamento").value;
 
+    const imagem =
+      document.getElementById("imagem").files[0];
+
+    if (!imagem) {
+    
+      alert("Selecione uma imagem");
+    
+      return;
+    }
+
     if (!campanha_nome) {
       alert("Digite o nome da campanha");
       return;
     }
+
+    // 🔥 UPLOAD IMAGEM
+    const formData = new FormData();
+    
+    formData.append(
+      "imagem",
+      imagem
+    );
+    
+    formData.append(
+      "usuario_id",
+      usuario_id
+    );
+    
+    const uploadRes = await fetch(
+      `${API}/meta/upload-imagem`,
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+    
+    const upload = await uploadRes.json();
+    
+    console.log("UPLOAD:", upload);
+    
+    if (upload.error) {
+    
+      alert(upload.error);
+    
+      return;
+    }
+    
+    const imageHash = upload.hash;
 
     // 🔥 CAMPANHA
     const campanhaRes = await fetch(

@@ -261,15 +261,24 @@ button {
 
 .campanha-item {
 
-  border: 1px solid #1f2937;
+  border: 1px solid rgba(255,255,255,0.05);
 
-  border-radius: 12px;
+  border-radius: 10px;
 
-  padding: 10px;
+  padding: 8px;
 
-  margin-top: 10px;
+  margin-top: 8px;
 
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.025);
+}
+
+.campanha-item h3 {
+
+  font-size: 14px;
+
+  margin-bottom: 8px;
+
+  line-height: 1.2;
 }
 
 .campanhas-header {
@@ -288,42 +297,49 @@ button {
   display: grid;
 
   grid-template-columns:
-    repeat(auto-fit, minmax(120px, 1fr));
+    repeat(3, 1fr);
 
-  gap: 12px;
+  gap: 8px;
 
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
 .metrica {
 
-  background: rgba(255,255,255,0.035);
+  background: rgba(255,255,255,0.03);
 
   border: 1px solid rgba(255,255,255,0.05);
 
-  border-radius: 10px;
+  border-radius: 8px;
 
-  padding: 8px;
+  padding: 6px;
 
-  text-align: center;
+  min-height: 68px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
 }
 
 .metrica span {
 
   display: block;
 
-  font-size: 15px;
+  font-size: 13px;
 
   font-weight: bold;
 
-  margin-top: 6px;
+  margin-top: 3px;
 }
 
 .metrica small {
 
-  opacity: 0.7;
-}
+  opacity: 0.65;
 
+  font-size: 10px;
+}
 .btn-sync {
 
   background:
@@ -353,6 +369,15 @@ button {
 
   box-shadow:
     0 0 15px rgba(37,99,235,0.25);
+}
+
+.campanha-data {
+
+  font-size: 10px;
+
+  opacity: 0.6;
+
+  margin-top: 6px;
 }
 
 .btn-sync:hover {
@@ -478,9 +503,9 @@ button {
 
   display: inline-block;
 
-  width: 50px;
+  width: 42px;
 
-  height: 26px;
+  height: 22px;
 }
 
 .switch input {
@@ -513,9 +538,9 @@ button {
 
   content: "";
 
-  height: 20px;
+  height: 16px;
 
-  width: 20px;
+  width: 16px;
 
   left: 3px;
 
@@ -535,7 +560,23 @@ button {
 
 .switch input:checked + .slider:before {
 
-  transform: translateX(24px);
+  transform: translateX(20px);
+}
+
+.origem-badge {
+
+  padding: 3px 8px;
+
+  font-size: 10px;
+
+  margin-top: 6px;
+}
+
+.status-campanha {
+
+  font-size: 12px;
+
+  margin: 6px 0;
 }
 
 .btn-excluir {

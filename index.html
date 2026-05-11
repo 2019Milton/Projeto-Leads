@@ -674,146 +674,205 @@ button {
     <button class="logout" onclick="logout()">Sair</button>
   </div>
 
-  <div class="grid">
+  <!-- 🔥 GRID SUPERIOR -->
+  <div class="grid-topo">
 
-    <!-- META -->
-    <div class="card">
+    <!-- 🔗 META -->
+    <div class="card meta-card">
+
       <h3>🔗 Conectar Meta</h3>
-      <button class="btn" onclick="conectarMeta()">Conectar Facebook / Instagram</button>
+
+      <button
+        class="btn"
+        onclick="conectarMeta()"
+      >
+        Conectar Facebook / Instagram
+      </button>
+
+      <!-- 🔥 INFO META -->
       <div id="meta_info">
         Carregando conexão...
       </div>
-    </div>
 
-    <!-- 🔥 NOVO CARD -->
-    <div class="card">
-      <h3>📊 Status Meta</h3>
-  
-      <div id="status_meta">
-        Carregando status...
+      <!-- 🔥 DIVISOR -->
+      <hr class="meta-divider">
+
+      <!-- 🔥 STATUS META -->
+      <div class="meta-status-inline">
+
+        <h4>📊 Status Meta</h4>
+
+        <div id="status_meta">
+          Carregando status...
+        </div>
+
       </div>
+
     </div>
 
-    <!-- PUBLICAÇÃO -->
-    <div class="card">
+    <!-- 🚀 ÁREA FUTURA CENTRAL LEADS -->
+    <div class="card leads-central-card">
 
-      <h3>📢 Criar Campanha</h3>
-    
-      <!-- 📝 NOME -->
-      <label>Nome da campanha</label>
-    
-      <input
-        type="text"
-        id="campanha_nome"
-        placeholder="Ex: Casas Alto Padrão"
-      >
-    
-      <!-- 📘 PÁGINA -->
-      <label>Página Facebook</label>
-    
-      <select id="pagina_select">
-        <option>Carregando páginas...</option>
-      </select>
-    
-      <!-- 🎯 OBJETIVO -->
-      <label>Objetivo</label>
-    
-      <select id="objetivo_select">
-    
-        <option value="OUTCOME_LEADS">
-          Geração de Leads
-        </option>
-    
-        <option value="OUTCOME_TRAFFIC">
-          Tráfego
-        </option>
-    
-        <option value="OUTCOME_ENGAGEMENT">
-          Engajamento
-        </option>
-    
-      </select>
-    
-      <!-- 🖼️ IMAGEM -->
-      <label>Imagem do anúncio</label>
-    
-      <input
-        type="file"
-        id="imagem"
-      >
-    
-      <!-- ✍️ TEXTO -->
-      <label>Texto do anúncio</label>
-    
-      <textarea
-        id="texto"
-        placeholder="Digite o texto do anúncio..."
-      ></textarea>
-    
-      <!-- 🔘 CTA -->
-      <label>Botão do anúncio</label>
-    
-      <select id="cta">
-        <option value="LEARN_MORE">Saiba mais</option>
-        <option value="SIGN_UP">Cadastre-se</option>
-        <option value="APPLY_NOW">Solicitar agora</option>
-      </select>
-    
-      <!-- 💰 ORÇAMENTO -->
-      <label>Orçamento diário (R$)</label>
-    
-      <input
-        type="number"
-        id="orcamento"
-        value="20"
-        min="5"
-      >
-    
-      <!-- 🚀 BOTÃO -->
-      <button onclick="criarCampanhaCompleta()">
-        🚀 Publicar Campanha
-      </button>
-    
+      <div class="leads-central-header">
+
+        <h3>📥 Central de Leads</h3>
+
+      </div>
+
+      <!-- 🔥 CONTEÚDO FUTURO -->
+      <div class="leads-central-content">
+
+        <div class="leads-placeholder">
+
+          <h2>🚀 Central Inteligente de Leads</h2>
+
+          <p>
+            Aqui serão exibidos:
+          </p>
+
+          <ul>
+            <li>📥 Leads recebidos</li>
+            <li>📢 Campanha origem</li>
+            <li>📲 Pipeline comercial</li>
+            <li>🏷️ Status do lead</li>
+            <li>📤 Exportação</li>
+            <li>💬 Atendimento</li>
+          </ul>
+
+        </div>
+
+      </div>
+
     </div>
 
   </div>
 
-  <!-- LEADS -->
+  <!-- 📢 PUBLICAÇÃO -->
+  <div class="card">
+
+    <h3>📢 Criar Campanha</h3>
+
+    <!-- 📝 NOME -->
+    <label>Nome da campanha</label>
+
+    <input
+      type="text"
+      id="campanha_nome"
+      placeholder="Ex: Casas Alto Padrão"
+    >
+
+    <!-- 📘 PÁGINA -->
+    <label>Página Facebook</label>
+
+    <select id="pagina_select">
+      <option>Carregando páginas...</option>
+    </select>
+
+    <!-- 🎯 OBJETIVO -->
+    <label>Objetivo</label>
+
+    <select id="objetivo_select">
+
+      <option value="OUTCOME_LEADS">
+        Geração de Leads
+      </option>
+
+      <option value="OUTCOME_TRAFFIC">
+        Tráfego
+      </option>
+
+      <option value="OUTCOME_ENGAGEMENT">
+        Engajamento
+      </option>
+
+    </select>
+
+    <!-- 🖼️ IMAGEM -->
+    <label>Imagem do anúncio</label>
+
+    <input
+      type="file"
+      id="imagem"
+    >
+
+    <!-- ✍️ TEXTO -->
+    <label>Texto do anúncio</label>
+
+    <textarea
+      id="texto"
+      placeholder="Digite o texto do anúncio..."
+    ></textarea>
+
+    <!-- 🔘 CTA -->
+    <label>Botão do anúncio</label>
+
+    <select id="cta">
+      <option value="LEARN_MORE">
+        Saiba mais
+      </option>
+
+      <option value="SIGN_UP">
+        Cadastre-se
+      </option>
+
+      <option value="APPLY_NOW">
+        Solicitar agora
+      </option>
+    </select>
+
+    <!-- 💰 ORÇAMENTO -->
+    <label>Orçamento diário (R$)</label>
+
+    <input
+      type="number"
+      id="orcamento"
+      value="20"
+      min="5"
+    >
+
+    <!-- 🚀 BOTÃO -->
+    <button onclick="criarCampanhaCompleta()">
+      🚀 Publicar Campanha
+    </button>
+
+  </div>
+
+  <!-- 📢 CAMPANHAS -->
   <div class="card campanhas-card">
 
     <div class="campanhas-topo">
 
       <h3>📢 Minhas Campanhas</h3>
-    
+
       <div class="campanhas-acoes">
-    
+
         <select
           id="filtro_status"
           onchange="carregarCampanhas()"
         >
-    
+
           <option value="">
             Todas
           </option>
-    
+
           <option value="ACTIVE">
             Ativas
           </option>
-    
+
           <option value="PAUSED">
             Pausadas
           </option>
-    
+
           <option value="DELETED">
             Excluídas
           </option>
-    
+
           <option value="DRAFT">
             Rascunho
           </option>
-    
+
         </select>
-    
+
         <button
           id="btn-sync"
           class="btn-sync"
@@ -821,17 +880,17 @@ button {
         >
           🔄 Sincronizar
         </button>
-    
+
       </div>
-    
+
     </div>
-  
+
     <div id="campanhas_lista">
-  
+
       <p>Carregando campanhas...</p>
-  
+
     </div>
-  
+
   </div>
 
 </div>

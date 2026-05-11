@@ -732,6 +732,80 @@ button {
   border-top: 1px solid rgba(255,255,255,0.1);
 }
 
+/* 🔥 TOOLBAR */
+
+/* 🔥 HEADER COLUNA */
+.kanban-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  font-weight: bold;
+
+  margin-bottom: 14px;
+
+  padding-bottom: 10px;
+
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* 🔥 CARDS */
+.lead-card {
+
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  border-radius: 14px;
+
+  padding: 14px;
+
+  margin-bottom: 12px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.lead-card:hover {
+
+  transform: translateY(-2px);
+
+  border-color: rgba(123,77,255,0.6);
+}
+
+.lead-card h4 {
+  margin-bottom: 8px;
+}
+
+.lead-card p {
+
+  margin: 5px 0;
+
+  opacity: 0.85;
+}
+
+.lead-card small {
+
+  opacity: 0.6;
+}
+
+/* 🔥 STATUS */
+.quente {
+  border-left: 4px solid #ff5757;
+}
+
+.morno {
+  border-left: 4px solid #ffd257;
+}
+
+.fechado-card {
+  border-left: 4px solid #57ff9a;
+}
+
   
 </style>
 </head>
@@ -901,25 +975,91 @@ button {
   
         <div class="leads-central-content">
   
-          <div class="leads-placeholder">
-  
-            <h2>
-              🚀 Central Inteligente de Leads
-            </h2>
-  
-            <p>
-              Aqui serão exibidos:
-            </p>
-  
-            <ul>
-              <li>📥 Leads recebidos</li>
-              <li>📢 Campanha origem</li>
-              <li>📲 Pipeline comercial</li>
-              <li>🏷️ Status do lead</li>
-              <li>📤 Exportação</li>
-              <li>💬 Atendimento</li>
-            </ul>
-  
+          <!-- 🔥 TOPO CENTRAL LEADS -->
+          <div class="leads-toolbar">
+          
+            <input
+              type="text"
+              placeholder="🔍 Buscar lead..."
+              class="lead-search"
+            >
+          
+            <select class="lead-filter">
+              <option>Todas campanhas</option>
+              <option>Casa Alto Padrão</option>
+              <option>Apartamentos</option>
+            </select>
+          
+            <select class="lead-filter">
+              <option>Hoje</option>
+              <option>Últimos 7 dias</option>
+              <option>Últimos 30 dias</option>
+            </select>
+          
+            <button class="export-btn">
+              📤 Exportar
+            </button>
+          
+          </div>
+          
+          <!-- 🔥 KANBAN -->
+          <div class="kanban-board">
+          
+            <!-- 🆕 NOVOS -->
+            <div class="kanban-column">
+          
+              <div class="kanban-header novo">
+                🆕 Novos
+                <span>3</span>
+              </div>
+          
+              <div class="lead-card quente">
+                <h4>👤 João Silva</h4>
+                <p>📞 (11) 99999-9999</p>
+                <p>📢 Casa Alto Padrão</p>
+                <p>🔥 Lead quente</p>
+                <small>há 5 min</small>
+              </div>
+          
+              <div class="lead-card morno">
+                <h4>👤 Maria Costa</h4>
+                <p>📞 (11) 98888-7777</p>
+                <p>📢 Apartamento Centro</p>
+                <p>🟡 Lead morno</p>
+                <small>há 12 min</small>
+              </div>
+          
+            </div>
+          
+            <!-- 📲 CONTATO -->
+            <div class="kanban-column">
+          
+              <div class="kanban-header contato">
+                📲 Primeiro Contato
+                <span>2</span>
+              </div>
+          
+              <div class="lead-card">
+                <h4>👤 Carlos Mendes</h4>
+                <p>📞 (11) 97777-4444</p>
+                <p>📢 Casa Jacaré</p>
+                <p>💬 Aguardando resposta</p>
+                <small>há 30 min</small>
+              </div>
+          
+            </div>
+          
+            <!-- 💬 CONVERSA -->
+            <div class="kanban-column">
+          
+              <div class="kanban-header conversa">
+                💬 Em Conversa
+                <span>1</span>
+              </div>
+          
+              <div class="lead-card">
+                <h4>👤 Ana Paula</h4>
+                <p>📞 (11) 96666-2222</p>
           </div>
   
         </div>

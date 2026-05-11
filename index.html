@@ -689,25 +689,29 @@ button {
 /* 🔹 COLUNA DIREITA */
 .coluna-direita {
 
-  width: 72%;
+  flex: 1;
 
   display: flex;
 
-  gap: 20px;
+  gap: 16px;
 
-  align-items: flex-start;
+  align-items: stretch;
+
+  min-width: 0;
 }
+  
 /* 🚀 CENTRAL LEADS */
 .leads-central-card {
 
-  flex: 1.4;
+  flex: 0.72;
 
-  min-height: 100%;
+  min-width: 0;
 
   display: flex;
 
   flex-direction: column;
 }
+  
 /* 🔥 CONTEÚDO CENTRAL */
 .leads-central-content {
 
@@ -912,17 +916,13 @@ button {
 
 .campanhas-card {
 
-  flex: 1;
+  width: 420px;
 
-  min-width: 0;
+  min-width: 420px;
 
-  min-height: 100%;
+  max-width: 420px;
 
-  display: flex;
-
-  flex-direction: column;
-
-  overflow-y: auto;
+  flex-shrink: 0;
 }
   
 </style>

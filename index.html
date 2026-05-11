@@ -665,9 +665,13 @@ button {
 /* 🔥 LAYOUT PRINCIPAL */
 .layout-principal {
 
-  display: flex;
+  width: 100%;
 
-  gap: 20px;
+  display: grid;
+
+  grid-template-columns: 1fr 1fr 1fr;
+
+  gap: 18px;
 
   align-items: stretch;
 
@@ -677,33 +681,23 @@ button {
 /* 🔹 COLUNA ESQUERDA */
 .coluna-esquerda {
 
-  flex: 1;
-
   display: flex;
 
   flex-direction: column;
 
-  gap: 20px;
+  gap: 18px;
+
+  min-width: 0;
 }
 
 /* 🔹 COLUNA DIREITA */
 .coluna-direita {
 
-  flex: 1;
-
-  display: flex;
-
-  gap: 16px;
-
-  align-items: stretch;
-
-  min-width: 0;
+  display: contents;
 }
   
 /* 🚀 CENTRAL LEADS */
 .leads-central-card {
-
-  flex: 0.72;
 
   min-width: 0;
 
@@ -916,13 +910,13 @@ button {
 
 .campanhas-card {
 
-  width: 420px;
+  min-width: 0;
 
-  min-width: 420px;
+  display: flex;
 
-  max-width: 420px;
+  flex-direction: column;
 
-  flex-shrink: 0;
+  overflow-y: auto;
 }
   
 </style>

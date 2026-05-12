@@ -2183,57 +2183,49 @@ async function carregarLeads() {
   colunaContato.innerHTML = "";
   colunaConversa.innerHTML = "";
 
-  // 🔥 CONTADORES
-  let totalNovos = 0;
-  let totalContato = 0;
-  let totalConversa = 0;
+  // 🔥 NOVOS
+  if (leads.novos) {
 
-  leads.forEach(lead => {
+    leads.novos.forEach(lead => {
 
-    const card = criarLeadCard(lead);
+      colunaNovos.innerHTML +=
+        criarLeadCard(lead);
 
-    // 🆕 NOVOS
-    if (
-      lead.status === "novo" ||
-      !lead.status
-    ) {
+    });
 
-      colunaNovos.innerHTML += card;
+    document.getElementById("count_novos")
+      .innerText = leads.novos.length;
+  }
 
-      totalNovos++;
-    }
+  // 🔥 PRIMEIRO CONTATO
+  if (leads.primeiro_contato) {
 
-    // 📲 CONTATO
-    else if (
-      lead.status === "primeiro_contato"
-    ) {
+    leads.primeiro_contato.forEach(lead => {
 
-      colunaContato.innerHTML += card;
+      colunaContato.innerHTML +=
+        criarLeadCard(lead);
 
-      totalContato++;
-    }
+    });
 
-    // 💬 CONVERSA
-    else if (
-      lead.status === "em_conversa"
-    ) {
+    document.getElementById("count_contato")
+      .innerText =
+        leads.primeiro_contato.length;
+  }
 
-      colunaConversa.innerHTML += card;
+  // 🔥 EM CONVERSA
+  if (leads.em_conversa) {
 
-      totalConversa++;
-    }
+    leads.em_conversa.forEach(lead => {
 
-  });
+      colunaConversa.innerHTML +=
+        criarLeadCard(lead);
 
-  // 🔥 CONTADORES UI
-  document.getElementById("count_novos")
-    .innerText = totalNovos;
+    });
 
-  document.getElementById("count_contato")
-    .innerText = totalContato;
-
-  document.getElementById("count_conversa")
-    .innerText = totalConversa;
+    document.getElementById("count_conversa")
+      .innerText =
+        leads.em_conversa.length;
+  }
 }
 
   

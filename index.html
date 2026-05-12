@@ -1059,6 +1059,92 @@ button {
 
   white-space: nowrap;
 }
+
+/* =========================
+   📊 KPIs CENTRAL LEADS
+========================= */
+
+.leads-kpis {
+
+  display: grid;
+
+  grid-template-columns: repeat(5, 1fr);
+
+  gap: 10px;
+
+  margin-bottom: 14px;
+}
+
+.kpi-card {
+
+  background: rgba(255,255,255,0.03);
+
+  border: 1px solid rgba(255,255,255,0.05);
+
+  border-radius: 14px;
+
+  padding: 12px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 72px;
+
+  transition: 0.2s;
+}
+
+.kpi-card:hover {
+
+  transform: translateY(-2px);
+
+  border-color: rgba(140, 82, 255, 0.4);
+}
+
+.kpi-card span {
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  color: #fff;
+}
+
+.kpi-card small {
+
+  font-size: 11px;
+
+  color: #aaa;
+
+  margin-top: 4px;
+}
+
+/* 🎨 VARIAÇÕES */
+
+.kpi-card.quente span {
+
+  color: #ff7b7b;
+}
+
+.kpi-card.alerta span {
+
+  color: #ffd35c;
+}
+
+.kpi-card.sucesso span {
+
+  color: #4dff88;
+}
+
+.kpi-card.dinheiro span {
+
+  color: #66ffcc;
+}
+
   
   
 </style>
@@ -1251,6 +1337,37 @@ button {
         </button>
 
       </div>
+
+      <!-- 📊 KPIs -->
+      <div class="leads-kpis">
+      
+        <div class="kpi-card">
+          <span>128</span>
+          <small>Leads</small>
+        </div>
+      
+        <div class="kpi-card quente">
+          <span>14</span>
+          <small>Quentes</small>
+        </div>
+      
+        <div class="kpi-card alerta">
+          <span>6</span>
+          <small>Sem resposta</small>
+        </div>
+      
+        <div class="kpi-card sucesso">
+          <span>3</span>
+          <small>Agendados</small>
+        </div>
+      
+        <div class="kpi-card dinheiro">
+          <span>R$ 12k</span>
+          <small>Estimativa</small>
+        </div>
+      
+      </div>
+
 
       <!-- 🔥 KANBAN -->
       <div class="kanban-board">

@@ -1990,295 +1990,43 @@ button {
 
       <!-- 🔥 KANBAN -->
       <div class="kanban-board">
-
+      
         <!-- 🆕 NOVOS -->
         <div class="kanban-column">
-        
+      
           <div class="kanban-header novo">
             🆕 Novos
-            <span>3</span>
+            <span id="count_novos">0</span>
           </div>
-        
-          <!-- 🚀 LEAD -->
-          <div
-            class="lead-card quente"
-            onclick="abrirLead()"
-          >
-
-            <div class="lead-prioridade quente"></div>
-        
-            <!-- 🔥 TOPO -->
-            <div class="lead-topo">
-
-              <div class="lead-avatar">
-                JS
-              </div>
-            
-              <div class="lead-identidade">
-            
-                <h4>João Silva</h4>
-            
-                <span class="lead-score quente">
-                  🔥 Score 92
-                </span>
-            
-              </div>
-            
-            </div>
-                    
-            <!-- 📋 INFO -->
-            <div class="lead-info">
-        
-              <p>📞 (11) 99999-9999</p>
-        
-              <div class="lead-meta">
-
-                <span>📍 Santo André</span>
-              
-                <span>📢 Facebook Ads</span>
-              
-              </div>
-              
-              <div class="lead-tempo ativo">
-                ⏱ Respondeu há 2 min
-              </div>
-        
-              <p>📢 Casa Alto Padrão</p>
-        
-              <p>💰 Interesse: R$ 850k</p>
-        
-            </div>
-        
-            <!-- 💬 MSG -->
-            <div class="lead-ultima-msg">
-        
-              💬 “Quero agendar uma visita”
-        
-            </div>
-        
-            <!-- 🏷 TAGS -->
-            <div class="lead-tags">
-        
-              <span>WhatsApp</span>
-        
-              <span>Financiamento</span>
-        
-              <span>Retornou</span>
-        
-            </div>
-        
-            <!-- ⚡ AÇÕES -->
-            <div class="lead-actions">
-        
-              <button>💬</button>
-        
-              <button>📞</button>
-        
-              <button>➡️</button>
-        
-              <button>👁</button>
-        
-            </div>
-        
-            <!-- ⏰ TEMPO -->
-            <small class="lead-time">
-              há 5 min
-            </small>
-        
-          </div>
-        
-          <!-- 🚀 LEAD 2 -->
-          <div
-            class="lead-card morno"
-            onclick="abrirLead()"
-          >
-        
-            <div class="lead-topo">
-        
-              <h4>👤 Maria Costa</h4>
-        
-              <span class="lead-badge morno">
-                🟡 Morno
-              </span>
-        
-            </div>
-        
-            <div class="lead-info">
-        
-              <p>📞 (11) 98888-7777</p>
-        
-              <p>📍 São Bernardo</p>
-        
-              <p>📢 Apartamento Centro</p>
-        
-              <p>💰 Interesse: R$ 420k</p>
-        
-            </div>
-        
-            <div class="lead-ultima-msg">
-        
-              💬 “Vou analisar com meu marido”
-        
-            </div>
-        
-            <div class="lead-tags">
-        
-              <span>Instagram</span>
-        
-              <span>Retorno</span>
-        
-            </div>
-        
-            <div class="lead-actions">
-        
-              <button title="Abrir conversa">💬</button>
-
-              <button title="Ligar para lead">📞</button>
-              
-              <button title="Mover etapa">➡️</button>
-              
-              <button title="Ver detalhes">👁️</button>
-        
-            </div>
-        
-            <small class="lead-time">
-              há 12 min
-            </small>
-        
-          </div>
-        
+      
+          <div id="coluna_novos"></div>
+      
         </div>
-        
-        <!-- 📲 CONTATO -->
+      
+        <!-- 📲 PRIMEIRO CONTATO -->
         <div class="kanban-column">
-        
+      
           <div class="kanban-header contato">
             📲 Primeiro Contato
-            <span>2</span>
+            <span id="count_contato">0</span>
           </div>
-        
-          <div class="lead-card" onclick="abrirLead()">
-        
-            <div class="lead-topo">
-        
-              <h4>👤 Carlos Mendes</h4>
-        
-              <span class="lead-badge">
-                💬 Conversando
-              </span>
-        
-            </div>
-        
-            <div class="lead-info">
-        
-              <p>📞 (11) 97777-4444</p>
-        
-              <p>📍 Santo André</p>
-        
-              <p>📢 Casa Jacaré</p>
-        
-              <p>💰 Interesse: R$ 600k</p>
-        
-            </div>
-        
-            <div class="lead-ultima-msg">
-        
-              💬 “Pode me mandar mais fotos?”
-        
-            </div>
-        
-            <div class="lead-tags">
-        
-              <span>Facebook</span>
-        
-            </div>
-        
-            <div class="lead-actions">
-        
-              <button>💬</button>
-        
-              <button>📞</button>
-        
-              <button>➡️</button>
-        
-              <button>👁</button>
-        
-            </div>
-        
-            <small class="lead-time">
-              há 30 min
-            </small>
-        
-          </div>
-        
+      
+          <div id="coluna_contato"></div>
+      
         </div>
-        
-        <!-- 💬 CONVERSA -->
+      
+        <!-- 💬 EM CONVERSA -->
         <div class="kanban-column">
-        
+      
           <div class="kanban-header conversa">
             💬 Em Conversa
-            <span>1</span>
+            <span id="count_conversa">0</span>
           </div>
-        
-          <div class="lead-card">
-        
-            <div class="lead-topo">
-        
-              <h4>👤 Ana Paula</h4>
-        
-              <span class="lead-badge quente">
-                🔥 Quente
-              </span>
-        
-            </div>
-        
-            <div class="lead-info">
-        
-              <p>📞 (11) 96666-2222</p>
-        
-              <p>📍 São Paulo</p>
-        
-              <p>📢 Cobertura Premium</p>
-        
-              <p>💰 Interesse: R$ 1.2M</p>
-        
-            </div>
-        
-            <div class="lead-ultima-msg">
-        
-              💬 “Quero visitar amanhã”
-        
-            </div>
-        
-            <div class="lead-tags">
-        
-              <span>WhatsApp</span>
-        
-              <span>Urgente</span>
-        
-            </div>
-        
-            <div class="lead-actions">
-        
-              <button>💬</button>
-        
-              <button>📞</button>
-        
-              <button>➡️</button>
-        
-              <button>👁</button>
-        
-            </div>
-        
-            <small class="lead-time">
-              há 2 min
-            </small>
-        
-          </div>
-        
+      
+          <div id="coluna_conversa"></div>
+      
         </div>
-
+      
       </div>
 
     </div>
@@ -2386,55 +2134,243 @@ async function login() {
 // INIT
 async function init() {
 
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("app").style.display = "block";
-  
-    // 🔥 carrega status Meta
-    await carregarStatusMeta();
-  
-    // 🔥 carrega campanhas
-    await carregarCampanhas();
-  
-    // 🔥 carrega leads
-    await carregarLeads();
-  }
-  
-  // LOGOUT
-  function logout() {
-    localStorage.removeItem("token");
-    location.reload();
-  }
-  
-  // LEADS
-  async function carregarLeads() {
-    const token = localStorage.getItem("token");
-  
-    const res = await fetch(`${API}/leads`, {
-      headers: {
-        "Authorization": "Bearer " + token
-      }
-    });
-  
-    const data = await res.json();
-  
-    const lista = document.getElementById("lista");
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("app").style.display = "block";
 
-    if (!lista) return;
-    
-    lista.innerHTML = "";
+  // 🔥 carrega status Meta
+  await carregarStatusMeta();
+
+  // 🔥 carrega campanhas
+  await carregarCampanhas();
+
+  // 🔥 carrega leads
+  await carregarLeads();
+}
   
-    data.forEach(l => {
-      lista.innerHTML += `
-        <div class="lead">
-          <b>${l.nome}</b><br>
-          📞 ${l.telefone || "-"}<br>
-          📧 ${l.email || "-"}
+// LOGOUT
+function logout() {
+  localStorage.removeItem("token");
+  location.reload();
+}
+  
+// LEADS
+async function carregarLeads() {
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${API}/leads`, {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  });
+
+  const leads = await res.json();
+
+  console.log("LEADS:", leads);
+
+  // 🔥 COLUNAS
+  const colunaNovos =
+    document.getElementById("coluna_novos");
+
+  const colunaContato =
+    document.getElementById("coluna_contato");
+
+  const colunaConversa =
+    document.getElementById("coluna_conversa");
+
+  // 🔥 LIMPA
+  colunaNovos.innerHTML = "";
+  colunaContato.innerHTML = "";
+  colunaConversa.innerHTML = "";
+
+  // 🔥 CONTADORES
+  let totalNovos = 0;
+  let totalContato = 0;
+  let totalConversa = 0;
+
+  leads.forEach(lead => {
+
+    const card = criarLeadCard(lead);
+
+    // 🆕 NOVOS
+    if (
+      lead.status === "novo" ||
+      !lead.status
+    ) {
+
+      colunaNovos.innerHTML += card;
+
+      totalNovos++;
+    }
+
+    // 📲 CONTATO
+    else if (
+      lead.status === "primeiro_contato"
+    ) {
+
+      colunaContato.innerHTML += card;
+
+      totalContato++;
+    }
+
+    // 💬 CONVERSA
+    else if (
+      lead.status === "em_conversa"
+    ) {
+
+      colunaConversa.innerHTML += card;
+
+      totalConversa++;
+    }
+
+  });
+
+  // 🔥 CONTADORES UI
+  document.getElementById("count_novos")
+    .innerText = totalNovos;
+
+  document.getElementById("count_contato")
+    .innerText = totalContato;
+
+  document.getElementById("count_conversa")
+    .innerText = totalConversa;
+}
+
+  
+function criarLeadCard(lead) {
+
+  const iniciais =
+    lead.nome
+      ?.split(" ")
+      .map(n => n[0])
+      .slice(0,2)
+      .join("")
+      .toUpperCase();
+
+  const classeScore =
+    lead.score === "quente"
+      ? "quente"
+      : "morno";
+
+  return `
+
+    <div
+      class="lead-card ${classeScore}"
+      onclick="abrirLead()"
+    >
+
+      <div class="lead-prioridade ${classeScore}"></div>
+
+      <!-- TOPO -->
+      <div class="lead-topo">
+
+        <div class="lead-avatar">
+          ${iniciais}
         </div>
-      `;
-    });
+
+        <div class="lead-identidade">
+
+          <h4>${lead.nome}</h4>
+
+          <span class="lead-score ${classeScore}">
+            ${
+              lead.score === "quente"
+                ? "🔥 Quente"
+                : "🟡 Morno"
+            }
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- INFO -->
+      <div class="lead-info">
+
+        <p>📞 ${lead.telefone || "-"}</p>
+
+        <div class="lead-meta">
+
+          <span>
+            📢 ${lead.origem || "-"}
+          </span>
+
+          <span>
+            📍 ${lead.campanha || "-"}
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- OBS -->
+      <div class="lead-ultima-msg">
+
+        💬 ${
+          lead.observacao ||
+          "Sem observações"
+        }
+
+      </div>
+
+      <!-- AÇÕES -->
+      <div class="lead-actions">
+
+        <button title="WhatsApp">
+          💬
+        </button>
+
+        <button title="Ligar">
+          📞
+        </button>
+
+        <button title="Mover">
+          ➡️
+        </button>
+
+        <button title="Detalhes">
+          👁️
+        </button>
+
+      </div>
+
+      <small class="lead-time">
+
+        ${formatarData(lead.criado_em)}
+
+      </small>
+
+    </div>
+  `;
+}
+
+function formatarData(data) {
+
+  if (!data) return "-";
+
+  const agora = new Date();
+
+  const criada = new Date(data);
+
+  const diff =
+    Math.floor((agora - criada) / 1000);
+
+  if (diff < 60) {
+    return `há ${diff}s`;
   }
 
-;
+  if (diff < 3600) {
+    return `há ${Math.floor(diff / 60)} min`;
+  }
+
+  if (diff < 86400) {
+    return `há ${Math.floor(diff / 3600)}h`;
+  }
+
+  return criada.toLocaleDateString();
+}
+
+
 
 // SIMULAÇÕES
 function conectarMeta() {

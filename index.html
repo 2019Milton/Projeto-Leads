@@ -1765,6 +1765,183 @@ button {
   cursor: pointer;
 }
 
+/* 🔥 DRAWER */
+
+.lead-drawer {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: none;
+}
+
+/* ABERTO */
+.lead-drawer.active {
+
+  display: block;
+}
+
+/* OVERLAY */
+.lead-drawer-overlay {
+
+  position: absolute;
+
+  inset: 0;
+
+  background: rgba(0,0,0,0.6);
+
+  backdrop-filter: blur(4px);
+}
+
+/* PAINEL */
+.lead-drawer-content {
+
+  position: absolute;
+
+  top: 0;
+
+  right: 0;
+
+  width: 420px;
+
+  max-width: 100%;
+
+  height: 100%;
+
+  background: #060b1f;
+
+  border-left: 1px solid rgba(0,255,180,0.15);
+
+  box-shadow:
+    -10px 0 40px rgba(0,0,0,0.4);
+
+  display: flex;
+
+  flex-direction: column;
+
+  animation: abrirDrawer .25s ease;
+}
+
+/* ANIMAÇÃO */
+@keyframes abrirDrawer {
+
+  from {
+
+    transform: translateX(100%);
+  }
+
+  to {
+
+    transform: translateX(0);
+  }
+}
+
+/* HEADER */
+.lead-drawer-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 18px;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.05);
+}
+
+.lead-drawer-header h2 {
+
+  margin: 0;
+
+  font-size: 22px;
+}
+
+.lead-drawer-header button {
+
+  background: transparent;
+
+  border: none;
+
+  color: white;
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+/* BODY */
+.lead-drawer-body {
+
+  padding: 18px;
+
+  overflow-y: auto;
+
+  flex: 1;
+}
+
+/* INFO */
+.drawer-info {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin-bottom: 20px;
+}
+
+.drawer-info p {
+
+  margin: 0;
+
+  color: #d9d9d9;
+}
+
+/* BOX */
+.drawer-box {
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+
+  border-radius: 14px;
+
+  padding: 14px;
+}
+
+.drawer-box h4 {
+
+  margin-top: 0;
+}
+
+/* TEXTAREA */
+.drawer-box textarea {
+
+  width: 100%;
+
+  min-height: 140px;
+
+  resize: vertical;
+
+  border-radius: 10px;
+
+  border: none;
+
+  padding: 12px;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  color: white;
+}
   
 </style>
 </head>
@@ -3306,6 +3483,92 @@ if (token) init();
 
 </div>
 
+<!-- 🔥 DRAWER LEAD -->
+<div
+  id="leadDrawer"
+  class="lead-drawer"
+>
+
+  <!-- OVERLAY -->
+  <div
+    class="lead-drawer-overlay"
+    onclick="fecharLeadDrawer()"
+  ></div>
+
+  <!-- PAINEL -->
+  <div class="lead-drawer-content">
+
+    <!-- TOPO -->
+    <div class="lead-drawer-header">
+
+      <h2 id="drawer_nome">
+        Lead
+      </h2>
+
+      <button onclick="fecharLeadDrawer()">
+        ✖
+      </button>
+
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="lead-drawer-body">
+
+      <div class="drawer-info">
+
+        <p>
+          📞
+          <span id="drawer_telefone">
+            -
+          </span>
+        </p>
+
+        <p>
+          📧
+          <span id="drawer_email">
+            -
+          </span>
+        </p>
+
+        <p>
+          📢
+          <span id="drawer_origem">
+            -
+          </span>
+        </p>
+
+        <p>
+          📍
+          <span id="drawer_campanha">
+            -
+          </span>
+        </p>
+
+        <p>
+          🔥
+          <span id="drawer_score">
+            -
+          </span>
+        </p>
+
+      </div>
+
+      <!-- OBS -->
+      <div class="drawer-box">
+
+        <h4>Observações</h4>
+
+        <textarea
+          id="drawer_observacao"
+        ></textarea>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
     
 </body>
 </html>

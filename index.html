@@ -735,7 +735,7 @@ button {
   margin-bottom: 16px;
 }
 
-/* 🔹 COLUNA ESQUERDA */
+/* 🔹 LADO ESQUERDO */
 .coluna-esquerda {
 
   flex: 0 0 30%;
@@ -749,10 +749,24 @@ button {
   min-width: 0;
 }
 
+/* 🔥 ÁREA DIREITA */
+.coluna-direita {
+
+  flex: 1;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+
+  min-width: 0;
+}
+
 /* 🚀 CENTRAL LEADS */
 .leads-central-card {
 
-  flex: 1;
+  width: 100%;
 
   min-width: 0;
 
@@ -761,10 +775,10 @@ button {
   flex-direction: column;
 }
 
-/* 🔹 COLUNA DIREITA */
+/* 🚀 MINHAS CAMPANHAS */
 .coluna-campanhas {
 
-  flex: 0 0 30%;
+  width: 100%;
 
   min-width: 0;
 
@@ -1202,112 +1216,51 @@ button {
     </div>
   
     <!-- 🔹 DIREITA -->
-    <div class="coluna-direita">
-  
-      <!-- 🚀 CENTRAL LEADS -->
-      <div class="card leads-central-card">
-  
-        <div class="leads-central-header">
-  
-          <h3>📥 Central de Leads</h3>
-  
-        </div>
-  
-        <div class="leads-central-content">
-  
-          <!-- 🔥 TOPO CENTRAL LEADS -->
-          <div class="leads-toolbar">
-          
-            <input
-              type="text"
-              placeholder="🔍 Buscar lead..."
-              class="lead-search"
-            >
-          
-            <select class="lead-filter">
-              <option>Todas campanhas</option>
-              <option>Casa Alto Padrão</option>
-              <option>Apartamentos</option>
-            </select>
-          
-            <select class="lead-filter">
-              <option>Hoje</option>
-              <option>Últimos 7 dias</option>
-              <option>Últimos 30 dias</option>
-            </select>
-          
-            <button class="export-btn">
-              📤 Exportar
-            </button>
-          
-          </div>
-          
-          <!-- 🔥 KANBAN -->
-          <div class="kanban-board">
-          
-            <!-- 🆕 NOVOS -->
-            <div class="kanban-column">
-          
-              <div class="kanban-header novo">
-                🆕 Novos
-                <span>3</span>
-              </div>
-          
-              <div class="lead-card quente">
-                <h4>👤 João Silva</h4>
-                <p>📞 (11) 99999-9999</p>
-                <p>📢 Casa Alto Padrão</p>
-                <p>🔥 Lead quente</p>
-                <small>há 5 min</small>
-              </div>
-          
-              <div class="lead-card morno">
-                <h4>👤 Maria Costa</h4>
-                <p>📞 (11) 98888-7777</p>
-                <p>📢 Apartamento Centro</p>
-                <p>🟡 Lead morno</p>
-                <small>há 12 min</small>
-              </div>
-          
-            </div>
-          
-            <!-- 📲 CONTATO -->
-            <div class="kanban-column">
-          
-              <div class="kanban-header contato">
-                📲 Primeiro Contato
-                <span>2</span>
-              </div>
-          
-              <div class="lead-card">
-                <h4>👤 Carlos Mendes</h4>
-                <p>📞 (11) 97777-4444</p>
-                <p>📢 Casa Jacaré</p>
-                <p>💬 Aguardando resposta</p>
-                <small>há 30 min</small>
-              </div>
-          
-            </div>
-          
-            <!-- 💬 CONVERSA -->
-            <div class="kanban-column">
-          
-              <div class="kanban-header conversa">
-                💬 Em Conversa
-                <span>1</span>
-              </div>
-          
-              <div class="lead-card">
-                <h4>👤 Ana Paula</h4>
-                <p>📞 (11) 96666-2222</p>
-          </div>
-  
-        </div>
-  
-      </div>
-  
+<div class="coluna-direita">
+
+  <!-- 🚀 CENTRAL LEADS -->
+  <div class="card leads-central-card">
+
+    <div class="leads-central-header">
+
+      <h3>📥 Central de Leads</h3>
+
     </div>
-  
+
+    <div class="leads-central-content">
+
+      <!-- 🔥 TOPO CENTRAL LEADS -->
+      <div class="leads-toolbar">
+
+        <input
+          type="text"
+          placeholder="🔍 Buscar lead..."
+          class="lead-search"
+        >
+
+        <select class="lead-filter">
+          <option>Todas campanhas</option>
+        </select>
+
+        <select class="lead-filter">
+          <option>Hoje</option>
+        </select>
+
+        <button class="export-btn">
+          📤 Exportar
+        </button>
+
+      </div>
+
+      <!-- 🔥 KANBAN -->
+      <div class="kanban-board">
+
+        <!-- COLUNAS -->
+
+      </div>
+
+    </div>
+
   </div>
 
   <!-- 📢 CAMPANHAS -->
@@ -1368,6 +1321,7 @@ button {
 
 </div>
 
+    
 <script>
 const API = "https://function-bun-production-446a.up.railway.app";
 

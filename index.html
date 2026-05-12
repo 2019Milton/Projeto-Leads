@@ -2126,6 +2126,56 @@ button {
 
   font-size: 13px;
 }
+
+/* 🔥 MENU MOVER */
+
+.menu-mover {
+
+  position: fixed;
+
+  background: #11182d;
+
+  border: 1px solid #2f3b63;
+
+  border-radius: 14px;
+
+  padding: 10px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  z-index: 999999;
+
+  box-shadow:
+    0 0 20px rgba(0,0,0,0.5);
+}
+
+.menu-mover button {
+
+  background: #1b2440;
+
+  border: none;
+
+  color: white;
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: 0.2s;
+}
+
+.menu-mover button:hover {
+
+  background: #6c63ff;
+}
   
 </style>
 </head>
@@ -2756,7 +2806,12 @@ function criarLeadCard(lead) {
           📞
         </button>
 
-        <button title="Mover">
+        <button
+          title="Mover"
+          onclick="
+            abrirMenuMover(event, ${JSON.stringify(lead).replace(/"/g, '&quot;')})
+          "
+        >
           ➡️
         </button>
 
@@ -2852,6 +2907,40 @@ function abrirLeadDrawer(lead) {
   // 🔥 ABRE
   drawer.classList.add("active");
 }
+
+
+let leadMoverAtual = null;
+
+// 🔥 MENU MOVER
+function abrirMenuMover(event, lead) {
+
+  event.stopPropagation();
+
+  leadMoverAtual = lead;
+
+  const menu =
+    document.getElementById("menuMover");
+
+  menu.style.display = "flex";
+
+  menu.style.left =
+    event.pageX + "px";
+
+  menu.style.top =
+    event.pageY + "px";
+}
+
+// 🔥 FECHAR MENU
+document.addEventListener(
+  "click",
+  () => {
+
+    document.getElementById(
+      "menuMover"
+    ).style.display = "none";
+  }
+);
+
   
 // 🔥 FECHAR
 function fecharLeadDrawer() {
@@ -2859,6 +2948,40 @@ function fecharLeadDrawer() {
   document
     .getElementById("leadDrawer")
     .classList.remove("active");
+}
+
+// 🔥 MOVER LEAD RÁPIDO
+async function moverLeadRapido(status) {
+
+  if (!leadMoverAtual) return;
+
+  const token =
+    localStorage.getItem("token");
+
+  await fetch(
+    `${API}/leads/${leadMoverAtual.id}`,
+    {
+      method: "PUT",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+
+        "Authorization":
+          "Bearer " + token
+      },
+
+      body: JSON.stringify({
+        status
+      })
+    }
+  );
+
+  carregarLeads();
+
+  document.getElementById(
+    "menuMover"
+  ).style.display = "none";
 }
 
 // 🔥 HISTÓRICO
@@ -4174,6 +4297,35 @@ if (token) init();
     </div>
 
   </div>
+
+</div>
+
+<!-- 🔥 MENU MOVER -->
+<div
+  id="menuMover"
+  class="menu-mover"
+  style="display:none;"
+>
+
+  <button onclick="moverLeadRapido('novo')">
+    🆕 Novo
+  </button>
+
+  <button onclick="moverLeadRapido('primeiro_contato')">
+    📲 Primeiro Contato
+  </button>
+
+  <button onclick="moverLeadRapido('em_conversa')">
+    💬 Em Conversa
+  </button>
+
+  <button onclick="moverLeadRapido('fechado')">
+    ✅ Fechado
+  </button>
+
+  <button onclick="moverLeadRapido('perdido')">
+    ❌ Perdido
+  </button>
 
 </div>
     

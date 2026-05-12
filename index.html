@@ -1942,6 +1942,56 @@ button {
 
   color: white;
 }
+
+/* STATUS SELECT */
+#drawer_status {
+
+  width: 100%;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  border: none;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  color: white;
+
+  margin-top: 10px;
+}
+
+/* AÇÕES */
+.drawer-actions {
+
+  margin-top: 20px;
+}
+
+/* BOTÃO */
+.btn-salvar-lead {
+
+  width: 100%;
+
+  padding: 14px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7b5cff,
+      #4f7cff
+    );
+}
   
 </style>
 </head>
@@ -2542,8 +2592,12 @@ function formatarData(data) {
   return criada.toLocaleDateString();
 }
 
+let leadAtual = null;
+  
 // 🔥 ABRIR DRAWER
 function abrirLeadDrawer(lead) {
+
+  leadAtual = lead;
 
   const drawer =
     document.getElementById("leadDrawer");
@@ -2567,6 +2621,9 @@ function abrirLeadDrawer(lead) {
   document.getElementById("drawer_score")
     .innerText = lead.score || "-";
 
+  document.getElementById("drawer_status")
+    .value = lead.status || "novo";
+
   document.getElementById("drawer_observacao")
     .value = lead.observacao || "";
 
@@ -2582,7 +2639,49 @@ function fecharLeadDrawer() {
     .classList.remove("active");
 }
 
+// 🔥 SALVAR LEAD
+async function salvarLeadDrawer() {
 
+  if (!leadAtual) return;
+
+  const token =
+    localStorage.getItem("token");
+
+  const observacao =
+    document.getElementById("drawer_observacao")
+      .value;
+
+  const status =
+    document.getElementById("drawer_status")
+      .value;
+
+  const res = await fetch(
+    `${API}/leads/${leadAtual.id}`,
+    {
+      method: "PUT",
+
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+
+      body: JSON.stringify({
+        observacao,
+        status
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  console.log("SALVO:", data);
+
+  // 🔥 FECHA
+  fecharLeadDrawer();
+
+  // 🔥 RECARREGA
+  carregarLeads();
+}
   
 
 // SIMULAÇÕES
@@ -3597,6 +3696,29 @@ if (token) init();
 
       </div>
 
+      <!-- STATUS -->
+      <div class="drawer-box">
+      
+        <h4>Status</h4>
+      
+        <select id="drawer_status">
+      
+          <option value="novo">
+            🆕 Novo
+          </option>
+      
+          <option value="primeiro_contato">
+            📲 Primeiro Contato
+          </option>
+      
+          <option value="em_conversa">
+            💬 Em Conversa
+          </option>
+      
+        </select>
+      
+      </div>
+
       <!-- OBS -->
       <div class="drawer-box">
 
@@ -3606,6 +3728,18 @@ if (token) init();
           id="drawer_observacao"
         ></textarea>
 
+      </div>
+
+      <!-- AÇÕES -->
+      <div class="drawer-actions">
+      
+        <button
+          class="btn-salvar-lead"
+          onclick="salvarLeadDrawer()"
+        >
+          💾 Salvar Lead
+        </button>
+      
       </div>
 
     </div>

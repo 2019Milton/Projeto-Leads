@@ -297,11 +297,13 @@ button {
   display: grid;
 
   grid-template-columns:
-    repeat(3, 1fr);
+    repeat(2, minmax(0, 1fr));
 
-  gap: 8px;
+  gap: 6px;
 
-  margin-top: 10px;
+  margin-top: 8px;
+
+  width: 100%;
 }
 
 .metrica {
@@ -312,9 +314,11 @@ button {
 
   border-radius: 8px;
 
-  padding: 6px;
+  padding: 5px;
 
-  min-height: 68px;
+  min-height: 58px;
+
+  overflow: hidden;
 
   display: flex;
 
@@ -327,7 +331,7 @@ button {
 
   display: block;
 
-  font-size: 13px;
+  font-size: 11px;
 
   font-weight: bold;
 
@@ -338,7 +342,7 @@ button {
 
   opacity: 0.65;
 
-  font-size: 10px;
+  font-size: 9px;
 }
 .btn-sync {
 

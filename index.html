@@ -3838,53 +3838,6 @@ if (token) init();
           id="drawer_status"
           onchange="toggleMotivoPerda()"
         >
-
-          <!-- MOTIVO PERDA -->
-          <div
-            class="drawer-box"
-            id="box_motivo_perda"
-            style="display:none;"
-          >
-          
-            <h4>Motivo da perda</h4>
-          
-            <select id="drawer_motivo_perda">
-          
-              <option value="">
-                Selecione
-              </option>
-          
-              <option value="desistiu">
-                Desistiu
-              </option>
-          
-              <option value="nao_respondeu">
-                Não respondeu
-              </option>
-          
-              <option value="sem_interesse">
-                Sem interesse
-              </option>
-          
-              <option value="sem_credito">
-                Sem crédito
-              </option>
-          
-              <option value="concorrente">
-                Comprou com concorrente
-              </option>
-          
-              <option value="numero_invalido">
-                Número inválido
-              </option>
-          
-              <option value="fake_lead">
-                Fake lead
-              </option>
-          
-            </select>
-          
-          </div>
       
           <option value="novo">
             🆕 Novo
@@ -3896,6 +3849,61 @@ if (token) init();
       
           <option value="em_conversa">
             💬 Em Conversa
+          </option>
+      
+          <option value="fechado">
+            ✅ Fechado
+          </option>
+      
+          <option value="perdido">
+            ❌ Perdido
+          </option>
+      
+        </select>
+      
+      </div>
+      
+      <!-- MOTIVO PERDA -->
+      <div
+        class="drawer-box"
+        id="box_motivo_perda"
+        style="display:none;"
+      >
+      
+        <h4>Motivo da perda</h4>
+      
+        <select id="drawer_motivo_perda">
+      
+          <option value="">
+            Selecione
+          </option>
+      
+          <option value="desistiu">
+            Desistiu
+          </option>
+      
+          <option value="nao_respondeu">
+            Não respondeu
+          </option>
+      
+          <option value="sem_interesse">
+            Sem interesse
+          </option>
+      
+          <option value="sem_credito">
+            Sem crédito
+          </option>
+      
+          <option value="concorrente">
+            Comprou com concorrente
+          </option>
+      
+          <option value="numero_invalido">
+            Número inválido
+          </option>
+      
+          <option value="fake_lead">
+            Fake lead
           </option>
       
         </select>

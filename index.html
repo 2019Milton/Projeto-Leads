@@ -2840,11 +2840,12 @@ function abrirLeadDrawer(lead) {
   document.getElementById("drawer_observacao")
     .value = lead.observacao || "";
 
+  // 🔥 CARREGA HISTÓRICO
+  carregarHistoricoLead(lead.id);
+
   // 🔥 ABRE
   drawer.classList.add("active");
 }
-
-carregarHistoricoLead(lead.id);
   
 // 🔥 FECHAR
 function fecharLeadDrawer() {

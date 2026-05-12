@@ -2742,7 +2742,13 @@ function criarLeadCard(lead) {
       <!-- AÇÕES -->
       <div class="lead-actions">
 
-        <button title="WhatsApp">
+        <button
+          title="WhatsApp"
+          onclick="
+            event.stopPropagation();
+            abrirWhatsApp('${lead.telefone}')
+          "
+        >
           💬
         </button>
 
@@ -3838,6 +3844,30 @@ function atualizarTempoSync(dataSync) {
   syncInterval =
     setInterval(atualizar, 1000);
 }
+
+// 🔥 ABRIR WHATSAPP
+function abrirWhatsApp(numero) {
+
+  if (!numero) {
+    alert("Lead sem telefone");
+    return;
+  }
+
+  // remove tudo que não é número
+  numero = numero.replace(/\D/g, "");
+
+  // adiciona 55 se não existir
+  if (!numero.startsWith("55")) {
+    numero = "55" + numero;
+  }
+
+  const url =
+    `https://wa.me/${numero}`;
+
+  window.open(url, "_blank");
+}
+
+
   
 // AUTO LOGIN
 const token = localStorage.getItem("token");

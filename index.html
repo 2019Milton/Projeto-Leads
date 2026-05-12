@@ -1549,6 +1549,218 @@ button {
 
   overflow: hidden;
 }
+
+/* 🔥 MODAL CRM */
+
+.lead-modal {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: none;
+}
+
+.lead-modal.ativo {
+
+  display: block;
+}
+
+.lead-overlay {
+
+  position: absolute;
+
+  inset: 0;
+
+  background: rgba(0,0,0,0.6);
+
+  backdrop-filter: blur(4px);
+}
+
+.lead-sidebar {
+
+  position: absolute;
+
+  top: 0;
+
+  right: 0;
+
+  width: 420px;
+
+  height: 100%;
+
+  background: #070b1a;
+
+  border-left: 1px solid rgba(255,255,255,0.08);
+
+  padding: 24px;
+
+  overflow-y: auto;
+
+  animation: abrirLead .25s ease;
+}
+
+@keyframes abrirLead {
+
+  from {
+
+    transform: translateX(100%);
+  }
+
+  to {
+
+    transform: translateX(0);
+  }
+}
+
+.lead-sidebar-topo {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  margin-bottom: 24px;
+}
+
+.lead-sidebar-topo h2 {
+
+  font-size: 22px;
+
+  margin-bottom: 8px;
+}
+
+.lead-status-modal {
+
+  padding: 6px 12px;
+
+  border-radius: 30px;
+
+  background: rgba(255,80,80,0.15);
+
+  color: #ff7b7b;
+
+  font-size: 12px;
+}
+
+.fechar-modal {
+
+  background: transparent;
+
+  border: none;
+
+  color: #fff;
+
+  font-size: 22px;
+
+  cursor: pointer;
+}
+
+.lead-info-grid {
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 12px;
+
+  margin-bottom: 28px;
+}
+
+.info-box {
+
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.05);
+
+  border-radius: 14px;
+
+  padding: 14px;
+
+  font-size: 13px;
+}
+
+.lead-historico,
+.lead-chat {
+
+  margin-bottom: 28px;
+}
+
+.lead-historico h3,
+.lead-chat h3 {
+
+  margin-bottom: 14px;
+
+  font-size: 15px;
+}
+
+.historico-item {
+
+  background: rgba(255,255,255,0.03);
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  margin-bottom: 10px;
+
+  font-size: 13px;
+}
+
+.msg {
+
+  max-width: 80%;
+
+  padding: 12px;
+
+  border-radius: 14px;
+
+  margin-bottom: 12px;
+
+  font-size: 13px;
+}
+
+.msg.cliente {
+
+  background: rgba(255,255,255,0.05);
+}
+
+.msg.atendente {
+
+  background: linear-gradient(135deg,#6a5cff,#8f6bff);
+
+  margin-left: auto;
+}
+
+.lead-acoes {
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 12px;
+}
+
+.lead-acoes button {
+
+  background: linear-gradient(135deg,#6a5cff,#8f6bff);
+
+  border: none;
+
+  border-radius: 12px;
+
+  color: #fff;
+
+  padding: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
   
 </style>
 </head>
@@ -1784,7 +1996,10 @@ button {
           </div>
         
           <!-- 🚀 LEAD -->
-          <div class="lead-card quente">
+          <div
+            class="lead-card quente"
+            onclick="abrirLead()"
+          >
 
             <div class="lead-prioridade quente"></div>
         
@@ -2123,6 +2338,21 @@ button {
 
     
 <script>
+
+function abrirLead() {
+
+  document
+    .getElementById("leadModal")
+    .classList.add("ativo");
+}
+
+function fecharLead() {
+
+  document
+    .getElementById("leadModal")
+    .classList.remove("ativo");
+}
+
 const API = "https://function-bun-production-446a.up.railway.app";
 
 // LOGIN
@@ -3033,5 +3263,114 @@ const token = localStorage.getItem("token");
 if (token) init();
 </script>
 
+<!-- 🔥 MODAL LEAD CRM -->
+
+<div
+  id="leadModal"
+  class="lead-modal"
+>
+
+  <div
+    class="lead-overlay"
+    onclick="fecharLead()"
+  ></div>
+
+  <div class="lead-sidebar">
+
+    <!-- TOPO -->
+    <div class="lead-sidebar-topo">
+
+      <div>
+
+        <h2>👤 João Silva</h2>
+
+        <span class="lead-status-modal">
+          🔥 Lead Quente
+        </span>
+
+      </div>
+
+      <button
+        class="fechar-modal"
+        onclick="fecharLead()"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <!-- INFOS -->
+    <div class="lead-info-grid">
+
+      <div class="info-box">
+        📞 (11) 99999-9999
+      </div>
+
+      <div class="info-box">
+        📍 Santo André
+      </div>
+
+      <div class="info-box">
+        💰 Interesse R$ 850k
+      </div>
+
+      <div class="info-box">
+        📢 Facebook Ads
+      </div>
+
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div class="lead-historico">
+
+      <h3>📝 Histórico</h3>
+
+      <div class="historico-item">
+        Lead entrou via campanha
+      </div>
+
+      <div class="historico-item">
+        Solicitou visita
+      </div>
+
+      <div class="historico-item">
+        Corretor respondeu
+      </div>
+
+    </div>
+
+    <!-- CONVERSA -->
+    <div class="lead-chat">
+
+      <h3>💬 Conversa</h3>
+
+      <div class="msg cliente">
+        Quero agendar uma visita
+      </div>
+
+      <div class="msg atendente">
+        Claro! Qual horário prefere?
+      </div>
+
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="lead-acoes">
+
+      <button>📲 WhatsApp</button>
+
+      <button>📅 Agendar</button>
+
+      <button>🧠 IA</button>
+
+      <button>✅ Fechar</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+    
 </body>
 </html>

@@ -2140,14 +2140,6 @@ button {
 
   width: 220px;
 
-  min-width: 220px;
-
-  max-width: 220px;
-
-  height: auto;
-
-  align-items: stretch;
-
   background: #11182d;
 
   border: 1px solid #2f3b63;
@@ -2156,16 +2148,22 @@ button {
 
   padding: 10px;
 
-  display: flex;
+  z-index: 999999;
+
+  box-shadow:
+    0 0 20px rgba(0,0,0,0.5);
+
+  display: inline-flex;
 
   flex-direction: column;
 
   gap: 8px;
 
-  z-index: 999999;
+  height: fit-content;
 
-  box-shadow:
-    0 0 20px rgba(0,0,0,0.5);
+  min-height: unset;
+
+  max-height: unset;
 }
 
 .menu-mover button {

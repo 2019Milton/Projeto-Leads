@@ -864,15 +864,17 @@ button {
   margin-bottom: 6px;
 
   cursor: pointer;
-
-  transition: 0.2s;
+  
+  transition: .2s ease;
 }
 
 .lead-card:hover {
 
   transform: translateY(-2px);
 
-  border-color: rgba(123,77,255,0.6);
+  border-color: rgba(143,107,255,.4);
+
+  box-shadow: 0 0 25px rgba(106,92,255,.18);
 }
 
 .lead-card h4 {
@@ -1365,7 +1367,9 @@ button {
 
   border-radius: 10px;
 
-  background: rgba(255,255,255,0.05);
+  transform: scale(1.08);
+
+  background: rgba(143,107,255,.25);
 
   color: #fff;
 
@@ -2084,7 +2088,10 @@ button {
           </div>
         
           <!-- 🚀 LEAD 2 -->
-          <div class="lead-card morno">
+          <div
+            class="lead-card morno"
+            onclick="abrirLead()"
+          >
         
             <div class="lead-topo">
         
@@ -2124,13 +2131,13 @@ button {
         
             <div class="lead-actions">
         
-              <button>💬</button>
-        
-              <button>📞</button>
-        
-              <button>➡️</button>
-        
-              <button>👁</button>
+              <button title="Abrir conversa">💬</button>
+
+              <button title="Ligar para lead">📞</button>
+              
+              <button title="Mover etapa">➡️</button>
+              
+              <button title="Ver detalhes">👁️</button>
         
             </div>
         

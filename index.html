@@ -993,6 +993,52 @@ button {
   overflow-y: auto;
 }
 
+.metricas-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 6px;
+
+  width: 100%;
+}
+
+/* 🔥 CORREÇÃO DO ESTOURO */
+.metricas-grid > * {
+
+  min-width: 0;
+}
+
+/* KPI */
+.metrica {
+
+  width: 100%;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  padding: 6px;
+
+  border-radius: 8px;
+}
+
+/* TEXTOS INTERNOS */
+.metrica span,
+.metrica small,
+.metrica div {
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+  
   
 </style>
 </head>

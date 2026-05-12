@@ -2055,6 +2055,77 @@ button {
 
   color: white;
 }
+
+/* 🔥 TIMELINE */
+#lead_timeline {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 14px;
+
+  margin-top: 14px;
+}
+
+/* ITEM */
+.timeline-item {
+
+  position: relative;
+
+  padding-left: 18px;
+
+  border-left:
+    2px solid rgba(255,255,255,0.08);
+}
+
+/* BOLINHA */
+.timeline-item::before {
+
+  content: "";
+
+  position: absolute;
+
+  left: -6px;
+
+  top: 4px;
+
+  width: 10px;
+
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: #7b5cff;
+}
+
+/* TEXTO */
+.timeline-text {
+
+  color: #e5e7eb;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+/* DATA */
+.timeline-date {
+
+  font-size: 11px;
+
+  opacity: .6;
+
+  margin-top: 4px;
+}
+
+/* VAZIO */
+.timeline-empty {
+
+  opacity: .5;
+
+  font-size: 13px;
+}
   
 </style>
 </head>
@@ -2773,6 +2844,8 @@ function abrirLeadDrawer(lead) {
   drawer.classList.add("active");
 }
 
+carregarHistoricoLead(lead.id);
+  
 // 🔥 FECHAR
 function fecharLeadDrawer() {
 
@@ -2781,6 +2854,91 @@ function fecharLeadDrawer() {
     .classList.remove("active");
 }
 
+// 🔥 HISTÓRICO
+async function carregarHistoricoLead(id) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/leads/${id}/historico`,
+    {
+      headers: {
+        "Authorization":
+          "Bearer " + token
+      }
+    }
+  );
+
+  const historico =
+    await res.json();
+
+  console.log(
+    "HISTÓRICO:",
+    historico
+  );
+
+  const timeline =
+    document.getElementById(
+      "lead_timeline"
+    );
+
+  timeline.innerHTML = "";
+
+  // vazio
+  if (!historico.length) {
+
+    timeline.innerHTML = `
+      <div class="timeline-empty">
+        Nenhum histórico encontrado
+      </div>
+    `;
+
+    return;
+  }
+
+  historico.forEach(item => {
+
+    timeline.innerHTML += `
+
+      <div class="timeline-item">
+
+        <div class="timeline-text">
+
+          ${iconeHistorico(item.tipo)}
+          ${item.descricao}
+
+        </div>
+
+        <div class="timeline-date">
+
+          ${formatarData(item.criado_em)}
+
+        </div>
+
+      </div>
+    `;
+  });
+}
+
+// 🔥 ÍCONE HISTÓRICO
+function iconeHistorico(tipo) {
+
+  if (tipo === "status") {
+    return "🟢";
+  }
+
+  if (tipo === "observacao") {
+    return "💬";
+  }
+
+  if (tipo === "ligacao") {
+    return "📞";
+  }
+
+  return "📌";
+}
+  
 // 🔥 MOSTRA/OCULTA MOTIVO
 function toggleMotivoPerda() {
 
@@ -3953,6 +4111,21 @@ if (token) init();
           id="drawer_observacao"
         ></textarea>
 
+      </div>
+
+      <!-- 🔥 HISTÓRICO -->
+      <div class="drawer-box">
+      
+        <h4>Timeline do Lead</h4>
+      
+        <div id="lead_timeline">
+      
+          <div class="timeline-empty">
+            Nenhum histórico encontrado
+          </div>
+      
+        </div>
+      
       </div>
 
       <!-- AÇÕES -->

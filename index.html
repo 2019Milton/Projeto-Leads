@@ -724,13 +724,11 @@ button {
 /* 🔥 LAYOUT PRINCIPAL */
 .layout-principal {
 
-  width: 100%;
-
-  display: grid;
-
-  grid-template-columns: 31% 35% 34%;
+  display: flex;
 
   gap: 14px;
+
+  width: 100%;
 
   align-items: stretch;
 
@@ -739,6 +737,8 @@ button {
 
 /* 🔹 COLUNA ESQUERDA */
 .coluna-esquerda {
+
+  flex: 0 0 32%;
 
   display: flex;
 
@@ -749,14 +749,10 @@ button {
   min-width: 0;
 }
 
-/* 🔹 COLUNA DIREITA */
-.coluna-direita {
-
-  display: contents;
-}
-  
 /* 🚀 CENTRAL LEADS */
 .leads-central-card {
+
+  flex: 1;
 
   min-width: 0;
 
@@ -764,7 +760,19 @@ button {
 
   flex-direction: column;
 }
-  
+
+/* 🔹 COLUNA DIREITA */
+.coluna-campanhas {
+
+  flex: 0 0 32%;
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+}
+
 /* 🔥 CONTEÚDO CENTRAL */
 .leads-central-content {
 
@@ -780,7 +788,6 @@ button {
 
   overflow: hidden;
 }
-
 /* 🔥 PLACEHOLDER */
 .leads-placeholder {
 

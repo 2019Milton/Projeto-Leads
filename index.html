@@ -2425,7 +2425,7 @@ function criarLeadCard(lead) {
 
     <div
       class="lead-card ${classeScore}"
-      onclick="abrirLead()"
+      onclick='abrirLeadDrawer(${JSON.stringify(lead)})'
     >
 
       <div class="lead-prioridade ${classeScore}"></div>
@@ -2497,7 +2497,10 @@ function criarLeadCard(lead) {
           ➡️
         </button>
 
-        <button title="Detalhes">
+        <button
+          title="Detalhes"
+          onclick='event.stopPropagation(); abrirLeadDrawer(${JSON.stringify(lead)})'
+        >
           👁️
         </button>
 
@@ -2539,7 +2542,48 @@ function formatarData(data) {
   return criada.toLocaleDateString();
 }
 
+// 🔥 ABRIR DRAWER
+function abrirLeadDrawer(lead) {
 
+  const drawer =
+    document.getElementById("leadDrawer");
+
+  // 🔥 PREENCHE
+  document.getElementById("drawer_nome")
+    .innerText = lead.nome || "-";
+
+  document.getElementById("drawer_telefone")
+    .innerText = lead.telefone || "-";
+
+  document.getElementById("drawer_email")
+    .innerText = lead.email || "-";
+
+  document.getElementById("drawer_origem")
+    .innerText = lead.origem || "-";
+
+  document.getElementById("drawer_campanha")
+    .innerText = lead.campanha || "-";
+
+  document.getElementById("drawer_score")
+    .innerText = lead.score || "-";
+
+  document.getElementById("drawer_observacao")
+    .value = lead.observacao || "";
+
+  // 🔥 ABRE
+  drawer.classList.add("active");
+}
+
+// 🔥 FECHAR
+function fecharLeadDrawer() {
+
+  document
+    .getElementById("leadDrawer")
+    .classList.remove("active");
+}
+
+
+  
 
 // SIMULAÇÕES
 function conectarMeta() {

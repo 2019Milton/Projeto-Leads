@@ -837,13 +837,17 @@ button {
 
   align-items: center;
 
-  font-weight: bold;
+  font-size: 14px;
 
-  margin-bottom: 14px;
+  font-weight: 700;
+
+  color: #fff;
 
   padding-bottom: 10px;
 
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+
+  margin-bottom: 6px;
 }
 
 /* 🔥 CARDS */
@@ -965,44 +969,83 @@ button {
   cursor: pointer;
 }
 
-/* 🔥 BOARD */
+/* =========================
+   🚀 KANBAN BOARD
+========================= */
+
 .kanban-board {
 
   display: flex;
 
-  gap: 18px;
+  gap: 14px;
 
   overflow-x: auto;
 
-  align-items: flex-start;
+  overflow-y: hidden;
 
-  height: 100%;
+  padding-bottom: 8px;
 
-  padding-bottom: 10px;
-
-  margin-top: 10px;
+  width: 100%;
 }
 
-/* 🔥 COLUNAS */
+/* 🔥 SCROLL BONITO */
+
+.kanban-board::-webkit-scrollbar {
+
+  height: 8px;
+}
+
+.kanban-board::-webkit-scrollbar-thumb {
+
+  background: rgba(140,82,255,0.35);
+
+  border-radius: 999px;
+}
+
+/* =========================
+   📦 COLUNA KANBAN
+========================= */
+
 .kanban-column {
 
-  min-width: 190px;
+  min-width: 300px;
 
-  max-width: 190px;
+  max-width: 300px;
 
-  min-height: 380px;
+  background: rgba(255,255,255,0.02);
 
-  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
 
-  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
 
-  border-radius: 12px;
+  padding: 12px;
 
-  padding: 10px;
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  max-height: 650px;
+
+  overflow-y: auto;
 
   flex-shrink: 0;
 }
 
+/* 🔥 SCROLL INTERNO */
+
+.kanban-column::-webkit-scrollbar {
+
+  width: 6px;
+}
+
+.kanban-column::-webkit-scrollbar-thumb {
+
+  background: rgba(140,82,255,0.25);
+
+  border-radius: 999px;
+}
 .campanhas-card {
 
   min-width: 0;

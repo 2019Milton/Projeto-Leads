@@ -1998,6 +1998,11 @@ button {
 
   border-left: 4px solid #39ff88;
 }
+
+.kanban-header.perdido {
+
+  border-left: 4px solid #ff4d6d;
+}
   
 </style>
 </head>
@@ -2276,6 +2281,23 @@ button {
           <div id="coluna_fechado"></div>
         
         </div>
+
+        <!-- ❌ PERDIDO -->
+        <div class="kanban-column">
+        
+          <div class="kanban-header perdido">
+        
+            ❌ Perdido
+        
+            <span id="count_perdido">
+              0
+            </span>
+        
+          </div>
+        
+          <div id="coluna_perdido"></div>
+        
+        </div>
       
       </div>
 
@@ -2431,11 +2453,15 @@ async function carregarLeads() {
   const colunaFechado =
     document.getElementById("coluna_fechado");
 
+  const colunaPerdido =
+    document.getElementById("coluna_perdido");
+
   // 🔥 LIMPA
   colunaNovos.innerHTML = "";
   colunaContato.innerHTML = "";
   colunaConversa.innerHTML = "";
   colunaFechado.innerHTML = "";
+  colunaPerdido.innerHTML = "";
 
   // 🔥 NOVOS
   if (leads.novos) {
@@ -2485,6 +2511,21 @@ async function carregarLeads() {
           criarLeadCard(lead);
     
       });
+
+      // ❌ PERDIDO
+      if (leads.perdido) {
+      
+        leads.perdido.forEach(lead => {
+      
+          colunaPerdido.innerHTML +=
+            criarLeadCard(lead);
+      
+        });
+      
+        document.getElementById("count_perdido")
+          .innerText =
+            leads.perdido.length;
+      }
     
       document.getElementById("count_fechado")
         .innerText =

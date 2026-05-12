@@ -1408,6 +1408,147 @@ button {
 
   color: #777;
 } 
+
+.lead-topo {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 12px;
+}
+
+.lead-avatar {
+
+  width: 42px;
+
+  height: 42px;
+
+  border-radius: 50%;
+
+  background: linear-gradient(135deg,#6a5cff,#8f6bff);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: #fff;
+
+  flex-shrink: 0;
+}
+
+.lead-identidade {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.lead-score {
+
+  font-size: 11px;
+
+  padding: 4px 10px;
+
+  border-radius: 30px;
+
+  width: fit-content;
+
+  font-weight: 600;
+}
+
+.lead-score.quente {
+
+  background: rgba(255,80,80,0.15);
+
+  color: #ff6b6b;
+}
+
+.lead-score.morno {
+
+  background: rgba(255,200,0,0.15);
+
+  color: #ffd95c;
+}
+
+.lead-meta {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  font-size: 12px;
+
+  color: rgba(255,255,255,0.65);
+
+  margin-top: 4px;
+}
+
+.lead-tempo {
+
+  margin-top: 8px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+}
+
+.lead-tempo.ativo {
+
+  color: #56ffb3;
+}
+
+.lead-tempo.parado {
+
+  color: #ff7676;
+}
+
+.lead-prioridade {
+
+  position: absolute;
+
+  top: 0;
+
+  left: 0;
+
+  width: 4px;
+
+  height: 100%;
+
+  border-radius: 20px;
+}
+
+.lead-prioridade.quente {
+
+  background: #ff5f5f;
+}
+
+.lead-prioridade.morno {
+
+  background: #ffd95c;
+}
+
+.lead-prioridade.frio {
+
+  background: #6ab7ff;
+}
+
+.lead-card {
+
+  position: relative;
+
+  overflow: hidden;
+}
   
 </style>
 </head>
@@ -1644,24 +1785,44 @@ button {
         
           <!-- 🚀 LEAD -->
           <div class="lead-card quente">
+
+            <div class="lead-prioridade quente"></div>
         
             <!-- 🔥 TOPO -->
             <div class="lead-topo">
-        
-              <h4>👤 João Silva</h4>
-        
-              <span class="lead-badge quente">
-                🔥 Quente
-              </span>
-        
+
+              <div class="lead-avatar">
+                JS
+              </div>
+            
+              <div class="lead-identidade">
+            
+                <h4>João Silva</h4>
+            
+                <span class="lead-score quente">
+                  🔥 Score 92
+                </span>
+            
+              </div>
+            
             </div>
-        
+                    
             <!-- 📋 INFO -->
             <div class="lead-info">
         
               <p>📞 (11) 99999-9999</p>
         
-              <p>📍 Santo André</p>
+              <div class="lead-meta">
+
+                <span>📍 Santo André</span>
+              
+                <span>📢 Facebook Ads</span>
+              
+              </div>
+              
+              <div class="lead-tempo ativo">
+                ⏱ Respondeu há 2 min
+              </div>
         
               <p>📢 Casa Alto Padrão</p>
         

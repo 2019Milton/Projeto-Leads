@@ -2003,6 +2003,24 @@ button {
 
   border-left: 4px solid #ff4d6d;
 }
+
+#drawer_motivo_perda {
+
+  width: 100%;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  border: none;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  color: white;
+
+  margin-top: 10px;
+}
   
 </style>
 </head>
@@ -2708,6 +2726,12 @@ function abrirLeadDrawer(lead) {
   document.getElementById("drawer_status")
     .value = lead.status || "novo";
 
+  // 🔥 motivo perda
+  document.getElementById("drawer_motivo_perda")
+    .value = lead.motivo_perda || "";
+  
+  toggleMotivoPerda();
+
   document.getElementById("drawer_observacao")
     .value = lead.observacao || "";
 
@@ -2721,6 +2745,26 @@ function fecharLeadDrawer() {
   document
     .getElementById("leadDrawer")
     .classList.remove("active");
+}
+
+// 🔥 MOSTRA/OCULTA MOTIVO
+function toggleMotivoPerda() {
+
+  const status =
+    document.getElementById("drawer_status")
+      .value;
+
+  const box =
+    document.getElementById("box_motivo_perda");
+
+  if (status === "perdido") {
+
+    box.style.display = "block";
+
+  } else {
+
+    box.style.display = "none";
+  }
 }
 
 // 🔥 SALVAR LEAD
@@ -3785,7 +3829,57 @@ if (token) init();
       
         <h4>Status</h4>
       
-        <select id="drawer_status">
+        <select
+          id="drawer_status"
+          onchange="toggleMotivoPerda()"
+        >
+
+          <!-- MOTIVO PERDA -->
+          <div
+            class="drawer-box"
+            id="box_motivo_perda"
+            style="display:none;"
+          >
+          
+            <h4>Motivo da perda</h4>
+          
+            <select id="drawer_motivo_perda">
+          
+              <option value="">
+                Selecione
+              </option>
+          
+              <option value="desistiu">
+                Desistiu
+              </option>
+          
+              <option value="nao_respondeu">
+                Não respondeu
+              </option>
+          
+              <option value="sem_interesse">
+                Sem interesse
+              </option>
+          
+              <option value="sem_credito">
+                Sem crédito
+              </option>
+          
+              <option value="concorrente">
+                Comprou com concorrente
+              </option>
+          
+              <option value="numero_invalido">
+                Número inválido
+              </option>
+          
+              <option value="fake_lead">
+                Fake lead
+              </option>
+          
+            </select>
+          
+          </div>
       
           <option value="novo">
             🆕 Novo

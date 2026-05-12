@@ -2783,6 +2783,10 @@ async function salvarLeadDrawer() {
     document.getElementById("drawer_status")
       .value;
 
+  const motivo_perda =
+    document.getElementById("drawer_motivo_perda")
+      .value;
+
   const res = await fetch(
     `${API}/leads/${leadAtual.id}`,
     {
@@ -2795,7 +2799,8 @@ async function salvarLeadDrawer() {
 
       body: JSON.stringify({
         observacao,
-        status
+        status,
+        motivo_perda
       })
     }
   );

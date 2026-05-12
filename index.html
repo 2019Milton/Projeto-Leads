@@ -1992,6 +1992,12 @@ button {
       #4f7cff
     );
 }
+
+
+.kanban-header.fechado {
+
+  border-left: 4px solid #39ff88;
+}
   
 </style>
 </head>
@@ -2253,6 +2259,23 @@ button {
           <div id="coluna_conversa"></div>
       
         </div>
+
+        <!-- ✅ FECHADO -->
+        <div class="kanban-column">
+        
+          <div class="kanban-header fechado">
+        
+            ✅ Fechado
+        
+            <span id="count_fechado">
+              0
+            </span>
+        
+          </div>
+        
+          <div id="coluna_fechado"></div>
+        
+        </div>
       
       </div>
 
@@ -2405,10 +2428,14 @@ async function carregarLeads() {
   const colunaConversa =
     document.getElementById("coluna_conversa");
 
+  const colunaFechado =
+    document.getElementById("coluna_fechado");
+
   // 🔥 LIMPA
   colunaNovos.innerHTML = "";
   colunaContato.innerHTML = "";
   colunaConversa.innerHTML = "";
+  colunaFechado.innerHTML = "";
 
   // 🔥 NOVOS
   if (leads.novos) {
@@ -2449,9 +2476,25 @@ async function carregarLeads() {
 
     });
 
+    // 🔥 FECHADO
+    if (leads.fechado) {
+    
+      leads.fechado.forEach(lead => {
+    
+        colunaFechado.innerHTML +=
+          criarLeadCard(lead);
+    
+      });
+    
+      document.getElementById("count_fechado")
+        .innerText =
+          leads.fechado.length;
+    }
+
     document.getElementById("count_conversa")
       .innerText =
         leads.em_conversa.length;
+  
   }
 }
 

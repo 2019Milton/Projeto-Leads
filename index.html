@@ -5274,7 +5274,10 @@ async function carregarCampanhas() {
 
   const campanhas = await res.json();
 
-  console.log("CAMPANHAS:", campanhas);
+  console.log(
+    "CAMPANHAS FORMATADAS:",
+    JSON.stringify(campanhas, null, 2)
+  );
 
   const filtro =
     document.getElementById("filtro_status")?.value;

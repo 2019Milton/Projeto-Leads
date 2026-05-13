@@ -2917,6 +2917,8 @@ function logout() {
   localStorage.removeItem("token");
   location.reload();
 }
+
+let todosLeads = [];
   
 // LEADS
 async function carregarLeads() {
@@ -2930,6 +2932,22 @@ async function carregarLeads() {
   });
 
   const leads = await res.json();
+
+  todosLeads = [
+
+    ...(leads.novos || []),
+  
+    ...(leads.primeiro_contato || []),
+  
+    ...(leads.em_conversa || []),
+  
+    ...(leads.fechado || []),
+  
+    ...(leads.perdido || [])
+  
+  ];
+  
+  atualizarKPIs(todosLeads);
 
   console.log("LEADS:", leads);
 
@@ -3032,6 +3050,51 @@ async function carregarLeads() {
   }
 }
 
+function atualizarKPIs(leads) {
+
+  const total =
+    leads.length;
+
+  const quentes =
+    leads.filter(
+      l => l.score === "quente"
+    ).length;
+
+  const semResposta =
+    leads.filter(
+      l => l.status === "novo"
+    ).length;
+
+  const fechados =
+    leads.filter(
+      l => l.status === "fechado"
+    ).length;
+
+  // 🔥 estimativa inicial
+  const estimativa =
+    fechados * 4000;
+
+  document.getElementById(
+    "kpi_total"
+  ).innerText = total;
+
+  document.getElementById(
+    "kpi_quentes"
+  ).innerText = quentes;
+
+  document.getElementById(
+    "kpi_sem_resposta"
+  ).innerText = semResposta;
+
+  document.getElementById(
+    "kpi_fechados"
+  ).innerText = fechados;
+
+  document.getElementById(
+    "kpi_estimativa"
+  ).innerText =
+    `R$ ${estimativa.toLocaleString("pt-BR")}`;
+}
   
 function criarLeadCard(lead) {
 

@@ -2690,30 +2690,45 @@ button {
 
       <!-- 📊 KPIs -->
       <div class="leads-kpis">
-
-        <div class="kpi-card">
+      
+        <div
+          class="kpi-card"
+          onclick="filtrarPorKPI('todos')"
+        >
           <span id="kpi_total">0</span>
           <small>Leads</small>
         </div>
       
-        <div class="kpi-card quente">
+        <div
+          class="kpi-card quente"
+          onclick="filtrarPorKPI('quente')"
+        >
           <span id="kpi_quentes">0</span>
           <small>Quentes</small>
         </div>
       
-        <div class="kpi-card alerta">
+        <div
+          class="kpi-card alerta"
+          onclick="filtrarPorKPI('sem_resposta')"
+        >
           <span id="kpi_sem_resposta">0</span>
           <small>Sem resposta</small>
         </div>
       
-        <div class="kpi-card sucesso">
+        <div
+          class="kpi-card sucesso"
+          onclick="filtrarPorKPI('fechado')"
+        >
           <span id="kpi_fechados">0</span>
           <small>Fechados</small>
         </div>
       
-        <div class="kpi-card dinheiro">
-          <span id="kpi_estimativa">R$ 0</span>
-          <small>Estimativa</small>
+        <div
+          class="kpi-card"
+          onclick="filtrarPorKPI('perdido')"
+        >
+          <span id="kpi_perdidos">0</span>
+          <small>Perdidos</small>
         </div>
       
       </div>
@@ -2919,6 +2934,8 @@ function logout() {
 }
 
 let todosLeads = [];
+
+let filtroKPI = null;
   
 // LEADS
 async function carregarLeads() {
@@ -3095,6 +3112,150 @@ function atualizarKPIs(leads) {
   ).innerText =
     `R$ ${estimativa.toLocaleString("pt-BR")}`;
 }
+
+function filtrarPorKPI(tipo) {
+
+  filtroKPI = tipo;
+
+  aplicarFiltrosLeads();
+}
+
+function aplicarFiltrosLeads() {
+
+  let filtrados = [...todosLeads];
+
+  // 🔥 FILTRO KPI
+  if (filtroKPI) {
+
+    if (filtroKPI === "quente") {
+
+      filtrados = filtrados.filter(
+        l => l.score === "quente"
+      );
+    }
+
+    else if (filtroKPI === "sem_resposta") {
+
+      filtrados = filtrados.filter(
+        l => l.status === "novo"
+      );
+    }
+
+    else if (filtroKPI === "fechado") {
+
+      filtrados = filtrados.filter(
+        l => l.status === "fechado"
+      );
+    }
+
+    else if (filtroKPI === "perdido") {
+
+      filtrados = filtrados.filter(
+        l => l.status === "perdido"
+      );
+    }
+  }
+
+  renderizarLeadsFiltrados(filtrados);
+}
+
+
+function renderizarLeadsFiltrados(leads) {
+
+  const colunaNovos =
+    document.getElementById("coluna_novos");
+
+  const colunaContato =
+    document.getElementById("coluna_contato");
+
+  const colunaConversa =
+    document.getElementById("coluna_conversa");
+
+  const colunaFechado =
+    document.getElementById("coluna_fechado");
+
+  const colunaPerdido =
+    document.getElementById("coluna_perdido");
+
+  colunaNovos.innerHTML = "";
+  colunaContato.innerHTML = "";
+  colunaConversa.innerHTML = "";
+  colunaFechado.innerHTML = "";
+  colunaPerdido.innerHTML = "";
+
+  leads.forEach(lead => {
+
+    if (lead.status === "novo") {
+
+      colunaNovos.innerHTML +=
+        criarLeadCard(lead);
+    }
+
+    else if (
+      lead.status === "primeiro_contato"
+    ) {
+
+      colunaContato.innerHTML +=
+        criarLeadCard(lead);
+    }
+
+    else if (
+      lead.status === "em_conversa"
+    ) {
+
+      colunaConversa.innerHTML +=
+        criarLeadCard(lead);
+    }
+
+    else if (
+      lead.status === "fechado"
+    ) {
+
+      colunaFechado.innerHTML +=
+        criarLeadCard(lead);
+    }
+
+    else if (
+      lead.status === "perdido"
+    ) {
+
+      colunaPerdido.innerHTML +=
+        criarLeadCard(lead);
+    }
+  });
+
+  document.getElementById("count_novos")
+    .innerText =
+      leads.filter(
+        l => l.status === "novo"
+      ).length;
+
+  document.getElementById("count_contato")
+    .innerText =
+      leads.filter(
+        l => l.status === "primeiro_contato"
+      ).length;
+
+  document.getElementById("count_conversa")
+    .innerText =
+      leads.filter(
+        l => l.status === "em_conversa"
+      ).length;
+
+  document.getElementById("count_fechado")
+    .innerText =
+      leads.filter(
+        l => l.status === "fechado"
+      ).length;
+
+  document.getElementById("count_perdido")
+    .innerText =
+      leads.filter(
+        l => l.status === "perdido"
+      ).length;
+}
+
+
   
 function criarLeadCard(lead) {
 

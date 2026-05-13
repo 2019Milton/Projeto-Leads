@@ -2208,6 +2208,79 @@ button {
       translateY(0);
   }
 }
+
+/* 🔥 MENU LIGAÇÃO */
+
+.menu-ligacao {
+
+  position: absolute;
+
+  bottom: 60px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: #11182d;
+
+  border: 1px solid #2f3b63;
+
+  border-radius: 14px;
+
+  padding: 10px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  z-index: 99999;
+
+  width: 180px;
+
+  box-shadow:
+    0 0 20px rgba(0,0,0,0.5);
+}
+
+/* BOTÕES */
+
+.menu-ligacao button {
+
+  background: #1b2440;
+
+  border: none;
+
+  color: white;
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: 0.2s;
+
+  font-size: 14px;
+}
+
+/* HOVER */
+
+.menu-ligacao button:hover {
+
+  background: #6c63ff;
+}
+
+/* DESABILITADO */
+
+.menu-ligacao button:disabled {
+
+  opacity: .5;
+
+  cursor: not-allowed;
+}
   
 </style>
 </head>
@@ -4058,7 +4131,7 @@ function abrirMenuLigacao(
   menu.id = "menuLigacao";
 
   menu.className =
-    "menu-mover";
+    "menu-ligacao";
 
   menu.innerHTML = `
 

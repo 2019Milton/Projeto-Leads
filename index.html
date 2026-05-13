@@ -3262,6 +3262,40 @@ function aplicarFiltrosLeads() {
 
   let filtrados = [...todosLeads];
 
+  // 🔍 BUSCA
+  const busca =
+    document
+      .getElementById("busca_lead")
+      .value
+      .toLowerCase()
+      .trim();
+
+  if (busca) {
+
+    filtrados = filtrados.filter(lead => {
+
+      return (
+
+        lead.nome?.toLowerCase()
+          .includes(busca)
+
+        ||
+
+        lead.telefone?.includes(busca)
+
+        ||
+
+        lead.email?.toLowerCase()
+          .includes(busca)
+
+        ||
+
+        lead.observacao?.toLowerCase()
+          .includes(busca)
+      );
+    });
+  }
+
   // 🔥 FILTRO KPI
   if (filtroKPI) {
 
@@ -5074,6 +5108,12 @@ async function definirScoreManual(
 }
 
 
+document
+  .getElementById("busca_lead")
+  .addEventListener(
+    "input",
+    aplicarFiltrosLeads
+  );
   
   
 // AUTO LOGIN

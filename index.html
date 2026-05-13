@@ -2237,7 +2237,13 @@ button {
 
   z-index: 99999;
 
-  width: 180px;
+  width: 200px;
+
+  min-width: 200px;
+
+  max-width: 200px;
+
+  box-sizing: border-box;
 
   box-shadow:
     0 0 20px rgba(0,0,0,0.5);
@@ -2247,23 +2253,41 @@ button {
 
 .menu-ligacao button {
 
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-start;
+
+  gap: 10px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
   background: #1b2440;
 
   border: none;
 
   color: white;
 
-  padding: 10px;
+  padding: 12px;
 
   border-radius: 10px;
 
   cursor: pointer;
 
-  text-align: left;
-
   transition: 0.2s;
 
   font-size: 14px;
+
+  font-weight: 500;
+
+  box-sizing: border-box;
 }
 
 /* HOVER */

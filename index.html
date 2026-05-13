@@ -5003,12 +5003,23 @@ async function criarCampanhaCompleta() {
         },
         body: JSON.stringify({
           usuario_id,
+    
+          // 🔥 CAMPANHA
+          campaign_id: campanha.id,
+    
+          // 🔥 CONJUNTO
           adset_id: adset.id,
+    
+          // 🔥 META
           page_id,
           form_id: form.id,
+    
+          // 🔥 CONTEÚDO
           texto,
           cta,
           campanha_nome,
+    
+          // 🔥 IMAGEM
           imageHash
         })
       }

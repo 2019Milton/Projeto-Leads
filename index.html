@@ -3074,6 +3074,8 @@ function logout() {
 let todosLeads = [];
 
 let filtroKPI = null;
+
+let leadsFiltradosAtuais = [];
   
 // LEADS
 async function carregarLeads() {
@@ -3435,6 +3437,8 @@ function aplicarFiltrosLeads() {
     }
   }
 
+  leadsFiltradosAtuais = filtrados;
+
   renderizarLeadsFiltrados(filtrados);
 }
 
@@ -3535,6 +3539,72 @@ function renderizarLeadsFiltrados(leads) {
 }
 
 
+
+function exportarLeadsCSV() {
+
+  if (
+    !leadsFiltradosAtuais.length
+  ) {
+
+    alert(
+      "Nenhum lead para exportar."
+    );
+
+    return;
+  }
+
+  let csv =
+    "Nome,Telefone,Email,Status,Score,Campanha,Origem,Data\n";
+
+  leadsFiltradosAtuais.forEach(lead => {
+
+    csv += `"${lead.nome || ""}",`;
+
+    csv += `"${lead.telefone || ""}",`;
+
+    csv += `"${lead.email || ""}",`;
+
+    csv += `"${lead.status || ""}",`;
+
+    csv += `"${lead.score || ""}",`;
+
+    csv += `"${lead.campanha || ""}",`;
+
+    csv += `"${lead.origem || ""}",`;
+
+    csv += `"${lead.criado_em || ""}"\n`;
+  });
+
+  const blob = new Blob(
+    [csv],
+    {
+      type: "text/csv;charset=utf-8;"
+    }
+  );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const link =
+    document.createElement("a");
+
+  link.href = url;
+
+  link.setAttribute(
+    "download",
+    "leads.csv"
+  );
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  document.body.removeChild(link);
+}  
+
+
+
+  
   
 function criarLeadCard(lead) {
 
@@ -5251,6 +5321,16 @@ function popularFiltroCampanhas(leads) {
 }
 
 
+
+
+
+document
+  .getElementById("btn_exportar")
+  .addEventListener(
+    "click",
+    exportarLeadsCSV
+  );
+  
 
 document
   .getElementById("filtro_periodo")

@@ -2213,14 +2213,8 @@ button {
 
 .menu-ligacao {
 
-  position: absolute;
-
-  bottom: 60px;
-
-  left: 50%;
-
-  transform: translateX(-50%);
-
+  position: fixed;
+ 
   background: #11182d;
 
   border: 1px solid #2f3b63;
@@ -4246,9 +4240,14 @@ function abrirMenuLigacao(
 
   `;
 
-  event.target
-    .closest(".lead-actions")
-    .appendChild(menu);
+  document.body.appendChild(menu);
+
+  // posição
+  menu.style.left =
+    event.clientX + "px";
+  
+  menu.style.top =
+    (event.clientY - 20) + "px";
 
   // fecha clicando fora
   setTimeout(() => {

@@ -3633,7 +3633,7 @@ function exportarLeadsCSV() {
       }`
     ]],
     {
-      origin: "A2"
+      origin: "A3"
     }
   );
   
@@ -3676,6 +3676,111 @@ function exportarLeadsCSV() {
     xSplit: 0,
     ySplit: 4
   };
+
+  // 🔥 merge células
+  worksheet["!merges"] = [
+  
+    XLSX.utils.decode_range("A1:I2"),
+  
+    XLSX.utils.decode_range("A3:I4")
+  ];
+  
+  
+  // 🔥 estilo premium
+  const estiloPremium = {
+  
+    font: {
+  
+      bold: true,
+  
+      color: {
+        rgb: "FFFFFF"
+      },
+  
+      sz: 16,
+  
+      name: "Segoe UI"
+    },
+  
+    fill: {
+  
+      fgColor: {
+        rgb: "000000"
+      }
+    },
+  
+    alignment: {
+  
+      horizontal: "center",
+  
+      vertical: "center"
+    }
+  };
+  
+  
+  // 🔥 estilo subtítulo
+  const estiloSubtitulo = {
+  
+    font: {
+  
+      bold: true,
+  
+      color: {
+        rgb: "FFFFFF"
+      },
+  
+      sz: 12,
+  
+      name: "Segoe UI"
+    },
+  
+    fill: {
+  
+      fgColor: {
+        rgb: "000000"
+      }
+    },
+  
+    alignment: {
+  
+      horizontal: "center",
+  
+      vertical: "center"
+    }
+  };
+  
+  
+  // 🔥 pinta A1:I4 inteiro
+  for (let row = 1; row <= 4; row++) {
+  
+    const cols =
+  
+      ["A","B","C","D","E","F","G","H","I"];
+  
+    cols.forEach(col => {
+  
+      const cell = `${col}${row}`;
+  
+      if (!worksheet[cell]) {
+  
+        worksheet[cell] = {
+          t: "s",
+          v: ""
+        };
+      }
+  
+      worksheet[cell].s =
+        estiloSubtitulo;
+    });
+  }
+  
+  
+  // 🔥 aplica estilos principais
+  worksheet["A1"].s =
+    estiloPremium;
+  
+  worksheet["A3"].s =
+    estiloSubtitulo;
 
   // 🔥 estilo preto
   const estiloHeader = {
@@ -3739,7 +3844,7 @@ function exportarLeadsCSV() {
   // 🔥 exporta
   XLSX.writeFile(
     workbook,
-    "leads.xlsx"
+    `${nomeConta}.xlsx`
   );
 }
 

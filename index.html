@@ -3555,15 +3555,18 @@ function exportarLeadsCSV() {
 
   const nomeConta =
 
-  document
-    .querySelector(
-      ".meta-page-name"
-    )
-    ?.innerText
-
-  ||
-
-  "Conta Meta";
+    document
+      .querySelector(
+        "#meta_info p"
+      )
+      ?.innerText
+  
+      .replace("Página:", "")
+      .trim()
+  
+    ||
+  
+    "Conta Meta";
 
 
   const dados =
@@ -3673,6 +3676,53 @@ function exportarLeadsCSV() {
     xSplit: 0,
     ySplit: 4
   };
+
+  // 🔥 estilo preto
+  const estiloHeader = {
+  
+    font: {
+      bold: true,
+      color: { rgb: "FFFFFF" },
+      sz: 12
+    },
+  
+    fill: {
+      fgColor: {
+        rgb: "000000"
+      }
+    },
+  
+    alignment: {
+      horizontal: "left",
+      vertical: "center"
+    }
+  };
+  
+  
+  // 🔥 linhas 1 e 2
+  ["A1","A2"].forEach(cell => {
+  
+    if (worksheet[cell]) {
+  
+      worksheet[cell].s =
+        estiloHeader;
+    }
+  });
+  
+  
+  // 🔥 cabeçalhos linha 4
+  const headers =
+  
+    ["A4","B4","C4","D4","E4","F4","G4","H4","I4"];
+  
+  headers.forEach(cell => {
+  
+    if (worksheet[cell]) {
+  
+      worksheet[cell].s =
+        estiloHeader;
+    }
+  });
   
   
   const workbook =
@@ -5802,7 +5852,7 @@ if (token) init();
 </div>
 
 
-<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/xlsx-js-style/dist/xlsx.bundle.js"></script>
     
     
 </body>

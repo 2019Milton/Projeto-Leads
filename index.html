@@ -2468,7 +2468,31 @@ button {
   background: #6c63ff;
 }
   
+/* ❄️ SCORE FRIO */
 
+.lead-score.frio {
+
+  background:
+    rgba(80, 170, 255, 0.15);
+
+  color: #7dc8ff;
+
+  border:
+    1px solid rgba(80,170,255,0.3);
+}
+
+/* PRIORIDADE */
+.lead-prioridade.frio {
+
+  background: #4da3ff;
+}
+
+/* CARD */
+.lead-card.frio {
+
+  border-left:
+    4px solid #4da3ff;
+}
 
 
   
@@ -3020,8 +3044,13 @@ function criarLeadCard(lead) {
       .toUpperCase();
 
   const classeScore =
+
     lead.score === "quente"
       ? "quente"
+  
+      : lead.score === "frio"
+      ? "frio"
+  
       : "morno";
 
   return `

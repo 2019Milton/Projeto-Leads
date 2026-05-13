@@ -924,7 +924,9 @@ button {
 
   gap: 14px;
 
-  align-items: stretch;
+  align-items: center;
+
+  justify-content: space-between;
 
   margin-bottom: 18px;
 }
@@ -932,9 +934,9 @@ button {
 
 .lead-search {
 
-  width: 320px;
+  flex: 1;
 
-  min-width: 260px;
+  max-width: 320px;
 
   height: 44px;
 
@@ -955,8 +957,9 @@ button {
   transition: 0.2s;
 
   box-sizing: border-box;
-}
 
+  margin-bottom: 0 !important;
+}
 .lead-search:focus {
 
   border-color: #7c5cff;

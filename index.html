@@ -2475,6 +2475,38 @@ button {
     0 10px 30px rgba(0,0,0,0.35);
 }
 
+
+/* STATUS VISUAL */
+
+.active-card {
+
+  border-color:
+    rgba(34,197,94,0.22);
+
+  box-shadow:
+    0 0 25px rgba(34,197,94,0.08);
+}
+
+.paused-card {
+
+  border-color:
+    rgba(255,193,7,0.18);
+
+  box-shadow:
+    0 0 22px rgba(255,193,7,0.06);
+}
+
+.deleted-card {
+
+  border-color:
+    rgba(239,68,68,0.18);
+
+  box-shadow:
+    0 0 22px rgba(239,68,68,0.06);
+}
+
+  
+
 .campanha-card:hover {
 
   transform: translateY(-4px);
@@ -5259,8 +5291,17 @@ async function carregarCampanhas() {
 
     div.innerHTML += `
 
-    <div class="campanha-card">
+    <div class="
+      campanha-card
     
+      ${c.status === "ACTIVE"
+        ? "active-card"
+        : c.status === "PAUSED"
+        ? "paused-card"
+        : "deleted-card"
+      }
+    ">
+        
       <div class="campanha-topo">
     
         <div class="campanha-header">

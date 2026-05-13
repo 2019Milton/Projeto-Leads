@@ -2429,6 +2429,321 @@ button {
 }
 
 
+/* =========================================
+   🚀 NOVOS CARDS DE CAMPANHAS
+========================================= */
+
+#campanhas_lista {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(340px, 1fr));
+
+  gap: 18px;
+
+  width: 100%;
+}
+
+/* CARD */
+
+.campanha-card {
+
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(10,15,35,0.95),
+      rgba(5,10,25,0.98)
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  border-radius: 20px;
+
+  padding: 18px;
+
+  overflow: hidden;
+
+  transition: 0.25s;
+
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35);
+}
+
+.campanha-card:hover {
+
+  transform: translateY(-4px);
+
+  border-color:
+    rgba(124,92,255,0.4);
+
+  box-shadow:
+    0 0 30px rgba(124,92,255,0.15);
+}
+
+/* TOPO */
+
+.campanha-topo {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-start;
+
+  margin-bottom: 14px;
+
+  gap: 10px;
+}
+
+.campanha-header {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  flex: 1;
+}
+
+.campanha-header h3 {
+
+  margin: 0;
+
+  font-size: 18px;
+
+  line-height: 1.3;
+
+  color: white;
+}
+
+/* BADGES */
+
+.badge {
+
+  width: fit-content;
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.badge.meta {
+
+  background:
+    rgba(59,130,246,0.15);
+
+  color:
+    #60a5fa;
+}
+
+/* STATUS */
+
+.status-badge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 6px 12px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  width: fit-content;
+
+  margin-bottom: 16px;
+}
+
+.status-active {
+
+  background:
+    rgba(34,197,94,0.15);
+
+  color:
+    #4ade80;
+}
+
+.status-paused {
+
+  background:
+    rgba(255,193,7,0.12);
+
+  color:
+    #ffd257;
+}
+
+.status-deleted {
+
+  background:
+    rgba(239,68,68,0.15);
+
+  color:
+    #ff7b7b;
+}
+
+/* KPIS */
+
+.metricas-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 10px;
+
+  margin-top: 10px;
+}
+
+.metrica {
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.04);
+
+  border-radius: 14px;
+
+  padding: 12px;
+
+  min-height: 76px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  transition: 0.2s;
+}
+
+.metrica:hover {
+
+  border-color:
+    rgba(124,92,255,0.25);
+}
+
+.metrica span {
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  margin-top: 6px;
+
+  color: white;
+}
+
+.metrica small {
+
+  font-size: 11px;
+
+  opacity: 0.7;
+}
+
+/* RODAPÉ */
+
+.campanha-footer {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-top: 18px;
+
+  gap: 12px;
+}
+
+.campanha-data {
+
+  font-size: 11px;
+
+  opacity: 0.6;
+}
+
+/* AÇÕES */
+
+.campanha-acoes {
+
+  display: flex;
+
+  gap: 8px;
+}
+
+.campanha-acoes button {
+
+  width: 38px !important;
+
+  min-width: 38px !important;
+
+  height: 38px;
+
+  border-radius: 12px;
+
+  border: none;
+
+  cursor: pointer;
+
+  color: white;
+
+  transition: 0.2s;
+
+  padding: 0;
+}
+
+.campanha-acoes button:hover {
+
+  transform: scale(1.08);
+}
+
+/* BOTÕES */
+
+.btn-acao {
+
+  background:
+    rgba(124,92,255,0.18);
+}
+
+.btn-acao:hover {
+
+  background:
+    rgba(124,92,255,0.35);
+}
+
+.btn-danger {
+
+  background:
+    rgba(239,68,68,0.15);
+}
+
+.btn-danger:hover {
+
+  background:
+    rgba(239,68,68,0.3);
+}
+
+
 /* 🔥 MENU SCORE */
 
 .menu-score {
@@ -4826,115 +5141,148 @@ async function carregarCampanhas() {
 
     div.innerHTML += `
 
-      <div class="campanha-card">
-
-        <div class="campanha-topo">
-
-          <div class="campanha-header">
-
-            <h3>
-              ${c.nome}
-            </h3>
-          
-            <label class="switch">
-          
-              <input
-                type="checkbox"
-                ${c.status === "ACTIVE" ? "checked" : ""}
-                onchange="
-                  toggleCampanha(
-                    '${c.campaign_id}',
-                    '${c.status}'
-                  )
-                "
-              >
-          
-              <span class="slider"></span>
-          
-            </label>
-
-            <button
-              class="btn-excluir"
-              onclick="
-                excluirCampanha(
-                  '${c.campaign_id}'
-                )
-              "
-            >
-              🗑️
-            </button>
-          
-          </div>
-
-          <span class="badge ${c.origem}">
+    <div class="campanha-card">
+    
+      <div class="campanha-topo">
+    
+        <div class="campanha-header">
+    
+          <h3>
+            🚀 ${c.nome}
+          </h3>
+    
+          <span class="badge meta">
             ${c.origem}
           </span>
-
+    
         </div>
-
-        <p>
-          Status:
-          <b>${c.status}</b>
-        </p>
-
-        <div class="metricas-grid">
-
-          <div class="metrica">
-            💰
-            <span>
-              R$ ${Number(c.gasto).toFixed(2)}
-            </span>
-            <small>Gasto</small>
-          </div>
-
-          <div class="metrica">
-            🎯
-            <span>
-              ${c.leads}
-            </span>
-            <small>Leads</small>
-          </div>
-
-          <div class="metrica">
-            👁️
-            <span>
-              ${c.impressoes}
-            </span>
-            <small>Impressões</small>
-          </div>
-
-          <div class="metrica">
-            🖱️
-            <span>
-              ${c.cliques}
-            </span>
-            <small>Cliques</small>
-          </div>
-
-          <div class="metrica">
-            📈
-            <span>
-              ${Number(c.ctr).toFixed(2)}%
-            </span>
-            <small>CTR</small>
-          </div>
-
-          <div class="metrica">
-            💵
-            <span>
-              R$ ${Number(c.cpc).toFixed(2)}
-            </span>
-            <small>CPC</small>
-          </div>
-
-        </div>
-
-        <small>
-          Criado em:
-          ${new Date(c.criado_em).toLocaleString()}
-        </small>
-
+    
+        <label class="switch">
+    
+          <input
+            type="checkbox"
+            ${c.status === "ACTIVE" ? "checked" : ""}
+            onchange="
+              toggleCampanha(
+                '${c.campaign_id}',
+                '${c.status}'
+              )
+            "
+          >
+    
+          <span class="slider"></span>
+    
+        </label>
+    
       </div>
+    
+      <div class="
+        status-badge
+        ${c.status === "ACTIVE"
+          ? "status-active"
+          : c.status === "PAUSED"
+          ? "status-paused"
+          : "status-deleted"
+        }
+      ">
+    
+        ${
+          c.status === "ACTIVE"
+            ? "🟢 ACTIVE"
+            : c.status === "PAUSED"
+            ? "🟡 PAUSED"
+            : "🔴 DELETED"
+        }
+    
+      </div>
+    
+      <div class="metricas-grid">
+    
+        <div class="metrica">
+          💰
+          <span>
+            R$ ${Number(c.gasto).toFixed(2)}
+          </span>
+          <small>Gasto</small>
+        </div>
+    
+        <div class="metrica">
+          🎯
+          <span>
+            ${c.leads}
+          </span>
+          <small>Leads</small>
+        </div>
+    
+        <div class="metrica">
+          👁️
+          <span>
+            ${c.impressoes}
+          </span>
+          <small>Impressões</small>
+        </div>
+    
+        <div class="metrica">
+          🖱️
+          <span>
+            ${c.cliques}
+          </span>
+          <small>Cliques</small>
+        </div>
+    
+        <div class="metrica">
+          📈
+          <span>
+            ${Number(c.ctr).toFixed(2)}%
+          </span>
+          <small>CTR</small>
+        </div>
+    
+        <div class="metrica">
+          💵
+          <span>
+            R$ ${Number(c.cpc).toFixed(2)}
+          </span>
+          <small>CPC</small>
+        </div>
+    
+      </div>
+    
+      <div class="campanha-footer">
+    
+        <small class="campanha-data">
+    
+          📅 ${new Date(c.criado_em).toLocaleString()}
+    
+        </small>
+    
+        <div class="campanha-acoes">
+    
+          <button
+            class="btn-acao"
+            title="Sincronizar"
+            onclick="sincronizarCampanhas()"
+          >
+            🔄
+          </button>
+    
+          <button
+            class="btn-danger"
+            title="Excluir"
+            onclick="
+              excluirCampanha(
+                '${c.campaign_id}'
+              )
+            "
+          >
+            🗑️
+          </button>
+    
+        </div>
+    
+      </div>
+    
+    </div>
     `;
   });
 }

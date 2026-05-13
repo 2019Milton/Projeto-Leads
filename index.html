@@ -3544,9 +3544,7 @@ function renderizarLeadsFiltrados(leads) {
 
 function exportarLeadsCSV() {
 
-  if (
-    !leadsFiltradosAtuais.length
-  ) {
+  if (!leadsFiltradosAtuais.length) {
 
     alert(
       "Nenhum lead para exportar."
@@ -3555,57 +3553,90 @@ function exportarLeadsCSV() {
     return;
   }
 
-  let csv =
-    "Nome,Telefone,Email,Status,Score,Campanha,Origem,Data\n";
+  const dados =
 
-  leadsFiltradosAtuais.forEach(lead => {
+    leadsFiltradosAtuais.map(lead => ({
 
-    csv += `"${lead.nome || ""}",`;
+      Nome:
+        lead.nome || "",
 
-    csv += `"${lead.telefone || ""}",`;
+      Telefone:
+        lead.telefone || "",
 
-    csv += `"${lead.email || ""}",`;
+      Email:
+        lead.email || "",
 
-    csv += `"${lead.status || ""}",`;
+      Status:
+        lead.status || "",
 
-    csv += `"${lead.score || ""}",`;
+      Score:
+        lead.score || "",
 
-    csv += `"${lead.campanha || ""}",`;
+      Campanha:
+        lead.campanha || "",
 
-    csv += `"${lead.origem || ""}",`;
+      Origem:
+        lead.origem || "",
 
-    csv += `"${lead.criado_em || ""}"\n`;
-  });
+      Observação:
+        lead.observacao || "",
 
-  const blob = new Blob(
-    [csv],
-    {
-      type: "text/csv;charset=utf-8;"
-    }
+      Data:
+        formatarDataExcel(
+          lead.criado_em
+        )
+    }));
+
+  // 🔥 cria planilha
+  const worksheet =
+
+    XLSX.utils.json_to_sheet(dados);
+
+  // 🔥 largura colunas
+  worksheet["!cols"] = [
+
+    { wch: 25 }, // Nome
+    { wch: 18 }, // Telefone
+    { wch: 30 }, // Email
+    { wch: 18 }, // Status
+    { wch: 15 }, // Score
+    { wch: 28 }, // Campanha
+    { wch: 20 }, // Origem
+    { wch: 40 }, // Observação
+    { wch: 22 }  // Data
+  ];
+
+  // 🔥 workbook
+  const workbook =
+
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Leads"
   );
 
-  const url =
-    URL.createObjectURL(blob);
-
-  const link =
-    document.createElement("a");
-
-  link.href = url;
-
-  link.setAttribute(
-    "download",
-    "leads.csv"
+  // 🔥 exporta
+  XLSX.writeFile(
+    workbook,
+    "leads.xlsx"
   );
-
-  document.body.appendChild(link);
-
-  link.click();
-
-  document.body.removeChild(link);
-}  
+}
 
 
+function formatarDataExcel(data) {
 
+  if (!data) {
+    return "";
+  }
+
+  const d = new Date(data);
+
+  return d.toLocaleString("pt-BR");
+}
+
+  
   
   
 function criarLeadCard(lead) {
@@ -5700,6 +5731,10 @@ if (token) init();
   </button>
 
 </div>
+
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    
     
 </body>
 </html>

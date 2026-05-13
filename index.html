@@ -4339,12 +4339,176 @@ function ligarWhatsApp(
     "_blank"
   );
 }  
+
+
+// 🔥 MENU SCORE
+function abrirMenuScore(
+  event,
+  lead
+) {
+
+  event.stopPropagation();
+
+  // remove antigo
+  const antigo =
+    document.getElementById(
+      "menuScore"
+    );
+
+  if (antigo) {
+    antigo.remove();
+  }
+
+  // score visual
+  let scoreVisual =
+    "🟡 Morno";
+
+  if (lead.score === "quente") {
+    scoreVisual =
+      "🔥 Quente";
+  }
+
+  if (lead.score === "frio") {
+    scoreVisual =
+      "❄️ Frio";
+  }
+
+  // base score
+  let baseHTML = "";
+
+  if (
+    lead.score_base &&
+    lead.score_base.length
+  ) {
+
+    lead.score_base.forEach(item => {
+
+      baseHTML += `
+        <div class="score-base-item">
+          • ${item}
+        </div>
+      `;
+    });
+
+  } else {
+
+    baseHTML = `
+      <div class="score-base-item">
+        • Sem análise
+      </div>
+    `;
+  }
+
+  // cria menu
+  const menu =
+    document.createElement("div");
+
+  menu.id = "menuScore";
+
+  menu.className =
+    "menu-score";
+
+  menu.innerHTML = `
+
+    <div class="menu-score-header">
+
+      ${scoreVisual}
+
+    </div>
+
+    <div class="menu-score-subtitle">
+
+      Baseado em:
+
+    </div>
+
+    <div class="menu-score-base">
+
+      ${baseHTML}
+
+    </div>
+
+    <div class="menu-score-divider"></div>
+
+    <div class="menu-score-subtitle">
+
+      Alterar score:
+
+    </div>
+
+    <button>
+      🔥 Quente
+    </button>
+
+    <button>
+      🟡 Morno
+    </button>
+
+    <button>
+      ❄️ Frio
+    </button>
+
+    <button>
+      ⚡ Automático
+    </button>
+  `;
+
+  document.body.appendChild(menu);
+
+  // posição
+  menu.style.left =
+    event.clientX + "px";
+
+  menu.style.top =
+    (event.clientY - 20) + "px";
+
+  // fecha fora
+  setTimeout(() => {
+
+    document.addEventListener(
+      "click",
+      fecharMenuScore
+    );
+
+  }, 100);
+}
+  
+
+
+// 🔥 FECHAR MENU SCORE
+function fecharMenuScore() {
+
+  const menu =
+    document.getElementById(
+      "menuScore"
+    );
+
+  if (menu) {
+    menu.remove();
+  }
+
+  document.removeEventListener(
+    "click",
+    fecharMenuScore
+  );
+}
+
+
+
+
+  
   
 // AUTO LOGIN
 const token = localStorage.getItem("token");
 if (token) init();
+
+
+  
 </script>
 
+
+
+    
 <!-- 🔥 MODAL LEAD CRM -->
 
 <div

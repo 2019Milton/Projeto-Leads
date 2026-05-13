@@ -3266,6 +3266,14 @@ function aplicarFiltrosLeads() {
 
   const campanhaSelecionada =
 
+  const periodoSelecionado =
+
+    document
+      .getElementById(
+        "filtro_periodo"
+      )
+      .value;
+
   document
     .getElementById(
       "filtro_campanha"
@@ -3315,6 +3323,84 @@ function aplicarFiltrosLeads() {
         lead.campanha ===
         campanhaSelecionada
     );
+  }
+
+  // 📅 PERÍODO
+  if (periodoSelecionado !== "todos") {
+  
+    const agora = new Date();
+  
+    filtrados = filtrados.filter(lead => {
+  
+      if (!lead.criado_em) {
+        return false;
+      }
+  
+      const dataLead =
+        new Date(lead.criado_em);
+  
+      const diffDias =
+  
+        (agora - dataLead)
+        / (1000 * 60 * 60 * 24);
+  
+      // 🔥 HOJE
+      if (
+        periodoSelecionado === "hoje"
+      ) {
+  
+        return diffDias <= 1;
+      }
+  
+      // 🔥 ONTEM
+      if (
+        periodoSelecionado === "ontem"
+      ) {
+  
+        return (
+          diffDias > 1
+          &&
+          diffDias <= 2
+        );
+      }
+  
+      // 🔥 7 DIAS
+      if (
+        periodoSelecionado === "7dias"
+      ) {
+  
+        return diffDias <= 7;
+      }
+  
+      // 🔥 30 DIAS
+      if (
+        periodoSelecionado === "30dias"
+      ) {
+  
+        return diffDias <= 30;
+      }
+  
+      // 🔥 ESTE MÊS
+      if (
+        periodoSelecionado === "mes"
+      ) {
+  
+        return (
+  
+          dataLead.getMonth()
+          ===
+          agora.getMonth()
+  
+          &&
+  
+          dataLead.getFullYear()
+          ===
+          agora.getFullYear()
+        );
+      }
+  
+      return true;
+    });
   }
 
   // 🔥 FILTRO KPI
@@ -5166,6 +5252,13 @@ function popularFiltroCampanhas(leads) {
 
 
 
+document
+  .getElementById("filtro_periodo")
+  .addEventListener(
+    "change",
+    aplicarFiltrosLeads
+  );
+  
 
 document
   .getElementById("filtro_campanha")

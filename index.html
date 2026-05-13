@@ -3643,7 +3643,7 @@ function exportarLeadsCSV() {
     worksheet,
     dados,
     {
-      origin: "A4"
+      origin: "A5"
     }
   );
   
@@ -3666,7 +3666,7 @@ function exportarLeadsCSV() {
   // 🔥 autofilter
   worksheet["!autofilter"] = {
   
-    ref: "A4:I4"
+    ref: "A5:I5"
   };
   
   
@@ -3674,17 +3674,17 @@ function exportarLeadsCSV() {
   worksheet["!freeze"] = {
   
     xSplit: 0,
-    ySplit: 4
+    ySplit: 5
   };
 
   // 🔥 merge células
   worksheet["!merges"] = [
-  
+
     XLSX.utils.decode_range("A1:I2"),
   
-    XLSX.utils.decode_range("A3:I4")
+    XLSX.utils.decode_range("A3:I3")
   ];
-  
+    
   
   // 🔥 estilo premium
   const estiloPremium = {
@@ -3751,7 +3751,7 @@ function exportarLeadsCSV() {
   
   
   // 🔥 pinta A1:I4 inteiro
-  for (let row = 1; row <= 4; row++) {
+  for (let row = 1; row <= 5; row++) {
   
     const cols =
   
@@ -3818,7 +3818,7 @@ function exportarLeadsCSV() {
   // 🔥 cabeçalhos linha 4
   const headers =
   
-    ["A4","B4","C4","D4","E4","F4","G4","H4","I4"];
+    ["A5","B5","C5","D5","E5","F5","G5","H5","I5"];
   
   headers.forEach(cell => {
   

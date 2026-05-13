@@ -2916,6 +2916,7 @@ function criarLeadCard(lead) {
 
     <div
       class="lead-card ${classeScore}"
+    
       onclick='abrirLeadDrawer(${JSON.stringify(lead)})'
     >
 
@@ -2941,7 +2942,7 @@ function criarLeadCard(lead) {
               abrirMenuScore(
                 event,
                 ${JSON.stringify(lead).replace(/"/g, '&quot;')}
-              )
+              );
             '
           >
           

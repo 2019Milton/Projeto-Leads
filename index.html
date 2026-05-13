@@ -4552,7 +4552,7 @@ function abrirMenuScore(
     <button
       onclick="
         definirScoreManual(
-          ${lead.id},
+          ${JSON.stringify(lead).replace(/"/g, '&quot;')},
           'quente'
         )
       "
@@ -4563,7 +4563,7 @@ function abrirMenuScore(
     <button
       onclick="
         definirScoreManual(
-          ${lead.id},
+          ${JSON.stringify(lead).replace(/"/g, '&quot;')},
           'morno'
         )
       "
@@ -4574,7 +4574,7 @@ function abrirMenuScore(
     <button
       onclick="
         definirScoreManual(
-          ${lead.id},
+          ${JSON.stringify(lead).replace(/"/g, '&quot;')},
           'frio'
         )
       "
@@ -4585,7 +4585,7 @@ function abrirMenuScore(
     <button
       onclick="
         definirScoreManual(
-          ${lead.id},
+          ${JSON.stringify(lead).replace(/"/g, '&quot;')},
           null
         )
       "
@@ -4637,7 +4637,7 @@ function fecharMenuScore() {
 
 // 🔥 DEFINIR SCORE MANUAL
 async function definirScoreManual(
-  id,
+  lead,
   score
 ) {
 
@@ -4645,7 +4645,7 @@ async function definirScoreManual(
     localStorage.getItem("token");
 
   await fetch(
-    `${API}/leads/${id}`,
+    `${API}/leads/${lead.id}`,
     {
       method: "PUT",
 
@@ -4660,7 +4660,17 @@ async function definirScoreManual(
 
       body: JSON.stringify({
 
-        score_manual: score
+        observacao:
+          lead.observacao,
+      
+        status:
+          lead.status,
+      
+        motivo_perda:
+          lead.motivo_perda,
+      
+        score_manual:
+          score
       })
     }
   );

@@ -3264,6 +3264,14 @@ function aplicarFiltrosLeads() {
 
   let filtrados = [...todosLeads];
 
+  const campanhaSelecionada =
+
+  document
+    .getElementById(
+      "filtro_campanha"
+    )
+    .value;
+
   // 🔍 BUSCA
   const busca =
     document
@@ -3296,6 +3304,17 @@ function aplicarFiltrosLeads() {
           .includes(busca)
       );
     });
+  }
+
+  // 📢 CAMPANHA
+  if (campanhaSelecionada) {
+  
+    filtrados = filtrados.filter(
+  
+      lead =>
+        lead.campanha ===
+        campanhaSelecionada
+    );
   }
 
   // 🔥 FILTRO KPI
@@ -5148,7 +5167,12 @@ function popularFiltroCampanhas(leads) {
 
 
 
-
+document
+  .getElementById("filtro_campanha")
+  .addEventListener(
+    "change",
+    aplicarFiltrosLeads
+  );
 
   
 document

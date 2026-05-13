@@ -2667,25 +2667,67 @@ button {
 
       <!-- 🔥 TOPO CENTRAL LEADS -->
       <div class="leads-toolbar">
-
+      
+        <!-- 🔍 BUSCA -->
         <input
           type="text"
+          id="busca_lead"
           placeholder="🔍 Buscar lead..."
           class="lead-search"
         >
-
-        <select class="lead-filter">
-          <option>Todas campanhas</option>
+      
+        <!-- 📢 CAMPANHAS -->
+        <select
+          class="lead-filter"
+          id="filtro_campanha"
+        >
+      
+          <option value="">
+            Todas campanhas
+          </option>
+      
         </select>
-
-        <select class="lead-filter">
-          <option>Hoje</option>
+      
+        <!-- 📅 PERÍODO -->
+        <select
+          class="lead-filter"
+          id="filtro_periodo"
+        >
+      
+          <option value="hoje">
+            Hoje
+          </option>
+      
+          <option value="ontem">
+            Ontem
+          </option>
+      
+          <option value="7dias">
+            Últimos 7 dias
+          </option>
+      
+          <option value="30dias">
+            Últimos 30 dias
+          </option>
+      
+          <option value="mes">
+            Este mês
+          </option>
+      
+          <option value="todos">
+            Todo período
+          </option>
+      
         </select>
-
-        <button class="export-btn">
+      
+        <!-- 📤 EXPORTAR -->
+        <button
+          class="export-btn"
+          id="btn_exportar"
+        >
           📤 Exportar
         </button>
-
+      
       </div>
 
       <!-- 📊 KPIs -->

@@ -3553,68 +3553,137 @@ function exportarLeadsCSV() {
     return;
   }
 
+  const nomeConta =
+
+  document
+    .querySelector(
+      ".meta-page-name"
+    )
+    ?.innerText
+
+  ||
+
+  "Conta Meta";
+
+
   const dados =
-
+  
     leadsFiltradosAtuais.map(lead => ({
-
+  
       Nome:
         lead.nome || "",
-
+  
       Telefone:
         lead.telefone || "",
-
+  
       Email:
         lead.email || "",
-
+  
       Status:
         lead.status || "",
-
+  
       Score:
         lead.score || "",
-
+  
       Campanha:
         lead.campanha || "",
-
+  
       Origem:
         lead.origem || "",
-
+  
       Observação:
         lead.observacao || "",
-
+  
       Data:
         formatarDataExcel(
           lead.criado_em
         )
     }));
-
-  // 🔥 cria planilha
+  
+  
   const worksheet =
-
-    XLSX.utils.json_to_sheet(dados);
-
+  
+    XLSX.utils.json_to_sheet(
+      []
+    );
+  
+  
+  // 🔥 título
+  XLSX.utils.sheet_add_aoa(
+    worksheet,
+    [[
+      `Central Leads - ${nomeConta}`
+    ]],
+    {
+      origin: "A1"
+    }
+  );
+  
+  
+  // 🔥 data exportação
+  XLSX.utils.sheet_add_aoa(
+    worksheet,
+    [[
+      `Exportado em: ${
+        new Date()
+          .toLocaleString("pt-BR")
+      }`
+    ]],
+    {
+      origin: "A2"
+    }
+  );
+  
+  
+  // 🔥 tabela começa na linha 4
+  XLSX.utils.sheet_add_json(
+    worksheet,
+    dados,
+    {
+      origin: "A4"
+    }
+  );
+  
+  
   // 🔥 largura colunas
   worksheet["!cols"] = [
-
-    { wch: 25 }, // Nome
-    { wch: 18 }, // Telefone
-    { wch: 30 }, // Email
-    { wch: 18 }, // Status
-    { wch: 15 }, // Score
-    { wch: 28 }, // Campanha
-    { wch: 20 }, // Origem
-    { wch: 40 }, // Observação
-    { wch: 22 }  // Data
+  
+    { wch: 25 },
+    { wch: 18 },
+    { wch: 30 },
+    { wch: 18 },
+    { wch: 15 },
+    { wch: 28 },
+    { wch: 20 },
+    { wch: 40 },
+    { wch: 22 }
   ];
-
-  // 🔥 workbook
+  
+  
+  // 🔥 autofilter
+  worksheet["!autofilter"] = {
+  
+    ref: "A4:I4"
+  };
+  
+  
+  // 🔥 congelar topo
+  worksheet["!freeze"] = {
+  
+    xSplit: 0,
+    ySplit: 4
+  };
+  
+  
   const workbook =
-
+  
     XLSX.utils.book_new();
-
+  
+  
   XLSX.utils.book_append_sheet(
     workbook,
     worksheet,
-    "Leads"
+    nomeConta.substring(0, 31)
   );
 
   // 🔥 exporta

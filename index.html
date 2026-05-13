@@ -2932,12 +2932,29 @@ function criarLeadCard(lead) {
 
           <h4>${lead.nome}</h4>
 
-          <span class="lead-score ${classeScore}">
+          <span
+            class="lead-score ${classeScore}"
+          
+            onclick='
+              event.stopPropagation();
+          
+              abrirMenuScore(
+                event,
+                ${JSON.stringify(lead).replace(/"/g, '&quot;')}
+              )
+            '
+          >
+          
             ${
               lead.score === "quente"
                 ? "🔥 Quente"
+          
+                : lead.score === "frio"
+                ? "❄️ Frio"
+          
                 : "🟡 Morno"
             }
+          
           </span>
 
         </div>

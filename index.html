@@ -3104,6 +3104,8 @@ async function carregarLeads() {
   
   atualizarKPIs(todosLeads);
 
+  popularFiltroCampanhas(todosLeads);
+
   console.log("LEADS:", leads);
 
   // 🔥 COLUNAS
@@ -5108,6 +5110,47 @@ async function definirScoreManual(
 }
 
 
+function popularFiltroCampanhas(leads) {
+
+  const select =
+    document.getElementById(
+      "filtro_campanha"
+    );
+
+  const campanhas = [
+
+    ...new Set(
+
+      leads
+        .map(l => l.campanha)
+        .filter(Boolean)
+
+    )
+
+  ];
+
+  select.innerHTML = `
+    <option value="">
+      Todas campanhas
+    </option>
+  `;
+
+  campanhas.forEach(campanha => {
+
+    select.innerHTML += `
+      <option value="${campanha}">
+        ${campanha}
+      </option>
+    `;
+  });
+}
+
+
+
+
+
+
+  
 document
   .getElementById("busca_lead")
   .addEventListener(

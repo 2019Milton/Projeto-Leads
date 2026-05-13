@@ -3618,7 +3618,7 @@ function exportarLeadsCSV() {
       `Central Leads - ${nomeConta}`
     ]],
     {
-      origin: "C1"
+      origin: "A1"
     }
   );
   
@@ -3680,7 +3680,7 @@ function exportarLeadsCSV() {
   // 🔥 merge células
   worksheet["!merges"] = [
 
-    XLSX.utils.decode_range("C1:G2"),
+    XLSX.utils.decode_range("A1:I2"),
   
     XLSX.utils.decode_range("G3:I3")
   ];

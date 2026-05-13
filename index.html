@@ -2360,6 +2360,118 @@ button {
 
   cursor: not-allowed;
 }
+
+
+/* 🔥 MENU SCORE */
+
+.menu-score {
+
+  position: fixed;
+
+  width: 260px;
+
+  background: #11182d;
+
+  border: 1px solid #2f3b63;
+
+  border-radius: 16px;
+
+  padding: 16px;
+
+  z-index: 999999;
+
+  box-shadow:
+    0 0 25px rgba(0,0,0,0.5);
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+/* HEADER */
+.menu-score-header {
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  color: white;
+}
+
+/* SUBTITULO */
+.menu-score-subtitle {
+
+  font-size: 13px;
+
+  opacity: .7;
+
+  color: white;
+}
+
+/* BASE */
+.menu-score-base {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+/* ITEM */
+.score-base-item {
+
+  font-size: 13px;
+
+  color: #d7dcec;
+
+  line-height: 1.4;
+}
+
+/* DIVISOR */
+.menu-score-divider {
+
+  width: 100%;
+
+  height: 1px;
+
+  background:
+    rgba(255,255,255,0.08);
+}
+
+/* BOTÕES */
+.menu-score button {
+
+  background: #1b2440;
+
+  border: none;
+
+  color: white;
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition: 0.2s;
+
+  font-size: 14px;
+}
+
+.menu-score button:hover {
+
+  background: #6c63ff;
+}
+  
+
+
+
+  
   
 </style>
 </head>
@@ -4458,10 +4570,10 @@ function abrirMenuScore(
 
   // posição
   menu.style.left =
-    event.clientX + "px";
-
+    (event.clientX - 100) + "px";
+  
   menu.style.top =
-    (event.clientY - 20) + "px";
+    (event.clientY + 10) + "px";
 
   // fecha fora
   setTimeout(() => {

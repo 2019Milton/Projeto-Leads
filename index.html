@@ -2834,7 +2834,15 @@ function criarLeadCard(lead) {
           💬
         </button>
 
-        <button title="Ligar">
+        <button
+          title="Ligar"
+          onclick="
+            abrirMenuLigacao(
+              event,
+              ${JSON.stringify(lead).replace(/"/g, '&quot;')}
+            )
+          "
+        >
           📞
         </button>
 
@@ -4000,6 +4008,8 @@ function atualizarTempoSync(dataSync) {
     setInterval(atualizar, 1000);
 }
 
+
+  
 // 🔥 ABRIR WHATSAPP
 function abrirWhatsApp(numero) {
 
@@ -4023,6 +4033,138 @@ function abrirWhatsApp(numero) {
 }
 
 
+// 🔥 MENU LIGAÇÃO
+function abrirMenuLigacao(
+  event,
+  lead
+) {
+
+  event.stopPropagation();
+
+  // remove antigo
+  const antigo =
+    document.getElementById(
+      "menuLigacao"
+    );
+
+  if (antigo) {
+    antigo.remove();
+  }
+
+  // cria menu
+  const menu =
+    document.createElement("div");
+
+  menu.id = "menuLigacao";
+
+  menu.className =
+    "menu-mover";
+
+  menu.innerHTML = `
+
+    <button
+      onclick="
+        ligarTelefone(
+          '${lead.telefone}'
+        )
+      "
+    >
+      📱 Ligar Telefone
+    </button>
+
+    <button
+      onclick="
+        ligarWhatsApp(
+          '${lead.telefone}'
+        )
+      "
+    >
+      💬 Chamada WhatsApp
+    </button>
+
+    <button disabled>
+      ☎️ VoIP (em breve)
+    </button>
+
+  `;
+
+  event.target
+    .closest(".lead-actions")
+    .appendChild(menu);
+
+  // fecha clicando fora
+  setTimeout(() => {
+
+    document.addEventListener(
+      "click",
+      fecharMenuLigacao
+    );
+
+  }, 100);
+}
+
+  
+// 🔥 FECHAR MENU
+function fecharMenuLigacao() {
+
+  const menu =
+    document.getElementById(
+      "menuLigacao"
+    );
+
+  if (menu) {
+    menu.remove();
+  }
+
+  document.removeEventListener(
+    "click",
+    fecharMenuLigacao
+  );
+}  
+
+// 🔥 LIGAÇÃO TELEFONE
+function ligarTelefone(
+  numero
+) {
+
+  if (!numero) {
+    alert("Sem telefone");
+    return;
+  }
+
+  numero =
+    numero.replace(/\D/g, "");
+
+  window.open(
+    `tel:${numero}`
+  );
+}
+
+// 🔥 WHATSAPP CALL
+function ligarWhatsApp(
+  numero
+) {
+
+  if (!numero) {
+    alert("Sem telefone");
+    return;
+  }
+
+  numero =
+    numero.replace(/\D/g, "");
+
+  if (
+    !numero.startsWith("55")
+  ) {
+
+    numero = "55" + numero;
+  }
+
+  window.open(
+    `https://wa.me/${numero}`,
+    "_blank"
+  );
+}  
   
 // AUTO LOGIN
 const token = localStorage.getItem("token");

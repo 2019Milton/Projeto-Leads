@@ -2312,19 +2312,19 @@ button {
 
   all: unset;
 
-  box-sizing: border-box;
-
   width: 100%;
+
+  box-sizing: border-box;
 
   display: flex;
 
   align-items: center;
 
+  justify-content: flex-start;
+
   gap: 10px;
 
   background: #1b2440;
-
-  color: #ffffff;
 
   padding: 12px;
 
@@ -2332,13 +2332,27 @@ button {
 
   cursor: pointer;
 
-  font-size: 14px;
-
-  font-weight: 500;
-
-  line-height: 1.2;
-
   transition: 0.2s;
+
+  font-family: inherit !important;
+
+  font-size: 14px !important;
+
+  font-weight: 500 !important;
+
+  line-height: 1.2 !important;
+
+  color: #ffffff !important;
+
+  -webkit-text-fill-color: #ffffff !important;
+
+  text-fill-color: #ffffff !important;
+
+  opacity: 1 !important;
+
+  visibility: visible !important;
+
+  white-space: nowrap;
 }
 
 .menu-ligacao button:hover {

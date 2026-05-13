@@ -3087,9 +3087,10 @@ function atualizarKPIs(leads) {
       l => l.status === "fechado"
     ).length;
 
-  // 🔥 estimativa inicial
-  const estimativa =
-    fechados * 4000;
+  const perdidos =
+    leads.filter(
+      l => l.status === "perdido"
+    ).length;
 
   document.getElementById(
     "kpi_total"
@@ -3108,9 +3109,8 @@ function atualizarKPIs(leads) {
   ).innerText = fechados;
 
   document.getElementById(
-    "kpi_estimativa"
-  ).innerText =
-    `R$ ${estimativa.toLocaleString("pt-BR")}`;
+    "kpi_perdidos"
+  ).innerText = perdidos;
 }
 
 function filtrarPorKPI(tipo) {

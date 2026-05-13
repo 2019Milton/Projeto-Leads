@@ -3680,9 +3680,9 @@ function exportarLeadsCSV() {
   // 🔥 merge células
   worksheet["!merges"] = [
 
-    XLSX.utils.decode_range("A1:I2"),
+    XLSX.utils.decode_range("C1:G2"),
   
-    XLSX.utils.decode_range("A3:I3")
+    XLSX.utils.decode_range("G3:I3")
   ];
     
   
@@ -3742,9 +3742,9 @@ function exportarLeadsCSV() {
     },
   
     alignment: {
-  
-      horizontal: "center",
-  
+
+      horizontal: "right",
+    
       vertical: "center"
     }
   };
@@ -3798,7 +3798,9 @@ function exportarLeadsCSV() {
     },
   
     alignment: {
-      horizontal: "left",
+
+      horizontal: "center",
+    
       vertical: "center"
     }
   };

@@ -4549,19 +4549,47 @@ function abrirMenuScore(
 
     </div>
 
-    <button>
+    <button
+      onclick="
+        definirScoreManual(
+          ${lead.id},
+          'quente'
+        )
+      "
+    >
       🔥 Quente
     </button>
-
-    <button>
+    
+    <button
+      onclick="
+        definirScoreManual(
+          ${lead.id},
+          'morno'
+        )
+      "
+    >
       🟡 Morno
     </button>
-
-    <button>
+    
+    <button
+      onclick="
+        definirScoreManual(
+          ${lead.id},
+          'frio'
+        )
+      "
+    >
       ❄️ Frio
     </button>
-
-    <button>
+    
+    <button
+      onclick="
+        definirScoreManual(
+          ${lead.id},
+          null
+        )
+      "
+    >
       ⚡ Automático
     </button>
   `;
@@ -4607,6 +4635,42 @@ function fecharMenuScore() {
 }
 
 
+// 🔥 DEFINIR SCORE MANUAL
+async function definirScoreManual(
+  id,
+  score
+) {
+
+  const token =
+    localStorage.getItem("token");
+
+  await fetch(
+    `${API}/leads/${id}`,
+    {
+      method: "PUT",
+
+      headers: {
+
+        "Content-Type":
+          "application/json",
+
+        "Authorization":
+          "Bearer " + token
+      },
+
+      body: JSON.stringify({
+
+        score_manual: score
+      })
+    }
+  );
+
+  // fecha menu
+  fecharMenuScore();
+
+  // reload
+  await carregarLeads();
+}
 
 
   

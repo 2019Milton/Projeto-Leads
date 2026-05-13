@@ -5532,6 +5532,17 @@ async function carregarCampanhas() {
   
       const ctr =
         Number(c.ctr || 0);
+
+      // 📈 dados reais do gráfico
+      const dadosGrafico =
+      
+        c.grafico?.map(g =>
+          Number(g.clicks || 0)
+        )
+      
+        ||
+      
+        [];
   
       let cor = "#ff6b6b";
   
@@ -5595,16 +5606,8 @@ async function carregarCampanhas() {
         colors: [cor],
   
         series: [{
-  
-          data: [
-            10,
-            14,
-            9,
-            18,
-            13,
-            22,
-            19
-          ]
+        
+          data: dadosGrafico
         }],
   
         tooltip: {

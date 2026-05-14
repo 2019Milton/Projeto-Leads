@@ -3772,10 +3772,16 @@ async function init() {
     });
     
     if (tipo === "super_admin") {
-    
+
       document.getElementById(
         "btn_admin"
       ).style.display = "block";
+    
+      document.getElementById(
+        "painel_admin"
+      ).style.display = "block";
+    
+      carregarPainelAdmin();
     }
 
   } catch (err) {
@@ -6596,6 +6602,115 @@ function abrirPainelAdmin() {
 }  
 
 
+async function carregarPainelAdmin() {
+
+  try {
+
+    const token =
+      localStorage.getItem("token");
+
+    const res = await fetch(
+      `${API}/admin/usuarios`,
+      {
+        headers: {
+          Authorization: token
+        }
+      }
+    );
+
+    const data =
+      await res.json();
+
+    console.log(
+      "ADMIN:",
+      data
+    );
+
+    // 🔥 KPIS
+    document.getElementById(
+      "admin_total_usuarios"
+    ).innerText =
+      data.total_usuarios || 0;
+
+    document.getElementById(
+      "admin_total_campanhas"
+    ).innerText =
+      data.total_campanhas || 0;
+
+    document.getElementById(
+      "admin_total_leads"
+    ).innerText =
+      data.total_leads || 0;
+
+    document.getElementById(
+      "admin_contas_ativas"
+    ).innerText =
+      data.contas_ativas || 0;
+
+    // 🔥 TABELA
+    const tabela =
+      document.getElementById(
+        "admin_tabela_usuarios"
+      );
+
+    tabela.innerHTML = "";
+
+    for (const u of data.usuarios) {
+
+      tabela.innerHTML += `
+        <tr>
+
+          <td>${u.id}</td>
+
+          <td>${u.email}</td>
+
+          <td>${u.tipo}</td>
+
+          <td>
+            ${
+              u.ativo
+                ? "🟢 Ativo"
+                : "🔴 Desativado"
+            }
+          </td>
+
+          <td>${u.campanhas}</td>
+
+          <td>${u.leads}</td>
+
+          <td>
+
+            <button
+              onclick="
+                alterarStatusUsuario(
+                  ${u.id},
+                  ${u.ativo}
+                )
+              "
+            >
+              ${
+                u.ativo
+                  ? "Desativar"
+                  : "Ativar"
+              }
+            </button>
+
+          </td>
+
+        </tr>
+      `;
+    }
+
+  } catch (err) {
+
+    console.error(
+      "ERRO ADMIN:",
+      err
+    );
+  }
+}
+
+  
 
 document
   .getElementById("btn_exportar")

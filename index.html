@@ -3159,7 +3159,19 @@ button {
 
   <div class="topbar">
     <h2>🚀 Central de Leads</h2>
-    <button class="logout" onclick="logout()">Sair</button>
+  
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button
+        id="btn_admin"
+        class="btn-sync"
+        style="display:none;"
+        onclick="abrirPainelAdmin()"
+      >
+        🛡️ Admin
+      </button>
+  
+      <button class="logout" onclick="logout()">Sair</button>
+    </div>
   </div>
 
   <!-- 🔥 GRID SUPERIOR -->
@@ -3651,6 +3663,36 @@ async function init() {
 
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("app").style.display = "block";
+
+  // 🔥 PEGA TOKEN
+  const token =
+    localStorage.getItem("token");
+
+  // 🔥 DECODIFICA TOKEN
+  try {
+
+    const payload =
+      JSON.parse(
+        atob(token.split(".")[1])
+      );
+
+    console.log("USUARIO:", payload);
+
+    // 🔥 MOSTRA BOTÃO ADMIN
+    if (payload.tipo === "super_admin") {
+
+      document.getElementById(
+        "btn_admin"
+      ).style.display = "block";
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Erro token:",
+      err
+    );
+  }
 
   // 🔥 carrega status Meta
   await carregarStatusMeta();

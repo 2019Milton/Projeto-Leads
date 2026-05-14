@@ -6617,7 +6617,7 @@ async function carregarPainelAdmin() {
       `${API}/admin/usuarios`,
       {
         headers: {
-          Authorization: token
+          "Authorization": "Bearer " + token
         }
       }
     );

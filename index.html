@@ -11,7 +11,7 @@
 }
 
 /* ===== FUNDO UNIVERSO ===== */
-body {
+body { 
   margin: 0;
   background: radial-gradient(circle at 20% 20%, #020617, #000);
   color: #e2e8f0;
@@ -5693,6 +5693,7 @@ async function sincronizarCampanhas() {
 
     await carregarCampanhas();
     await carregarStatusMeta();
+    await carregarLeads();
 
     alert("Campanhas sincronizadas 🚀");
 

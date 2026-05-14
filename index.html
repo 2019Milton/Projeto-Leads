@@ -3671,16 +3671,19 @@ async function init() {
   // 🔥 DECODIFICA TOKEN
   try {
 
-    const payload =
-      JSON.parse(
-        atob(token.split(".")[1])
-      );
+    const decoded = atob(token);
 
-    console.log("USUARIO:", payload);
-
-    // 🔥 MOSTRA BOTÃO ADMIN
-    if (payload.tipo === "super_admin") {
-
+    const [id, email, tipo] =
+      decoded.split(":");
+    
+    console.log("USUARIO:", {
+      id,
+      email,
+      tipo
+    });
+    
+    if (tipo === "super_admin") {
+    
       document.getElementById(
         "btn_admin"
       ).style.display = "block";

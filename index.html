@@ -4401,12 +4401,14 @@ function criarLeadCard(lead) {
             ${
               lead.score === "quente"
                 ? "🔥 Quente"
-          
+            
                 : lead.score === "frio"
                 ? "❄️ Frio"
-          
+            
                 : "🟡 Morno"
             }
+            
+            • ${lead.score_pontos || 0}pts
           
           </span>
 

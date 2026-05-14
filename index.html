@@ -3070,7 +3070,74 @@ button {
 
   margin-top: 6px;
 }
-  
+
+/* =========================================
+   🧠 SCORE IA
+========================================= */
+
+.score-legenda {
+
+  margin-top: 22px;
+
+  padding-top: 18px;
+
+  border-top:
+    1px solid rgba(255,255,255,0.08);
+}
+
+.score-legenda h4 {
+
+  margin-bottom: 14px;
+
+  font-size: 15px;
+
+  color: white;
+}
+
+.score-legenda-box {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.score-item {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 10px 12px;
+
+  border-radius: 12px;
+
+  font-size: 13px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+}
+
+.score-item strong {
+
+  font-size: 14px;
+}
+
+.score-item.positivo strong {
+
+  color: #4ade80;
+}
+
+.score-item.negativo strong {
+
+  color: #ff7b7b;
+}
   
 </style>
 </head>
@@ -3221,6 +3288,57 @@ button {
         <button onclick="criarCampanhaCompleta()">
           🚀 Publicar Campanha
         </button>
+
+        <!-- 🔥 LEGENDA SCORE IA -->
+        <div class="score-legenda">
+        
+          <h4>🧠 Inteligência do Lead</h4>
+        
+          <div class="score-legenda-box">
+        
+            <div class="score-item positivo">
+              <span>🆕 Lead novo</span>
+              <strong>+10</strong>
+            </div>
+        
+            <div class="score-item positivo">
+              <span>📢 Veio da Meta Ads</span>
+              <strong>+15</strong>
+            </div>
+        
+            <div class="score-item positivo">
+              <span>📈 CTR acima de 4%</span>
+              <strong>+10</strong>
+            </div>
+        
+            <div class="score-item positivo">
+              <span>⚡ Cadastro rápido</span>
+              <strong>+15</strong>
+            </div>
+        
+            <div class="score-item positivo">
+              <span>🔁 Lead recorrente</span>
+              <strong>+20</strong>
+            </div>
+        
+            <div class="score-item positivo">
+              <span>🏠 Interesse em visita</span>
+              <strong>+30</strong>
+            </div>
+        
+            <div class="score-item negativo">
+              <span>⌛ 7 dias sem interação</span>
+              <strong>-20</strong>
+            </div>
+        
+            <div class="score-item negativo">
+              <span>🚫 15 dias parado</span>
+              <strong>-40</strong>
+            </div>
+        
+          </div>
+        
+        </div>
   
       </div>
   

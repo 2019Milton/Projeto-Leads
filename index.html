@@ -7397,6 +7397,16 @@ async function criarUsuario() {
       "novo_usuario_admin"
     ).value;
 
+  const nome =
+    document.getElementById(
+      "novo_usuario_nome"
+    ).value;
+  
+  const sobrenome =
+    document.getElementById(
+      "novo_usuario_sobrenome"
+    ).value;
+
   const email =
     document.getElementById(
       "novo_usuario_email"
@@ -7412,7 +7422,12 @@ async function criarUsuario() {
       "novo_usuario_tipo"
     ).value;
 
-  if (!email || !senha) {
+  if (
+    !nome ||
+    !sobrenome ||
+    !email ||
+    !senha
+  ) {
 
     alert(
       "Preencha email e senha"
@@ -7431,6 +7446,8 @@ async function criarUsuario() {
           "Bearer " + token
       },
       body: JSON.stringify({
+        nome,
+        sobrenome,
         email,
         senha,
         tipo,

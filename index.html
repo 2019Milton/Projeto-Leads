@@ -7106,6 +7106,11 @@ async function criarUsuario() {
   const token =
     localStorage.getItem("token");
 
+  const admin_id =
+    document.getElementById(
+      "novo_usuario_admin"
+    ).value;
+
   const email =
     document.getElementById(
       "novo_usuario_email"
@@ -7142,7 +7147,8 @@ async function criarUsuario() {
       body: JSON.stringify({
         email,
         senha,
-        tipo
+        tipo,
+        admin_id
       })
     }
   );

@@ -4064,7 +4064,7 @@ async function init() {
     const painelAdmin =
       document.getElementById("painel_admin");
 
-    if (tipo === "super_admin") {
+    if (tipo === "super_admin" || tipo === "master") {
 
       if (btnAdmin) {
         btnAdmin.style.display = "block";

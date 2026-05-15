@@ -4076,6 +4076,7 @@ button {
               <th>Status</th>
               <th>Campanhas</th>
               <th>Leads</th>
+              <th>Vínculo</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -7099,6 +7100,50 @@ async function carregarPainelAdmin() {
           <td>${u.campanhas}</td>
 
           <td>${u.leads}</td>
+
+          <td>
+
+            ${
+              u.tipo === "corretor"
+          
+              ?
+          
+              `
+              <select
+                onchange="alterarVinculo(
+                  ${u.id},
+                  this.value
+                )"
+              >
+          
+                <option value="">
+                  Sem vínculo
+                </option>
+          
+                ${adminsCorretores.map(admin => `
+                  <option
+                    value="${admin.id}"
+                    ${
+                      Number(u.admin_id) === Number(admin.id)
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    ${admin.email}
+                  </option>
+                `).join("")}
+          
+              </select>
+              `
+          
+              :
+          
+              `
+              -
+              `
+            }
+          
+          </td>
 
           <td>
 

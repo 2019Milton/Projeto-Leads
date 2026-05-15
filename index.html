@@ -7092,7 +7092,69 @@ async function carregarPainelAdmin() {
 
           <td>${u.email}</td>
 
-          <td>${u.tipo}</td>
+          <td>
+
+            <div
+              style="
+                display:flex;
+                flex-direction:column;
+                gap:6px;
+              "
+            >
+          
+              <span>
+                ${u.tipo}
+              </span>
+          
+              ${
+                u.tipo === "admin_corretor"
+          
+                ?
+          
+                `
+                <div
+                  style="
+                    font-size:11px;
+                    color:#9ca3af;
+                    margin-top:4px;
+                  "
+                >
+          
+                  ${
+                    data.usuarios
+                      .filter(
+                        x =>
+                          x.admin_id == u.id
+                      )
+                      .map(
+                        x => `
+                          <div>
+                            👤 ${x.email}
+                          </div>
+                        `
+                      )
+                      .join("")
+          
+                    ||
+          
+                    `
+                    <div>
+                      Nenhum corretor
+                    </div>
+                    `
+                  }
+          
+                </div>
+                `
+          
+                :
+          
+                ""
+              }
+          
+            </div>
+          
+          </td>
 
           <td>
             ${

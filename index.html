@@ -7506,13 +7506,7 @@ async function salvarNovaSenha() {
 
     alert("Senha alterada!");
 
-    document.getElementById(
-      "modal_senha"
-    ).style.display = "none";
-
-    document.getElementById(
-      "nova_senha"
-    ).value = "";
+    fecharModalSenha();
 
   } else {
 
@@ -7554,6 +7548,18 @@ async function alterarVinculo(id, admin_id) {
 }
 
 
+function fecharModalSenha() {
+
+  document.getElementById(
+    "modal_senha"
+  ).style.display = "none";
+
+  document.getElementById(
+    "nova_senha"
+  ).value = "";
+
+  usuarioSenhaAtual = null;
+}
   
 
   
@@ -7963,16 +7969,31 @@ if (token) init();
       style="margin-top:20px;"
     >
 
-    <button
-      class="btn-primary"
+    <div
       style="
-        width:100%;
+        display:flex;
+        gap:10px;
         margin-top:20px;
       "
-      onclick="salvarNovaSenha()"
     >
-      Salvar Nova Senha
-    </button>
+    
+      <button
+        class="btn-primary"
+        style="flex:1;"
+        onclick="salvarNovaSenha()"
+      >
+        Salvar
+      </button>
+    
+      <button
+        class="logout"
+        style="flex:1;"
+        onclick="fecharModalSenha()"
+      >
+        Cancelar
+      </button>
+    
+    </div>
 
   </div>
 

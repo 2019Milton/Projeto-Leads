@@ -3895,9 +3895,15 @@ button {
         <div
           style="
             display:grid;
-            grid-template-columns:1fr 1fr 1fr auto;
+            grid-template-columns:
+              1fr
+              1fr
+              220px
+              220px
+              160px;
             gap:15px;
             margin-top:20px;
+            align-items:center;
           "
         >
       
@@ -3915,8 +3921,8 @@ button {
       
           <select id="novo_usuario_tipo">
       
-            <option value="admin_cliente">
-              Admin Cliente
+            <option value="admin_corretor">
+              Admin Corretor
             </option>
       
             <option value="corretor">
@@ -3925,6 +3931,14 @@ button {
       
             <option value="super_admin">
               Super Admin
+            </option>
+      
+          </select>
+      
+          <select id="novo_usuario_admin">
+      
+            <option value="">
+              Sem vínculo
             </option>
       
           </select>
@@ -7007,6 +7021,7 @@ async function carregarPainelAdmin() {
       err
     );
   }
+  await carregarAdminsCorretores();
 }
 
 
@@ -7207,7 +7222,54 @@ async function abrirMenuPerfil() {
 }
 
 
+async function carregarAdminsCorretores() {
 
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`
+      }
+    }
+  );
+
+  const data =
+    await res.json();
+
+  const select =
+    document.getElementById(
+      "novo_usuario_admin"
+    );
+
+  select.innerHTML = `
+    <option value="">
+      Sem vínculo
+    </option>
+  `;
+
+  for (const usuario of data.usuarios) {
+
+    if (
+      usuario.tipo === "admin_corretor"
+    ) {
+
+      select.innerHTML += `
+        <option value="${usuario.id}">
+          ${usuario.email}
+        </option>
+      `;
+    }
+  }
+}
+
+
+
+
+  
 
   
 

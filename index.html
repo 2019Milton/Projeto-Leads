@@ -7499,56 +7499,13 @@ async function criarUsuario() {
   
 async function abrirMenuPerfil() {
 
-  const senhaAtual =
-    prompt("Digite sua senha atual:");
-
-  if (!senhaAtual) return;
-
-  const novaSenha =
-    prompt("Digite a nova senha forte:");
-
-  if (!novaSenha) return;
-
-  const senhaForte =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#._-]).{8,}$/;
-
-  if (!senhaForte.test(novaSenha)) {
-    alert(
-      "A senha precisa ter no mínimo 8 caracteres, letra maiúscula, minúscula, número e símbolo."
-    );
-    return;
-  }
-
-  const token =
-    localStorage.getItem("token");
-
-  const res = await fetch(
-    `${API}/usuarios/me/senha`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify({
-        senha_atual: senhaAtual,
-        nova_senha: novaSenha
-      })
-    }
+  alert(
+    "A troca da sua própria senha será feita por link enviado ao email cadastrado."
   );
 
-  const data = await res.json();
-
-  if (data.error) {
-    alert(data.error);
-    return;
-  }
-
-  alert("Senha alterada com sucesso. Faça login novamente.");
-
-  logout();
+  // próximo passo:
+  // chamar rota /auth/solicitar-reset-senha
 }
-
 
 async function carregarAdminsCorretores() {
 

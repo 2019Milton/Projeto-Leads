@@ -7152,21 +7152,41 @@ async function carregarPainelAdmin() {
 
           <td>
 
-            <button
-              onclick="
-                alterarStatusUsuario(
-                  ${u.id},
-                  ${u.ativo}
-                )
+            <div
+              style="
+                display:flex;
+                gap:10px;
+                flex-wrap:wrap;
               "
             >
-              ${
-                u.ativo
-                  ? "Desativar"
-                  : "Ativar"
-              }
-            </button>
-
+          
+              <button
+                onclick="
+                  abrirTrocaSenha(
+                    ${u.id}
+                  )
+                "
+              >
+                🔐 Senha
+              </button>
+          
+              <button
+                onclick="
+                  alterarStatusUsuario(
+                    ${u.id},
+                    ${u.ativo}
+                  )
+                "
+              >
+                ${
+                  u.ativo
+                    ? "Desativar"
+                    : "Ativar"
+                }
+              </button>
+          
+            </div>
+          
           </td>
 
         </tr>
@@ -7500,6 +7520,37 @@ async function salvarNovaSenha() {
       data.error || "Erro"
     );
   }
+}
+
+
+
+async function alterarVinculo(id, admin_id) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/vinculo`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        admin_id
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+
+  await carregarPainelAdmin();
 }
 
 

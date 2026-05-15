@@ -3903,6 +3903,8 @@ button {
           style="
             display:grid;
             grid-template-columns:
+              1fr
+              1fr
               1.2fr
               1fr
               220px
@@ -3912,10 +3914,54 @@ button {
             align-items:end;
           "
         >
-      
+        
+          <!-- NOME -->
+          <div>
+        
+            <label
+              style="
+                display:block;
+                margin-bottom:8px;
+                color:#9ca3af;
+                font-size:13px;
+              "
+            >
+              Nome
+            </label>
+        
+            <input
+              id="novo_usuario_nome"
+              type="text"
+              placeholder="Nome"
+            />
+        
+          </div>
+        
+          <!-- SOBRENOME -->
+          <div>
+        
+            <label
+              style="
+                display:block;
+                margin-bottom:8px;
+                color:#9ca3af;
+                font-size:13px;
+              "
+            >
+              Sobrenome
+            </label>
+        
+            <input
+              id="novo_usuario_sobrenome"
+              type="text"
+              placeholder="Sobrenome"
+            />
+        
+          </div>
+        
           <!-- EMAIL -->
           <div>
-      
+        
             <label
               style="
                 display:block;
@@ -3926,18 +3972,18 @@ button {
             >
               Email
             </label>
-      
+        
             <input
               id="novo_usuario_email"
               type="email"
               placeholder="usuario@email.com"
             />
-      
+        
           </div>
-      
+        
           <!-- SENHA -->
           <div>
-      
+        
             <label
               style="
                 display:block;
@@ -3948,18 +3994,18 @@ button {
             >
               Senha Forte
             </label>
-      
+        
             <input
               id="novo_usuario_senha"
               type="password"
               placeholder="Mínimo 8 caracteres"
             />
-      
+        
           </div>
-      
+        
           <!-- TIPO -->
           <div>
-      
+        
             <label
               style="
                 display:block;
@@ -3970,24 +4016,24 @@ button {
             >
               Tipo de Usuário
             </label>
-      
+        
             <select id="novo_usuario_tipo">
-      
+        
               <option value="admin_corretor">
                 Admin Corretor
               </option>
-      
+        
               <option value="corretor">
                 Corretor
               </option>
-      
+        
             </select>
-      
+        
           </div>
-      
+        
           <!-- ADMIN RESPONSÁVEL -->
           <div>
-      
+        
             <label
               style="
                 display:block;
@@ -3998,17 +4044,17 @@ button {
             >
               Admin Responsável
             </label>
-      
+        
             <select id="novo_usuario_admin">
-      
+        
               <option value="">
                 Sem vínculo
               </option>
-      
+        
             </select>
-      
+        
           </div>
-      
+        
           <!-- BOTÃO -->
           <button
             onclick="criarUsuario()"
@@ -4020,7 +4066,7 @@ button {
           >
             Criar
           </button>
-      
+        
         </div>
       
         <!-- 🔐 AJUDA -->

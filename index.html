@@ -3872,6 +3872,63 @@ button {
         </div>
   
       </div>
+
+      <!-- 🔥 CRIAR USUÁRIO -->
+      <div
+        class="card"
+        style="
+          margin-top:30px;
+          padding:20px;
+        "
+      >
+      
+        <h3>➕ Criar Usuário</h3>
+      
+        <div
+          style="
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr auto;
+            gap:15px;
+            margin-top:20px;
+          "
+        >
+      
+          <input
+            id="novo_usuario_email"
+            type="email"
+            placeholder="Email"
+          />
+      
+          <input
+            id="novo_usuario_senha"
+            type="password"
+            placeholder="Senha"
+          />
+      
+          <select id="novo_usuario_tipo">
+      
+            <option value="admin_cliente">
+              Admin Cliente
+            </option>
+      
+            <option value="corretor">
+              Corretor
+            </option>
+      
+            <option value="super_admin">
+              Super Admin
+            </option>
+      
+          </select>
+      
+          <button onclick="criarUsuario()">
+            Criar
+          </button>
+      
+        </div>
+      
+      </div>
+      
   
       <!-- TABELA -->
       <div style="margin-top:40px;">
@@ -6990,7 +7047,73 @@ async function alterarStatusUsuario(id, ativoAtual) {
 }
 
 
+async function criarUsuario() {
 
+  const token =
+    localStorage.getItem("token");
+
+  const email =
+    document.getElementById(
+      "novo_usuario_email"
+    ).value;
+
+  const senha =
+    document.getElementById(
+      "novo_usuario_senha"
+    ).value;
+
+  const tipo =
+    document.getElementById(
+      "novo_usuario_tipo"
+    ).value;
+
+  if (!email || !senha) {
+
+    alert(
+      "Preencha email e senha"
+    );
+
+    return;
+  }
+
+  const res = await fetch(
+    `${API}/admin/usuarios`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization":
+          "Bearer " + token
+      },
+      body: JSON.stringify({
+        email,
+        senha,
+        tipo
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.error) {
+
+    alert(data.error);
+
+    return;
+  }
+
+  alert("Usuário criado");
+
+  document.getElementById(
+    "novo_usuario_email"
+  ).value = "";
+
+  document.getElementById(
+    "novo_usuario_senha"
+  ).value = "";
+
+  await carregarPainelAdmin();
+}
   
   
 

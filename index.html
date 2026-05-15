@@ -7291,10 +7291,7 @@ async function carregarPainelAdmin() {
             >
           
               <button
-                onclick="
-                  abrirTrocaSenha(${u.id}, '${u.email}')
-                  )
-                "
+                onclick='abrirTrocaSenha(${u.id}, ${JSON.stringify(u.email)})'
               >
                 🔐 Senha
               </button>

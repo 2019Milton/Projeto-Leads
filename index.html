@@ -4019,55 +4019,83 @@ async function init() {
   document.getElementById("loginBox").style.display = "none";
   document.getElementById("app").style.display = "block";
 
-  // 🔥 PEGA TOKEN
   const token =
     localStorage.getItem("token");
 
-  // 🔥 DECODIFICA TOKEN
   try {
 
-    const decoded = atob(token);
+    const decoded =
+      atob(token);
 
-    const [id, email, tipo, nome] =
+    const partes =
       decoded.split(":");
-    
-    document.getElementById("btn_perfil").innerText =
-      `👤 ${nome || email}`;
-    
+
+    const id =
+      partes[0];
+
+    const email =
+      partes[1];
+
+    const tipo =
+      partes[2];
+
+    const nome =
+      partes.slice(3).join(":") || email;
+
     console.log("USUARIO:", {
       id,
       email,
-      tipo
+      tipo,
+      nome
     });
-    
+
+    const btnPerfil =
+      document.getElementById("btn_perfil");
+
+    if (btnPerfil) {
+
+      btnPerfil.innerText =
+        `👤 ${nome}`;
+    }
+
+    const btnAdmin =
+      document.getElementById("btn_admin");
+
+    const painelAdmin =
+      document.getElementById("painel_admin");
+
     if (tipo === "super_admin") {
 
-      document.getElementById(
-        "btn_admin"
-      ).style.display = "block";
-    
-      document.getElementById(
-        "painel_admin"
-      ).style.display = "block";
-    
-      carregarPainelAdmin();
+      if (btnAdmin) {
+        btnAdmin.style.display = "block";
+      }
+
+      if (painelAdmin) {
+        painelAdmin.style.display = "block";
+      }
+
+      await carregarPainelAdmin();
+
+    } else {
+
+      if (btnAdmin) {
+        btnAdmin.style.display = "none";
+      }
+
+      if (painelAdmin) {
+        painelAdmin.style.display = "none";
+      }
     }
 
   } catch (err) {
 
-    console.error(
-      "Erro token:",
-      err
-    );
+    console.error("Erro token:", err);
   }
 
-  // 🔥 carrega status Meta
   await carregarStatusMeta();
 
-  // 🔥 carrega campanhas
   await carregarCampanhas();
 
-  // 🔥 carrega leads
   await carregarLeads();
 }
   

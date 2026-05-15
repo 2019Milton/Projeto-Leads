@@ -7224,8 +7224,7 @@ async function carregarPainelAdmin() {
           
               <button
                 onclick="
-                  abrirTrocaSenha(
-                    ${u.id}
+                  abrirTrocaSenha(${u.id}, '${u.email}')
                   )
                 "
               >
@@ -7517,13 +7516,14 @@ async function carregarAdminsCorretores() {
 
 let usuarioSenhaAtual = null;
 
-function abrirTrocaSenha(id) {
+function abrirTrocaSenha(id, email) {
 
   usuarioSenhaAtual = id;
 
-  document.getElementById(
-    "modal_senha"
-  ).style.display = "flex";
+  document.getElementById("titulo_modal_senha").innerText =
+    `🔐 Trocar senha de ${email}`;
+
+  document.getElementById("modal_senha").style.display = "flex";
 }
 
 async function salvarNovaSenha() {
@@ -8021,7 +8021,7 @@ if (token) init();
 
   <div class="card" style="width:400px;">
 
-    <h2>🔐 Trocar Senha</h2>
+    <h2 id="titulo_modal_senha">🔐 Trocar Senha</h2>
 
     <input
       type="password"

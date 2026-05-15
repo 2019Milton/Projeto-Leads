@@ -7505,6 +7505,16 @@ async function carregarPainelAdmin() {
                     ? "Desativar"
                     : "Ativar"
                 }
+                ${u.tipo !== "super_admin" ? `
+                  <button
+                    style="
+                      background:linear-gradient(135deg,#dc2626,#991b1b);
+                    "
+                    onclick='excluirUsuario(${u.id}, ${JSON.stringify(u.email)})'
+                  >
+                    🗑️ Excluir
+                  </button>
+                ` : ""}
               </button>
           
             </div>
@@ -7883,6 +7893,51 @@ function fecharModalSenha() {
 }
   
 
+async function excluirUsuario(id, email) {
+
+  const confirmar = confirm(
+    `Tem certeza que deseja excluir o usuário ${email}?\n\nEssa ação não pode ser desfeita.`
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const confirmarFinal = confirm(
+    "Confirma novamente a exclusão definitiva deste usuário?"
+  );
+
+  if (!confirmarFinal) {
+    return;
+  }
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+
+  alert("Usuário excluído com sucesso.");
+
+  await carregarPainelAdmin();
+}
+
+
+  
   
 
 document

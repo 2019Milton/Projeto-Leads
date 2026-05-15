@@ -4199,19 +4199,25 @@ async function init() {
 
     const partes =
       decoded.split(":");
-
+    
     const id =
       partes[0];
-
+    
     const email =
       partes[1];
-
+    
     const tipo =
       partes[2];
-
+    
     const nome =
-      partes.slice(3).join(":") || email;
-
+      partes[3] || "";
+    
+    const sobrenome =
+      partes[4] || "";
+    
+    const nomeCompleto =
+      `${nome} ${sobrenome}`.trim();
+    
     console.log("USUARIO:", {
       id,
       email,
@@ -4224,8 +4230,24 @@ async function init() {
 
     if (btnPerfil) {
 
-      btnPerfil.innerText =
-        `👤 ${nome}`;
+      btnPerfil.innerHTML = `
+        👤 ${nomeCompleto || email}
+        <div
+          style="
+            font-size:11px;
+            opacity:.7;
+            margin-top:2px;
+          "
+        >
+          ${
+            tipo === "super_admin"
+              ? "Super Admin"
+              : tipo === "admin_corretor"
+              ? "Admin Corretor"
+              : "Corretor"
+          }
+        </div>
+      `;
     }
 
     const btnAdmin =

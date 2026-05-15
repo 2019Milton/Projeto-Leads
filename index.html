@@ -118,6 +118,30 @@ button {
   cursor: pointer;
 }
 
+.login-link {
+  margin-top: 12px;
+  padding: 0;
+  background: transparent;
+  color: #93c5fd;
+  font-size: 13px;
+  width: auto;
+  min-width: 0;
+  box-shadow: none;
+}
+
+.login-link:hover {
+  color: white;
+  text-decoration: underline;
+  transform: none;
+}
+
+.reset-help {
+  margin: 12px 0;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 /* BOTÃO PRINCIPAL */
 .btn {
 
@@ -3302,11 +3326,46 @@ button {
 
 <!-- LOGIN -->
 <div class="container" id="loginBox">
-  <div class="login-box">
+  <div class="login-box" id="loginFormBox">
     <h2>🚀 Plataforma de Leads</h2>
     <input id="email" placeholder="Email">
     <input id="senha" type="password" placeholder="Senha">
     <button class="btn" onclick="login()">Entrar</button>
+    <button class="login-link" onclick="solicitarResetSenha()">
+      Esqueci minha senha
+    </button>
+  </div>
+
+  <div
+    class="login-box"
+    id="resetSenhaBox"
+    style="display:none;"
+  >
+    <h2>🔐 Nova senha</h2>
+
+    <p class="reset-help">
+      Digite uma senha forte para acessar sua conta.
+    </p>
+
+    <input
+      id="reset_nova_senha"
+      type="password"
+      placeholder="Nova senha forte"
+    >
+
+    <input
+      id="reset_confirmar_senha"
+      type="password"
+      placeholder="Confirmar nova senha"
+    >
+
+    <button class="btn" onclick="confirmarResetSenha()">
+      Salvar nova senha
+    </button>
+
+    <button class="login-link" onclick="voltarLogin()">
+      Voltar ao login
+    </button>
   </div>
 </div>
 
@@ -4161,6 +4220,143 @@ function fecharLead() {
 }
 
 const API = "https://function-bun-production-446a.up.railway.app";
+
+let resetSenhaToken = null;
+
+async function solicitarResetSenha(emailInformado) {
+  const campoEmail =
+    document.getElementById("email");
+
+  const email =
+    emailInformado ||
+    campoEmail?.value?.trim() ||
+    prompt("Digite o email cadastrado na plataforma");
+
+  if (!email) {
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/auth/solicitar-reset-senha`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(
+        data.error ||
+        "Erro ao solicitar troca de senha"
+      );
+      return;
+    }
+
+    alert(
+      "Se o email estiver cadastrado, enviaremos um link para troca de senha."
+    );
+
+  } catch (err) {
+    console.error("RESET REQUEST:", err);
+    alert("Erro ao solicitar troca de senha");
+  }
+}
+
+function abrirResetSenha(token) {
+  resetSenhaToken = token;
+
+  document.getElementById("loginBox").style.display = "flex";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("loginFormBox").style.display = "none";
+  document.getElementById("resetSenhaBox").style.display = "block";
+}
+
+function voltarLogin() {
+  resetSenhaToken = null;
+
+  document.getElementById("loginBox").style.display = "flex";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("loginFormBox").style.display = "block";
+  document.getElementById("resetSenhaBox").style.display = "none";
+
+  window.history.replaceState(
+    {},
+    "",
+    window.location.pathname
+  );
+}
+
+async function confirmarResetSenha() {
+  const novaSenha =
+    document.getElementById("reset_nova_senha").value;
+
+  const confirmarSenha =
+    document.getElementById("reset_confirmar_senha").value;
+
+  if (!resetSenhaToken) {
+    alert("Link de troca de senha inválido");
+    return;
+  }
+
+  if (novaSenha !== confirmarSenha) {
+    alert("As senhas não conferem");
+    return;
+  }
+
+  const senhaForte =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#._-]).{8,}$/;
+
+  if (!senhaForte.test(novaSenha)) {
+    alert(
+      "Use no mínimo 8 caracteres com maiúscula, minúscula, número e símbolo."
+    );
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/auth/reset-senha`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          token: resetSenhaToken,
+          nova_senha: novaSenha
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(
+        data.error ||
+        "Erro ao alterar senha"
+      );
+      return;
+    }
+
+    alert("Senha alterada com sucesso. Entre novamente.");
+
+    localStorage.removeItem("token");
+    document.getElementById("reset_nova_senha").value = "";
+    document.getElementById("reset_confirmar_senha").value = "";
+
+    voltarLogin();
+
+  } catch (err) {
+    console.error("RESET PASSWORD:", err);
+    alert("Erro ao alterar senha");
+  }
+}
 
 // LOGIN
 async function login() {
@@ -7499,12 +7695,36 @@ async function criarUsuario() {
   
 async function abrirMenuPerfil() {
 
-  alert(
-    "A troca da sua própria senha será feita por link enviado ao email cadastrado."
-  );
+  const token =
+    localStorage.getItem("token");
 
-  // próximo passo:
-  // chamar rota /auth/solicitar-reset-senha
+  try {
+    const decoded =
+      atob(token);
+
+    const email =
+      decoded.split(":")[1];
+
+    if (!email) {
+      alert("Não foi possível identificar seu email");
+      return;
+    }
+
+    const confirmar =
+      confirm(
+        `Enviar link de troca de senha para ${email}?`
+      );
+
+    if (!confirmar) {
+      return;
+    }
+
+    await solicitarResetSenha(email);
+
+  } catch (err) {
+    console.error("PERFIL:", err);
+    alert("Erro ao solicitar troca de senha");
+  }
 }
 
 async function carregarAdminsCorretores() {
@@ -7697,9 +7917,22 @@ document
   );
   
   
-// AUTO LOGIN
-const token = localStorage.getItem("token");
-if (token) init();
+// AUTO LOGIN / RESET
+const params =
+  new URLSearchParams(window.location.search);
+
+const resetTokenUrl =
+  params.get("reset_token");
+
+if (resetTokenUrl) {
+  abrirResetSenha(resetTokenUrl);
+} else {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    init();
+  }
+}
 
 
   

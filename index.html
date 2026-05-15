@@ -6945,6 +6945,53 @@ async function carregarRecursosAdmin() {
 }
 
 
+
+async function alterarStatusUsuario(id, ativoAtual) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const novoStatus =
+    !ativoAtual;
+
+  const confirmar =
+    confirm(
+      novoStatus
+        ? "Deseja ativar este usuário?"
+        : "Deseja desativar este usuário?"
+    );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/status`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        ativo: novoStatus
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+
+  await carregarPainelAdmin();
+}
+
+
+
+  
   
 
 document

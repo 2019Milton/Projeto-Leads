@@ -7042,6 +7042,11 @@ async function carregarPainelAdmin() {
     const data =
       await res.json();
 
+    const adminsCorretores =
+      data.usuarios.filter(
+        u => u.tipo === "admin_corretor"
+      );
+
     console.log(
       "ADMIN:",
       data

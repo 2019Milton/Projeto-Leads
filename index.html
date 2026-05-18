@@ -547,6 +547,87 @@ button {
   resize: vertical;
 }
 
+.advanced-campaign {
+
+  margin-top: 18px;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  background: rgba(255,255,255,0.025);
+}
+
+.advanced-campaign summary {
+
+  cursor: pointer;
+
+  font-weight: 700;
+
+  color: #fff;
+}
+
+.advanced-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+.advanced-full {
+
+  grid-column: 1 / -1;
+}
+
+.advanced-checks {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-top: 8px;
+}
+
+.advanced-checks label {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin: 0;
+
+  padding: 9px;
+
+  border-radius: 10px;
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  background: rgba(255,255,255,0.03);
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+.advanced-checks input {
+
+  width: auto;
+
+  margin: 0;
+}
+
 .card button {
 
   width: auto;
@@ -3620,6 +3701,320 @@ button {
           value="20"
           min="5"
         >
+
+        <details class="advanced-campaign">
+
+          <summary>
+            ⚙️ Configurações avançadas
+          </summary>
+
+          <div class="advanced-grid">
+
+            <div class="advanced-full">
+              <label>Categoria especial da Meta</label>
+              <select id="adv_categoria_especial">
+                <option value="">Nenhuma</option>
+                <option value="HOUSING">Moradia / Imóveis</option>
+                <option value="CREDIT">Crédito</option>
+                <option value="EMPLOYMENT">Emprego</option>
+                <option value="ISSUES_ELECTIONS_POLITICS">
+                  Política / temas sociais
+                </option>
+              </select>
+            </div>
+
+            <div class="advanced-full">
+              <label>Título do anúncio</label>
+              <input
+                type="text"
+                id="adv_titulo"
+                placeholder="Ex: Apartamentos em Santo André"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Descrição curta</label>
+              <input
+                type="text"
+                id="adv_descricao"
+                placeholder="Ex: Entrada facilitada e financiamento"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Link de destino</label>
+              <input
+                type="url"
+                id="adv_link"
+                placeholder="https://seusite.com.br"
+              >
+            </div>
+
+            <div>
+              <label>País do público</label>
+              <input
+                type="text"
+                id="adv_pais"
+                maxlength="2"
+                placeholder="BR"
+              >
+            </div>
+
+            <div>
+              <label>Gênero</label>
+              <select id="adv_genero">
+                <option value="">Todos</option>
+                <option value="1">Homens</option>
+                <option value="2">Mulheres</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Idade mínima</label>
+              <input
+                type="number"
+                id="adv_idade_min"
+                min="18"
+                max="65"
+                placeholder="18"
+              >
+            </div>
+
+            <div>
+              <label>Idade máxima</label>
+              <input
+                type="number"
+                id="adv_idade_max"
+                min="18"
+                max="65"
+                placeholder="65"
+              >
+            </div>
+
+            <div>
+              <label>Latitude</label>
+              <input
+                type="number"
+                id="adv_latitude"
+                step="0.000001"
+                placeholder="-23.550520"
+              >
+            </div>
+
+            <div>
+              <label>Longitude</label>
+              <input
+                type="number"
+                id="adv_longitude"
+                step="0.000001"
+                placeholder="-46.633308"
+              >
+            </div>
+
+            <div>
+              <label>Raio (km)</label>
+              <input
+                type="number"
+                id="adv_raio"
+                min="1"
+                max="80"
+                placeholder="15"
+              >
+            </div>
+
+            <div>
+              <label>Estratégia de lance</label>
+              <select id="adv_bid_strategy">
+                <option value="">Automática</option>
+                <option value="LOWEST_COST_WITHOUT_CAP">
+                  Menor custo
+                </option>
+                <option value="LOWEST_COST_WITH_BID_CAP">
+                  Menor custo com limite
+                </option>
+                <option value="COST_CAP">
+                  Custo controlado
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label>Limite de lance (R$)</label>
+              <input
+                type="number"
+                id="adv_bid_amount"
+                min="1"
+                placeholder="Opcional"
+              >
+            </div>
+
+            <div>
+              <label>Data de início</label>
+              <input
+                type="datetime-local"
+                id="adv_inicio"
+              >
+            </div>
+
+            <div>
+              <label>Data de término</label>
+              <input
+                type="datetime-local"
+                id="adv_fim"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Política de privacidade</label>
+              <input
+                type="url"
+                id="adv_privacidade_url"
+                placeholder="https://seusite.com.br/politica-de-privacidade"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Texto do link da política</label>
+              <input
+                type="text"
+                id="adv_privacidade_texto"
+                placeholder="Política de Privacidade"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Perguntas qualificadoras</label>
+              <textarea
+                id="adv_perguntas"
+                placeholder="Uma pergunta por linha. Ex: Qual faixa de investimento?"
+              ></textarea>
+            </div>
+
+            <div>
+              <label>Título do obrigado</label>
+              <input
+                type="text"
+                id="adv_obrigado_titulo"
+                placeholder="Obrigado!"
+              >
+            </div>
+
+            <div>
+              <label>Botão do obrigado</label>
+              <input
+                type="text"
+                id="adv_obrigado_botao"
+                placeholder="Ver mais"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Mensagem de obrigado</label>
+              <input
+                type="text"
+                id="adv_obrigado_texto"
+                placeholder="Recebemos seus dados. Em breve entraremos em contato."
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>URL do obrigado</label>
+              <input
+                type="url"
+                id="adv_obrigado_url"
+                placeholder="https://seusite.com.br"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Plataformas</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" id="adv_platform_facebook">
+                  Facebook
+                </label>
+                <label>
+                  <input type="checkbox" id="adv_platform_instagram">
+                  Instagram
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-full">
+              <label>Posicionamentos Facebook</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" class="adv-facebook-position" value="feed">
+                  Feed
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-facebook-position" value="story">
+                  Stories
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-facebook-position" value="marketplace">
+                  Marketplace
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-facebook-position" value="video_feeds">
+                  Vídeos
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-full">
+              <label>Posicionamentos Instagram</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" class="adv-instagram-position" value="stream">
+                  Feed
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-instagram-position" value="story">
+                  Stories
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-instagram-position" value="reels">
+                  Reels
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-instagram-position" value="explore">
+                  Explorar
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-full">
+              <label>Dispositivos</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" id="adv_device_mobile">
+                  Mobile
+                </label>
+                <label>
+                  <input type="checkbox" id="adv_device_desktop">
+                  Desktop
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-full">
+              <label>Otimização</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" id="adv_form_qualidade">
+                  Otimizar formulário para qualidade
+                </label>
+                <label>
+                  <input type="checkbox" id="adv_audience_plus">
+                  Advantage+ Audience
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+        </details>
   
         <!-- 🚀 BOTÃO -->
         <button onclick="criarCampanhaCompleta()">
@@ -5904,6 +6299,108 @@ function conectarMeta() {
   );
 }
 
+function valorCampo(id) {
+
+  return document
+    .getElementById(id)
+    ?.value
+    ?.trim() || "";
+}
+
+function valoresMarcados(seletor) {
+
+  return Array.from(
+    document.querySelectorAll(
+      `${seletor}:checked`
+    )
+  ).map(input => input.value);
+}
+
+function coletarConfiguracoesAvancadas() {
+
+  const plataformas = [];
+
+  if (
+    document.getElementById(
+      "adv_platform_facebook"
+    )?.checked
+  ) {
+    plataformas.push("facebook");
+  }
+
+  if (
+    document.getElementById(
+      "adv_platform_instagram"
+    )?.checked
+  ) {
+    plataformas.push("instagram");
+  }
+
+  const dispositivos = [];
+
+  if (
+    document.getElementById(
+      "adv_device_mobile"
+    )?.checked
+  ) {
+    dispositivos.push("mobile");
+  }
+
+  if (
+    document.getElementById(
+      "adv_device_desktop"
+    )?.checked
+  ) {
+    dispositivos.push("desktop");
+  }
+
+  const perguntas =
+    valorCampo("adv_perguntas")
+      .split("\n")
+      .map(p => p.trim())
+      .filter(Boolean);
+
+  return {
+    categoria_especial:
+      valorCampo("adv_categoria_especial"),
+    titulo: valorCampo("adv_titulo"),
+    descricao: valorCampo("adv_descricao"),
+    link: valorCampo("adv_link"),
+    pais: valorCampo("adv_pais"),
+    genero: valorCampo("adv_genero"),
+    idade_min: valorCampo("adv_idade_min"),
+    idade_max: valorCampo("adv_idade_max"),
+    latitude: valorCampo("adv_latitude"),
+    longitude: valorCampo("adv_longitude"),
+    raio: valorCampo("adv_raio"),
+    bid_strategy: valorCampo("adv_bid_strategy"),
+    bid_amount: valorCampo("adv_bid_amount"),
+    inicio: valorCampo("adv_inicio"),
+    fim: valorCampo("adv_fim"),
+    privacidade_url: valorCampo("adv_privacidade_url"),
+    privacidade_texto: valorCampo("adv_privacidade_texto"),
+    obrigado_titulo: valorCampo("adv_obrigado_titulo"),
+    obrigado_texto: valorCampo("adv_obrigado_texto"),
+    obrigado_botao: valorCampo("adv_obrigado_botao"),
+    obrigado_url: valorCampo("adv_obrigado_url"),
+    perguntas,
+    plataformas,
+    facebook_positions:
+      valoresMarcados(".adv-facebook-position"),
+    instagram_positions:
+      valoresMarcados(".adv-instagram-position"),
+    dispositivos,
+    formulario_qualidade:
+      document.getElementById(
+        "adv_form_qualidade"
+      )?.checked || false,
+    advantage_audience:
+      document.getElementById(
+        "adv_audience_plus"
+      )?.checked || false
+  };
+}
+
 async function criarCampanhaCompleta() {
 
   try {
@@ -5938,6 +6435,9 @@ async function criarCampanhaCompleta() {
 
     const imagem =
       document.getElementById("imagem").files[0];
+
+    const configuracoes_avancadas =
+      coletarConfiguracoesAvancadas();
 
     if (!imagem) {
     
@@ -5996,7 +6496,8 @@ async function criarCampanhaCompleta() {
         body: JSON.stringify({
           usuario_id,
           nome: campanha_nome,
-          objetivo
+          objetivo,
+          configuracoes_avancadas
         })
       }
     );
@@ -6026,7 +6527,8 @@ async function criarCampanhaCompleta() {
         },
         body: JSON.stringify({
           usuario_id,
-          page_id
+          page_id,
+          configuracoes_avancadas
         })
       }
     );
@@ -6059,7 +6561,8 @@ async function criarCampanhaCompleta() {
           campaign_id: campanha.id,
           page_id,
           form_id: form.id,
-          daily_budget: Number(orcamento) * 100
+          daily_budget: Number(orcamento) * 100,
+          configuracoes_avancadas
         })
       }
     );
@@ -6104,6 +6607,7 @@ async function criarCampanhaCompleta() {
           texto,
           cta,
           campanha_nome,
+          configuracoes_avancadas,
     
           // 🔥 IMAGEM
           imageHash

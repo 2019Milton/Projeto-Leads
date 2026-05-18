@@ -283,6 +283,69 @@ button {
   color: #22c55e;
 }
 
+.conexao-status-box {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin: 14px 0;
+}
+
+.conexao-status-item {
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.03);
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  min-width: 0;
+}
+
+.conexao-status-item strong,
+.conexao-status-item span,
+.conexao-status-item small {
+
+  display: block;
+}
+
+.conexao-status-item span {
+
+  margin-top: 5px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: #ef4444;
+}
+
+.conexao-status-item span.status-ok {
+
+  color: #22c55e;
+}
+
+.conexao-status-item small {
+
+  margin-top: 5px;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+
+  line-height: 1.35;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
 .campanha-item {
 
   border: 1px solid rgba(255,255,255,0.05);
@@ -3451,7 +3514,7 @@ button {
           class="btn"
           onclick="conectarMeta()"
         >
-          Conectar Facebook / Instagram
+          Conectar Meta
         </button>
   
         <!-- 🔥 INFO META -->
@@ -6109,6 +6172,18 @@ async function carregarStatusMeta() {
       if (data.conectado) {
     
         const conta = data.conta_anuncios;
+        const facebookConectado =
+          Boolean(data.usuario_meta?.id) &&
+          Boolean(data.paginas?.length);
+        const instagramConectado =
+          Boolean(
+            data.instagram?.id ||
+            data.instagram?.username
+          );
+        const gastoHoje =
+          data.metricas?.gasto_hoje_formatado ||
+          data.metricas?.gasto_hoje ||
+          "R$ 0,00";
     
         metaInfo.innerHTML = `
 
@@ -6143,18 +6218,37 @@ async function carregarStatusMeta() {
         
             </div>
         
+            <div class="conexao-status-box">
+
+              <div class="conexao-status-item">
+                <strong>Facebook</strong>
+                <span class="${facebookConectado ? "status-ok" : ""}">
+                  ${facebookConectado ? "Conectado" : "Não conectado"}
+                </span>
+                <small>
+                  ${data.paginas?.[0]?.name || "Nenhuma página vinculada"}
+                </small>
+              </div>
+
+              <div class="conexao-status-item">
+                <strong>Instagram</strong>
+                <span class="${instagramConectado ? "status-ok" : ""}">
+                  ${instagramConectado ? "Conectado" : "Não conectado"}
+                </span>
+                <small>
+                  ${
+                    data.instagram?.username
+                      ? '@' + data.instagram.username
+                      : "Nenhuma conta profissional vinculada"
+                  }
+                </small>
+              </div>
+
+            </div>
+
             <p>
-              <b>📘 Página:</b><br>
-              ${data.paginas?.[0]?.name || "-"}
-            </p>
-        
-            <p>
-              <b>📸 Instagram:</b><br>
-              ${
-                data.instagram?.username
-                  ? '@' + data.instagram.username
-                  : "Não conectado"
-              }
+              <b>📢 Conta de anúncios:</b><br>
+              ${conta?.nome || "-"}
             </p>
         
             <p>
@@ -6169,7 +6263,7 @@ async function carregarStatusMeta() {
         
             <p>
               <b>💰 Gasto hoje:</b><br>
-              ${data.metricas?.gasto_hoje || "R$ 0,00"}
+              ${gastoHoje}
             </p>
         
             <p>
@@ -6237,6 +6331,11 @@ async function carregarStatusMeta() {
       <p>
         ${data.paginas?.length > 0 ? "🟢" : "🔴"}
         Página conectada
+      </p>
+
+      <p>
+        ${data.instagram?.username ? "🟢" : "🔴"}
+        Instagram profissional vinculado
       </p>
 
       <hr>

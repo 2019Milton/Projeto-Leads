@@ -2218,6 +2218,88 @@ button {
   animation: abrirDrawer .25s ease;
 }
 
+.campanha-drawer-content {
+
+  width: 520px;
+}
+
+.detalhes-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-bottom: 18px;
+}
+
+.detalhe-item {
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.035);
+
+  border: 1px solid rgba(255,255,255,0.05);
+
+  min-width: 0;
+}
+
+.detalhe-item.full {
+
+  grid-column: 1 / -1;
+}
+
+.detalhe-item small {
+
+  display: block;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+
+  margin-bottom: 5px;
+}
+
+.detalhe-item strong,
+.detalhe-item span {
+
+  display: block;
+
+  color: #fff;
+
+  font-size: 13px;
+
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+}
+
+.lead-qualificacao {
+
+  margin-top: 10px;
+
+  padding: 8px;
+
+  border-radius: 8px;
+
+  background: rgba(34,197,94,0.06);
+
+  border: 1px solid rgba(34,197,94,0.12);
+
+  font-size: 10px;
+
+  color: #c7f9d4;
+}
+
+.lead-qualificacao div + div {
+
+  margin-top: 4px;
+}
+
 /* ANIMAÇÃO */
 @keyframes abrirDrawer {
 
@@ -5034,6 +5116,8 @@ let todosLeads = [];
 let filtroKPI = null;
 
 let leadsFiltradosAtuais = [];
+
+let campanhasAtuais = [];
   
 // LEADS
 async function carregarLeads() {
@@ -5554,6 +5638,17 @@ function exportarLeadsCSV() {
   
       Observação:
         lead.observacao || "",
+
+      Qualificação:
+        Array.isArray(
+          lead.respostas_qualificacao
+        )
+          ? lead.respostas_qualificacao
+              .map(item =>
+                `${item.pergunta}: ${item.resposta}`
+              )
+              .join(" | ")
+          : "",
   
       Data:
         formatarDataExcel(
@@ -5617,6 +5712,7 @@ function exportarLeadsCSV() {
     { wch: 28 },
     { wch: 20 },
     { wch: 40 },
+    { wch: 45 },
     { wch: 22 }
   ];
   
@@ -5624,7 +5720,7 @@ function exportarLeadsCSV() {
   // 🔥 autofilter
   worksheet["!autofilter"] = {
   
-    ref: "A5:I5"
+    ref: "A5:J5"
   };
   
   
@@ -5638,9 +5734,9 @@ function exportarLeadsCSV() {
   // 🔥 merge células
   worksheet["!merges"] = [
 
-    XLSX.utils.decode_range("A1:I2"),
+    XLSX.utils.decode_range("A1:J2"),
   
-    XLSX.utils.decode_range("G3:I3")
+    XLSX.utils.decode_range("G3:J3")
   ];
     
   
@@ -5713,7 +5809,7 @@ function exportarLeadsCSV() {
   
     const cols =
   
-      ["A","B","C","D","E","F","G","H","I"];
+      ["A","B","C","D","E","F","G","H","I","J"];
   
     cols.forEach(col => {
   
@@ -5778,7 +5874,7 @@ function exportarLeadsCSV() {
   // 🔥 cabeçalhos linha 4
   const headers =
   
-    ["A5","B5","C5","D5","E5","F5","G5","H5","I5"];
+    ["A5","B5","C5","D5","E5","F5","G5","H5","I5","J5"];
   
   headers.forEach(cell => {
   
@@ -5924,6 +6020,8 @@ function criarLeadCard(lead) {
 
       </div>
 
+      ${renderizarRespostasLead(lead)}
+
       <!-- AÇÕES -->
       <div class="lead-actions">
 
@@ -6003,6 +6101,64 @@ function formatarData(data) {
   return criada.toLocaleDateString();
 }
 
+function textoDetalhe(valor, fallback = "-") {
+
+  if (Array.isArray(valor)) {
+    return valor.length
+      ? valor.join(", ")
+      : fallback;
+  }
+
+  if (
+    valor === null ||
+    valor === undefined ||
+    valor === ""
+  ) {
+    return fallback;
+  }
+
+  return valor;
+}
+
+function formatarMoeda(valor) {
+
+  const numero = Number(valor || 0);
+
+  return numero.toLocaleString(
+    "pt-BR",
+    {
+      style: "currency",
+      currency: "BRL"
+    }
+  );
+}
+
+function renderizarRespostasLead(lead, limite = 2) {
+
+  const respostas =
+    Array.isArray(lead.respostas_qualificacao)
+      ? lead.respostas_qualificacao
+      : [];
+
+  if (!respostas.length) {
+    return "";
+  }
+
+  return `
+    <div class="lead-qualificacao">
+      ${respostas
+        .slice(0, limite)
+        .map(item => `
+          <div>
+            <strong>${item.pergunta || "Pergunta"}:</strong>
+            ${item.resposta || "-"}
+          </div>
+        `)
+        .join("")}
+    </div>
+  `;
+}
+
 let leadAtual = null;
   
 // 🔥 ABRIR DRAWER
@@ -6043,6 +6199,21 @@ function abrirLeadDrawer(lead) {
 
   document.getElementById("drawer_observacao")
     .value = lead.observacao || "";
+
+  const respostasBox =
+    document.getElementById(
+      "drawer_respostas_qualificacao"
+    );
+
+  if (respostasBox) {
+    respostasBox.innerHTML =
+      renderizarRespostasLead(lead, 20) ||
+      `
+        <div class="timeline-empty">
+          Nenhuma resposta qualificadora registrada
+        </div>
+      `;
+  }
 
   // 🔥 CARREGA HISTÓRICO
   carregarHistoricoLead(lead.id);
@@ -6911,6 +7082,11 @@ async function carregarCampanhas() {
 
   const campanhas = await res.json();
 
+  campanhasAtuais =
+    Array.isArray(campanhas)
+      ? campanhas
+      : [];
+
   console.log(
     "CAMPANHAS FORMATADAS:",
     JSON.stringify(campanhas, null, 2)
@@ -7126,6 +7302,18 @@ async function carregarCampanhas() {
         </small>
     
         <div class="campanha-acoes">
+
+          <button
+            class="btn-acao"
+            title="Detalhes"
+            onclick="
+              abrirCampanhaDrawer(
+                '${encodeURIComponent(JSON.stringify(c))}'
+              )
+            "
+          >
+            ⚙️
+          </button>
     
           <button
             class="btn-acao"
@@ -7276,6 +7464,113 @@ async function carregarCampanhas() {
   }, 100);
 
   
+}
+
+function labelCategoriaEspecial(valor) {
+
+  const labels = {
+    HOUSING: "Moradia / Imóveis",
+    CREDIT: "Crédito",
+    EMPLOYMENT: "Emprego",
+    ISSUES_ELECTIONS_POLITICS:
+      "Política / temas sociais"
+  };
+
+  return labels[valor] || valor || "-";
+}
+
+function detalheItem(titulo, valor, classe = "") {
+
+  return `
+    <div class="detalhe-item ${classe}">
+      <small>${titulo}</small>
+      <strong>${textoDetalhe(valor)}</strong>
+    </div>
+  `;
+}
+
+function abrirCampanhaDrawer(campanhaEncoded) {
+
+  let campanha = null;
+
+  try {
+    campanha =
+      JSON.parse(
+        decodeURIComponent(campanhaEncoded)
+      );
+  } catch (err) {
+    console.error(
+      "ERRO CAMPANHA DRAWER:",
+      err
+    );
+    return;
+  }
+
+  const drawer =
+    document.getElementById(
+      "campanhaDrawer"
+    );
+
+  const titulo =
+    document.getElementById(
+      "campanha_drawer_nome"
+    );
+
+  const conteudo =
+    document.getElementById(
+      "campanha_drawer_conteudo"
+    );
+
+  if (!drawer || !titulo || !conteudo) {
+    return;
+  }
+
+  const cfg =
+    campanha.configuracoes_avancadas || {};
+
+  titulo.innerText =
+    campanha.nome || "Campanha";
+
+  conteudo.innerHTML = `
+    <div class="detalhes-grid">
+      ${detalheItem("Status", campanha.status)}
+      ${detalheItem("Origem", campanha.origem)}
+      ${detalheItem("Categoria especial", labelCategoriaEspecial(cfg.categoria_especial))}
+      ${detalheItem("Objetivo", campanha.objetivo || "Leads")}
+      ${detalheItem("Título do anúncio", cfg.titulo)}
+      ${detalheItem("Descrição", cfg.descricao, "full")}
+      ${detalheItem("Link de destino", cfg.link, "full")}
+      ${detalheItem("País", cfg.pais || "BR")}
+      ${detalheItem("Raio", cfg.raio ? `${cfg.raio} km` : "-")}
+      ${detalheItem("Latitude", cfg.latitude)}
+      ${detalheItem("Longitude", cfg.longitude)}
+      ${detalheItem("Idade mínima", cfg.idade_min)}
+      ${detalheItem("Idade máxima", cfg.idade_max)}
+      ${detalheItem("Gênero", cfg.genero === "1" ? "Homens" : cfg.genero === "2" ? "Mulheres" : "Todos")}
+      ${detalheItem("Plataformas", cfg.plataformas)}
+      ${detalheItem("Facebook", cfg.facebook_positions)}
+      ${detalheItem("Instagram", cfg.instagram_positions)}
+      ${detalheItem("Dispositivos", cfg.dispositivos)}
+      ${detalheItem("Início", cfg.inicio ? new Date(cfg.inicio).toLocaleString("pt-BR") : "-")}
+      ${detalheItem("Término", cfg.fim ? new Date(cfg.fim).toLocaleString("pt-BR") : "-")}
+      ${detalheItem("Estratégia de lance", cfg.bid_strategy)}
+      ${detalheItem("Limite de lance", cfg.bid_amount ? formatarMoeda(cfg.bid_amount) : "-")}
+      ${detalheItem("Formulário de qualidade", cfg.formulario_qualidade ? "Ativo" : "Não usado")}
+      ${detalheItem("Advantage+ Audience", cfg.advantage_audience ? "Ativo" : "Não usado")}
+      ${detalheItem("Política de privacidade", cfg.privacidade_url, "full")}
+      ${detalheItem("Perguntas qualificadoras", cfg.perguntas, "full")}
+      ${detalheItem("Página de obrigado", cfg.obrigado_url, "full")}
+    </div>
+  `;
+
+  drawer.classList.add("active");
+}
+
+function fecharCampanhaDrawer() {
+
+  document
+    .getElementById("campanhaDrawer")
+    ?.classList.remove("active");
 }
 
 async function sincronizarCampanhas() {
@@ -8957,6 +9252,21 @@ if (resetTokenUrl) {
 
       </div>
 
+      <!-- QUALIFICAÇÃO -->
+      <div class="drawer-box">
+
+        <h4>Respostas qualificadoras</h4>
+
+        <div id="drawer_respostas_qualificacao">
+
+          <div class="timeline-empty">
+            Nenhuma resposta qualificadora registrada
+          </div>
+
+        </div>
+
+      </div>
+
       <!-- 🔥 HISTÓRICO -->
       <div class="drawer-box">
       
@@ -8982,6 +9292,42 @@ if (resetTokenUrl) {
           💾 Salvar Lead
         </button>
       
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 🔥 DRAWER CAMPANHA -->
+<div
+  id="campanhaDrawer"
+  class="lead-drawer"
+>
+
+  <div
+    class="lead-drawer-overlay"
+    onclick="fecharCampanhaDrawer()"
+  ></div>
+
+  <div class="lead-drawer-content campanha-drawer-content">
+
+    <div class="lead-drawer-header">
+
+      <h2 id="campanha_drawer_nome">
+        Campanha
+      </h2>
+
+      <button onclick="fecharCampanhaDrawer()">
+        ✖
+      </button>
+
+    </div>
+
+    <div class="lead-drawer-body">
+
+      <div id="campanha_drawer_conteudo">
       </div>
 
     </div>

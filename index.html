@@ -6796,7 +6796,20 @@ async function desconectarMeta() {
       }
     );
 
-    const data = await res.json();
+    const texto =
+      await res.text();
+
+    let data = {};
+
+    try {
+      data = texto ? JSON.parse(texto) : {};
+    } catch {
+      data = {
+        error:
+          texto ||
+          "Resposta inesperada do servidor"
+      };
+    }
 
     if (!res.ok || data.error) {
       alert(

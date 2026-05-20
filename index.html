@@ -230,6 +230,25 @@ button {
     0 0 20px rgba(37,99,235,0.45);
 }
 
+.btn-meta-disconnect {
+
+  background:
+    linear-gradient(
+      135deg,
+      #dc2626,
+      #991b1b
+    );
+
+  box-shadow:
+    0 0 15px rgba(220,38,38,0.25);
+}
+
+.btn-meta-disconnect:hover {
+
+  box-shadow:
+    0 0 20px rgba(239,68,68,0.45);
+}
+
 /* BOTÃO SAIR */
 .logout {
   background: rgba(239,68,68,0.2);
@@ -3754,6 +3773,7 @@ button {
         <h3>🔗 Conectar Meta</h3>
   
         <button
+          id="btn_meta_conexao"
           class="btn"
           onclick="conectarMeta()"
         >
@@ -6734,6 +6754,77 @@ function conectarMeta() {
   );
 }
 
+async function desconectarMeta() {
+
+  const confirmar = confirm(
+    "Deseja desconectar sua conta Meta? Campanhas e leads já salvos continuam na plataforma, mas novas sincronizações exigirão reconexão."
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const token =
+    localStorage.getItem("token");
+
+  if (!token) {
+    alert("Usuário não autenticado");
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/meta/desconectar`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(
+        data.error ||
+        "Erro ao desconectar Meta"
+      );
+      return;
+    }
+
+    alert("Conta Meta desconectada.");
+
+    await carregarStatusMeta();
+
+  } catch (err) {
+    console.error("DESCONECTAR META:", err);
+    alert("Erro ao desconectar Meta");
+  }
+}
+
+function atualizarBotaoMeta(conectado) {
+
+  const btn =
+    document.getElementById(
+      "btn_meta_conexao"
+    );
+
+  if (!btn) {
+    return;
+  }
+
+  if (conectado) {
+    btn.innerText = "Desconectar Meta";
+    btn.onclick = desconectarMeta;
+    btn.classList.add("btn-meta-disconnect");
+  } else {
+    btn.innerText = "Conectar Meta";
+    btn.onclick = conectarMeta;
+    btn.classList.remove("btn-meta-disconnect");
+  }
+}
+
 function valorCampo(id) {
 
   return document
@@ -7105,6 +7196,8 @@ async function carregarStatusMeta() {
 
 
     const metaInfo = document.getElementById("meta_info");
+
+    atualizarBotaoMeta(Boolean(data.conectado));
 
     if (metaInfo) {
     

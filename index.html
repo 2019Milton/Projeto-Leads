@@ -4956,7 +4956,8 @@ function renderizarPaginaLegal() {
     !legalContent ||
     ![
       "/privacy-policy",
-      "/data-deletion"
+      "/data-deletion",
+      "/terms"
     ].includes(path)
   ) {
     return false;
@@ -5019,7 +5020,7 @@ function renderizarPaginaLegal() {
         da Plataforma de Leads.
       </p>
     `;
-  } else {
+  } else if (path === "/data-deletion") {
     legalContent.innerHTML = `
       <h1>Instruções de Exclusão de Dados</h1>
 
@@ -5055,6 +5056,64 @@ function renderizarPaginaLegal() {
       <p>
         O usuário também pode remover o acesso da Plataforma de Leads diretamente
         nas configurações da própria conta Meta/Facebook.
+      </p>
+    `;
+  } else {
+    legalContent.innerHTML = `
+      <h1>Termos de Serviço</h1>
+
+      <p>
+        Estes Termos de Serviço regulam o uso da Plataforma de Leads, uma
+        aplicação para gestão de campanhas, integração com Meta/Facebook,
+        organização de leads e acompanhamento de contatos comerciais.
+      </p>
+
+      <h2>Uso da plataforma</h2>
+
+      <p>
+        O usuário deve utilizar a Plataforma de Leads de forma lícita,
+        respeitando as regras da Meta, leis aplicáveis, políticas de
+        privacidade e direitos de terceiros.
+      </p>
+
+      <h2>Conta e segurança</h2>
+
+      <p>
+        O usuário é responsável por manter suas credenciais em segurança e por
+        autorizar apenas integrações de contas Meta/Facebook que esteja
+        autorizado a administrar.
+      </p>
+
+      <h2>Integrações</h2>
+
+      <p>
+        Ao conectar a Meta, o usuário autoriza a Plataforma de Leads a acessar
+        informações necessárias para criar, sincronizar e exibir campanhas,
+        formulários, métricas e leads, conforme permissões concedidas.
+      </p>
+
+      <h2>Dados e privacidade</h2>
+
+      <p>
+        O tratamento de dados pessoais segue a
+        <a href="/privacy-policy">Política de Privacidade</a>. Solicitações de
+        exclusão podem ser consultadas em
+        <a href="/data-deletion">Instruções de Exclusão de Dados</a>.
+      </p>
+
+      <h2>Disponibilidade</h2>
+
+      <p>
+        A Plataforma de Leads pode passar por manutenções, atualizações ou
+        indisponibilidades temporárias causadas por serviços de terceiros,
+        como provedores de hospedagem, email, banco de dados ou APIs da Meta.
+      </p>
+
+      <h2>Contato</h2>
+
+      <p>
+        Dúvidas sobre estes termos podem ser enviadas ao email de suporte
+        informado pela Plataforma de Leads.
       </p>
     `;
   }

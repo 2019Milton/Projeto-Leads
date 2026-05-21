@@ -494,7 +494,16 @@ button {
 
   position: relative;
 
+  cursor: pointer;
+
   opacity: 0.72;
+}
+
+.pagamento-modo:hover {
+
+  border-color: rgba(124,92,255,0.35);
+
+  transform: translateY(-1px);
 }
 
 .pagamento-modo.ativo {
@@ -541,6 +550,132 @@ button {
   background: rgba(34,197,94,0.14);
 
   color: #4ade80;
+}
+
+.pagamento-saldo {
+
+  margin-top: 8px;
+
+  color: #fff;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.pagamento-modal {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 10000;
+
+  display: none;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 18px;
+}
+
+.pagamento-modal.active {
+
+  display: flex;
+}
+
+.pagamento-modal-overlay {
+
+  position: absolute;
+
+  inset: 0;
+
+  background: rgba(0,0,0,0.68);
+
+  backdrop-filter: blur(4px);
+}
+
+.pagamento-modal-content {
+
+  position: relative;
+
+  z-index: 1;
+
+  width: min(390px, 100%);
+
+  padding: 18px;
+
+  border-radius: 12px;
+
+  background: #070b1a;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  box-shadow: 0 18px 48px rgba(0,0,0,0.52);
+}
+
+.pagamento-modal-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.pagamento-modal-header h3 {
+
+  margin: 0;
+
+  font-size: 16px;
+}
+
+.pagamento-modal-header button {
+
+  width: 32px !important;
+
+  min-width: 32px !important;
+
+  height: 32px;
+
+  margin: 0 !important;
+
+  padding: 0 !important;
+
+  border-radius: 9px !important;
+}
+
+.pagamento-modal-text {
+
+  margin-top: 14px;
+
+  color: #cbd5e1;
+
+  font-size: 13px;
+
+  line-height: 1.55;
+}
+
+.pagamento-modal-alerta {
+
+  margin-top: 12px;
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  background: rgba(59,130,246,0.10);
+
+  border: 1px solid rgba(59,130,246,0.18);
+
+  color: #bfdbfe;
+
+  font-size: 12px;
+
+  line-height: 1.45;
 }
 
 .campanha-item {
@@ -5592,6 +5727,8 @@ let filtroKPI = null;
 let leadsFiltradosAtuais = [];
 
 let campanhasAtuais = [];
+
+let contaPagamentoAtual = null;
   
 // LEADS
 async function carregarLeads() {
@@ -6607,6 +6744,95 @@ function formatarMoeda(valor) {
   );
 }
 
+function formatarSaldoMeta(conta) {
+
+  if (
+    conta?.saldo === null ||
+    conta?.saldo === undefined ||
+    conta?.saldo === ""
+  ) {
+    return "Não informado";
+  }
+
+  const valor =
+    Number(conta.saldo);
+
+  if (!Number.isFinite(valor)) {
+    return `${conta.saldo} ${conta.moeda || ""}`.trim();
+  }
+
+  return valor.toLocaleString(
+    "pt-BR",
+    {
+      style: "currency",
+      currency: conta.moeda || "BRL"
+    }
+  );
+}
+
+function abrirModalPagamento(tipo) {
+
+  const modal =
+    document.getElementById(
+      "pagamentoModal"
+    );
+
+  const titulo =
+    document.getElementById(
+      "pagamento_modal_titulo"
+    );
+
+  const texto =
+    document.getElementById(
+      "pagamento_modal_texto"
+    );
+
+  const alerta =
+    document.getElementById(
+      "pagamento_modal_alerta"
+    );
+
+  if (!modal || !titulo || !texto || !alerta) {
+    return;
+  }
+
+  if (tipo === "manual") {
+
+    titulo.innerText =
+      "Manual / pré-pago";
+
+    texto.innerText =
+      "Esse modo cobre contas Meta abastecidas por saldo, como PIX ou boleto quando disponíveis. A plataforma reconhece o modo pré-pago e mostra o saldo que a Meta já informou para a conta.";
+
+    alerta.innerHTML = `
+      Saldo reconhecido pela Meta:
+      <strong>${formatarSaldoMeta(contaPagamentoAtual)}</strong>
+      <br>
+      Um PIX ou boleto ainda em processamento pode não aparecer aqui imediatamente.
+    `;
+
+  } else {
+
+    titulo.innerText =
+      "Cobrança automática";
+
+    texto.innerText =
+      "Nesse modo a Meta cobra os anúncios por uma forma vinculada à conta, como cartão ou cobrança automática habilitada no Gerenciador de Anúncios.";
+
+    alerta.innerText =
+      "Se a Meta indicar esse modo como em vigor, não é necessário saldo pré-pago para o status de pagamento ser reconhecido pela plataforma.";
+  }
+
+  modal.classList.add("active");
+}
+
+function fecharModalPagamento() {
+
+  document
+    .getElementById("pagamentoModal")
+    ?.classList.remove("active");
+}
+
 function renderizarRespostasLead(lead, limite = 2) {
 
   const respostas =
@@ -7407,6 +7633,7 @@ async function carregarStatusMeta() {
       if (data.conectado) {
     
         const conta = data.conta_anuncios;
+        contaPagamentoAtual = conta;
         const facebookConectado =
           Boolean(data.usuario_meta?.id) &&
           Boolean(data.paginas?.length);
@@ -7434,7 +7661,7 @@ async function carregarStatusMeta() {
           conta?.tipo_pagamento === "manual_pre_pago"
             ? conta?.saldo !== null &&
               conta?.saldo !== undefined
-              ? `Saldo informado pela Meta: ${conta.saldo} ${conta.moeda || ""}`
+              ? `Saldo reconhecido pela Meta: ${formatarSaldoMeta(conta)}`
               : "PIX, boleto ou saldo disponível na conta Meta"
             : conta?.tipo_pagamento === "automatico"
             ? "Forma de cobrança vinculada na conta Meta"
@@ -7563,6 +7790,8 @@ async function carregarStatusMeta() {
         `;
     
       } else {
+
+        contaPagamentoAtual = null;
     
         metaInfo.innerHTML = `
           <p style="color:#ef4444;font-weight:bold;margin-top:15px;">
@@ -7633,7 +7862,11 @@ async function carregarStatusMeta() {
 
       <div class="pagamento-modos">
 
-        <div class="pagamento-modo ${pagamentoAutomaticoAtivo ? "ativo" : ""}">
+        <div
+          class="pagamento-modo ${pagamentoAutomaticoAtivo ? "ativo" : ""}"
+          title="Entenda a cobrança automática"
+          onclick="abrirModalPagamento('automatico')"
+        >
           <strong>Cobrança automática</strong>
           <small>Cartão ou cobrança vinculada na conta Meta.</small>
           <span class="pagamento-badge">
@@ -7641,9 +7874,16 @@ async function carregarStatusMeta() {
           </span>
         </div>
 
-        <div class="pagamento-modo ${pagamentoManualAtivo ? "ativo" : ""}">
+        <div
+          class="pagamento-modo ${pagamentoManualAtivo ? "ativo" : ""}"
+          title="Entenda PIX, boleto e saldo"
+          onclick="abrirModalPagamento('manual')"
+        >
           <strong>Manual / pré-pago</strong>
           <small>PIX, boleto ou saldo disponível na Meta.</small>
+          <span class="pagamento-saldo">
+            Saldo: ${formatarSaldoMeta(data.conta_anuncios)}
+          </span>
           <span class="pagamento-badge">
             ${pagamentoManualAtivo ? "Em vigor" : "Não detectado"}
           </span>
@@ -10014,6 +10254,48 @@ if (renderizarPaginaLegal()) {
 
 </div>
 
+
+<!-- 💳 MODAL PAGAMENTO META -->
+<div
+  id="pagamentoModal"
+  class="pagamento-modal"
+>
+
+  <div
+    class="pagamento-modal-overlay"
+    onclick="fecharModalPagamento()"
+  ></div>
+
+  <div class="pagamento-modal-content">
+
+    <div class="pagamento-modal-header">
+
+      <h3 id="pagamento_modal_titulo">
+        Pagamento Meta
+      </h3>
+
+      <button
+        title="Fechar"
+        onclick="fecharModalPagamento()"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div
+      id="pagamento_modal_texto"
+      class="pagamento-modal-text"
+    ></div>
+
+    <div
+      id="pagamento_modal_alerta"
+      class="pagamento-modal-alerta"
+    ></div>
+
+  </div>
+
+</div>
 
 <!-- 🔐 MODAL TROCAR SENHA -->
 <div

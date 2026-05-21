@@ -7301,6 +7301,26 @@ async function carregarStatusMeta() {
           data.metricas?.gasto_hoje_formatado ||
           data.metricas?.gasto_hoje ||
           "R$ 0,00";
+        const pagamentoHabilitado =
+          Boolean(
+            conta?.pagamento_habilitado ||
+            conta?.possui_pagamento
+          );
+        const tipoPagamento =
+          conta?.tipo_pagamento === "manual_pre_pago"
+            ? "Manual / pré-pago"
+            : conta?.tipo_pagamento === "automatico"
+            ? "Cobrança automática"
+            : "Não identificado";
+        const detalhePagamento =
+          conta?.tipo_pagamento === "manual_pre_pago"
+            ? conta?.saldo !== null &&
+              conta?.saldo !== undefined
+              ? `Saldo informado pela Meta: ${conta.saldo} ${conta.moeda || ""}`
+              : "PIX, boleto ou saldo disponível na conta Meta"
+            : conta?.tipo_pagamento === "automatico"
+            ? "Forma de cobrança vinculada na conta Meta"
+            : "Revise o pagamento no Gerenciador de Anúncios";
     
         metaInfo.innerHTML = `
 
@@ -7366,6 +7386,13 @@ async function carregarStatusMeta() {
             <p>
               <b>📢 Conta de anúncios:</b><br>
               ${conta?.nome || "-"}
+            </p>
+
+            <p>
+              <b>${pagamentoHabilitado ? "🟢" : "🔴"} Pagamento:</b><br>
+              ${tipoPagamento}
+              <br>
+              <small>${detalhePagamento}</small>
             </p>
         
             <p>
@@ -7441,8 +7468,23 @@ async function carregarStatusMeta() {
       </p>
 
       <p>
-        ${data.conta_anuncios?.possui_pagamento ? "🟢" : "🔴"}
-        Forma de pagamento
+        ${
+          data.conta_anuncios?.pagamento_habilitado ||
+          data.conta_anuncios?.possui_pagamento
+            ? "🟢"
+            : "🔴"
+        }
+        Pagamento habilitado
+        <br>
+        <small>
+          ${
+            data.conta_anuncios?.tipo_pagamento === "manual_pre_pago"
+              ? "Conta manual / pré-paga"
+              : data.conta_anuncios?.tipo_pagamento === "automatico"
+              ? "Cobrança automática vinculada"
+              : "Não identificado pela Meta"
+          }
+        </small>
       </p>
 
       <p>

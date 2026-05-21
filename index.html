@@ -8095,6 +8095,11 @@ async function carregarCampanhas() {
       c.corretor_encaminhado_email ||
       "";
 
+    const remetenteEncaminhamento =
+      c.criada_por_nome ||
+      c.criada_por_email ||
+      "Admin Corretor";
+
     div.innerHTML += `
 
     <div class="
@@ -8165,7 +8170,7 @@ async function carregarCampanhas() {
         c.recebida_por_encaminhamento
           ? `
             <div class="campanha-encaminhada">
-              Recebida do Admin Corretor
+              Recebida de ${remetenteEncaminhamento}
             </div>
           `
           : nomeCorretorEncaminhado

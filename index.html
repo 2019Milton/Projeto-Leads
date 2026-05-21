@@ -2444,6 +2444,53 @@ button {
   color: white;
 }
 
+.plano-atual-topo {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  min-height: 42px;
+
+  padding: 8px 12px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.03);
+
+  color: #cbd5e1;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.plano-atual-topo strong {
+
+  font-size: 13px;
+
+  text-transform: capitalize;
+}
+
+.plano-atual-topo.bronze strong {
+
+  color: #fdba74;
+}
+
+.plano-atual-topo.prata strong {
+
+  color: #e2e8f0;
+}
+
+.plano-atual-topo.ouro strong {
+
+  color: #fde68a;
+}
+
   
 
 /* 🔥 MODAL CRM */
@@ -4330,6 +4377,20 @@ body.tema-claro .tema-seletor {
   color: #334155;
 }
 
+body.tema-claro .plano-atual-topo {
+
+  background: rgba(255,255,255,0.9);
+
+  border-color: #ccd8e7;
+
+  color: #334155;
+}
+
+body.tema-claro .plano-atual-topo.prata strong {
+
+  color: #475569;
+}
+
 body.tema-claro .logout {
 
   color: #b42318;
@@ -4539,7 +4600,8 @@ body.tema-claro .score-legenda {
   }
 
   .topbar-actions,
-  .tema-seletor {
+  .tema-seletor,
+  .plano-atual-topo {
 
     width: 100%;
   }
@@ -4627,6 +4689,15 @@ body.tema-claro .score-legenda {
     <h2>🚀 Central de Leads</h2>
   
     <div class="topbar-actions">
+      <div
+        id="plano_atual_topo"
+        class="plano-atual-topo bronze"
+        title="Plano ativo nesta conta"
+      >
+        Plano
+        <strong id="plano_atual_nome">Bronze</strong>
+      </div>
+
       <label class="tema-seletor" title="Escolha o visual da plataforma">
         Tema
 
@@ -6441,6 +6512,8 @@ async function init() {
       await carregarCorretoresCampanha();
     }
 
+    await carregarPlanoAtual();
+
   } catch (err) {
 
     console.error("Erro token:", err);
@@ -6474,6 +6547,61 @@ let usuarioLogado = null;
 let corretoresCampanha = [];
 
 let campanhaEncaminharAtual = null;
+
+async function carregarPlanoAtual() {
+
+  const token =
+    localStorage.getItem("token");
+
+  const topo =
+    document.getElementById(
+      "plano_atual_topo"
+    );
+
+  const nome =
+    document.getElementById(
+      "plano_atual_nome"
+    );
+
+  if (!token || !topo || !nome) {
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/usuarios/me/plano`,
+      {
+        headers: {
+          "Authorization":
+            "Bearer " + token
+        }
+      }
+    );
+
+    const data =
+      await res.json();
+
+    const plano =
+      ["bronze","prata","ouro"]
+        .includes(data.plano)
+          ? data.plano
+          : "bronze";
+
+    topo.className =
+      `plano-atual-topo ${plano}`;
+
+    nome.innerText =
+      plano;
+
+    if (usuarioLogado) {
+      usuarioLogado.plano =
+        plano;
+    }
+
+  } catch (err) {
+    console.error("PLANO ATUAL:", err);
+  }
+}
   
 // LEADS
 async function carregarLeads() {
@@ -10905,6 +11033,14 @@ async function alterarPlanoUsuario(id, plano) {
   }
 
   await carregarPainelAdmin();
+
+  if (
+    Number(usuarioLogado?.id) ===
+    Number(id)
+  ) {
+    await carregarPlanoAtual();
+    await carregarLeads();
+  }
 }
 
 

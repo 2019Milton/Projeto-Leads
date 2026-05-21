@@ -4241,6 +4241,48 @@ button {
   color: #ff7b7b;
 }
 
+.ml-explicacao-lead {
+
+  display: none;
+
+  margin-top: 12px;
+
+  padding: 13px;
+
+  border: 1px solid rgba(96,165,250,0.18);
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(37,99,235,0.12),
+      rgba(34,197,94,0.06)
+    );
+
+  color: #cbd5e1;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+.ml-explicacao-lead.ativo {
+
+  display: block;
+}
+
+.ml-explicacao-lead strong {
+
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #dbeafe;
+
+  font-size: 13px;
+}
+
 .metricas-legenda {
   margin-top: 22px;
   padding-top: 18px;
@@ -4580,6 +4622,21 @@ body.tema-claro .lead-ml-resumo strong {
   color: #162033;
 }
 
+body.tema-claro .ml-explicacao-lead {
+
+  background:
+    linear-gradient(145deg, #eef6ff, #eefbf3);
+
+  border-color: #c8d9ef;
+
+  color: #334155;
+}
+
+body.tema-claro .ml-explicacao-lead strong {
+
+  color: #1e3a8a;
+}
+
 body.tema-claro .kpi-card span,
 body.tema-claro .metrica span,
 body.tema-claro .detalhe-item strong,
@@ -4884,7 +4941,7 @@ body.tema-claro .score-legenda {
           </div>
   
         </div>
-  
+
       </div>
   
       <!-- 📢 PUBLICAÇÃO -->
@@ -5337,6 +5394,16 @@ body.tema-claro .score-legenda {
             <strong>-40</strong>
           </div>
       
+        </div>
+
+        <div
+          id="ml_explicacao_lead"
+          class="ml-explicacao-lead"
+        >
+          <strong>Machine Learning dos Leads</strong>
+          A Inteligência do Lead classifica por regras da plataforma.
+          O ML complementa essa análise aprendendo com os leads fechados
+          e perdidos da sua conta para estimar a chance de conversão.
         </div>
       
       </div>
@@ -6707,6 +6774,19 @@ async function carregarPlanoAtual() {
     if (usuarioLogado) {
       usuarioLogado.plano =
         plano;
+    }
+
+    const explicacaoML =
+      document.getElementById(
+        "ml_explicacao_lead"
+      );
+
+    if (explicacaoML) {
+      explicacaoML.classList.toggle(
+        "ativo",
+        plano === "prata" ||
+        plano === "ouro"
+      );
     }
 
   } catch (err) {

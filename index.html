@@ -5766,7 +5766,10 @@ async function init() {
       }
     }
 
-    if (tipo === "admin_corretor") {
+    if (
+      tipo === "admin_corretor" ||
+      tipo === "super_admin"
+    ) {
       await carregarCorretoresCampanha();
     }
 
@@ -8081,7 +8084,10 @@ async function carregarCampanhas() {
   campanhasFiltradas.forEach(c => {
 
     const podeEncaminhar =
-      usuarioLogado?.tipo === "admin_corretor" &&
+      (
+        usuarioLogado?.tipo === "admin_corretor" ||
+        usuarioLogado?.tipo === "super_admin"
+      ) &&
       !c.recebida_por_encaminhamento;
 
     const nomeCorretorEncaminhado =

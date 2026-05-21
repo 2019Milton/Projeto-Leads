@@ -2054,6 +2054,116 @@ button {
   color: #ffd95c;
 }
 
+.lead-ml-badge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  width: fit-content;
+
+  padding: 4px 9px;
+
+  border: 1px solid rgba(96,165,250,0.22);
+
+  border-radius: 999px;
+
+  background: rgba(59,130,246,0.12);
+
+  color: #93c5fd;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.lead-ml-badge.alta {
+
+  background: rgba(34,197,94,0.12);
+
+  border-color: rgba(34,197,94,0.24);
+
+  color: #86efac;
+}
+
+.lead-ml-badge.media {
+
+  background: rgba(250,204,21,0.12);
+
+  border-color: rgba(250,204,21,0.24);
+
+  color: #fde68a;
+}
+
+.lead-ml-badge.baixa {
+
+  background: rgba(248,113,113,0.12);
+
+  border-color: rgba(248,113,113,0.24);
+
+  color: #fca5a5;
+}
+
+.lead-ml-detalhes {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  color: #dbeafe;
+
+  font-size: 12px;
+}
+
+.lead-ml-resumo {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+.lead-ml-resumo div {
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  background: rgba(59,130,246,0.08);
+
+  border: 1px solid rgba(96,165,250,0.14);
+}
+
+.lead-ml-resumo strong,
+.lead-ml-resumo small {
+
+  display: block;
+}
+
+.lead-ml-resumo strong {
+
+  color: #fff;
+
+  font-size: 18px;
+}
+
+.lead-ml-resumo small,
+.lead-ml-base {
+
+  color: #9fb4d0;
+}
+
+.lead-ml-base div + div {
+
+  margin-top: 5px;
+}
+
 .lead-meta {
 
   display: flex;
@@ -4255,9 +4365,47 @@ body.tema-claro .kanban-column {
 
 body.tema-claro .lead-ultima-msg,
 body.tema-claro .lead-tags span,
-body.tema-claro .lead-qualificacao {
+body.tema-claro .lead-qualificacao,
+body.tema-claro .lead-ml-detalhes,
+body.tema-claro .lead-ml-base {
 
   color: #334155;
+}
+
+body.tema-claro .lead-ml-badge {
+
+  color: #1d4ed8;
+
+  background: rgba(37,99,235,0.1);
+
+  border-color: rgba(37,99,235,0.18);
+}
+
+body.tema-claro .lead-ml-badge.alta {
+
+  color: #15803d;
+}
+
+body.tema-claro .lead-ml-badge.media {
+
+  color: #a16207;
+}
+
+body.tema-claro .lead-ml-badge.baixa {
+
+  color: #b91c1c;
+}
+
+body.tema-claro .lead-ml-resumo div {
+
+  background: rgba(219,234,254,0.62);
+
+  border-color: #bfd4ef;
+}
+
+body.tema-claro .lead-ml-resumo strong {
+
+  color: #162033;
 }
 
 body.tema-claro .kpi-card span,
@@ -5661,7 +5809,7 @@ body.tema-claro .score-legenda {
           <br>
 
           🧠 <b>Planos</b>:
-          Bronze é a base, Prata habilita Machine Learning para leads e Ouro habilita Machine Learning e IA para leads.
+          Bronze já habilita Machine Learning para leads. Ouro também libera IA para leads.
       
         </div>
       
@@ -7195,6 +7343,8 @@ function criarLeadCard(lead) {
           
           </span>
 
+          ${renderizarBadgeMLLead(lead)}
+
         </div>
 
       </div>
@@ -7456,6 +7606,100 @@ function renderizarRespostasLead(lead, limite = 2) {
   `;
 }
 
+function renderizarBadgeMLLead(lead) {
+
+  const ml =
+    lead.ml_leads;
+
+  if (ml?.disponivel) {
+    return `
+      <span
+        class="lead-ml-badge ${ml.faixa || "media"}"
+        title="Probabilidade aprendida com leads fechados e perdidos"
+      >
+        ML ${ml.probabilidade_conversao || 0}% conversão
+      </span>
+    `;
+  }
+
+  if (ml?.status === "aprendendo") {
+    return `
+      <span
+        class="lead-ml-badge"
+        title="O modelo precisa de leads fechados e perdidos para aprender"
+      >
+        ML aprendendo
+      </span>
+    `;
+  }
+
+  return "";
+}
+
+function renderizarDetalhesMLLead(lead) {
+
+  const ml =
+    lead.ml_leads;
+
+  if (!ml) {
+    return `
+      <div class="timeline-empty">
+        Machine Learning indisponível para este lead.
+      </div>
+    `;
+  }
+
+  if (!ml.disponivel) {
+    return `
+      <div class="lead-ml-detalhes">
+        <div>
+          O modelo está aprendendo com o histórico desta conta.
+        </div>
+
+        <div class="lead-ml-resumo">
+          <div>
+            <strong>${ml.amostras || 0}</strong>
+            <small>Leads rotulados</small>
+          </div>
+
+          <div>
+            <strong>${ml.minimo_amostras || 0}</strong>
+            <small>Mínimo inicial</small>
+          </div>
+        </div>
+
+        <div class="lead-ml-base">
+          ${(ml.base || [])
+            .map(item => `<div>• ${item}</div>`)
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="lead-ml-detalhes">
+      <div class="lead-ml-resumo">
+        <div>
+          <strong>${ml.probabilidade_conversao || 0}%</strong>
+          <small>Prob. de conversão</small>
+        </div>
+
+        <div>
+          <strong>${ml.confianca || 0}%</strong>
+          <small>Confiança</small>
+        </div>
+      </div>
+
+      <div class="lead-ml-base">
+        ${(ml.base || [])
+          .map(item => `<div>• ${item}</div>`)
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
 let leadAtual = null;
   
 // 🔥 ABRIR DRAWER
@@ -7510,6 +7754,16 @@ function abrirLeadDrawer(lead) {
           Nenhuma resposta qualificadora registrada
         </div>
       `;
+  }
+
+  const mlBox =
+    document.getElementById(
+      "drawer_ml_lead"
+    );
+
+  if (mlBox) {
+    mlBox.innerHTML =
+      renderizarDetalhesMLLead(lead);
   }
 
   // 🔥 CARREGA HISTÓRICO
@@ -10946,6 +11200,21 @@ if (renderizarPaginaLegal()) {
             -
           </span>
         </p>
+
+      </div>
+
+      <!-- MACHINE LEARNING -->
+      <div class="drawer-box">
+
+        <h4>Machine Learning do Lead</h4>
+
+        <div id="drawer_ml_lead">
+
+          <div class="timeline-empty">
+            Carregando análise do lead
+          </div>
+
+        </div>
 
       </div>
 

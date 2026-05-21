@@ -2277,6 +2277,63 @@ button {
   cursor:pointer;
 }
 
+.plano-badge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 72px;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+.plano-badge.bronze {
+
+  background: rgba(180, 112, 63, 0.18);
+
+  color: #fdba74;
+}
+
+.plano-badge.prata {
+
+  background: rgba(203, 213, 225, 0.14);
+
+  color: #e2e8f0;
+}
+
+.plano-badge.ouro {
+
+  background: rgba(250, 204, 21, 0.16);
+
+  color: #fde047;
+}
+
+.plano-select {
+
+  min-width: 132px;
+
+  padding: 9px 10px;
+
+  border-radius: 10px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  background: #0b1024;
+
+  color: white;
+}
+
   
 
 /* 🔥 MODAL CRM */
@@ -4993,6 +5050,7 @@ button {
               1.2fr
               1fr
               220px
+              180px
               220px
               160px;
             gap:15px;
@@ -5139,6 +5197,28 @@ button {
             </select>
         
           </div>
+
+          <!-- PLANO -->
+          <div>
+
+            <label
+              style="
+                display:block;
+                margin-bottom:8px;
+                color:#9ca3af;
+                font-size:13px;
+              "
+            >
+              Plano
+            </label>
+
+            <select id="novo_usuario_plano">
+              <option value="bronze">Bronze</option>
+              <option value="prata">Prata</option>
+              <option value="ouro">Ouro</option>
+            </select>
+
+          </div>
         
           <!-- BOTÃO -->
           <button
@@ -5186,6 +5266,11 @@ button {
       
           🔐 Senha deve conter:
           letra maiúscula, minúscula, número e mínimo 8 caracteres.
+
+          <br>
+
+          🧠 <b>Planos</b>:
+          Bronze é a base, Prata habilita Machine Learning para leads e Ouro habilita Machine Learning e IA para leads.
       
         </div>
       
@@ -5204,6 +5289,7 @@ button {
               <th>ID</th>
               <th>Email</th>
               <th>Tipo</th>
+              <th>Plano</th>
               <th>Status</th>
               <th>Campanhas</th>
               <th>Leads</th>
@@ -9595,6 +9681,41 @@ async function carregarPainelAdmin() {
           </td>
 
           <td>
+
+            ${
+              u.tipo === "super_admin"
+                ? `
+                  <span class="plano-badge ouro">
+                    Acesso total
+                  </span>
+                `
+                : `
+                  <select
+                    class="plano-select"
+                    onchange="alterarPlanoUsuario(
+                      ${u.id},
+                      this.value
+                    )"
+                  >
+                    ${["bronze","prata","ouro"].map(plano => `
+                      <option
+                        value="${plano}"
+                        ${
+                          (u.plano || "bronze") === plano
+                            ? "selected"
+                            : ""
+                        }
+                      >
+                        ${plano}
+                      </option>
+                    `).join("")}
+                  </select>
+                `
+            }
+
+          </td>
+
+          <td>
             ${
               u.ativo
                 ? "🟢 Ativo"
@@ -9821,6 +9942,11 @@ async function criarUsuario() {
       "novo_usuario_tipo"
     ).value;
 
+  const plano =
+    document.getElementById(
+      "novo_usuario_plano"
+    ).value;
+
   if (
     !nome ||
     !sobrenome ||
@@ -9850,7 +9976,8 @@ async function criarUsuario() {
         email,
         senha,
         tipo,
-        admin_id
+        admin_id,
+        plano
       })
     }
   );
@@ -10046,6 +10173,34 @@ async function alterarVinculo(id, admin_id) {
 
   if (data.error) {
     alert(data.error);
+    return;
+  }
+
+  await carregarPainelAdmin();
+}
+
+async function alterarPlanoUsuario(id, plano) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/plano`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ plano })
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    alert(data.error || "Erro ao alterar plano");
+    await carregarPainelAdmin();
     return;
   }
 

@@ -3475,6 +3475,61 @@ button {
   gap: 8px;
 }
 
+.campanha-encaminhada {
+
+  width: fit-content;
+
+  margin: 0 0 14px;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  background: rgba(34,197,94,0.12);
+
+  color: #86efac;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.campanha-encaminhar-modal .pagamento-modal-content {
+
+  width: min(430px, 100%);
+}
+
+.campanha-encaminhar-modal select {
+
+  width: 100%;
+
+  margin-top: 14px;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  background: #0b1024;
+
+  color: white;
+}
+
+.campanha-encaminhar-acoes {
+
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 14px;
+}
+
+.campanha-encaminhar-acoes button {
+
+  flex: 1;
+}
+
 .campanha-acoes button {
 
   width: 38px !important;
@@ -5640,6 +5695,15 @@ async function init() {
     
     const nomeCompleto =
       `${nome} ${sobrenome}`.trim();
+
+    usuarioLogado = {
+      id,
+      email,
+      tipo,
+      nome,
+      sobrenome,
+      nomeCompleto
+    };
     
     console.log("USUARIO:", {
       id,
@@ -5702,6 +5766,10 @@ async function init() {
       }
     }
 
+    if (tipo === "admin_corretor") {
+      await carregarCorretoresCampanha();
+    }
+
   } catch (err) {
 
     console.error("Erro token:", err);
@@ -5729,6 +5797,12 @@ let leadsFiltradosAtuais = [];
 let campanhasAtuais = [];
 
 let contaPagamentoAtual = null;
+
+let usuarioLogado = null;
+
+let corretoresCampanha = [];
+
+let campanhaEncaminharAtual = null;
   
 // LEADS
 async function carregarLeads() {
@@ -8006,6 +8080,15 @@ async function carregarCampanhas() {
 
   campanhasFiltradas.forEach(c => {
 
+    const podeEncaminhar =
+      usuarioLogado?.tipo === "admin_corretor" &&
+      !c.recebida_por_encaminhamento;
+
+    const nomeCorretorEncaminhado =
+      c.corretor_encaminhado_nome ||
+      c.corretor_encaminhado_email ||
+      "";
+
     div.innerHTML += `
 
     <div class="
@@ -8072,6 +8155,21 @@ async function carregarCampanhas() {
     
       </div>
 
+      ${
+        c.recebida_por_encaminhamento
+          ? `
+            <div class="campanha-encaminhada">
+              Recebida do Admin Corretor
+            </div>
+          `
+          : nomeCorretorEncaminhado
+          ? `
+            <div class="campanha-encaminhada">
+              Encaminhada para ${nomeCorretorEncaminhado}
+            </div>
+          `
+          : ""
+      }
 
       ${(() => {
 
@@ -8209,18 +8307,42 @@ async function carregarCampanhas() {
           >
             🔄
           </button>
+
+          ${
+            podeEncaminhar
+              ? `
+                <button
+                  class="btn-acao"
+                  title="Encaminhar para corretor"
+                  onclick="
+                    abrirModalEncaminharCampanha(
+                      '${encodeURIComponent(JSON.stringify(c))}'
+                    )
+                  "
+                >
+                  ↗
+                </button>
+              `
+              : ""
+          }
     
-          <button
-            class="btn-danger"
-            title="Excluir"
-            onclick="
-              excluirCampanha(
-                '${c.campaign_id}'
-              )
-            "
-          >
-            🗑️
-          </button>
+          ${
+            c.recebida_por_encaminhamento
+              ? ""
+              : `
+                <button
+                  class="btn-danger"
+                  title="Excluir"
+                  onclick="
+                    excluirCampanha(
+                      '${c.campaign_id}'
+                    )
+                  "
+                >
+                  🗑️
+                </button>
+              `
+          }
     
         </div>
     
@@ -8458,6 +8580,184 @@ function fecharCampanhaDrawer() {
   document
     .getElementById("campanhaDrawer")
     ?.classList.remove("active");
+}
+
+async function carregarCorretoresCampanha() {
+
+  const token =
+    localStorage.getItem("token");
+
+  if (!token) {
+    return;
+  }
+
+  try {
+
+    const res = await fetch(
+      `${API}/campanhas/corretores-vinculados`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      console.error(
+        "CORRETORES CAMPANHA:",
+        data
+      );
+      return;
+    }
+
+    corretoresCampanha =
+      data.corretores || [];
+
+  } catch (err) {
+    console.error(
+      "ERRO CORRETORES CAMPANHA:",
+      err
+    );
+  }
+}
+
+function abrirModalEncaminharCampanha(campanhaEncoded) {
+
+  try {
+    campanhaEncaminharAtual =
+      JSON.parse(
+        decodeURIComponent(campanhaEncoded)
+      );
+  } catch (err) {
+    console.error(
+      "ERRO CAMPANHA ENCAMINHAR:",
+      err
+    );
+    return;
+  }
+
+  const modal =
+    document.getElementById(
+      "campanhaEncaminharModal"
+    );
+
+  const nome =
+    document.getElementById(
+      "campanha_encaminhar_nome"
+    );
+
+  const select =
+    document.getElementById(
+      "campanha_corretor_select"
+    );
+
+  if (!modal || !nome || !select) {
+    return;
+  }
+
+  nome.innerText =
+    campanhaEncaminharAtual.nome ||
+    "Campanha";
+
+  select.innerHTML = `
+    <option value="">
+      Remover encaminhamento
+    </option>
+    ${corretoresCampanha.map(corretor => {
+      const nomeCompleto =
+        [
+          corretor.nome,
+          corretor.sobrenome
+        ].filter(Boolean).join(" ");
+
+      return `
+        <option
+          value="${corretor.id}"
+          ${
+            Number(campanhaEncaminharAtual.encaminhada_para_usuario_id) ===
+            Number(corretor.id)
+              ? "selected"
+              : ""
+          }
+        >
+          ${nomeCompleto || corretor.email}
+        </option>
+      `;
+    }).join("")}
+  `;
+
+  modal.classList.add("active");
+}
+
+function fecharModalEncaminharCampanha() {
+
+  campanhaEncaminharAtual = null;
+
+  document
+    .getElementById("campanhaEncaminharModal")
+    ?.classList.remove("active");
+}
+
+async function salvarEncaminhamentoCampanha() {
+
+  if (!campanhaEncaminharAtual) {
+    return;
+  }
+
+  const token =
+    localStorage.getItem("token");
+
+  const corretorId =
+    document.getElementById(
+      "campanha_corretor_select"
+    )?.value || null;
+
+  try {
+
+    const res = await fetch(
+      `${API}/campanhas/${campanhaEncaminharAtual.id}/encaminhar`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          corretor_id: corretorId
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(
+        data.error ||
+        "Erro ao encaminhar campanha"
+      );
+      return;
+    }
+
+    alert(
+      corretorId
+        ? "Campanha encaminhada ao corretor."
+        : "Encaminhamento removido."
+    );
+
+    fecharModalEncaminharCampanha();
+    await carregarCampanhas();
+
+  } catch (err) {
+
+    console.error(
+      "ENCAMINHAR CAMPANHA:",
+      err
+    );
+
+    alert("Erro ao encaminhar campanha");
+  }
 }
 
 async function sincronizarCampanhas() {
@@ -10254,6 +10554,68 @@ if (renderizarPaginaLegal()) {
 
 </div>
 
+
+<!-- ↗ MODAL ENCAMINHAR CAMPANHA -->
+<div
+  id="campanhaEncaminharModal"
+  class="pagamento-modal campanha-encaminhar-modal"
+>
+
+  <div
+    class="pagamento-modal-overlay"
+    onclick="fecharModalEncaminharCampanha()"
+  ></div>
+
+  <div class="pagamento-modal-content">
+
+    <div class="pagamento-modal-header">
+
+      <h3>Encaminhar campanha</h3>
+
+      <button
+        title="Fechar"
+        onclick="fecharModalEncaminharCampanha()"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div class="pagamento-modal-text">
+      <strong id="campanha_encaminhar_nome">
+        Campanha
+      </strong>
+      <p>
+        Escolha um corretor vinculado. A campanha aparecerá no painel dele
+        para ativação com a conexão Meta do próprio corretor.
+      </p>
+    </div>
+
+    <select id="campanha_corretor_select"></select>
+
+    <div class="pagamento-modal-alerta">
+      O corretor precisa ter acesso à conta de anúncios ou à campanha na Meta
+      para conseguir ativá-la.
+    </div>
+
+    <div class="campanha-encaminhar-acoes">
+
+      <button onclick="salvarEncaminhamentoCampanha()">
+        Salvar
+      </button>
+
+      <button
+        class="logout"
+        onclick="fecharModalEncaminharCampanha()"
+      >
+        Cancelar
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 
 <!-- 💳 MODAL PAGAMENTO META -->
 <div

@@ -10370,35 +10370,37 @@ async function carregarPainelAdmin() {
 
           <td>
 
+            <select
+              class="plano-select"
+              onchange="alterarPlanoUsuario(
+                ${u.id},
+                this.value
+              )"
+            >
+              ${["bronze","prata","ouro"].map(plano => `
+                <option
+                  value="${plano}"
+                  ${
+                    (u.plano || "bronze") === plano
+                      ? "selected"
+                      : ""
+                  }
+                >
+                  ${plano}
+                </option>
+              `).join("")}
+            </select>
+
             ${
               u.tipo === "super_admin"
                 ? `
-                  <span class="plano-badge ouro">
-                    Acesso total
-                  </span>
+                  <div style="margin-top:8px;">
+                    <span class="plano-badge ouro">
+                      Acesso total
+                    </span>
+                  </div>
                 `
-                : `
-                  <select
-                    class="plano-select"
-                    onchange="alterarPlanoUsuario(
-                      ${u.id},
-                      this.value
-                    )"
-                  >
-                    ${["bronze","prata","ouro"].map(plano => `
-                      <option
-                        value="${plano}"
-                        ${
-                          (u.plano || "bronze") === plano
-                            ? "selected"
-                            : ""
-                        }
-                      >
-                        ${plano}
-                      </option>
-                    `).join("")}
-                  </select>
-                `
+                : ""
             }
 
           </td>

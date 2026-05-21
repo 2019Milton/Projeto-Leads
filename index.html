@@ -5809,7 +5809,7 @@ body.tema-claro .score-legenda {
           <br>
 
           🧠 <b>Planos</b>:
-          Bronze já habilita Machine Learning para leads. Ouro também libera IA para leads.
+          Bronze é a base. Prata habilita Machine Learning para leads e Ouro habilita Machine Learning e IA para leads.
       
         </div>
       
@@ -7761,7 +7761,17 @@ function abrirLeadDrawer(lead) {
       "drawer_ml_lead"
     );
 
-  if (mlBox) {
+  const mlBoxContainer =
+    document.getElementById(
+      "drawer_ml_box"
+    );
+
+  if (mlBox && mlBoxContainer) {
+    mlBoxContainer.style.display =
+      lead.ml_leads
+        ? "block"
+        : "none";
+
     mlBox.innerHTML =
       renderizarDetalhesMLLead(lead);
   }
@@ -11206,7 +11216,11 @@ if (renderizarPaginaLegal()) {
       </div>
 
       <!-- MACHINE LEARNING -->
-      <div class="drawer-box">
+      <div
+        class="drawer-box"
+        id="drawer_ml_box"
+        style="display:none;"
+      >
 
         <h4>Machine Learning do Lead</h4>
 

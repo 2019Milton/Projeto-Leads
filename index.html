@@ -949,6 +949,158 @@ button {
   background: rgba(255,255,255,0.025);
 }
 
+.campaign-setup-section {
+
+  margin-top: 16px;
+
+  padding: 14px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 12px;
+
+  background: rgba(15,23,42,0.72);
+}
+
+.campaign-setup-section h4 {
+
+  margin: 0 0 5px;
+
+  color: #fff;
+}
+
+.campaign-setup-section p {
+
+  margin: 0 0 10px;
+
+  color: #9fb4d0;
+
+  font-size: 12px;
+}
+
+.campaign-setup-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+.detailed-targeting-panel {
+
+  margin-top: 12px;
+
+  padding: 12px;
+
+  border: 1px solid rgba(56,189,248,0.28);
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14,165,233,0.14),
+      rgba(124,58,237,0.08)
+    );
+}
+
+.detailed-targeting-panel strong {
+
+  display: block;
+
+  color: #e0f2fe;
+}
+
+.detailed-targeting-search {
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+
+  gap: 8px;
+}
+
+.detailed-targeting-search button {
+
+  min-width: 92px;
+
+  margin-top: 0;
+}
+
+.targeting-results,
+.targeting-selected {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  margin-top: 10px;
+}
+
+.targeting-option,
+.targeting-chip {
+
+  width: auto;
+
+  min-width: 0;
+
+  margin: 0;
+
+  padding: 7px 10px;
+
+  border: 1px solid rgba(125,211,252,0.2);
+
+  border-radius: 8px;
+
+  background: rgba(2,6,23,0.72);
+
+  color: #e0f2fe;
+
+  font-size: 11px;
+}
+
+.targeting-chip {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  border-color: rgba(34,197,94,0.24);
+
+  color: #dcfce7;
+}
+
+.targeting-chip button {
+
+  min-width: 0;
+
+  margin: 0;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: inherit;
+}
+
+.targeting-empty {
+
+  margin-top: 9px;
+
+  color: #9fb4d0;
+
+  font-size: 11px;
+}
+
 .advanced-campaign summary {
 
   cursor: pointer;
@@ -5084,54 +5236,13 @@ body.tema-claro .score-legenda {
           min="5"
         >
 
-        <details class="advanced-campaign">
+        <section class="campaign-setup-section">
+          <h4>Público</h4>
+          <p>
+            Defina quem deve ver o anúncio. Comece simples e refine pelo direcionamento detalhado.
+          </p>
 
-          <summary>
-            ⚙️ Configurações avançadas
-          </summary>
-
-          <div class="advanced-grid">
-
-            <div class="advanced-full">
-              <label>Categoria especial da Meta</label>
-              <select id="adv_categoria_especial">
-                <option value="">Nenhuma</option>
-                <option value="HOUSING">Moradia / Imóveis</option>
-                <option value="CREDIT">Crédito</option>
-                <option value="EMPLOYMENT">Emprego</option>
-                <option value="ISSUES_ELECTIONS_POLITICS">
-                  Política / temas sociais
-                </option>
-              </select>
-            </div>
-
-            <div class="advanced-full">
-              <label>Título do anúncio</label>
-              <input
-                type="text"
-                id="adv_titulo"
-                placeholder="Ex: Apartamentos em Santo André"
-              >
-            </div>
-
-            <div class="advanced-full">
-              <label>Descrição curta</label>
-              <input
-                type="text"
-                id="adv_descricao"
-                placeholder="Ex: Entrada facilitada e financiamento"
-              >
-            </div>
-
-            <div class="advanced-full">
-              <label>Link de destino</label>
-              <input
-                type="url"
-                id="adv_link"
-                placeholder="https://seusite.com.br"
-              >
-            </div>
-
+          <div class="campaign-setup-grid">
             <div>
               <label>País do público</label>
               <input
@@ -5173,7 +5284,43 @@ body.tema-claro .score-legenda {
                 placeholder="65"
               >
             </div>
+          </div>
 
+          <div class="detailed-targeting-panel">
+            <strong>Direcionamento detalhado</strong>
+            <p>
+              Procure interesses que descrevem o perfil do público. Eles serão enviados à Meta junto com o público do conjunto de anúncios.
+            </p>
+
+            <div class="detailed-targeting-search">
+              <input
+                type="search"
+                id="adv_interesse_busca"
+                placeholder="Ex: imóveis, financiamento, decoração"
+                onkeydown="buscarInteressesComEnter(event)"
+              >
+              <button
+                type="button"
+                onclick="buscarInteressesDetalhados()"
+              >
+                Procurar
+              </button>
+            </div>
+
+            <div id="adv_interesses_selecionados" class="targeting-selected"></div>
+            <div id="adv_interesses_resultados" class="targeting-results"></div>
+            <div id="adv_interesses_feedback" class="targeting-empty">
+              Busque e selecione um ou mais interesses.
+            </div>
+          </div>
+        </section>
+
+        <details class="advanced-campaign" open>
+          <summary>
+            Custo, período e localização avançada
+          </summary>
+
+          <div class="advanced-grid">
             <div>
               <label>Latitude</label>
               <input
@@ -5244,6 +5391,56 @@ body.tema-claro .score-legenda {
               <input
                 type="datetime-local"
                 id="adv_fim"
+              >
+            </div>
+          </div>
+        </details>
+
+        <details class="advanced-campaign">
+
+          <summary>
+            ⚙️ Configurações avançadas
+          </summary>
+
+          <div class="advanced-grid">
+
+            <div class="advanced-full">
+              <label>Categoria especial da Meta</label>
+              <select id="adv_categoria_especial">
+                <option value="">Nenhuma</option>
+                <option value="HOUSING">Moradia / Imóveis</option>
+                <option value="CREDIT">Crédito</option>
+                <option value="EMPLOYMENT">Emprego</option>
+                <option value="ISSUES_ELECTIONS_POLITICS">
+                  Política / temas sociais
+                </option>
+              </select>
+            </div>
+
+            <div class="advanced-full">
+              <label>Título do anúncio</label>
+              <input
+                type="text"
+                id="adv_titulo"
+                placeholder="Ex: Apartamentos em Santo André"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Descrição curta</label>
+              <input
+                type="text"
+                id="adv_descricao"
+                placeholder="Ex: Entrada facilitada e financiamento"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Link de destino</label>
+              <input
+                type="url"
+                id="adv_link"
+                placeholder="https://seusite.com.br"
               >
             </div>
 
@@ -8634,6 +8831,197 @@ function valoresMarcados(seletor) {
   ).map(input => input.value);
 }
 
+let interessesDetalhadosSelecionados = [];
+
+function buscarInteressesComEnter(event) {
+
+  if (event.key !== "Enter") {
+    return;
+  }
+
+  event.preventDefault();
+  buscarInteressesDetalhados();
+}
+
+function escaparHtml(valor) {
+
+  return String(valor || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function renderizarInteressesSelecionados() {
+
+  const div =
+    document.getElementById(
+      "adv_interesses_selecionados"
+    );
+
+  if (!div) {
+    return;
+  }
+
+  div.innerHTML =
+    interessesDetalhadosSelecionados
+      .map(interesse => `
+        <span class="targeting-chip">
+          ${escaparHtml(interesse.nome)}
+          <button
+            type="button"
+            title="Remover interesse"
+            onclick="removerInteresseDetalhado('${escaparHtml(interesse.id)}')"
+          >
+            x
+          </button>
+        </span>
+      `)
+      .join("");
+}
+
+function removerInteresseDetalhado(id) {
+
+  interessesDetalhadosSelecionados =
+    interessesDetalhadosSelecionados
+      .filter(interesse => interesse.id !== id);
+
+  renderizarInteressesSelecionados();
+}
+
+function adicionarInteresseDetalhado(id, nome) {
+
+  if (
+    interessesDetalhadosSelecionados
+      .some(interesse => interesse.id === id)
+  ) {
+    return;
+  }
+
+  interessesDetalhadosSelecionados.push({
+    id,
+    nome
+  });
+
+  renderizarInteressesSelecionados();
+}
+
+function adicionarInteresseCodificado(id, nomeCodificado) {
+
+  adicionarInteresseDetalhado(
+    id,
+    decodeURIComponent(nomeCodificado)
+  );
+}
+
+async function buscarInteressesDetalhados() {
+
+  const token =
+    localStorage.getItem("token");
+
+  const busca =
+    valorCampo("adv_interesse_busca");
+
+  const resultados =
+    document.getElementById(
+      "adv_interesses_resultados"
+    );
+
+  const feedback =
+    document.getElementById(
+      "adv_interesses_feedback"
+    );
+
+  if (!token) {
+    alert("Entre na plataforma antes de buscar interesses.");
+    return;
+  }
+
+  if (busca.length < 2) {
+    alert("Digite pelo menos 2 letras para buscar.");
+    return;
+  }
+
+  const decoded = atob(token);
+  const [usuario_id] = decoded.split(":");
+
+  if (resultados) {
+    resultados.innerHTML = "";
+  }
+
+  if (feedback) {
+    feedback.innerText = "Buscando interesses na Meta...";
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/meta/direcionamento/interesses`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          usuario_id,
+          busca
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      throw new Error(
+        data.error ||
+        "Erro ao buscar interesses"
+      );
+    }
+
+    const interesses =
+      Array.isArray(data.data)
+        ? data.data
+        : [];
+
+    if (!interesses.length) {
+      if (feedback) {
+        feedback.innerText =
+          "Nenhum interesse encontrado. Tente outro termo.";
+      }
+      return;
+    }
+
+    if (resultados) {
+      resultados.innerHTML =
+        interesses
+          .map(interesse => `
+            <button
+              type="button"
+              class="targeting-option"
+              title="${escaparHtml((interesse.caminho || []).join(" > "))}"
+              onclick="adicionarInteresseCodificado('${escaparHtml(interesse.id)}','${encodeURIComponent(interesse.nome)}')"
+            >
+              + ${escaparHtml(interesse.nome)}
+            </button>
+          `)
+          .join("");
+    }
+
+    if (feedback) {
+      feedback.innerText =
+        "Clique em um interesse para incluir no público.";
+    }
+  } catch (err) {
+    console.error("BUSCA INTERESSES:", err);
+
+    if (feedback) {
+      feedback.innerText =
+        err.message ||
+        "Erro ao buscar interesses.";
+    }
+  }
+}
+
 function coletarConfiguracoesAvancadas() {
 
   const plataformas = [];
@@ -8707,6 +9095,8 @@ function coletarConfiguracoesAvancadas() {
       valoresMarcados(".adv-facebook-position"),
     instagram_positions:
       valoresMarcados(".adv-instagram-position"),
+    interesses_detalhados:
+      interessesDetalhadosSelecionados,
     dispositivos,
     formulario_qualidade:
       document.getElementById(

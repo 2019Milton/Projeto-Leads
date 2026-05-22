@@ -5138,6 +5138,7 @@ body.tema-claro .score-legenda {
                 type="text"
                 id="adv_pais"
                 maxlength="2"
+                value="BR"
                 placeholder="BR"
               >
             </div>
@@ -8891,6 +8892,7 @@ async function criarCampanhaCompleta() {
     if (adset.error) {
     
       alert(
+        adset.error?.error_user_msg ||
         adset.error?.message ||
         adset.error ||
         "Erro adset"

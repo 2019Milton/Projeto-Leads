@@ -1101,6 +1101,32 @@ button {
   font-size: 11px;
 }
 
+.channel-picker-status {
+
+  margin-top: 10px;
+
+  padding: 10px;
+
+  border: 1px solid rgba(34,197,94,0.18);
+
+  border-radius: 10px;
+
+  background: rgba(34,197,94,0.08);
+
+  color: #dcfce7;
+
+  font-size: 12px;
+}
+
+.channel-picker-status.alerta {
+
+  border-color: rgba(250,204,21,0.22);
+
+  background: rgba(250,204,21,0.1);
+
+  color: #fde68a;
+}
+
 .advanced-campaign summary {
 
   cursor: pointer;
@@ -5173,6 +5199,38 @@ body.tema-claro .score-legenda {
         <select id="pagina_select">
           <option>Carregando páginas...</option>
         </select>
+
+        <section class="campaign-setup-section">
+          <h4>Onde anunciar</h4>
+          <p>
+            Escolha os canais disponiveis para a Pagina selecionada.
+          </p>
+
+          <div class="advanced-checks">
+            <label>
+              <input
+                type="checkbox"
+                id="adv_platform_facebook"
+                checked
+              >
+              Facebook
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                id="adv_platform_instagram"
+              >
+              Instagram
+            </label>
+          </div>
+
+          <div
+            id="instagram_pagina_feedback"
+            class="channel-picker-status alerta"
+          >
+            Selecione uma Pagina para verificar o Instagram vinculado.
+          </div>
+        </section>
   
         <!-- 🎯 OBJETIVO -->
         <label>Objetivo</label>
@@ -5505,20 +5563,6 @@ body.tema-claro .score-legenda {
                 id="adv_obrigado_url"
                 placeholder="https://seusite.com.br"
               >
-            </div>
-
-            <div class="advanced-full">
-              <label>Plataformas</label>
-              <div class="advanced-checks">
-                <label>
-                  <input type="checkbox" id="adv_platform_facebook">
-                  Facebook
-                </label>
-                <label>
-                  <input type="checkbox" id="adv_platform_instagram">
-                  Instagram
-                </label>
-              </div>
             </div>
 
             <div class="advanced-full">
@@ -8835,6 +8879,59 @@ function valoresMarcados(seletor) {
 let interessesDetalhadosSelecionados = [];
 let buscaInteressesTimer = null;
 let buscaInteressesSequencia = 0;
+let paginasMetaDisponiveis = [];
+
+function atualizarCanaisPaginaMeta() {
+
+  const paginaId =
+    document.getElementById(
+      "pagina_select"
+    )?.value;
+
+  const pagina =
+    paginasMetaDisponiveis
+      .find(item => String(item.id) === String(paginaId));
+
+  const instagram =
+    pagina?.instagram;
+
+  const checkboxInstagram =
+    document.getElementById(
+      "adv_platform_instagram"
+    );
+
+  const feedback =
+    document.getElementById(
+      "instagram_pagina_feedback"
+    );
+
+  if (checkboxInstagram) {
+    checkboxInstagram.disabled =
+      !instagram?.id;
+
+    if (!instagram?.id) {
+      checkboxInstagram.checked = false;
+    }
+  }
+
+  if (!feedback) {
+    return;
+  }
+
+  if (instagram?.id) {
+    feedback.classList.remove("alerta");
+    feedback.innerHTML = `
+      Instagram vinculado:
+      <strong>@${escaparHtml(instagram.username || "conta profissional")}</strong>.
+      Voce pode anunciar no Facebook, Instagram ou nos dois.
+    `;
+    return;
+  }
+
+  feedback.classList.add("alerta");
+  feedback.innerText =
+    "Esta Pagina nao tem Instagram profissional vinculado. O anuncio pode seguir no Facebook.";
+}
 
 function agendarBuscaInteressesDetalhados() {
 
@@ -9218,6 +9315,13 @@ async function criarCampanhaCompleta() {
 
     const configuracoes_avancadas =
       coletarConfiguracoesAvancadas();
+
+    if (
+      !configuracoes_avancadas.plataformas.length
+    ) {
+      alert("Escolha Facebook, Instagram ou os dois para anunciar.");
+      return;
+    }
 
     if (!imagem) {
     
@@ -9767,6 +9871,11 @@ async function carregarStatusMeta() {
 
       select.innerHTML = "";
 
+      paginasMetaDisponiveis =
+        Array.isArray(data.paginas)
+          ? data.paginas
+          : [];
+
       data.paginas?.forEach(p => {
 
         select.innerHTML += `
@@ -9775,6 +9884,11 @@ async function carregarStatusMeta() {
           </option>
         `;
       });
+
+      select.onchange =
+        atualizarCanaisPaginaMeta;
+
+      atualizarCanaisPaginaMeta();
     }
 
   } catch (err) {

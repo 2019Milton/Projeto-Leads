@@ -425,6 +425,63 @@ button {
   text-overflow: ellipsis;
 }
 
+.meta-conta-selector {
+
+  margin: 12px 0;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  background: rgba(59,130,246,0.10);
+
+  border: 1px solid rgba(59,130,246,0.18);
+}
+
+.meta-conta-selector label,
+.meta-conta-selector small {
+
+  display: block;
+}
+
+.meta-conta-selector label {
+
+  margin-bottom: 7px;
+
+  font-weight: 700;
+}
+
+.meta-conta-selector small {
+
+  margin-top: 7px;
+
+  color: #bfdbfe;
+
+  line-height: 1.4;
+}
+
+.meta-conta-selector-actions {
+
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr) auto;
+
+  gap: 8px;
+
+  align-items: center;
+}
+
+.meta-conta-selector select,
+.meta-conta-selector button {
+
+  margin: 0 !important;
+}
+
+.meta-conta-selector button {
+
+  white-space: nowrap;
+}
+
 .meta-status-grid {
 
   display: grid;
@@ -7836,6 +7893,73 @@ function formatarSaldoMeta(conta) {
   );
 }
 
+function escaparHtmlMeta(valor) {
+
+  return String(valor ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function montarSeletorContaAnunciosMeta(data) {
+
+  const contas =
+    data.contas_anuncios || [];
+
+  if (contas.length <= 1) {
+    return "";
+  }
+
+  const contaSelecionadaId =
+    data.conta_anuncios?.id || "";
+
+  const opcoes = contas.map(conta => {
+    const selecionada =
+      conta.id === contaSelecionadaId
+        ? "selected"
+        : "";
+
+    const moeda =
+      conta.moeda
+        ? ` - ${conta.moeda}`
+        : "";
+
+    return `
+      <option value="${escaparHtmlMeta(conta.id)}" ${selecionada}>
+        ${escaparHtmlMeta(conta.nome || conta.id)}${escaparHtmlMeta(moeda)}
+      </option>
+    `;
+  }).join("");
+
+  const aviso =
+    data.selecao_conta_anuncios_pendente
+      ? "Escolha a conta que a plataforma deve usar antes de sincronizar ou criar campanhas."
+      : "Troque a conta ativa quando a conexao Meta tiver mais de uma conta disponivel.";
+
+  return `
+    <div class="meta-conta-selector">
+      <label for="meta_conta_anuncios_select">
+        Conta de anuncios usada pela plataforma
+      </label>
+
+      <div class="meta-conta-selector-actions">
+        <select id="meta_conta_anuncios_select">
+          <option value="">Selecione uma conta</option>
+          ${opcoes}
+        </select>
+
+        <button onclick="salvarContaAnunciosMeta()">
+          Usar conta
+        </button>
+      </div>
+
+      <small>${aviso}</small>
+    </div>
+  `;
+}
+
 function abrirModalPagamento(tipo) {
 
   const modal =
@@ -8412,6 +8536,64 @@ async function desconectarMeta() {
   }
 }
 
+async function salvarContaAnunciosMeta() {
+
+  const token =
+    localStorage.getItem("token");
+
+  const select =
+    document.getElementById(
+      "meta_conta_anuncios_select"
+    );
+
+  const contaAnunciosId =
+    select?.value;
+
+  if (!token) {
+    alert("Usuario nao autenticado");
+    return;
+  }
+
+  if (!contaAnunciosId) {
+    alert("Selecione a conta de anuncios Meta.");
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/meta/conta-anuncios`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          conta_anuncios_id: contaAnunciosId
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(
+        data.error ||
+        "Erro ao selecionar conta Meta"
+      );
+      return;
+    }
+
+    await carregarStatusMeta();
+
+    alert("Conta de anuncios Meta selecionada.");
+
+  } catch (err) {
+    console.error("SELECIONAR CONTA META:", err);
+    alert("Erro ao selecionar conta Meta");
+  }
+}
+
 function atualizarBotaoMeta(conectado) {
 
   const btn =
@@ -8847,6 +9029,9 @@ async function carregarStatusMeta() {
             ? "Forma de cobrança vinculada na conta Meta"
             : "Revise o pagamento no Gerenciador de Anúncios";
     
+        const seletorContaAnuncios =
+          montarSeletorContaAnunciosMeta(data);
+
         metaInfo.innerHTML = `
 
           <div style="margin-top:15px;">
@@ -8912,6 +9097,8 @@ async function carregarStatusMeta() {
               <b>📢 Conta de anúncios:</b><br>
               ${conta?.nome || "-"}
             </p>
+
+            ${seletorContaAnuncios}
 
             <p>
               <b>${pagamentoHabilitado ? "🟢" : "🔴"} Pagamento:</b><br>

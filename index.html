@@ -9016,8 +9016,8 @@ async function carregarStatusMeta() {
         const tipoPagamento =
           conta?.tipo_pagamento === "manual_pre_pago"
             ? "Manual / pré-pago"
-            : conta?.tipo_pagamento === "automatico"
-            ? "Cobrança automática"
+            : conta?.tipo_pagamento === "metodo_detectado"
+            ? "Pagamento identificado pela Meta"
             : "Não identificado";
         const detalhePagamento =
           conta?.tipo_pagamento === "manual_pre_pago"
@@ -9025,8 +9025,8 @@ async function carregarStatusMeta() {
               conta?.saldo !== undefined
               ? `Saldo reconhecido pela Meta: ${formatarSaldoMeta(conta)}`
               : "PIX, boleto ou saldo disponível na conta Meta"
-            : conta?.tipo_pagamento === "automatico"
-            ? "Forma de cobrança vinculada na conta Meta"
+            : conta?.tipo_pagamento === "metodo_detectado"
+            ? "A Meta retornou uma fonte de pagamento, mas a API não confirmou o modo de cobrança."
             : "Revise o pagamento no Gerenciador de Anúncios";
     
         const seletorContaAnuncios =

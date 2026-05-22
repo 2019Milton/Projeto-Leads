@@ -5297,6 +5297,7 @@ body.tema-claro .score-legenda {
                 type="search"
                 id="adv_interesse_busca"
                 placeholder="Ex: imóveis, financiamento, decoração"
+                oninput="agendarBuscaInteressesDetalhados()"
                 onkeydown="buscarInteressesComEnter(event)"
               >
               <button
@@ -8832,6 +8833,55 @@ function valoresMarcados(seletor) {
 }
 
 let interessesDetalhadosSelecionados = [];
+let buscaInteressesTimer = null;
+let buscaInteressesSequencia = 0;
+
+function agendarBuscaInteressesDetalhados() {
+
+  const busca =
+    valorCampo("adv_interesse_busca");
+
+  const resultados =
+    document.getElementById(
+      "adv_interesses_resultados"
+    );
+
+  const feedback =
+    document.getElementById(
+      "adv_interesses_feedback"
+    );
+
+  if (buscaInteressesTimer) {
+    clearTimeout(buscaInteressesTimer);
+  }
+
+  if (busca.length < 2) {
+    buscaInteressesSequencia += 1;
+
+    if (resultados) {
+      resultados.innerHTML = "";
+    }
+
+    if (feedback) {
+      feedback.innerText =
+        "Digite pelo menos 2 letras para ver sugestões.";
+    }
+
+    return;
+  }
+
+  if (feedback) {
+    feedback.innerText =
+      "Preparando sugestões...";
+  }
+
+  buscaInteressesTimer = setTimeout(
+    () => buscarInteressesDetalhados({
+      silenciosa: true
+    }),
+    450
+  );
+}
 
 function buscarInteressesComEnter(event) {
 
@@ -8915,7 +8965,7 @@ function adicionarInteresseCodificado(id, nomeCodificado) {
   );
 }
 
-async function buscarInteressesDetalhados() {
+async function buscarInteressesDetalhados(opcoes = {}) {
 
   const token =
     localStorage.getItem("token");
@@ -8933,18 +8983,27 @@ async function buscarInteressesDetalhados() {
       "adv_interesses_feedback"
     );
 
+  const silenciosa =
+    opcoes.silenciosa === true;
+
   if (!token) {
-    alert("Entre na plataforma antes de buscar interesses.");
+    if (!silenciosa) {
+      alert("Entre na plataforma antes de buscar interesses.");
+    }
     return;
   }
 
   if (busca.length < 2) {
-    alert("Digite pelo menos 2 letras para buscar.");
+    if (!silenciosa) {
+      alert("Digite pelo menos 2 letras para buscar.");
+    }
     return;
   }
 
   const decoded = atob(token);
   const [usuario_id] = decoded.split(":");
+  const sequenciaAtual =
+    ++buscaInteressesSequencia;
 
   if (resultados) {
     resultados.innerHTML = "";
@@ -8970,6 +9029,12 @@ async function buscarInteressesDetalhados() {
     );
 
     const data = await res.json();
+
+    if (
+      sequenciaAtual !== buscaInteressesSequencia
+    ) {
+      return;
+    }
 
     if (!res.ok || data.error) {
       throw new Error(
@@ -9012,6 +9077,13 @@ async function buscarInteressesDetalhados() {
         "Clique em um interesse para incluir no público.";
     }
   } catch (err) {
+
+    if (
+      sequenciaAtual !== buscaInteressesSequencia
+    ) {
+      return;
+    }
+
     console.error("BUSCA INTERESSES:", err);
 
     if (feedback) {

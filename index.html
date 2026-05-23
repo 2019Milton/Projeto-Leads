@@ -7478,6 +7478,7 @@ let campanhaEncaminharAtual = null;
 let statusMetaGuia = null;
 let guiaSecretoAtual = null;
 let guiaSecretoReavaliarTimer = null;
+let guiaCriacaoCampanhaAtiva = false;
 
 async function carregarPlanoAtual() {
 
@@ -9612,6 +9613,16 @@ function camposCampanhaEssenciaisPreenchidos() {
   );
 }
 
+function formularioCampanhaFoiIniciado() {
+
+  return Boolean(
+    guiaCriacaoCampanhaAtiva ||
+    valorCampo("campanha_nome") ||
+    valorCampo("texto") ||
+    document.getElementById("imagem")?.files?.length
+  );
+}
+
 function obterProximoPassoGuiaSecreto() {
 
   const status =
@@ -9647,6 +9658,40 @@ function obterProximoPassoGuiaSecreto() {
       titulo: "Revise o acesso à Página",
       texto:
         "A Meta está conectada, mas nenhuma Página foi encontrada. Reconecte e confirme as permissões de Página."
+    };
+  }
+
+  const temCampanhas =
+    campanhasAtuais.length > 0;
+
+  const usuarioCriandoCampanha =
+    !temCampanhas ||
+    formularioCampanhaFoiIniciado();
+
+  if (!usuarioCriandoCampanha) {
+    const campanhasAtivasAgora =
+      campanhasAtuais.filter((campanha) =>
+        ["ACTIVE", "ENABLED"].includes(
+          String(campanha.status || "").toUpperCase()
+        )
+      ).length;
+
+    if (campanhasAtivasAgora === 0) {
+      return {
+        id: "ativar_campanha",
+        seletor: "#campanhas_lista",
+        titulo: "Ative uma campanha",
+        texto:
+          "Você já tem campanha criada, mas nenhuma está ativa. Revise o card da campanha e ative quando estiver pronto."
+      };
+    }
+
+    return {
+      id: "acompanhar_performance",
+      seletor: "#painel_performance_meta",
+      titulo: "Acompanhe o custo por lead",
+      texto:
+        "Seu próximo trabalho é acompanhar gasto, leads e CPL. Se o CPL subir, ajuste criativo, público, orçamento ou controle de custo."
     };
   }
 
@@ -9742,10 +9787,23 @@ function obterProximoPassoGuiaSecreto() {
 
 function posicionarBalaoGuiaSecreto(alvo, balao) {
 
-  const rect =
+  const margem = 14;
+
+  let rect =
     alvo.getBoundingClientRect();
 
-  const margem = 14;
+  if (
+    rect.bottom < 0 ||
+    rect.top > window.innerHeight
+  ) {
+    alvo.scrollIntoView({
+      behavior: "auto",
+      block: "center"
+    });
+
+    rect =
+      alvo.getBoundingClientRect();
+  }
 
   let top =
     rect.bottom + margem;
@@ -9782,6 +9840,18 @@ function mostrarGuiaSecreto(passo) {
     guiaSecretoAtual?.id === passo.id &&
     document.querySelector(".guia-secreto-balao")
   ) {
+    const alvoAtual =
+      document.querySelector(passo.seletor);
+    const balaoAtual =
+      document.querySelector(".guia-secreto-balao");
+
+    if (alvoAtual && balaoAtual) {
+      posicionarBalaoGuiaSecreto(
+        alvoAtual,
+        balaoAtual
+      );
+    }
+
     return;
   }
 
@@ -9829,13 +9899,17 @@ function mostrarGuiaSecreto(passo) {
   document.body.appendChild(balao);
 
   alvo.scrollIntoView({
-    behavior: "smooth",
+    behavior: "auto",
     block: "center"
   });
 
-  requestAnimationFrame(() =>
-    posicionarBalaoGuiaSecreto(alvo, balao)
-  );
+  requestAnimationFrame(() => {
+    posicionarBalaoGuiaSecreto(alvo, balao);
+    setTimeout(() =>
+      posicionarBalaoGuiaSecreto(alvo, balao),
+      80
+    );
+  });
 
   guiaSecretoAtual = passo;
 }
@@ -9845,6 +9919,7 @@ function atualizarGuiaSecreto() {
   if (
     sessionStorage.getItem("guia_secreto_pausado") === "1"
   ) {
+    limparGuiaSecreto();
     return;
   }
 
@@ -9881,17 +9956,49 @@ function ativarEventosGuiaSecreto() {
 
     el.addEventListener(
       "input",
-      atualizarGuiaSecreto
+      () => {
+        guiaCriacaoCampanhaAtiva = true;
+        atualizarGuiaSecreto();
+      }
     );
     el.addEventListener(
       "change",
-      atualizarGuiaSecreto
+      () => {
+        guiaCriacaoCampanhaAtiva = true;
+        atualizarGuiaSecreto();
+      }
+    );
+    el.addEventListener(
+      "focus",
+      () => {
+        guiaCriacaoCampanhaAtiva = true;
+        atualizarGuiaSecreto();
+      }
     );
   });
 
   window.addEventListener(
     "resize",
     atualizarGuiaSecreto
+  );
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      const passo =
+        guiaSecretoAtual;
+      const alvo =
+        passo
+          ? document.querySelector(passo.seletor)
+          : null;
+      const balao =
+        document.querySelector(".guia-secreto-balao");
+
+      if (alvo && balao) {
+        posicionarBalaoGuiaSecreto(alvo, balao);
+      }
+    },
+    true
   );
 }
 

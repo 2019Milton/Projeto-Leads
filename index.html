@@ -1190,6 +1190,110 @@ body.usuario-super-admin .admin-only-targeting {
   display: none;
 }
 
+.guia-secreto-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(2,6,23,0.68);
+
+  backdrop-filter: blur(2px);
+
+  z-index: 9000;
+
+  pointer-events: none;
+}
+
+.guia-secreto-highlight {
+
+  position: relative;
+
+  z-index: 9002 !important;
+
+  box-shadow:
+    0 0 0 4px rgba(34,197,94,0.2),
+    0 0 35px rgba(34,197,94,0.45) !important;
+
+  border-radius: 12px;
+}
+
+.guia-secreto-balao {
+
+  position: fixed;
+
+  z-index: 9003;
+
+  width: min(340px, calc(100vw - 28px));
+
+  padding: 14px;
+
+  border: 1px solid rgba(34,197,94,0.32);
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15,23,42,0.98),
+      rgba(2,6,23,0.98)
+    );
+
+  color: #e5e7eb;
+
+  box-shadow:
+    0 18px 55px rgba(0,0,0,0.45);
+}
+
+.guia-secreto-balao h4 {
+
+  margin: 0 0 6px;
+
+  color: #f8fafc;
+
+  font-size: 15px;
+}
+
+.guia-secreto-balao p {
+
+  margin: 0 0 12px;
+
+  color: #a8b5c7;
+
+  font-size: 12px;
+
+  line-height: 1.45;
+}
+
+.guia-secreto-actions {
+
+  display: flex;
+
+  gap: 8px;
+
+  justify-content: flex-end;
+}
+
+.guia-secreto-actions button {
+
+  width: auto;
+
+  min-width: 0;
+
+  margin: 0;
+
+  padding: 8px 10px;
+
+  border-radius: 9px;
+
+  font-size: 12px;
+}
+
+.guia-secreto-secondary {
+
+  background: rgba(255,255,255,0.08) !important;
+}
+
 .advanced-checks {
 
   display: grid;
@@ -5967,7 +6071,10 @@ body.tema-claro .score-legenda {
         </details>
   
         <!-- 🚀 BOTÃO -->
-        <button onclick="criarCampanhaCompleta()">
+        <button
+          id="btn_publicar_campanha"
+          onclick="criarCampanhaCompleta()"
+        >
           🚀 Publicar Campanha
         </button>
       </div>
@@ -7339,6 +7446,8 @@ async function init() {
 
   await carregarPerformanceMeta();
 
+  ativarEventosGuiaSecreto();
+
   await carregarCampanhas();
 
   await carregarLeads();
@@ -7365,6 +7474,10 @@ let usuarioLogado = null;
 let corretoresCampanha = [];
 
 let campanhaEncaminharAtual = null;
+
+let statusMetaGuia = null;
+let guiaSecretoAtual = null;
+let guiaSecretoReavaliarTimer = null;
 
 async function carregarPlanoAtual() {
 
@@ -9447,6 +9560,341 @@ function atualizarEstadoSincronizacaoMeta(ativo) {
   }
 }
 
+function limparGuiaSecreto() {
+
+  document
+    .querySelectorAll(".guia-secreto-highlight")
+    .forEach((el) =>
+      el.classList.remove("guia-secreto-highlight")
+    );
+
+  document
+    .querySelectorAll(
+      ".guia-secreto-overlay, .guia-secreto-balao"
+    )
+    .forEach((el) => el.remove());
+
+  guiaSecretoAtual = null;
+}
+
+function pausarGuiaSecreto() {
+
+  sessionStorage.setItem(
+    "guia_secreto_pausado",
+    "1"
+  );
+
+  limparGuiaSecreto();
+}
+
+function elementoVisivel(el) {
+
+  if (!el) {
+    return false;
+  }
+
+  const rect =
+    el.getBoundingClientRect();
+
+  return (
+    rect.width > 0 &&
+    rect.height > 0
+  );
+}
+
+function camposCampanhaEssenciaisPreenchidos() {
+
+  return Boolean(
+    valorCampo("campanha_nome") &&
+    valorCampo("texto") &&
+    valorCampo("orcamento") &&
+    document.getElementById("pagina_select")?.value
+  );
+}
+
+function obterProximoPassoGuiaSecreto() {
+
+  const status =
+    statusMetaGuia || {};
+
+  if (!status.conectado) {
+    return {
+      id: "conectar_meta",
+      seletor: "#btn_meta_conexao",
+      titulo: "Conecte a Meta",
+      texto:
+        "Primeiro conecte a conta Meta. Sem essa conexão, a plataforma não consegue listar páginas, contas de anúncio, campanhas e leads."
+    };
+  }
+
+  if (
+    status.selecao_conta_anuncios_pendente ||
+    !status.conta_anuncios
+  ) {
+    return {
+      id: "selecionar_conta",
+      seletor: "#meta_conta_anuncios_select",
+      titulo: "Escolha a conta de anúncios",
+      texto:
+        "Selecione qual conta de anúncios a plataforma deve usar. Isso evita criar ou sincronizar campanhas na conta errada."
+    };
+  }
+
+  if (!status.paginas?.length) {
+    return {
+      id: "revisar_pagina",
+      seletor: "#btn_meta_conexao",
+      titulo: "Revise o acesso à Página",
+      texto:
+        "A Meta está conectada, mas nenhuma Página foi encontrada. Reconecte e confirme as permissões de Página."
+    };
+  }
+
+  if (!valorCampo("campanha_nome")) {
+    return {
+      id: "nome_campanha",
+      seletor: "#campanha_nome",
+      titulo: "Dê um nome para a campanha",
+      texto:
+        "Use um nome simples para identificar a campanha depois, como o empreendimento, bairro ou objetivo."
+    };
+  }
+
+  if (!document.getElementById("pagina_select")?.value) {
+    return {
+      id: "pagina_campanha",
+      seletor: "#pagina_select",
+      titulo: "Escolha a Página",
+      texto:
+        "A campanha precisa estar vinculada a uma Página do Facebook autorizada pela Meta."
+    };
+  }
+
+  if (!valorCampo("texto")) {
+    return {
+      id: "texto_anuncio",
+      seletor: "#texto",
+      titulo: "Escreva o texto do anúncio",
+      texto:
+        "Explique a oferta com clareza. Um texto direto ajuda o lead a entender por que deve se cadastrar."
+    };
+  }
+
+  if (!document.getElementById("imagem")?.files?.length) {
+    return {
+      id: "imagem_anuncio",
+      seletor: "#imagem",
+      titulo: "Adicione uma imagem",
+      texto:
+        "Escolha uma imagem real do imóvel, empreendimento ou oferta. A campanha precisa de criativo para ser publicada."
+    };
+  }
+
+  if (!valorCampo("orcamento")) {
+    return {
+      id: "orcamento_campanha",
+      seletor: "#orcamento",
+      titulo: "Defina o orçamento diário",
+      texto:
+        "Informe quanto a Meta pode usar por dia. Comece com um valor confortável e acompanhe o custo por lead no painel."
+    };
+  }
+
+  if (!camposCampanhaEssenciaisPreenchidos()) {
+    return null;
+  }
+
+  if (!campanhasAtuais.length) {
+    return {
+      id: "publicar_campanha",
+      seletor: "#btn_publicar_campanha",
+      titulo: "Publique a primeira campanha",
+      texto:
+        "Com os dados principais preenchidos, publique a campanha. Ela nascerá pausada para você conferir antes de ativar."
+    };
+  }
+
+  const campanhasAtivas =
+    campanhasAtuais.filter((campanha) =>
+      ["ACTIVE", "ENABLED"].includes(
+        String(campanha.status || "").toUpperCase()
+      )
+    ).length;
+
+  if (campanhasAtivas === 0) {
+    return {
+      id: "ativar_campanha",
+      seletor: "#campanhas_lista",
+      titulo: "Ative uma campanha",
+      texto:
+        "Você já tem campanha criada, mas nenhuma está ativa. Revise o card da campanha e ative quando estiver pronto."
+    };
+  }
+
+  return {
+    id: "acompanhar_performance",
+    seletor: "#painel_performance_meta",
+    titulo: "Acompanhe o custo por lead",
+    texto:
+      "Agora acompanhe gasto, leads e CPL todos os dias. Se o CPL subir, ajuste criativo, público, orçamento ou controle de custo."
+  };
+}
+
+function posicionarBalaoGuiaSecreto(alvo, balao) {
+
+  const rect =
+    alvo.getBoundingClientRect();
+
+  const margem = 14;
+
+  let top =
+    rect.bottom + margem;
+
+  let left =
+    Math.min(
+      Math.max(rect.left, margem),
+      window.innerWidth - balao.offsetWidth - margem
+    );
+
+  if (
+    top + balao.offsetHeight >
+    window.innerHeight - margem
+  ) {
+    top =
+      Math.max(
+        margem,
+        rect.top - balao.offsetHeight - margem
+      );
+  }
+
+  balao.style.top = `${top}px`;
+  balao.style.left = `${left}px`;
+}
+
+function mostrarGuiaSecreto(passo) {
+
+  if (!passo) {
+    limparGuiaSecreto();
+    return;
+  }
+
+  if (
+    guiaSecretoAtual?.id === passo.id &&
+    document.querySelector(".guia-secreto-balao")
+  ) {
+    return;
+  }
+
+  limparGuiaSecreto();
+
+  const alvo =
+    document.querySelector(passo.seletor);
+
+  if (!elementoVisivel(alvo)) {
+    return;
+  }
+
+  alvo.classList.add("guia-secreto-highlight");
+
+  const overlay =
+    document.createElement("div");
+  overlay.className =
+    "guia-secreto-overlay";
+
+  const balao =
+    document.createElement("div");
+  balao.className =
+    "guia-secreto-balao";
+  balao.innerHTML = `
+    <h4>${passo.titulo}</h4>
+    <p>${passo.texto}</p>
+    <div class="guia-secreto-actions">
+      <button
+        type="button"
+        class="guia-secreto-secondary"
+        onclick="pausarGuiaSecreto()"
+      >
+        Ocultar por agora
+      </button>
+      <button
+        type="button"
+        onclick="limparGuiaSecreto()"
+      >
+        Entendi
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(balao);
+
+  alvo.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  requestAnimationFrame(() =>
+    posicionarBalaoGuiaSecreto(alvo, balao)
+  );
+
+  guiaSecretoAtual = passo;
+}
+
+function atualizarGuiaSecreto() {
+
+  if (
+    sessionStorage.getItem("guia_secreto_pausado") === "1"
+  ) {
+    return;
+  }
+
+  clearTimeout(guiaSecretoReavaliarTimer);
+
+  guiaSecretoReavaliarTimer = setTimeout(() => {
+    mostrarGuiaSecreto(
+      obterProximoPassoGuiaSecreto()
+    );
+  }, 250);
+}
+
+function ativarEventosGuiaSecreto() {
+
+  if (document.body.dataset.guiaSecretoEventos === "1") {
+    return;
+  }
+
+  document.body.dataset.guiaSecretoEventos = "1";
+
+  [
+    "campanha_nome",
+    "pagina_select",
+    "texto",
+    "imagem",
+    "orcamento"
+  ].forEach((id) => {
+    const el =
+      document.getElementById(id);
+
+    if (!el) {
+      return;
+    }
+
+    el.addEventListener(
+      "input",
+      atualizarGuiaSecreto
+    );
+    el.addEventListener(
+      "change",
+      atualizarGuiaSecreto
+    );
+  });
+
+  window.addEventListener(
+    "resize",
+    atualizarGuiaSecreto
+  );
+}
+
 function atualizarCanaisPaginaMeta() {
 
   const paginaId =
@@ -10120,6 +10568,8 @@ async function carregarStatusMeta() {
 
     console.log("STATUS META:", data);
 
+    statusMetaGuia = data;
+
 
     const metaInfo = document.getElementById("meta_info");
 
@@ -10470,6 +10920,8 @@ async function carregarStatusMeta() {
       atualizarCanaisPaginaMeta();
     }
 
+    atualizarGuiaSecreto();
+
   } catch (err) {
 
     console.error("ERRO STATUS META:", err);
@@ -10497,6 +10949,8 @@ async function carregarCampanhas() {
     Array.isArray(campanhas)
       ? campanhas
       : [];
+
+  atualizarGuiaSecreto();
 
   console.log(
     "CAMPANHAS FORMATADAS:",

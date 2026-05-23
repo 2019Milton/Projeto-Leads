@@ -1461,6 +1461,8 @@ button {
 
   display: flex;
 
+  flex-wrap: wrap;
+
   gap: 14px;
 
   width: 100%;
@@ -2547,6 +2549,162 @@ button {
 }
 
 /* 🔥 TABELA ADMIN */
+
+.performance-meta-panel {
+
+  flex: 0 0 100%;
+
+  width: 100%;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(15,23,42,0.98),
+      rgba(8,13,32,0.98)
+    );
+
+  border:
+    1px solid rgba(34,197,94,0.22);
+
+  border-radius:18px;
+
+  padding:18px;
+
+  margin-bottom:18px;
+
+  box-shadow:
+    0 18px 45px rgba(0,0,0,0.28);
+}
+
+.performance-meta-head {
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:flex-start;
+
+  gap:16px;
+
+  margin-bottom:16px;
+}
+
+.performance-meta-head h3 {
+
+  margin:0;
+
+  font-size:18px;
+
+  color:#f8fafc;
+}
+
+.performance-meta-head small {
+
+  color:#94a3b8;
+}
+
+.performance-meta-badge {
+
+  border:
+    1px solid rgba(34,197,94,0.35);
+
+  color:#86efac;
+
+  border-radius:999px;
+
+  padding:7px 10px;
+
+  font-size:12px;
+
+  white-space:nowrap;
+}
+
+.performance-meta-cards {
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(auto-fit,minmax(150px,1fr));
+
+  gap:10px;
+
+  margin-bottom:16px;
+}
+
+.performance-meta-card {
+
+  background:rgba(255,255,255,0.045);
+
+  border:
+    1px solid rgba(255,255,255,0.07);
+
+  border-radius:12px;
+
+  padding:12px;
+}
+
+.performance-meta-card span {
+
+  display:block;
+
+  color:#94a3b8;
+
+  font-size:12px;
+
+  margin-bottom:6px;
+}
+
+.performance-meta-card strong {
+
+  color:#f8fafc;
+
+  font-size:20px;
+}
+
+.performance-meta-table {
+
+  width:100%;
+
+  border-collapse:collapse;
+
+  overflow:hidden;
+
+  border-radius:12px;
+
+  font-size:12px;
+}
+
+.performance-meta-table th,
+.performance-meta-table td {
+
+  padding:10px;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.07);
+
+  text-align:left;
+}
+
+.performance-meta-table th {
+
+  color:#94a3b8;
+
+  font-weight:700;
+}
+
+.performance-meta-table td {
+
+  color:#e5e7eb;
+}
+
+.performance-meta-note {
+
+  color:#94a3b8;
+
+  font-size:12px;
+
+  margin-top:12px;
+}
 
 .tabela-admin{
 
@@ -5143,6 +5301,14 @@ body.tema-claro .score-legenda {
   <div class="layout-principal">
 
     <!-- 🔹 ESQUERDA -->
+    <div
+      id="painel_performance_meta"
+      class="performance-meta-panel"
+      style="display:none;"
+    >
+      Carregando performance Meta...
+    </div>
+
     <div class="coluna-esquerda">
   
       <!-- 🔗 META -->
@@ -6999,6 +7165,8 @@ async function init() {
 
   await carregarStatusMeta();
 
+  await carregarPerformanceMeta();
+
   await carregarCampanhas();
 
   await carregarLeads();
@@ -8828,6 +8996,7 @@ async function salvarContaAnunciosMeta() {
     }
 
     await carregarStatusMeta();
+    await carregarPerformanceMeta();
 
     alert("Conta de anuncios Meta selecionada.");
 
@@ -8856,6 +9025,190 @@ function atualizarBotaoMeta(conectado) {
     btn.innerText = "Conectar Meta";
     btn.onclick = conectarMeta;
     btn.classList.remove("btn-meta-disconnect");
+  }
+}
+
+function formatarPercentualPerformance(valor) {
+
+  if (
+    valor === null ||
+    valor === undefined ||
+    !Number.isFinite(Number(valor))
+  ) {
+    return "-";
+  }
+
+  return `${Number(valor).toFixed(1).replace(".", ",")}%`;
+}
+
+function formatarDataPerformance(data) {
+
+  if (!data) {
+    return "-";
+  }
+
+  return new Date(`${data}T12:00:00`).toLocaleDateString(
+    "pt-BR",
+    {
+      day: "2-digit",
+      month: "2-digit"
+    }
+  );
+}
+
+function renderizarPainelPerformanceMeta(data) {
+
+  const painel =
+    document.getElementById("painel_performance_meta");
+
+  if (!painel) {
+    return;
+  }
+
+  const resumo =
+    data.resumo || {};
+
+  const hoje =
+    resumo.hoje || {};
+
+  const economia =
+    resumo.economia_percentual;
+
+  const badge =
+    economia === null ||
+    economia === undefined
+      ? "Aguardando historico"
+      : economia >= 0
+      ? `${formatarPercentualPerformance(economia)} melhor que a media`
+      : `${formatarPercentualPerformance(Math.abs(economia))} acima da media`;
+
+  const linhas =
+    (data.dias || [])
+      .slice()
+      .reverse()
+      .map((dia) => `
+        <tr>
+          <td>${formatarDataPerformance(dia.data)}</td>
+          <td>${formatarMoeda(dia.gasto)}</td>
+          <td>${dia.leads || 0}</td>
+          <td>${
+            dia.custo_por_lead === null ||
+            dia.custo_por_lead === undefined
+              ? "-"
+              : formatarMoeda(dia.custo_por_lead)
+          }</td>
+          <td>${dia.cliques || 0}</td>
+        </tr>
+      `)
+      .join("");
+
+  painel.style.display = "block";
+
+  painel.innerHTML = `
+    <div class="performance-meta-head">
+      <div>
+        <h3>Performance de leads Meta</h3>
+        <small>
+          Dados diarios vindos dos insights da Meta para gasto, leads e custo por lead.
+        </small>
+      </div>
+      <div class="performance-meta-badge">
+        ${badge}
+      </div>
+    </div>
+
+    <div class="performance-meta-cards">
+      <div class="performance-meta-card">
+        <span>Gasto hoje</span>
+        <strong>${formatarMoeda(hoje.gasto || 0)}</strong>
+      </div>
+      <div class="performance-meta-card">
+        <span>Leads hoje</span>
+        <strong>${hoje.leads || 0}</strong>
+      </div>
+      <div class="performance-meta-card">
+        <span>Custo por lead hoje</span>
+        <strong>${
+          hoje.custo_por_lead
+            ? formatarMoeda(hoje.custo_por_lead)
+            : "-"
+        }</strong>
+      </div>
+      <div class="performance-meta-card">
+        <span>CPL medio ${data.periodo_dias || 7} dias</span>
+        <strong>${
+          resumo.custo_por_lead_medio
+            ? formatarMoeda(resumo.custo_por_lead_medio)
+            : "-"
+        }</strong>
+      </div>
+    </div>
+
+    <table class="performance-meta-table">
+      <thead>
+        <tr>
+          <th>Dia</th>
+          <th>Gasto</th>
+          <th>Leads</th>
+          <th>CPL</th>
+          <th>Cliques</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${linhas || `
+          <tr>
+            <td colspan="5">Sem dados de performance no periodo.</td>
+          </tr>
+        `}
+      </tbody>
+    </table>
+
+    <div class="performance-meta-note">
+      O mecanismo acompanha o CPL real por dia, compara com a media recente e mostra quando o dia esta performando melhor. A Meta cobra conforme entrega e leilao; a plataforma nao presume cobranca fixa por lead.
+    </div>
+  `;
+}
+
+async function carregarPerformanceMeta() {
+
+  const token =
+    localStorage.getItem("token");
+
+  const painel =
+    document.getElementById("painel_performance_meta");
+
+  if (!token || !painel) {
+    return;
+  }
+
+  try {
+
+    const res = await fetch(
+      `${API}/meta/performance-diaria?dias=7`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      painel.style.display = "none";
+      console.warn("PERFORMANCE META:", data);
+      return;
+    }
+
+    renderizarPainelPerformanceMeta(data);
+
+  } catch (err) {
+
+    console.error("PERFORMANCE META:", err);
+
+    if (painel) {
+      painel.style.display = "none";
+    }
   }
 }
 
@@ -10680,6 +11033,7 @@ async function sincronizarCampanhas() {
 
     await carregarCampanhas();
     await carregarStatusMeta();
+    await carregarPerformanceMeta();
     await carregarLeads();
 
     alert("Campanhas sincronizadas 🚀");

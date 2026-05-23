@@ -4825,150 +4825,103 @@ body.usuario-super-admin .admin-only-targeting {
 }
 
 /* =========================================
-   🧠 SCORE IA
+   📋 PAINEL DE INFORMAÇÕES
 ========================================= */
 
-.score-legenda {
-
+.info-painel {
   margin-top: 22px;
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(22,163,74,0.10), rgba(34,197,94,0.04));
+  border: 1px solid rgba(34,197,94,0.20);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  padding: 16px;
+.info-painel-titulo {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #86efac;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 2px;
+  padding-left: 2px;
+}
 
-  border-radius: 14px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(234,88,12,0.18),
-      rgba(251,146,60,0.07)
-    );
-
-  border: 1px solid rgba(251,146,60,0.28);
+.info-bloco {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.20);
+  border: 1px solid rgba(34,197,94,0.10);
 }
 
 .score-legenda h4 {
-
   margin-bottom: 14px;
-
   font-size: 15px;
-
-  color: #fed7aa;
+  color: #86efac;
 }
 
 .score-legenda-box {
-
   display: flex;
-
   flex-direction: column;
-
   gap: 10px;
 }
 
 .score-item {
-
   display: flex;
-
   justify-content: space-between;
-
   align-items: center;
-
   padding: 10px 12px;
-
   border-radius: 12px;
-
   font-size: 13px;
-
-  background:
-    rgba(255,255,255,0.03);
-
-  border:
-    1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .score-item strong {
-
   font-size: 14px;
 }
 
 .score-item.positivo strong {
-
   color: #4ade80;
 }
 
 .score-item.negativo strong {
-
   color: #ff7b7b;
 }
 
 .ml-explicacao-lead {
-
-  display: none;
-
-  margin-top: 12px;
-
   padding: 13px;
-
-  border: 1px solid rgba(96,165,250,0.18);
-
+  border: 1px solid rgba(34,197,94,0.15);
   border-radius: 12px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(37,99,235,0.12),
-      rgba(34,197,94,0.06)
-    );
-
+  background: linear-gradient(145deg, rgba(22,163,74,0.10), rgba(34,197,94,0.04));
   color: #cbd5e1;
-
   font-size: 12px;
-
   line-height: 1.5;
 }
 
-.ml-explicacao-lead.ativo {
-
-  display: block;
-}
-
 .ml-explicacao-lead > strong:first-child {
-
   display: block;
-
   margin-bottom: 5px;
-
-  color: #dbeafe;
-
+  color: #bbf7d0;
   font-size: 13px;
 }
 
 .card-criar-campanha {
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(185,28,28,0.22),
-      rgba(239,68,68,0.07)
-    ) !important;
-
+  background: linear-gradient(145deg, rgba(185,28,28,0.22), rgba(239,68,68,0.07)) !important;
   border: 1px solid rgba(239,68,68,0.28) !important;
 }
 
 .card-criar-campanha h3 {
-
   color: #fca5a5;
-}
-
-.metricas-legenda {
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
 .metricas-legenda h4 {
   margin-bottom: 14px;
   font-size: 15px;
-  color: white;
+  color: #86efac;
 }
 
 .metricas-legenda-box {
@@ -5115,11 +5068,9 @@ body.tema-claro .card label,
 body.tema-claro .metrica-explicacao strong,
 body.tema-claro .campanha-header h3,
 body.tema-claro .lead-topo h4,
-body.tema-claro .kanban-header,
-body.tema-claro .metricas-legenda h4,
-body.tema-claro .score-legenda h4 {
+body.tema-claro .kanban-header {
 
-  color: #7c2d12;
+  color: #1e293b;
 }
 
 body.tema-claro p,
@@ -5432,39 +5383,49 @@ body.tema-claro .meta-divider {
   border-color: rgba(0,0,0,0.08);
 }
 
-body.tema-claro .score-legenda {
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(234,88,12,0.10),
-      rgba(251,146,60,0.04)
-    );
-
-  border-color: rgba(234,88,12,0.30);
+body.tema-claro .info-painel {
+  background: linear-gradient(145deg, rgba(22,163,74,0.07), rgba(34,197,94,0.03));
+  border-color: rgba(34,197,94,0.22);
 }
 
-body.tema-claro .metricas-legenda {
-
-  margin-top: 16px;
-
-  padding: 16px;
-
-  border-radius: 14px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(234,88,12,0.07),
-      rgba(251,146,60,0.03)
-    );
-
-  border: 1px solid rgba(234,88,12,0.22);
+body.tema-claro .info-painel-titulo {
+  color: #15803d;
 }
 
+body.tema-claro .info-bloco {
+  background: rgba(255,255,255,0.88);
+  border-color: rgba(34,197,94,0.18);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+body.tema-claro .score-legenda h4,
 body.tema-claro .metricas-legenda h4 {
+  color: #14532d;
+}
 
-  color: #7c2d12;
+body.tema-claro .score-item {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.07);
+  color: #1e293b;
+}
+
+body.tema-claro .ml-explicacao-lead {
+  background: linear-gradient(145deg, rgba(22,163,74,0.08), rgba(34,197,94,0.03));
+  border-color: rgba(22,163,74,0.22);
+  color: #334155;
+}
+
+body.tema-claro .ml-explicacao-lead > strong:first-child {
+  color: #14532d;
+}
+
+body.tema-claro .metrica-explicacao {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(0,0,0,0.07);
+}
+
+body.tema-claro .metrica-explicacao strong {
+  color: #1e293b;
 }
 
 body.tema-claro .card-criar-campanha {
@@ -6154,60 +6115,68 @@ body.tema-claro .card-criar-campanha h3 {
         </button>
       </div>
 
-      <!-- 🔥 LEGENDA SCORE IA -->
-      <div class="score-legenda">
-      
-        <h4>🧠 Inteligência do Lead</h4>
-      
-        <div class="score-legenda-box">
-      
-          <div class="score-item positivo">
-            <span>🆕 Lead novo</span>
-            <strong>+10</strong>
+      <!-- 📋 PAINEL DE INFORMAÇÕES -->
+      <div class="info-painel">
+
+        <span class="info-painel-titulo">📋 Informações</span>
+
+        <!-- BLOCO 1: Inteligência do Lead -->
+        <div class="info-bloco score-legenda">
+
+          <h4>🧠 Inteligência do Lead</h4>
+
+          <div class="score-legenda-box">
+
+            <div class="score-item positivo">
+              <span>🆕 Lead novo</span>
+              <strong>+10</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>📢 Veio da Meta Ads</span>
+              <strong>+15</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>📈 CTR acima de 4%</span>
+              <strong>+10</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>⚡ Cadastro rápido</span>
+              <strong>+15</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>🔁 Lead recorrente</span>
+              <strong>+20</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>🏠 Interesse em visita</span>
+              <strong>+30</strong>
+            </div>
+
+            <div class="score-item negativo">
+              <span>⌛ 7 dias sem interação</span>
+              <strong>-20</strong>
+            </div>
+
+            <div class="score-item negativo">
+              <span>🚫 15 dias parado</span>
+              <strong>-40</strong>
+            </div>
+
           </div>
-      
-          <div class="score-item positivo">
-            <span>📢 Veio da Meta Ads</span>
-            <strong>+15</strong>
-          </div>
-      
-          <div class="score-item positivo">
-            <span>📈 CTR acima de 4%</span>
-            <strong>+10</strong>
-          </div>
-      
-          <div class="score-item positivo">
-            <span>⚡ Cadastro rápido</span>
-            <strong>+15</strong>
-          </div>
-      
-          <div class="score-item positivo">
-            <span>🔁 Lead recorrente</span>
-            <strong>+20</strong>
-          </div>
-      
-          <div class="score-item positivo">
-            <span>🏠 Interesse em visita</span>
-            <strong>+30</strong>
-          </div>
-      
-          <div class="score-item negativo">
-            <span>⌛ 7 dias sem interação</span>
-            <strong>-20</strong>
-          </div>
-      
-          <div class="score-item negativo">
-            <span>🚫 15 dias parado</span>
-            <strong>-40</strong>
-          </div>
-      
+
         </div>
 
+        <!-- BLOCO 2: Machine Learning -->
         <div
           id="ml_explicacao_lead"
-          class="ml-explicacao-lead"
+          class="info-bloco ml-explicacao-lead"
         >
-          <strong>Machine Learning dos Leads</strong>
+          <strong>🤖 Machine Learning dos Leads</strong>
           Disponível nos planos <strong>Prata</strong> e <strong>Ouro</strong>.<br><br>
           Com o tempo, a plataforma aprende com o histórico da sua própria conta:
           ela observa quais leads você fechou e quais perdeu, e passa a identificar
@@ -6217,43 +6186,44 @@ body.tema-claro .card-criar-campanha h3 {
           mais precisa fica a previsão — o sistema precisa de pelo menos 10 resultados
           registrados para começar a funcionar.
         </div>
-      
-      </div>
 
-      <div class="metricas-legenda">
+        <!-- BLOCO 3: Métricas da Campanha -->
+        <div class="info-bloco metricas-legenda">
 
-        <h4>📊 Entenda as métricas da campanha</h4>
+          <h4>📊 Entenda as métricas da campanha</h4>
 
-        <div class="metricas-legenda-box">
+          <div class="metricas-legenda-box">
 
-          <div class="metrica-explicacao">
-            <strong>💰 Gasto</strong>
-            <span>Total investido na campanha até agora.</span>
-          </div>
+            <div class="metrica-explicacao">
+              <strong>💰 Gasto</strong>
+              <span>Total investido na campanha até agora.</span>
+            </div>
 
-          <div class="metrica-explicacao">
-            <strong>🎯 Leads</strong>
-            <span>Quantidade de contatos capturados pela campanha.</span>
-          </div>
+            <div class="metrica-explicacao">
+              <strong>🎯 Leads</strong>
+              <span>Quantidade de contatos capturados pela campanha.</span>
+            </div>
 
-          <div class="metrica-explicacao">
-            <strong>👁️ Impressões</strong>
-            <span>Quantidade de vezes que o anúncio apareceu.</span>
-          </div>
+            <div class="metrica-explicacao">
+              <strong>👁️ Impressões</strong>
+              <span>Quantidade de vezes que o anúncio apareceu.</span>
+            </div>
 
-          <div class="metrica-explicacao">
-            <strong>🖱️ Cliques</strong>
-            <span>Total de cliques recebidos no anúncio.</span>
-          </div>
+            <div class="metrica-explicacao">
+              <strong>🖱️ Cliques</strong>
+              <span>Total de cliques recebidos no anúncio.</span>
+            </div>
 
-          <div class="metrica-explicacao">
-            <strong>📈 CTR</strong>
-            <span>Percentual de pessoas que clicaram após ver o anúncio.</span>
-          </div>
+            <div class="metrica-explicacao">
+              <strong>📈 CTR</strong>
+              <span>Percentual de pessoas que clicaram após ver o anúncio.</span>
+            </div>
 
-          <div class="metrica-explicacao">
-            <strong>💵 CPC</strong>
-            <span>Custo médio pago por cada clique.</span>
+            <div class="metrica-explicacao">
+              <strong>💵 CPC</strong>
+              <span>Custo médio pago por cada clique.</span>
+            </div>
+
           </div>
 
         </div>
@@ -7608,19 +7578,6 @@ async function carregarPlanoAtual() {
     if (usuarioLogado) {
       usuarioLogado.plano =
         plano;
-    }
-
-    const explicacaoML =
-      document.getElementById(
-        "ml_explicacao_lead"
-      );
-
-    if (explicacaoML) {
-      explicacaoML.classList.toggle(
-        "ativo",
-        plano === "prata" ||
-        plano === "ouro"
-      );
     }
 
   } catch (err) {

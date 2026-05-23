@@ -4832,10 +4832,18 @@ body.usuario-super-admin .admin-only-targeting {
 
   margin-top: 22px;
 
-  padding-top: 18px;
+  padding: 16px;
 
-  border-top:
-    1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(234,88,12,0.18),
+      rgba(251,146,60,0.07)
+    );
+
+  border: 1px solid rgba(251,146,60,0.28);
 }
 
 .score-legenda h4 {
@@ -4844,7 +4852,7 @@ body.usuario-super-admin .admin-only-targeting {
 
   font-size: 15px;
 
-  color: white;
+  color: #fed7aa;
 }
 
 .score-legenda-box {
@@ -4923,7 +4931,7 @@ body.usuario-super-admin .admin-only-targeting {
   display: block;
 }
 
-.ml-explicacao-lead strong {
+.ml-explicacao-lead > strong:first-child {
 
   display: block;
 
@@ -4932,6 +4940,23 @@ body.usuario-super-admin .admin-only-targeting {
   color: #dbeafe;
 
   font-size: 13px;
+}
+
+.card-criar-campanha {
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(185,28,28,0.22),
+      rgba(239,68,68,0.07)
+    ) !important;
+
+  border: 1px solid rgba(239,68,68,0.28) !important;
+}
+
+.card-criar-campanha h3 {
+
+  color: #fca5a5;
 }
 
 .metricas-legenda {
@@ -5094,7 +5119,7 @@ body.tema-claro .kanban-header,
 body.tema-claro .metricas-legenda h4,
 body.tema-claro .score-legenda h4 {
 
-  color: #101828;
+  color: #7c2d12;
 }
 
 body.tema-claro p,
@@ -5283,7 +5308,7 @@ body.tema-claro .ml-explicacao-lead {
   color: #334155;
 }
 
-body.tema-claro .ml-explicacao-lead strong {
+body.tema-claro .ml-explicacao-lead > strong:first-child {
 
   color: #1e3a8a;
 }
@@ -5402,11 +5427,61 @@ body.tema-claro .score-base-item {
   color: #162033;
 }
 
-body.tema-claro .meta-divider,
-body.tema-claro .metricas-legenda,
+body.tema-claro .meta-divider {
+
+  border-color: rgba(0,0,0,0.08);
+}
+
 body.tema-claro .score-legenda {
 
-  border-color: #d9e4ef;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(234,88,12,0.10),
+      rgba(251,146,60,0.04)
+    );
+
+  border-color: rgba(234,88,12,0.30);
+}
+
+body.tema-claro .metricas-legenda {
+
+  margin-top: 16px;
+
+  padding: 16px;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(234,88,12,0.07),
+      rgba(251,146,60,0.03)
+    );
+
+  border: 1px solid rgba(234,88,12,0.22);
+}
+
+body.tema-claro .metricas-legenda h4 {
+
+  color: #7c2d12;
+}
+
+body.tema-claro .card-criar-campanha {
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(185,28,28,0.10),
+      rgba(239,68,68,0.04)
+    ) !important;
+
+  border-color: rgba(239,68,68,0.30) !important;
+}
+
+body.tema-claro .card-criar-campanha h3 {
+
+  color: #991b1b;
 }
 
 @media (max-width: 760px) {
@@ -5604,8 +5679,8 @@ body.tema-claro .score-legenda {
       </div>
   
       <!-- 📢 PUBLICAÇÃO -->
-      <div class="card">
-  
+      <div class="card card-criar-campanha">
+
         <h3>📢 Criar Campanha</h3>
   
         <!-- 📝 NOME -->

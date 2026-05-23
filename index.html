@@ -5705,29 +5705,32 @@ body.tema-claro .score-legenda {
             </p>
 
             <div>
-              <label>Objetivo de custo</label>
+              <label>Controle de custo</label>
               <select id="adv_bid_strategy">
                 <option value="">Automático da Meta</option>
                 <option value="LOWEST_COST_WITHOUT_CAP">
                   Buscar menor custo
                 </option>
                 <option value="LOWEST_COST_WITH_BID_CAP">
-                  Definir limite por lead
+                  Limitar lance da Meta
                 </option>
                 <option value="COST_CAP">
-                  Manter custo controlado
+                  Definir custo-alvo por lead
                 </option>
               </select>
             </div>
 
             <div>
-              <label>Limite por lead (R$)</label>
+              <label>Valor de controle (R$)</label>
               <input
                 type="number"
                 id="adv_bid_amount"
                 min="1"
                 placeholder="Deixe vazio para automático"
               >
+              <small>
+                Em custo-alvo, a Meta tenta manter a média por lead próxima desse valor. Em limite de lance, ela limita o lance no leilão.
+              </small>
             </div>
 
             <div>
@@ -9333,7 +9336,7 @@ function renderizarPainelPerformanceMeta(data) {
     </table>
 
     <div class="performance-meta-note">
-      O mecanismo acompanha o CPL real por dia, compara com a media recente e mostra quando o dia esta performando melhor. A Meta cobra conforme entrega e leilao; a plataforma nao presume cobranca fixa por lead.
+      O mecanismo acompanha o CPL real por dia e compara com a media recente. Quando voce usa custo-alvo ou limite de lance, a plataforma envia esse controle para a Meta, mas o resultado final ainda depende do leilao e da entrega.
     </div>
   `;
 }
@@ -11016,8 +11019,8 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Dispositivos", cfg.dispositivos)}
       ${detalheItem("Início", cfg.inicio ? new Date(cfg.inicio).toLocaleString("pt-BR") : "-")}
       ${detalheItem("Término", cfg.fim ? new Date(cfg.fim).toLocaleString("pt-BR") : "-")}
-      ${detalheItem("Estratégia de lance", cfg.bid_strategy)}
-      ${detalheItem("Limite de lance", cfg.bid_amount ? formatarMoeda(cfg.bid_amount) : "-")}
+      ${detalheItem("Controle de custo", cfg.bid_strategy)}
+      ${detalheItem("Valor de controle", cfg.bid_amount ? formatarMoeda(cfg.bid_amount) : "-")}
       ${detalheItem("Formulário de qualidade", cfg.formulario_qualidade ? "Ativo" : "Não usado")}
       ${detalheItem("Advantage+ Audience", cfg.advantage_audience ? "Ativo" : "Não usado")}
       ${detalheItem("Política de privacidade", cfg.privacidade_url, "full")}

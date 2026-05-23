@@ -1153,6 +1153,43 @@ button {
   grid-column: 1 / -1;
 }
 
+.admin-only-targeting {
+
+  display: none;
+}
+
+body.usuario-admin-corretor .admin-only-targeting,
+body.usuario-super-admin .admin-only-targeting {
+
+  display: block;
+}
+
+.simple-advanced-note {
+
+  grid-column: 1 / -1;
+
+  margin: 0;
+
+  color: #9fb4d0;
+
+  font-size: 12px;
+}
+
+.geo-simple-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+.hidden-geo-fields {
+
+  display: none;
+}
+
 .advanced-checks {
 
   display: grid;
@@ -5580,7 +5617,7 @@ body.tema-claro .score-legenda {
         <section class="campaign-setup-section">
           <h4>Público</h4>
           <p>
-            Defina quem deve ver o anúncio. Comece simples e refine pelo direcionamento detalhado.
+            Defina o público principal da campanha de forma simples.
           </p>
 
           <div class="campaign-setup-grid">
@@ -5627,7 +5664,7 @@ body.tema-claro .score-legenda {
             </div>
           </div>
 
-          <div class="detailed-targeting-panel">
+          <div class="detailed-targeting-panel admin-only-targeting">
             <strong>Direcionamento detalhado</strong>
             <p>
               Procure interesses que descrevem o perfil do público. Eles serão enviados à Meta junto com o público do conjunto de anúncios.
@@ -5659,64 +5696,37 @@ body.tema-claro .score-legenda {
 
         <details class="advanced-campaign" open>
           <summary>
-            Custo, período e localização avançada
+            Agendamento e custo da campanha
           </summary>
 
           <div class="advanced-grid">
-            <div>
-              <label>Latitude</label>
-              <input
-                type="number"
-                id="adv_latitude"
-                step="0.000001"
-                placeholder="-23.550520"
-              >
-            </div>
+            <p class="simple-advanced-note">
+              Use apenas quando quiser programar início/fim ou controlar custo. A localização técnica fica automática.
+            </p>
 
             <div>
-              <label>Longitude</label>
-              <input
-                type="number"
-                id="adv_longitude"
-                step="0.000001"
-                placeholder="-46.633308"
-              >
-            </div>
-
-            <div>
-              <label>Raio (km)</label>
-              <input
-                type="number"
-                id="adv_raio"
-                min="1"
-                max="80"
-                placeholder="15"
-              >
-            </div>
-
-            <div>
-              <label>Estratégia de lance</label>
+              <label>Objetivo de custo</label>
               <select id="adv_bid_strategy">
-                <option value="">Automática</option>
+                <option value="">Automático da Meta</option>
                 <option value="LOWEST_COST_WITHOUT_CAP">
-                  Menor custo
+                  Buscar menor custo
                 </option>
                 <option value="LOWEST_COST_WITH_BID_CAP">
-                  Menor custo com limite
+                  Definir limite por lead
                 </option>
                 <option value="COST_CAP">
-                  Custo controlado
+                  Manter custo controlado
                 </option>
               </select>
             </div>
 
             <div>
-              <label>Limite de lance (R$)</label>
+              <label>Limite por lead (R$)</label>
               <input
                 type="number"
                 id="adv_bid_amount"
                 min="1"
-                placeholder="Opcional"
+                placeholder="Deixe vazio para automático"
               >
             </div>
 
@@ -5733,6 +5743,35 @@ body.tema-claro .score-legenda {
               <input
                 type="datetime-local"
                 id="adv_fim"
+              >
+            </div>
+
+            <div class="advanced-full">
+              <label>Área da campanha</label>
+              <div class="geo-simple-grid">
+                <input
+                  type="text"
+                  id="adv_localidade_nome"
+                  placeholder="Ex: São Paulo, Santo André, ABC Paulista"
+                >
+                <input
+                  type="number"
+                  id="adv_raio"
+                  min="1"
+                  max="80"
+                  placeholder="Raio em km, opcional"
+                >
+              </div>
+            </div>
+
+            <div class="hidden-geo-fields">
+              <input
+                type="hidden"
+                id="adv_latitude"
+              >
+              <input
+                type="hidden"
+                id="adv_longitude"
               >
             </div>
           </div>
@@ -7204,6 +7243,19 @@ async function init() {
       sobrenome,
       nomeCompleto
     };
+
+    document.body.classList.toggle(
+      "usuario-admin-corretor",
+      tipo === "admin_corretor"
+    );
+    document.body.classList.toggle(
+      "usuario-super-admin",
+      tipo === "super_admin"
+    );
+    document.body.classList.toggle(
+      "usuario-corretor",
+      tipo === "corretor"
+    );
     
     console.log("USUARIO:", {
       id,
@@ -9756,6 +9808,7 @@ function coletarConfiguracoesAvancadas() {
     genero: valorCampo("adv_genero"),
     idade_min: valorCampo("adv_idade_min"),
     idade_max: valorCampo("adv_idade_max"),
+    localidade_nome: valorCampo("adv_localidade_nome"),
     latitude: valorCampo("adv_latitude"),
     longitude: valorCampo("adv_longitude"),
     raio: valorCampo("adv_raio"),
@@ -10953,8 +11006,7 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Link de destino", cfg.link, "full")}
       ${detalheItem("País", cfg.pais || "BR")}
       ${detalheItem("Raio", cfg.raio ? `${cfg.raio} km` : "-")}
-      ${detalheItem("Latitude", cfg.latitude)}
-      ${detalheItem("Longitude", cfg.longitude)}
+      ${detalheItem("Área", cfg.localidade_nome)}
       ${detalheItem("Idade mínima", cfg.idade_min)}
       ${detalheItem("Idade máxima", cfg.idade_max)}
       ${detalheItem("Gênero", cfg.genero === "1" ? "Homens" : cfg.genero === "2" ? "Mulheres" : "Todos")}

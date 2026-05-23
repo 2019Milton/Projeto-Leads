@@ -1415,6 +1415,49 @@ button {
   opacity: 0.9;
 }
 
+.btn-sync.syncing,
+.btn-sync-manual.syncing {
+
+  opacity: 0.85;
+
+  cursor: wait;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+.btn-sync.syncing::after,
+.btn-sync-manual.syncing::after {
+
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.28),
+      transparent
+    );
+
+  animation: sync-shine 1s linear infinite;
+}
+
+@keyframes sync-shine {
+
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
 .sync-box {
 
   display: flex;
@@ -1422,6 +1465,80 @@ button {
   align-items: center;
 
   margin-top: 15px;
+}
+
+.sync-progress {
+
+  display: none;
+
+  margin-top: 10px;
+
+  width: 100%;
+}
+
+.sync-progress.active {
+
+  display: block;
+}
+
+.sync-progress-bar {
+
+  height: 7px;
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,0.08);
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.sync-progress-bar span {
+
+  display: block;
+
+  width: 42%;
+
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #7b2ff7,
+      #22c55e,
+      #06b6d4
+    );
+
+  animation: sync-progress 1.1s ease-in-out infinite;
+}
+
+.sync-progress small {
+
+  display: block;
+
+  color: #9ca3af;
+
+  font-size: 11px;
+
+  margin-top: 6px;
+}
+
+@keyframes sync-progress {
+
+  0% {
+    transform: translateX(-100%);
+  }
+
+  50% {
+    transform: translateX(70%);
+  }
+
+  100% {
+    transform: translateX(250%);
+  }
 }
 
 .btn-sync-manual {
@@ -9233,6 +9350,47 @@ let interessesDetalhadosSelecionados = [];
 let buscaInteressesTimer = null;
 let buscaInteressesSequencia = 0;
 let paginasMetaDisponiveis = [];
+let sincronizacaoMetaAtiva = false;
+
+function atualizarEstadoSincronizacaoMeta(ativo) {
+
+  sincronizacaoMetaAtiva = ativo;
+
+  document
+    .querySelectorAll(
+      ".btn-sync, .btn-sync-manual"
+    )
+    .forEach((btn) => {
+      btn.disabled = ativo;
+      btn.classList.toggle("syncing", ativo);
+    });
+
+  const btnPrincipal =
+    document.getElementById("btn-sync");
+
+  if (btnPrincipal) {
+    btnPrincipal.innerHTML =
+      ativo
+        ? "Sincronizando..."
+        : "Sincronizar";
+  }
+
+  document
+    .querySelectorAll(".btn-sync-manual")
+    .forEach((btn) => {
+      btn.innerHTML =
+        ativo
+          ? "..."
+          : "&#128260;";
+    });
+
+  const progresso =
+    document.getElementById("sync_progress");
+
+  if (progresso) {
+    progresso.classList.toggle("active", ativo);
+  }
+}
 
 function atualizarCanaisPaginaMeta() {
 
@@ -10072,6 +10230,18 @@ async function carregarStatusMeta() {
                 🔄
               </button>
             
+            </div>
+
+            <div
+              id="sync_progress"
+              class="sync-progress"
+            >
+              <div class="sync-progress-bar">
+                <span></span>
+              </div>
+              <small>
+                Sincronizando campanhas, gasto e leads diretamente com a Meta...
+              </small>
             </div>
         
           </div>

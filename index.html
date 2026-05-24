@@ -9279,55 +9279,37 @@ function aplicarFiltrosLeads() {
   if (periodoSelecionado !== "todos") {
   
     const agora = new Date();
-  
+    const hojeInicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+
     filtrados = filtrados.filter(lead => {
-  
+
       if (!lead.criado_em) {
         return false;
       }
-  
-      const dataLead =
-        new Date(lead.criado_em);
-  
-      const diffDias =
-  
-        (agora - dataLead)
-        / (1000 * 60 * 60 * 24);
-  
+
+      const dataLead = new Date(lead.criado_em);
+      const dataLeadInicio = new Date(dataLead.getFullYear(), dataLead.getMonth(), dataLead.getDate());
+
+      const diffDias = Math.round((hojeInicio - dataLeadInicio) / (1000 * 60 * 60 * 24));
+
       // 🔥 HOJE
-      if (
-        periodoSelecionado === "hoje"
-      ) {
-  
-        return diffDias <= 1;
+      if (periodoSelecionado === "hoje") {
+        return diffDias === 0;
       }
-  
+
       // 🔥 ONTEM
-      if (
-        periodoSelecionado === "ontem"
-      ) {
-  
-        return (
-          diffDias > 1
-          &&
-          diffDias <= 2
-        );
+      if (periodoSelecionado === "ontem") {
+        return diffDias === 1;
       }
-  
+
       // 🔥 7 DIAS
-      if (
-        periodoSelecionado === "7dias"
-      ) {
-  
-        return diffDias <= 7;
+      if (periodoSelecionado === "7dias") {
+        return diffDias < 7;
       }
-  
+
       // 🔥 30 DIAS
-      if (
-        periodoSelecionado === "30dias"
-      ) {
-  
-        return diffDias <= 30;
+      if (periodoSelecionado === "30dias") {
+        return diffDias < 30;
       }
   
       // 🔥 ESTE MÊS

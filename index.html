@@ -4865,22 +4865,28 @@ body.usuario-super-admin .admin-only-targeting {
 .score-legenda-box {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
 }
 
 .score-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
-  border-radius: 12px;
+  padding: 7px 2px;
   font-size: 13px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: #cbd5e1;
+}
+
+.score-item:last-child {
+  border-bottom: none;
 }
 
 .score-item strong {
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .score-item.positivo strong {
@@ -4954,27 +4960,32 @@ body.usuario-super-admin .admin-only-targeting {
 .metricas-legenda-box {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
 }
 
 .metrica-explicacao {
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  padding: 8px 2px;
+  border-radius: 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.metrica-explicacao:last-child {
+  border-bottom: none;
 }
 
 .metrica-explicacao strong {
   display: block;
   font-size: 13px;
-  color: white;
-  margin-bottom: 6px;
+  color: #e2e8f0;
+  margin-bottom: 3px;
 }
 
 .metrica-explicacao span {
   display: block;
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
   line-height: 1.4;
 }
 
@@ -5211,8 +5222,6 @@ body.tema-claro .kpi-card,
 body.tema-claro .lead-card,
 body.tema-claro .lead-ultima-msg,
 body.tema-claro .lead-qualificacao,
-body.tema-claro .score-item,
-body.tema-claro .metrica-explicacao,
 body.tema-claro .detalhe-item,
 body.tema-claro .info-box,
 body.tema-claro .historico-item,
@@ -5224,6 +5233,21 @@ body.tema-claro .metrica {
 
   border-color: #d7e1ee;
 }
+
+/* score-item e metrica-explicacao sem fundo no tema claro (parecem texto, não botão) */
+body.tema-claro .score-item {
+  background: none;
+  border-color: rgba(0,0,0,0.07);
+  color: #334155;
+}
+body.tema-claro .score-item.positivo strong { color: #15803d; }
+body.tema-claro .score-item.negativo strong { color: #b91c1c; }
+body.tema-claro .metrica-explicacao {
+  background: none;
+  border-color: rgba(0,0,0,0.07);
+}
+body.tema-claro .metrica-explicacao strong { color: #1e293b; }
+body.tema-claro .metrica-explicacao span { color: #526174; }
 
 body.tema-claro .lead-card,
 body.tema-claro .kanban-column {
@@ -5914,6 +5938,103 @@ body.tema-claro .targeting-chip {
 }
 .suporte-enviar-btn:hover { opacity: 0.88; }
 .suporte-vazio { color: #64748b; font-size: 13px; text-align: center; padding: 24px; }
+
+/* =========================================
+   📝 FEEDBACK
+========================================= */
+.feedback-area { margin-top: 12px; }
+
+.feedback-toggle-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(234,179,8,0.12), rgba(234,179,8,0.04));
+  border: 1px solid rgba(234,179,8,0.22);
+  color: #fde68a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+.feedback-toggle-btn:hover {
+  background: linear-gradient(145deg, rgba(234,179,8,0.20), rgba(234,179,8,0.08));
+  border-color: rgba(234,179,8,0.35);
+  transform: translateY(-1px);
+}
+.feedback-form {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(234,179,8,0.05);
+  border: 1px solid rgba(234,179,8,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.feedback-select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(234,179,8,0.22);
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+  font-size: 13px;
+  margin: 0 !important;
+}
+.feedback-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(234,179,8,0.22);
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 80px;
+  margin: 0 !important;
+  font-family: inherit;
+  line-height: 1.5;
+}
+.feedback-select:focus,
+.feedback-textarea:focus { outline: none; border-color: rgba(234,179,8,0.45); }
+.feedback-enviar-btn {
+  padding: 10px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(234,179,8,0.85), rgba(161,98,7,0.85));
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.feedback-enviar-btn:hover { opacity: 0.88; }
+.feedback-sucesso {
+  font-size: 13px;
+  color: #4ade80;
+  text-align: center;
+  padding: 6px 0;
+}
+
+body.tema-claro .feedback-toggle-btn {
+  background: linear-gradient(145deg, rgba(234,179,8,0.09), rgba(234,179,8,0.03));
+  border-color: rgba(234,179,8,0.22);
+  color: #92400e;
+}
+body.tema-claro .feedback-form {
+  background: rgba(254,252,232,0.75);
+  border-color: rgba(234,179,8,0.22);
+}
+body.tema-claro .feedback-select,
+body.tema-claro .feedback-textarea {
+  background: rgba(255,255,255,0.95);
+  color: #1e293b;
+  border-color: rgba(234,179,8,0.22);
+}
+body.tema-claro .feedback-sucesso { color: #15803d; }
 
 /* Light theme — chat */
 body.tema-claro .chat-widget-btn {
@@ -6761,6 +6882,27 @@ body.tema-claro .suporte-input {
           💬 Falar com Suporte
           <span id="chat_badge_btn" class="chat-badge-btn" style="display:none;">0</span>
         </button>
+      </div>
+
+      <!-- 📝 FEEDBACK -->
+      <div class="feedback-area">
+        <button class="feedback-toggle-btn" onclick="toggleFeedback()">
+          📝 Elogios, Sugestões e Reclamações
+        </button>
+        <div id="feedback_form" class="feedback-form" style="display:none;">
+          <select id="feedback_tipo" class="feedback-select">
+            <option value="elogio">⭐ Elogio</option>
+            <option value="sugestao">💡 Sugestão</option>
+            <option value="reclamacao">⚠️ Reclamação</option>
+          </select>
+          <textarea
+            id="feedback_msg"
+            class="feedback-textarea"
+            placeholder="Descreva aqui sua mensagem..."
+          ></textarea>
+          <button class="feedback-enviar-btn" onclick="enviarFeedback()">Enviar</button>
+          <div id="feedback_sucesso" class="feedback-sucesso" style="display:none;">✅ Enviado! Obrigado pelo seu retorno.</div>
+        </div>
       </div>
 
     </div>
@@ -14199,6 +14341,54 @@ function escHtml(str) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/* =========================================
+   📝 FEEDBACK
+========================================= */
+
+function toggleFeedback() {
+  const form = document.getElementById("feedback_form");
+  form.style.display = form.style.display === "none" ? "flex" : "none";
+  if (form.style.display === "flex") {
+    document.getElementById("feedback_sucesso").style.display = "none";
+  }
+}
+
+async function enviarFeedback() {
+  const token = localStorage.getItem("token");
+  const tipo = document.getElementById("feedback_tipo")?.value;
+  const mensagem = document.getElementById("feedback_msg")?.value?.trim();
+
+  if (!mensagem) {
+    alert("Por favor, escreva sua mensagem antes de enviar.");
+    return;
+  }
+
+  const btn = document.querySelector(".feedback-enviar-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "Enviando..."; }
+
+  try {
+    const res = await fetch(`${API}/feedback`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ tipo, mensagem })
+    });
+
+    if (res.ok) {
+      document.getElementById("feedback_msg").value = "";
+      document.getElementById("feedback_sucesso").style.display = "block";
+    } else {
+      alert("Erro ao enviar. Tente novamente.");
+    }
+  } catch (e) {
+    alert("Erro de conexão. Tente novamente.");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Enviar"; }
+  }
 }
 
 

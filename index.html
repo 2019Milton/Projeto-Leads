@@ -8013,6 +8013,23 @@ body.tema-claro .suporte-input {
 
       </div>
 
+      <!-- 🔧 MANUTENÇÃO -->
+      <div class="card" style="margin-top:30px;padding:25px;">
+        <h3 style="margin-bottom:8px;color:white;">🔧 Manutenção de Dados</h3>
+        <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">Operações para corrigir dados existentes no banco.</p>
+
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:600;margin-bottom:4px;">Corrigir datas dos leads Meta</div>
+            <div style="font-size:12px;color:#9ca3af;">Atualiza o <code>criado_em</code> de todos os leads da Meta usando a data real de criação informada pela API da Meta (em vez da hora de chegada do webhook).</div>
+          </div>
+          <button id="btn_corrigir_datas" class="btn" style="min-width:180px;white-space:nowrap;" onclick="corrigirDatasLeads()">
+            Corrigir datas
+          </button>
+        </div>
+        <div id="resultado_corrigir_datas" style="margin-top:14px;font-size:13px;display:none;"></div>
+      </div>
+
     </div>
 
   </div>
@@ -14474,6 +14491,38 @@ async function carregarPainelAdmin() {
   await carregarAdminsCorretores();
 }
 
+
+async function corrigirDatasLeads() {
+  const btn = document.getElementById("btn_corrigir_datas");
+  const resultado = document.getElementById("resultado_corrigir_datas");
+  if (!btn || !resultado) return;
+
+  btn.disabled = true;
+  btn.textContent = "Corrigindo...";
+  resultado.style.display = "none";
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/admin/corrigir-datas-leads`, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || "Erro desconhecido");
+
+    resultado.style.display = "block";
+    resultado.style.color = "#22c55e";
+    resultado.innerHTML = `✓ Concluído: ${data.atualizados} lead(s) corrigido(s) de ${data.total} total. ${data.erros > 0 ? `<span style="color:#f97316">${data.erros} erro(s).</span>` : ""}`;
+  } catch (err) {
+    resultado.style.display = "block";
+    resultado.style.color = "#ef4444";
+    resultado.textContent = "Erro: " + (err.message || err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Corrigir datas";
+  }
+}
 
 async function carregarRecursosAdmin() {
 

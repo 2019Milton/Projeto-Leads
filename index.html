@@ -6208,6 +6208,50 @@ body.tema-claro .targeting-chip {
 }
 .suporte-enviar-btn:hover { opacity: 0.88; }
 .suporte-vazio { color: #64748b; font-size: 13px; text-align: center; padding: 24px; }
+.suporte-broadcast-box {
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(15,23,42,0.58);
+  border: 1px solid rgba(99,102,241,0.18);
+}
+.suporte-broadcast-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+.suporte-select {
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(99,102,241,0.22);
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+  font-size: 13px;
+  margin: 0 !important;
+}
+.suporte-acao-btn {
+  padding: 9px 13px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #22c55e, #2563eb);
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.suporte-reabrir-btn {
+  background: rgba(34,197,94,0.15);
+  border-color: rgba(34,197,94,0.25);
+  color: #86efac;
+}
+.chat-msg-remetente {
+  font-size: 10px;
+  font-weight: 800;
+  opacity: .8;
+  margin-bottom: 4px;
+}
 
 /* =========================================
    📝 FEEDBACK
@@ -7878,9 +7922,39 @@ body.tema-claro .suporte-input {
   >
     <div class="card" style="background:linear-gradient(145deg,rgba(99,102,241,0.15),rgba(139,92,246,0.06))!important;border:1px solid rgba(139,92,246,0.25)!important;">
       <h2 style="color:#c4b5fd;">💬 Painel de Suporte</h2>
-      <p style="color:#94a3b8;margin-top:6px;font-size:13px;">Conversas abertas dos usuários da plataforma.</p>
+      <p style="color:#94a3b8;margin-top:6px;font-size:13px;">Conversas dos usuários da plataforma, abertas ou fechadas.</p>
 
       <div class="suporte-painel">
+
+        <div class="suporte-broadcast-box">
+          <div class="suporte-painel-titulo">
+            Enviar mensagem como suporte_plataforma_leads
+          </div>
+
+          <div class="suporte-broadcast-grid">
+            <select
+              id="suporte_usuario_select"
+              class="suporte-select"
+            >
+              <option value="todos">Todos os usuários</option>
+            </select>
+
+            <input
+              type="text"
+              id="suporte_broadcast_input"
+              class="suporte-input"
+              placeholder="Mensagem para todos ou para o usuário selecionado..."
+              onkeydown="if(event.key==='Enter')enviarMensagemSuporteDireta()"
+            >
+
+            <button
+              class="suporte-acao-btn"
+              onclick="enviarMensagemSuporteDireta()"
+            >
+              Enviar
+            </button>
+          </div>
+        </div>
 
         <div class="suporte-painel-titulo">
           📋 Conversas
@@ -7894,7 +7968,23 @@ body.tema-claro .suporte-input {
         <div id="suporte_chat_area" class="suporte-chat-area" style="display:none;">
           <div class="suporte-chat-header">
             <span id="suporte_chat_titulo">Conversa</span>
-            <button class="suporte-fechar-btn" onclick="fecharConversaSuporte()">Encerrar conversa</button>
+            <div style="display:flex;gap:8px;">
+              <button
+                id="suporte_reabrir_btn"
+                class="suporte-fechar-btn suporte-reabrir-btn"
+                style="display:none;"
+                onclick="reabrirConversaSuporte()"
+              >
+                Reabrir conversa
+              </button>
+              <button
+                id="suporte_fechar_btn"
+                class="suporte-fechar-btn"
+                onclick="fecharConversaSuporte()"
+              >
+                Encerrar conversa
+              </button>
+            </div>
           </div>
           <div id="suporte_chat_msgs" class="suporte-chat-msgs"></div>
           <div class="suporte-input-area">
@@ -8530,6 +8620,7 @@ async function init() {
       if (painelSuporteChat) painelSuporteChat.style.display = "block";
 
       await carregarPainelAdmin();
+      await carregarUsuariosSuporte();
       await carregarConversasSuporte();
       setInterval(() => carregarConversasSuporte(true), 8000);
 
@@ -8540,6 +8631,7 @@ async function init() {
       if (btnSuporteChat) btnSuporteChat.style.display = "block";
       if (painelSuporteChat) painelSuporteChat.style.display = "block";
 
+      await carregarUsuariosSuporte();
       await carregarConversasSuporte();
       setInterval(() => carregarConversasSuporte(true), 8000);
 
@@ -14709,8 +14801,12 @@ async function carregarMensagensChat() {
 
     lista.innerHTML = data.mensagens.map(m => {
       const hora = new Date(m.enviado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const remetente = m.remetente_tipo === "suporte"
+        ? "suporte_plataforma_leads"
+        : "Você";
       return `
         <div class="chat-msg ${m.remetente_tipo}">
+          <div class="chat-msg-remetente">${escHtml(remetente)}</div>
           ${escHtml(m.conteudo)}
           <div class="chat-msg-hora">${hora}</div>
         </div>`;
@@ -14779,12 +14875,14 @@ async function verificarBadgeChat() {
 ========================================= */
 
 let _suporteConvAtual = null;
+let _suporteConvStatusAtual = null;
 let _suportePollInterval = null;
 
 function abrirPainelSuporte() {
   const painel = document.getElementById("painel_suporte_chat");
   if (!painel) return;
   painel.scrollIntoView({ behavior: "smooth" });
+  carregarUsuariosSuporte();
   carregarConversasSuporte();
 
   if (!_suportePollInterval) {
@@ -14796,6 +14894,37 @@ async function pollSuporte() {
   await carregarConversasSuporte(true);
   if (_suporteConvAtual) {
     await carregarMensagensSuporte(_suporteConvAtual, true);
+  }
+}
+
+async function carregarUsuariosSuporte() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API}/chat/usuarios`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+
+    const select = document.getElementById("suporte_usuario_select");
+    if (!select) return;
+
+    const usuarios = data.usuarios || [];
+
+    select.innerHTML = `
+      <option value="todos">Todos os usuários</option>
+      ${usuarios.map(u => {
+        const nome = [u.nome, u.sobrenome].filter(Boolean).join(" ") || u.email;
+        return `
+          <option value="${u.id}">
+            ${escHtml(nome)} - ${escHtml(u.email)}
+          </option>
+        `;
+      }).join("")}
+    `;
+  } catch (e) {
+    console.error("suporte usuarios:", e);
   }
 }
 
@@ -14838,7 +14967,7 @@ async function carregarConversasSuporte(silencioso = false) {
       const statusClass = c.status === "fechada" ? "fechada" : "";
       const selecionado = _suporteConvAtual === c.id ? "selecionado" : "";
       return `
-        <div class="suporte-conv-item ${selecionado}" onclick="selecionarConversaSuporte(${c.id}, '${escHtml(nome)}')">
+        <div class="suporte-conv-item ${selecionado}" onclick="selecionarConversaSuporte(${c.id})">
           <div class="suporte-conv-info">
             <div class="suporte-conv-email">${escHtml(nome)}</div>
             <div class="suporte-conv-data">Atualizado: ${data_atualizado}</div>
@@ -14853,16 +14982,33 @@ async function carregarConversasSuporte(silencioso = false) {
   }
 }
 
-async function selecionarConversaSuporte(id, titulo) {
+async function selecionarConversaSuporte(id) {
   _suporteConvAtual = id;
 
   const area = document.getElementById("suporte_chat_area");
-  const tituloEl = document.getElementById("suporte_chat_titulo");
   if (area) area.style.display = "block";
-  if (tituloEl) tituloEl.textContent = titulo;
 
   await carregarMensagensSuporte(id);
   await carregarConversasSuporte(true);
+}
+
+function atualizarAcoesConversaSuporte(status) {
+  _suporteConvStatusAtual = status || "aberta";
+
+  const fecharBtn = document.getElementById("suporte_fechar_btn");
+  const reabrirBtn = document.getElementById("suporte_reabrir_btn");
+  const input = document.getElementById("suporte_input");
+
+  const fechada = _suporteConvStatusAtual === "fechada";
+
+  if (fecharBtn) fecharBtn.style.display = fechada ? "none" : "inline-block";
+  if (reabrirBtn) reabrirBtn.style.display = fechada ? "inline-block" : "none";
+  if (input) {
+    input.disabled = fechada;
+    input.placeholder = fechada
+      ? "Reabra a conversa para responder..."
+      : "Responder como suporte_plataforma_leads...";
+  }
 }
 
 async function carregarMensagensSuporte(conversaId, silencioso = false) {
@@ -14878,6 +15024,17 @@ async function carregarMensagensSuporte(conversaId, silencioso = false) {
     const msgs = document.getElementById("suporte_chat_msgs");
     if (!msgs) return;
 
+    if (data.conversa) {
+      atualizarAcoesConversaSuporte(data.conversa.status);
+      const tituloEl = document.getElementById("suporte_chat_titulo");
+      if (tituloEl) {
+        const nome = data.conversa.usuario_nome
+          ? `${data.conversa.usuario_nome} - ${data.conversa.usuario_email}`
+          : data.conversa.usuario_email;
+        tituloEl.textContent = nome || "Conversa";
+      }
+    }
+
     if (!data.mensagens || data.mensagens.length === 0) {
       msgs.innerHTML = '<div class="suporte-vazio">Nenhuma mensagem ainda.</div>';
       return;
@@ -14887,8 +15044,12 @@ async function carregarMensagensSuporte(conversaId, silencioso = false) {
 
     msgs.innerHTML = data.mensagens.map(m => {
       const hora = new Date(m.enviado_em).toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+      const remetente = m.remetente_tipo === "suporte"
+        ? "suporte_plataforma_leads"
+        : (m.remetente_nome || data.conversa?.usuario_nome || data.conversa?.usuario_email || "usuário");
       return `
         <div class="chat-msg ${m.remetente_tipo}">
+          <div class="chat-msg-remetente">${escHtml(remetente)}</div>
           ${escHtml(m.conteudo)}
           <div class="chat-msg-hora">${hora}</div>
         </div>`;
@@ -14902,6 +15063,10 @@ async function carregarMensagensSuporte(conversaId, silencioso = false) {
 
 async function responderSuporte() {
   if (!_suporteConvAtual) return;
+  if (_suporteConvStatusAtual === "fechada") {
+    alert("Reabra a conversa para responder.");
+    return;
+  }
   const token = localStorage.getItem("token");
   const input = document.getElementById("suporte_input");
   const conteudo = input?.value?.trim();
@@ -14911,7 +15076,7 @@ async function responderSuporte() {
   input.disabled = true;
 
   try {
-    await fetch(`${API}/chat/conversas/${_suporteConvAtual}/responder`, {
+    const res = await fetch(`${API}/chat/conversas/${_suporteConvAtual}/responder`, {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + token,
@@ -14919,9 +15084,77 @@ async function responderSuporte() {
       },
       body: JSON.stringify({ conteudo })
     });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(data.error || "Erro ao responder conversa");
+      return;
+    }
+
     await carregarMensagensSuporte(_suporteConvAtual);
   } catch (e) {
     console.error("suporte responder:", e);
+  } finally {
+    input.disabled = false;
+    input.focus();
+  }
+}
+
+async function enviarMensagemSuporteDireta() {
+  const token = localStorage.getItem("token");
+  const select = document.getElementById("suporte_usuario_select");
+  const input = document.getElementById("suporte_broadcast_input");
+  const destino = select?.value || "todos";
+  const conteudo = input?.value?.trim();
+
+  if (!token || !conteudo) return;
+
+  const confirmar = destino === "todos"
+    ? confirm("Enviar esta mensagem para todos os usuários ativos?")
+    : true;
+
+  if (!confirmar) return;
+
+  input.disabled = true;
+
+  try {
+    const url = destino === "todos"
+      ? `${API}/chat/broadcast`
+      : `${API}/chat/usuarios/${destino}/mensagem`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ conteudo })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(data.error || "Erro ao enviar mensagem");
+      return;
+    }
+
+    input.value = "";
+
+    await carregarConversasSuporte();
+
+    if (data.conversa_id) {
+      await selecionarConversaSuporte(data.conversa_id);
+    }
+
+    alert(
+      destino === "todos"
+        ? `Mensagem enviada para ${data.total || 0} usuários.`
+        : "Mensagem enviada."
+    );
+  } catch (e) {
+    console.error("suporte mensagem direta:", e);
+    alert("Erro ao enviar mensagem");
   } finally {
     input.disabled = false;
     input.focus();
@@ -14944,6 +15177,24 @@ async function fecharConversaSuporte() {
     await carregarConversasSuporte();
   } catch (e) {
     console.error("suporte fechar:", e);
+  }
+}
+
+async function reabrirConversaSuporte() {
+  if (!_suporteConvAtual) return;
+  const token = localStorage.getItem("token");
+
+  try {
+    await fetch(`${API}/chat/conversas/${_suporteConvAtual}/reabrir`, {
+      method: "PUT",
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    atualizarAcoesConversaSuporte("aberta");
+    await carregarConversasSuporte();
+    await carregarMensagensSuporte(_suporteConvAtual);
+  } catch (e) {
+    console.error("suporte reabrir:", e);
   }
 }
 

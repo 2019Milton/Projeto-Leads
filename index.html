@@ -6130,9 +6130,32 @@ body.tema-claro .suporte-input {
     <button
       id="btn_solicitar_reset"
       class="login-link"
-      onclick="solicitarResetSenha()"
+      onclick="abrirEsquecerSenha()"
     >
       Esqueci minha senha
+    </button>
+  </div>
+
+  <!-- RECUPERAR SENHA -->
+  <div class="login-box" id="esquecerSenhaBox" style="display:none;">
+    <h2>🔑 Recuperar senha</h2>
+    <p class="reset-help">
+      Informe seu email e enviaremos um link para criar uma nova senha.
+    </p>
+    <input
+      id="email_recuperacao"
+      type="email"
+      placeholder="Seu email cadastrado"
+    >
+    <button
+      id="btn_enviar_recuperacao"
+      class="btn"
+      onclick="enviarLinkRecuperacao()"
+    >
+      Enviar link de recuperação
+    </button>
+    <button class="login-link" onclick="voltarLogin()">
+      Voltar ao login
     </button>
   </div>
 
@@ -7426,15 +7449,19 @@ body.tema-claro .suporte-input {
             </label>
         
             <select id="novo_usuario_tipo">
-        
+
               <option value="admin_corretor">
                 Admin Corretor
               </option>
-        
+
               <option value="corretor">
                 Corretor
               </option>
-        
+
+              <option value="suporte">
+                Suporte
+              </option>
+
             </select>
         
           </div>
@@ -7867,6 +7894,33 @@ function renderizarPaginaLegal() {
   return true;
 }
 
+function abrirEsquecerSenha() {
+  document.getElementById("loginFormBox").style.display = "none";
+  document.getElementById("esquecerSenhaBox").style.display = "block";
+  document.getElementById("resetSenhaBox").style.display = "none";
+  const emailDigitado = document.getElementById("email")?.value?.trim();
+  if (emailDigitado) {
+    document.getElementById("email_recuperacao").value = emailDigitado;
+  }
+}
+
+async function enviarLinkRecuperacao() {
+  const email =
+    document.getElementById("email_recuperacao").value?.trim();
+
+  if (!email) {
+    alert("Informe seu email");
+    return;
+  }
+
+  const btn = document.getElementById("btn_enviar_recuperacao");
+  if (btn) { btn.disabled = true; btn.innerText = "Enviando..."; }
+
+  await solicitarResetSenha(email);
+
+  if (btn) { btn.disabled = false; btn.innerText = "Enviar link de recuperação"; }
+}
+
 async function solicitarResetSenha(emailInformado) {
   const campoEmail =
     document.getElementById("email");
@@ -7984,6 +8038,7 @@ function voltarLogin() {
   document.getElementById("app").style.display = "none";
   document.getElementById("loginFormBox").style.display = "block";
   document.getElementById("resetSenhaBox").style.display = "none";
+  document.getElementById("esquecerSenhaBox").style.display = "none";
 
   window.history.replaceState(
     {},
@@ -13809,19 +13864,40 @@ function abrirTrocaSenha(id, email) {
   document.getElementById("modal_senha").style.display = "flex";
 }
 
+function verificarForcaSenhaAdmin(valor) {
+  const ok = (id, passa) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.color = passa ? "#22c55e" : "#ef4444";
+    el.textContent = (passa ? "✓ " : "✗ ") + el.textContent.slice(2);
+  };
+  ok("req_min",  valor.length >= 8);
+  ok("req_mai",  /[A-Z]/.test(valor));
+  ok("req_min2", /[a-z]/.test(valor));
+  ok("req_num",  /\d/.test(valor));
+  ok("req_sim",  /[@$!%*?&#._-]/.test(valor));
+}
+
 async function salvarNovaSenha() {
 
   const novaSenha =
-    document.getElementById(
-      "nova_senha"
-    ).value;
+    document.getElementById("nova_senha").value;
 
-  if (novaSenha.length < 8) {
+  const confirmarSenha =
+    document.getElementById("nova_senha_confirmar").value;
 
+  if (novaSenha !== confirmarSenha) {
+    alert("As senhas não conferem");
+    return;
+  }
+
+  const senhaForte =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#._-]).{8,}$/;
+
+  if (!senhaForte.test(novaSenha)) {
     alert(
-      "Senha precisa ter no mínimo 8 caracteres"
+      "Use no mínimo 8 caracteres com maiúscula, minúscula, número e símbolo (@$!%*?&#._-)."
     );
-
     return;
   }
 
@@ -13935,9 +14011,10 @@ function fecharModalSenha() {
     "modal_senha"
   ).style.display = "none";
 
-  document.getElementById(
-    "nova_senha"
-  ).value = "";
+  document.getElementById("nova_senha").value = "";
+  document.getElementById("nova_senha_confirmar").value = "";
+
+  verificarForcaSenhaAdmin("");
 
   usuarioSenhaAtual = null;
 }
@@ -14921,17 +14998,39 @@ async function enviarFeedback() {
   "
 >
 
-  <div class="card" style="width:400px;">
+  <div class="card" style="width:420px;">
 
     <h2 id="titulo_modal_senha">🔐 Trocar Senha</h2>
 
     <input
       type="password"
       id="nova_senha"
-      placeholder="Nova senha forte"
+      placeholder="Nova senha"
       class="input"
       style="margin-top:20px;"
+      oninput="verificarForcaSenhaAdmin(this.value)"
     >
+
+    <input
+      type="password"
+      id="nova_senha_confirmar"
+      placeholder="Confirmar nova senha"
+      class="input"
+      style="margin-top:10px;"
+    >
+
+    <div id="requisitos_senha_admin" style="
+      margin-top:12px;
+      font-size:12px;
+      line-height:1.8;
+      color:#9ca3af;
+    ">
+      <div id="req_min" style="color:#ef4444;">✗ Mínimo 8 caracteres</div>
+      <div id="req_mai" style="color:#ef4444;">✗ Letra maiúscula</div>
+      <div id="req_min2" style="color:#ef4444;">✗ Letra minúscula</div>
+      <div id="req_num" style="color:#ef4444;">✗ Número</div>
+      <div id="req_sim" style="color:#ef4444;">✗ Símbolo (@$!%*?&#._-)</div>
+    </div>
 
     <div
       style="
@@ -14940,7 +15039,7 @@ async function enviarFeedback() {
         margin-top:20px;
       "
     >
-    
+
       <button
         class="btn-primary"
         style="flex:1;"
@@ -14948,7 +15047,7 @@ async function enviarFeedback() {
       >
         Salvar
       </button>
-    
+
       <button
         class="logout"
         style="flex:1;"
@@ -14956,7 +15055,7 @@ async function enviarFeedback() {
       >
         Cancelar
       </button>
-    
+
     </div>
 
   </div>

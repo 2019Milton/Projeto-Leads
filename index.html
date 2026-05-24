@@ -142,6 +142,65 @@ button {
   line-height: 1.5;
 }
 
+.senha-requisitos {
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(15,23,42,0.72);
+  border: 1px solid rgba(148,163,184,0.18);
+  text-align: left;
+}
+
+.senha-requisito {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.senha-requisito::before {
+  content: "•";
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148,163,184,0.16);
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.senha-requisito.ok {
+  color: #86efac;
+}
+
+.senha-requisito.ok::before {
+  content: "✓";
+  background: rgba(34,197,94,0.18);
+  color: #22c55e;
+}
+
+.senha-requisito.erro {
+  color: #fca5a5;
+}
+
+.senha-requisito.erro::before {
+  content: "!";
+  background: rgba(239,68,68,0.18);
+  color: #ef4444;
+}
+
+.senha-status {
+  min-height: 16px;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
 .legal-page {
 
   position: relative;
@@ -6488,12 +6547,57 @@ body.tema-claro .suporte-input {
       id="reset_nova_senha"
       type="password"
       placeholder="Nova senha forte"
+      oninput="atualizarChecklistResetSenha()"
     >
+
+    <div class="senha-requisitos">
+      <div
+        id="reset_req_tamanho"
+        class="senha-requisito"
+      >
+        Mínimo de 8 caracteres
+      </div>
+      <div
+        id="reset_req_maiuscula"
+        class="senha-requisito"
+      >
+        Pelo menos uma letra maiúscula
+      </div>
+      <div
+        id="reset_req_minuscula"
+        class="senha-requisito"
+      >
+        Pelo menos uma letra minúscula
+      </div>
+      <div
+        id="reset_req_numero"
+        class="senha-requisito"
+      >
+        Pelo menos um número
+      </div>
+      <div
+        id="reset_req_simbolo"
+        class="senha-requisito"
+      >
+        Pelo menos um símbolo
+      </div>
+      <div
+        id="reset_req_historico"
+        class="senha-requisito"
+      >
+        Diferente das últimas 10 senhas
+      </div>
+      <div
+        id="reset_senha_status"
+        class="senha-status"
+      ></div>
+    </div>
 
     <input
       id="reset_confirmar_senha"
       type="password"
       placeholder="Confirmar nova senha"
+      oninput="atualizarChecklistResetSenha()"
     >
 
     <button
@@ -8354,11 +8458,14 @@ async function solicitarResetSenha(emailInformado) {
 
 function abrirResetSenha(token) {
   resetSenhaToken = token;
+  resetSenhaHistoricoOk = false;
+  resetSenhaHistoricoValor = "";
 
   document.getElementById("loginBox").style.display = "flex";
   document.getElementById("app").style.display = "none";
   document.getElementById("loginFormBox").style.display = "none";
   document.getElementById("resetSenhaBox").style.display = "block";
+  atualizarChecklistResetSenha();
 }
 
 async function validarEAbrirResetSenha(token) {
@@ -8390,6 +8497,9 @@ async function validarEAbrirResetSenha(token) {
 
 function voltarLogin() {
   resetSenhaToken = null;
+  resetSenhaHistoricoOk = false;
+  resetSenhaHistoricoValor = "";
+  clearTimeout(resetSenhaCheckTimer);
 
   document.getElementById("loginBox").style.display = "flex";
   document.getElementById("app").style.display = "none";
@@ -8402,6 +8512,152 @@ function voltarLogin() {
     "",
     window.location.pathname
   );
+}
+
+let resetSenhaCheckTimer = null;
+let resetSenhaHistoricoOk = false;
+let resetSenhaHistoricoValor = "";
+
+function marcarRequisitoSenha(id, ok, erro = false) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle("ok", Boolean(ok));
+  el.classList.toggle("erro", Boolean(erro));
+}
+
+function avaliarComplexidadeSenha(senha) {
+  return {
+    tamanho: senha.length >= 8,
+    maiuscula: /[A-Z]/.test(senha),
+    minuscula: /[a-z]/.test(senha),
+    numero: /\d/.test(senha),
+    simbolo: /[@$!%*?&#._-]/.test(senha)
+  };
+}
+
+function senhaResetForteLocal(senha) {
+  const req = avaliarComplexidadeSenha(senha);
+  return Object.values(req).every(Boolean);
+}
+
+function atualizarBotaoResetSenha() {
+  const senha =
+    document.getElementById("reset_nova_senha")?.value || "";
+  const confirmar =
+    document.getElementById("reset_confirmar_senha")?.value || "";
+  const btn =
+    document.getElementById("btn_confirmar_reset");
+
+  if (btn) {
+    btn.disabled =
+      !senhaResetForteLocal(senha) ||
+      !resetSenhaHistoricoOk ||
+      !confirmar ||
+      senha !== confirmar;
+  }
+}
+
+async function verificarHistoricoResetSenha(senha) {
+  const status = document.getElementById("reset_senha_status");
+
+  if (!resetSenhaToken || !senhaResetForteLocal(senha)) {
+    resetSenhaHistoricoOk = false;
+    marcarRequisitoSenha("reset_req_historico", false);
+    if (status) status.textContent = "";
+    atualizarBotaoResetSenha();
+    return;
+  }
+
+  if (status) status.textContent = "Verificando histórico de senhas...";
+
+  try {
+    const res = await fetch(
+      `${API}/auth/verificar-reset-senha`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          token: resetSenhaToken,
+          nova_senha: senha
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      resetSenhaHistoricoOk = false;
+      marcarRequisitoSenha("reset_req_historico", false, true);
+      if (status) status.textContent = data.error || "Não foi possível verificar o histórico.";
+      atualizarBotaoResetSenha();
+      return;
+    }
+
+    const senhaAtual =
+      document.getElementById("reset_nova_senha")?.value || "";
+
+    if (senhaAtual !== senha) {
+      return;
+    }
+
+    resetSenhaHistoricoOk = Boolean(data.historico_ok);
+    resetSenhaHistoricoValor = senha;
+    marcarRequisitoSenha(
+      "reset_req_historico",
+      resetSenhaHistoricoOk,
+      !resetSenhaHistoricoOk
+    );
+
+    if (status) {
+      status.textContent = resetSenhaHistoricoOk
+        ? "Senha disponível para uso."
+        : "Essa senha já foi usada recentemente.";
+    }
+    atualizarBotaoResetSenha();
+  } catch (err) {
+    resetSenhaHistoricoOk = false;
+    marcarRequisitoSenha("reset_req_historico", false, true);
+    if (status) status.textContent = "Erro ao verificar histórico de senhas.";
+    atualizarBotaoResetSenha();
+  }
+}
+
+function atualizarChecklistResetSenha() {
+  const senha =
+    document.getElementById("reset_nova_senha")?.value || "";
+  const confirmar =
+    document.getElementById("reset_confirmar_senha")?.value || "";
+  const btn =
+    document.getElementById("btn_confirmar_reset");
+
+  const req = avaliarComplexidadeSenha(senha);
+
+  marcarRequisitoSenha("reset_req_tamanho", req.tamanho);
+  marcarRequisitoSenha("reset_req_maiuscula", req.maiuscula);
+  marcarRequisitoSenha("reset_req_minuscula", req.minuscula);
+  marcarRequisitoSenha("reset_req_numero", req.numero);
+  marcarRequisitoSenha("reset_req_simbolo", req.simbolo);
+
+  if (!senha) {
+    resetSenhaHistoricoOk = false;
+    resetSenhaHistoricoValor = "";
+    marcarRequisitoSenha("reset_req_historico", false);
+  }
+
+  if (senha !== resetSenhaHistoricoValor) {
+    resetSenhaHistoricoOk = false;
+    marcarRequisitoSenha("reset_req_historico", false);
+  }
+
+  clearTimeout(resetSenhaCheckTimer);
+  resetSenhaCheckTimer = setTimeout(
+    () => verificarHistoricoResetSenha(senha),
+    450
+  );
+
+  atualizarBotaoResetSenha();
 }
 
 async function confirmarResetSenha() {
@@ -8422,12 +8678,21 @@ async function confirmarResetSenha() {
   }
 
   const senhaForte =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#._-]).{8,}$/;
+    senhaResetForteLocal(novaSenha);
 
-  if (!senhaForte.test(novaSenha)) {
+  if (!senhaForte) {
     alert(
       "Use no mínimo 8 caracteres com maiúscula, minúscula, número e símbolo."
     );
+    return;
+  }
+
+  if (!resetSenhaHistoricoOk) {
+    await verificarHistoricoResetSenha(novaSenha);
+  }
+
+  if (!resetSenhaHistoricoOk) {
+    alert("Escolha uma senha diferente das últimas 10 senhas.");
     return;
   }
 
@@ -8471,6 +8736,7 @@ async function confirmarResetSenha() {
     localStorage.removeItem("token");
     document.getElementById("reset_nova_senha").value = "";
     document.getElementById("reset_confirmar_senha").value = "";
+    atualizarChecklistResetSenha();
 
     voltarLogin();
 
@@ -8486,6 +8752,7 @@ async function confirmarResetSenha() {
     if (btnConfirmar) {
       btnConfirmar.disabled = false;
       btnConfirmar.innerText = "Salvar nova senha";
+      atualizarBotaoResetSenha();
     }
   }
 }

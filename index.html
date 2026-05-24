@@ -2965,6 +2965,68 @@ body.usuario-super-admin .admin-only-targeting {
   margin-top:12px;
 }
 
+.perf-expand-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+.perf-expand-btn:hover { color: #22c55e; background: rgba(34,197,94,0.08); }
+.perf-expand-btn.aberto { color: #22c55e; }
+
+.perf-detalhe-row td {
+  padding: 0 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+.perf-detalhe-inner {
+  background: rgba(0,0,0,0.25);
+  padding: 10px 16px 12px 36px;
+}
+
+.perf-detalhe-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  margin-top: 6px;
+}
+
+.perf-detalhe-table th {
+  color: #64748b;
+  font-weight: 600;
+  padding: 4px 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.perf-detalhe-table td {
+  color: #cbd5e1;
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.perf-detalhe-table tr:last-child td { border-bottom: none; }
+
+.perf-detalhe-loading {
+  color: #64748b;
+  font-size: 12px;
+  padding: 8px 0;
+}
+
+body.tema-claro .perf-detalhe-inner {
+  background: rgba(0,0,0,0.04);
+}
+body.tema-claro .perf-detalhe-table th { color: #64748b; border-bottom-color: rgba(0,0,0,0.08); }
+body.tema-claro .perf-detalhe-table td { color: #374151; border-bottom-color: rgba(0,0,0,0.05); }
+body.tema-claro .perf-expand-btn { color: #94a3b8; }
+body.tema-claro .perf-expand-btn:hover { color: #16a34a; }
+body.tema-claro .perf-expand-btn.aberto { color: #16a34a; }
+
 .tabela-admin{
 
   width:100%;
@@ -10217,25 +10279,39 @@ function renderizarPainelPerformanceMeta(data) {
       ? `${formatarPercentualPerformance(economia)} melhor que a media`
       : `${formatarPercentualPerformance(Math.abs(economia))} acima da media`;
 
-  const linhas =
-    (data.dias || [])
-      .slice()
-      .reverse()
-      .map((dia) => `
-        <tr>
-          <td>${formatarDataPerformance(dia.data)}</td>
-          <td>${formatarMoeda(dia.gasto)}</td>
-          <td>${dia.leads || 0}</td>
-          <td>${
-            dia.custo_por_lead === null ||
-            dia.custo_por_lead === undefined
-              ? "-"
-              : formatarMoeda(dia.custo_por_lead)
-          }</td>
-          <td>${dia.cliques || 0}</td>
-        </tr>
-      `)
-      .join("");
+  const diasOrdenados = (data.dias || []).slice().reverse();
+
+  const linhas = diasOrdenados.map((dia, i) => {
+    const temDados = dia.gasto > 0 || dia.leads > 0 || dia.cliques > 0;
+    const rowId = `perf_row_${dia.data.replace(/-/g, "")}`;
+    const detalheId = `perf_detalhe_${dia.data.replace(/-/g, "")}`;
+    return `
+      <tr id="${rowId}" data-data="${dia.data}">
+        <td>
+          ${temDados
+            ? `<button class="perf-expand-btn" id="btn_exp_${dia.data.replace(/-/g,"")}" onclick="togglePerfDetalhe('${dia.data}')">▶</button>`
+            : `<span style="display:inline-block;width:22px;"></span>`
+          }
+          ${formatarDataPerformance(dia.data)}
+        </td>
+        <td>${formatarMoeda(dia.gasto)}</td>
+        <td>${dia.leads || 0}</td>
+        <td>${
+          dia.custo_por_lead === null || dia.custo_por_lead === undefined
+            ? "-"
+            : formatarMoeda(dia.custo_por_lead)
+        }</td>
+        <td>${dia.cliques || 0}</td>
+      </tr>
+      <tr class="perf-detalhe-row" id="${detalheId}" style="display:none;">
+        <td colspan="5">
+          <div class="perf-detalhe-inner">
+            <span class="perf-detalhe-loading">Carregando campanhas...</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
 
   painel.style.display = "block";
 
@@ -10302,6 +10378,87 @@ function renderizarPainelPerformanceMeta(data) {
       O mecanismo acompanha o CPL real por dia e compara com a media recente. Quando voce usa custo-alvo ou limite de lance, a plataforma envia esse controle para a Meta, mas o resultado final ainda depende do leilao e da entrega.
     </div>
   `;
+}
+
+const _perfDetalheCarregado = new Set();
+
+async function togglePerfDetalhe(data) {
+  const chave = data.replace(/-/g, "");
+  const detalheRow = document.getElementById(`perf_detalhe_${chave}`);
+  const btn = document.getElementById(`btn_exp_${chave}`);
+  if (!detalheRow) return;
+
+  const aberto = detalheRow.style.display !== "none";
+
+  if (aberto) {
+    detalheRow.style.display = "none";
+    if (btn) { btn.textContent = "▶"; btn.classList.remove("aberto"); }
+    return;
+  }
+
+  detalheRow.style.display = "";
+  if (btn) { btn.textContent = "▼"; btn.classList.add("aberto"); }
+
+  if (_perfDetalheCarregado.has(data)) return;
+
+  await carregarCampanhasDia(data);
+  _perfDetalheCarregado.add(data);
+}
+
+async function carregarCampanhasDia(data) {
+  const chave = data.replace(/-/g, "");
+  const detalheRow = document.getElementById(`perf_detalhe_${chave}`);
+  if (!detalheRow) return;
+
+  const inner = detalheRow.querySelector(".perf-detalhe-inner");
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/meta/performance-diaria/${data}/campanhas`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    const json = await res.json();
+
+    if (!res.ok || json.error) {
+      inner.innerHTML = `<span style="color:#ef4444;font-size:12px;">Erro: ${json.error || "Falha ao carregar"}</span>`;
+      return;
+    }
+
+    const campanhas = json.campanhas || [];
+
+    if (campanhas.length === 0) {
+      inner.innerHTML = `<span class="perf-detalhe-loading">Nenhuma campanha com dados neste dia.</span>`;
+      return;
+    }
+
+    const linhas = campanhas.map(camp => `
+      <tr>
+        <td>${escHtml(camp.nome)}</td>
+        <td>${formatarMoeda(camp.gasto)}</td>
+        <td>${camp.leads || 0}</td>
+        <td>${camp.custo_por_lead !== null && camp.custo_por_lead !== undefined ? formatarMoeda(camp.custo_por_lead) : "-"}</td>
+        <td>${camp.cliques || 0}</td>
+      </tr>
+    `).join("");
+
+    inner.innerHTML = `
+      <table class="perf-detalhe-table">
+        <thead>
+          <tr>
+            <th>Campanha</th>
+            <th>Gasto</th>
+            <th>Leads</th>
+            <th>CPL</th>
+            <th>Cliques</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    `;
+  } catch (err) {
+    if (inner) inner.innerHTML = `<span style="color:#ef4444;font-size:12px;">Erro ao carregar campanhas.</span>`;
+  }
 }
 
 async function carregarPerformanceMeta() {

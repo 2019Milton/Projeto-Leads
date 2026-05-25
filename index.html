@@ -5143,6 +5143,97 @@ body.tema-claro .cal-nav span { color: #111827; }
     #ff7b7b;
 }
 
+.ia-ouro-card,
+.lead-ia-detalhes,
+.admin-ia-painel {
+  background:
+    linear-gradient(145deg, rgba(245,158,11,0.18), rgba(120,53,15,0.18));
+  border: 1px solid rgba(245,158,11,0.42);
+  box-shadow: 0 0 22px rgba(245,158,11,0.10);
+}
+
+.ia-ouro-card h4,
+.lead-ia-detalhes h4,
+.admin-ia-painel h3 {
+  color: #facc15;
+}
+
+.lead-ia-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(245,158,11,0.18);
+  border: 1px solid rgba(245,158,11,0.38);
+  color: #fde68a;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.lead-card:has(.lead-ia-badge) {
+  border-color: rgba(245,158,11,0.45) !important;
+  box-shadow: 0 0 18px rgba(245,158,11,0.08);
+}
+
+.lead-ia-detalhes {
+  padding: 14px;
+  border-radius: 12px;
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.lead-ia-grid,
+.admin-ia-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.lead-ia-mini,
+.admin-ia-mini {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(245,158,11,0.20);
+}
+
+.lead-ia-mini strong,
+.admin-ia-mini strong {
+  display: block;
+  color: #facc15;
+  margin-bottom: 4px;
+}
+
+.ia-copy-box {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(15,23,42,0.72);
+  border: 1px solid rgba(245,158,11,0.30);
+  color: #fef3c7;
+}
+
+.admin-ia-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.admin-ia-form textarea {
+  min-height: 72px;
+}
+
+.admin-ia-table-wrap {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+
 /* CHART */
 
 .chart-box {
@@ -7271,6 +7362,32 @@ body.tema-claro .suporte-input {
           registrados para começar a identificar.
         </div>
 
+        <div class="info-bloco ia-ouro-card">
+          <h4>IA Ouro em toda a jornada</h4>
+          <p>
+            Disponivel somente no plano <strong>Ouro</strong>. A IA usa os dados do lead,
+            a classificacao Frio/Morno/Quente, o historico, as respostas do formulario
+            e o ML para entregar um apoio comercial completo.
+          </p>
+          <div class="lead-ia-grid">
+            <div class="lead-ia-mini">
+              <strong>Resumo do lead</strong>
+              Explica rapidamente quem e o lead e o que ele parece buscar.
+            </div>
+            <div class="lead-ia-mini">
+              <strong>Proxima acao</strong>
+              Recomenda ligar, chamar no WhatsApp, nutrir ou qualificar melhor.
+            </div>
+            <div class="lead-ia-mini">
+              <strong>Mensagem pronta</strong>
+              Sugere uma abordagem personalizada para WhatsApp.
+            </div>
+            <div class="lead-ia-mini">
+              <strong>Perguntas de qualificacao</strong>
+              Ajuda o corretor a descobrir valor, regiao, financiamento e prazo.
+            </div>
+          </div>
+        </div>
         <!-- BLOCO 3: Métricas da Campanha -->
         <div class="info-bloco metricas-legenda">
 
@@ -7724,6 +7841,81 @@ body.tema-claro .suporte-input {
   
         </div>
   
+      </div>
+
+      <div
+        class="card admin-ia-painel"
+        style="
+          margin-top:30px;
+          padding:25px;
+        "
+      >
+        <h3>Painel IA Ouro</h3>
+        <p style="color:#fef3c7;margin-top:8px;font-size:13px;">
+          Controle de usuarios Ouro, uso mensal, limites e assinatura da API de IA.
+        </p>
+
+        <div class="admin-ia-grid">
+          <div class="admin-ia-mini">
+            <strong>Usuarios Ouro</strong>
+            <span id="ia_admin_usuarios_ouro">0</span>
+          </div>
+          <div class="admin-ia-mini">
+            <strong>Chamadas no mes</strong>
+            <span id="ia_admin_chamadas_mes">0</span>
+          </div>
+          <div class="admin-ia-mini">
+            <strong>Custo estimado</strong>
+            <span id="ia_admin_custo_mes">R$ 0,00</span>
+          </div>
+          <div class="admin-ia-mini">
+            <strong>Status API</strong>
+            <span id="ia_admin_status_api">-</span>
+          </div>
+        </div>
+
+        <div class="admin-ia-form">
+          <input id="ia_config_provedor" placeholder="Provedor. Ex: openai">
+          <input id="ia_config_modelo" placeholder="Modelo. Ex: gpt-4.1-mini">
+          <select id="ia_config_status">
+            <option value="nao_contratado">Nao contratado</option>
+            <option value="contratado">Contratado</option>
+            <option value="pausado">Pausado</option>
+          </select>
+          <select id="ia_config_assinatura">
+            <option value="pendente">Pagamento pendente</option>
+            <option value="ativa">Pagamento ativo</option>
+            <option value="vencida">Pagamento vencido</option>
+          </select>
+          <input id="ia_config_limite_req" type="number" placeholder="Limite mensal requisicoes">
+          <input id="ia_config_limite_custo" type="number" placeholder="Limite custo mensal">
+          <input id="ia_config_custo_contratado" type="number" placeholder="Custo contratado">
+          <textarea id="ia_config_observacoes" placeholder="Observacoes da contratacao, billing, limites ou renovacao"></textarea>
+        </div>
+
+        <button style="margin-top:14px;" onclick="salvarConfigIAAdmin()">
+          Salvar configuracao de IA
+        </button>
+
+        <div class="admin-ia-table-wrap">
+          <table class="tabela-admin">
+            <thead>
+              <tr>
+                <th>Usuario Ouro</th>
+                <th>Assinatura</th>
+                <th>Uso mensal</th>
+                <th>Limites</th>
+                <th>Ultimo uso</th>
+                <th>Acoes</th>
+              </tr>
+            </thead>
+            <tbody id="admin_ia_tabela_usuarios">
+              <tr>
+                <td colspan="6">Carregando IA...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- 🔥 CRIAR USUÁRIO -->
@@ -9892,6 +10084,8 @@ function criarLeadCard(lead) {
 
           ${renderizarBadgeMLLead(lead)}
 
+          ${renderizarBadgeIALead(lead)}
+
         </div>
 
       </div>
@@ -10250,6 +10444,96 @@ function renderizarBadgeMLLead(lead) {
   return "";
 }
 
+function renderizarBadgeIALead(lead) {
+
+  const ia =
+    lead.ia_leads;
+
+  if (!ia?.disponivel) {
+    return "";
+  }
+
+  const prioridade =
+    ia.prioridade === "alta"
+      ? "Alta prioridade"
+      : ia.prioridade === "baixa"
+      ? "Baixa prioridade"
+      : "Prioridade media";
+
+  return `
+    <span
+      class="lead-ia-badge"
+      title="Analise inteligente disponivel no plano Ouro"
+    >
+      IA Ouro - ${prioridade}
+    </span>
+  `;
+}
+
+function renderizarDetalhesIALead(analise) {
+
+  if (!analise?.disponivel) {
+    return `
+      <div class="timeline-empty">
+        IA disponivel somente no plano Ouro.
+      </div>
+    `;
+  }
+
+  return `
+    <div class="lead-ia-detalhes">
+      <h4>IA Ouro do Lead</h4>
+      <p>${escaparHtml(analise.explicacao || "")}</p>
+
+      <div class="lead-ia-grid">
+        <div class="lead-ia-mini">
+          <strong>Resumo</strong>
+          ${escaparHtml(analise.resumo || "-")}
+        </div>
+        <div class="lead-ia-mini">
+          <strong>Prioridade</strong>
+          ${escaparHtml(analise.prioridade || "-")}
+        </div>
+        <div class="lead-ia-mini">
+          <strong>Proxima acao</strong>
+          ${escaparHtml(analise.proxima_acao || "-")}
+        </div>
+        <div class="lead-ia-mini">
+          <strong>Score base</strong>
+          ${escaparHtml(analise.score_regras || "-")} - ${analise.pontos_regras || 0} pts
+        </div>
+      </div>
+
+      <div class="ia-copy-box">
+        <strong>Mensagem sugerida para WhatsApp</strong><br>
+        ${escaparHtml(analise.mensagem_whatsapp || "-")}
+      </div>
+
+      <div class="lead-ia-grid">
+        <div class="lead-ia-mini">
+          <strong>Sinais encontrados</strong>
+          ${(analise.sinais || [])
+            .map(item => `<div>• ${escaparHtml(item)}</div>`)
+            .join("") || "-"}
+        </div>
+        <div class="lead-ia-mini">
+          <strong>Riscos ou lacunas</strong>
+          ${(analise.riscos || [])
+            .map(item => `<div>• ${escaparHtml(item)}</div>`)
+            .join("") || "Nenhum risco forte identificado."}
+        </div>
+      </div>
+
+      <div class="ia-copy-box">
+        <strong>Perguntas sugeridas</strong>
+        ${(analise.perguntas_qualificacao || [])
+          .map(item => `<div>• ${escaparHtml(item)}</div>`)
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
 function renderizarDetalhesMLLead(lead) {
 
   const ml =
@@ -10312,6 +10596,51 @@ function renderizarDetalhesMLLead(lead) {
       </div>
     </div>
   `;
+}
+
+async function carregarAnaliseIALead(leadId) {
+
+  const iaBox =
+    document.getElementById(
+      "drawer_ia_lead"
+    );
+
+  if (!iaBox) return;
+
+  try {
+    const token =
+      localStorage.getItem("token");
+
+    const res = await fetch(
+      `${API}/ia/leads/${leadId}`,
+      {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      iaBox.innerHTML = `
+        <div class="timeline-empty">
+          ${escaparHtml(data.error || "IA indisponivel")}
+        </div>
+      `;
+      return;
+    }
+
+    iaBox.innerHTML =
+      renderizarDetalhesIALead(data.analise);
+
+  } catch (err) {
+    iaBox.innerHTML = `
+      <div class="timeline-empty">
+        Erro ao carregar IA do lead.
+      </div>
+    `;
+  }
 }
 
 let leadAtual = null;
@@ -10388,6 +10717,30 @@ function abrirLeadDrawer(lead) {
 
     mlBox.innerHTML =
       renderizarDetalhesMLLead(lead);
+  }
+
+  const iaBox =
+    document.getElementById(
+      "drawer_ia_lead"
+    );
+
+  const iaBoxContainer =
+    document.getElementById(
+      "drawer_ia_box"
+    );
+
+  if (iaBox && iaBoxContainer) {
+    iaBoxContainer.style.display =
+      lead.ia_leads
+        ? "block"
+        : "none";
+
+    iaBox.innerHTML =
+      renderizarDetalhesIALead(lead.ia_leads);
+
+    if (lead.ia_leads) {
+      carregarAnaliseIALead(lead.id);
+    }
   }
 
   // 🔥 CARREGA HISTÓRICO
@@ -14257,6 +14610,7 @@ async function carregarPainelAdmin() {
       data.contas_ativas || 0;
 
     await carregarRecursosAdmin();
+    await carregarPainelIAAdmin();
 
     // 🔥 TABELA
     const tabela =
@@ -14522,6 +14876,179 @@ async function corrigirDatasLeads() {
     btn.disabled = false;
     btn.textContent = "Corrigir datas";
   }
+}
+
+async function carregarPainelIAAdmin() {
+
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await fetch(
+      `${API}/admin/ia`,
+      {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao carregar IA");
+    }
+
+    const resumo = data.resumo || {};
+    const config = data.config || {};
+
+    document.getElementById("ia_admin_usuarios_ouro").innerText =
+      resumo.usuarios_ouro_ativos || resumo.usuarios_ouro || 0;
+
+    document.getElementById("ia_admin_chamadas_mes").innerText =
+      resumo.chamadas_mes || 0;
+
+    document.getElementById("ia_admin_custo_mes").innerText =
+      formatarMoeda(resumo.custo_mes || 0);
+
+    document.getElementById("ia_admin_status_api").innerText =
+      `${config.status || "-"} / ${config.assinatura_status || "-"}`;
+
+    preencherValor("ia_config_provedor", config.provedor || "openai");
+    preencherValor("ia_config_modelo", config.modelo || "");
+    preencherValor("ia_config_status", config.status || "nao_contratado");
+    preencherValor("ia_config_assinatura", config.assinatura_status || "pendente");
+    preencherValor("ia_config_limite_req", config.limite_mensal_requisicoes || 0);
+    preencherValor("ia_config_limite_custo", config.limite_mensal_custo || 0);
+    preencherValor("ia_config_custo_contratado", config.custo_mensal_contratado || 0);
+    preencherValor("ia_config_observacoes", config.observacoes || "");
+
+    const tabela = document.getElementById("admin_ia_tabela_usuarios");
+
+    if (!tabela) return;
+
+    const usuarios = data.usuarios || [];
+
+    if (!usuarios.length) {
+      tabela.innerHTML = `
+        <tr>
+          <td colspan="6">Nenhum usuario Ouro ativo ou configurado ainda.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    tabela.innerHTML = usuarios.map(u => {
+      const chamadas = Number(u.chamadas_mes || 0);
+      const limite = Number(u.ia_limite_mensal || 0);
+      const custo = Number(u.custo_mes || 0);
+      const limiteCusto = Number(u.ia_custo_limite_mensal || 0);
+
+      return `
+        <tr>
+          <td>
+            <strong>${escaparHtml(u.email)}</strong>
+            <div style="font-size:11px;color:#fef3c7;">
+              Ouro desde ${u.plano_ativado_em ? new Date(u.plano_ativado_em).toLocaleDateString("pt-BR") : "-"}
+            </div>
+          </td>
+          <td>${escaparHtml(u.assinatura_status || "manual")}</td>
+          <td>${chamadas} chamada(s)<br>${formatarMoeda(custo)}</td>
+          <td>${chamadas}/${limite} req<br>${formatarMoeda(custo)}/${formatarMoeda(limiteCusto)}</td>
+          <td>${u.ultimo_uso ? new Date(u.ultimo_uso).toLocaleString("pt-BR") : "-"}</td>
+          <td>
+            <button onclick='alterarLimitesIAUsuario(${u.id}, ${limite}, ${limiteCusto}, ${JSON.stringify(u.assinatura_status || "manual")})'>
+              Limites
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+  } catch (err) {
+    console.error("ERRO PAINEL IA:", err);
+  }
+}
+
+function preencherValor(id, valor) {
+  const el = document.getElementById(id);
+  if (el) el.value = valor;
+}
+
+async function salvarConfigIAAdmin() {
+
+  const token = localStorage.getItem("token");
+
+  const body = {
+    provedor: document.getElementById("ia_config_provedor")?.value,
+    modelo: document.getElementById("ia_config_modelo")?.value,
+    status: document.getElementById("ia_config_status")?.value,
+    assinatura_status: document.getElementById("ia_config_assinatura")?.value,
+    limite_mensal_requisicoes: document.getElementById("ia_config_limite_req")?.value,
+    limite_mensal_custo: document.getElementById("ia_config_limite_custo")?.value,
+    custo_mensal_contratado: document.getElementById("ia_config_custo_contratado")?.value,
+    observacoes: document.getElementById("ia_config_observacoes")?.value
+  };
+
+  const res = await fetch(
+    `${API}/admin/ia/config`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify(body)
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Erro ao salvar IA");
+    return;
+  }
+
+  alert("Configuracao de IA salva.");
+  await carregarPainelIAAdmin();
+}
+
+async function alterarLimitesIAUsuario(id, limiteAtual, custoAtual, assinaturaAtual) {
+
+  const limite = prompt("Limite mensal de chamadas de IA:", limiteAtual);
+  if (limite === null) return;
+
+  const custo = prompt("Limite mensal de custo estimado:", custoAtual);
+  if (custo === null) return;
+
+  const assinatura = prompt("Status da assinatura do usuario:", assinaturaAtual || "manual");
+  if (assinatura === null) return;
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/ia-limites`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        ia_limite_mensal: Number(limite || 0),
+        ia_custo_limite_mensal: Number(custo || 0),
+        assinatura_status: assinatura
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Erro ao salvar limites");
+    return;
+  }
+
+  await carregarPainelIAAdmin();
 }
 
 async function carregarRecursosAdmin() {
@@ -15749,6 +16276,25 @@ async function enviarFeedback() {
 
           <div class="timeline-empty">
             Carregando análise do lead
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- IA OURO -->
+      <div
+        class="drawer-box"
+        id="drawer_ia_box"
+        style="display:none;"
+      >
+
+        <h4>IA Ouro</h4>
+
+        <div id="drawer_ia_lead">
+
+          <div class="timeline-empty">
+            Carregando analise de IA
           </div>
 
         </div>

@@ -9504,6 +9504,8 @@ async function init() {
 
   ativarEventosGuiaSecreto();
 
+  forcarFiltrosDoDiaAoAutenticar();
+
   await carregarCampanhas();
 
   await carregarLeads();
@@ -9535,6 +9537,41 @@ let statusMetaGuia = null;
 let guiaSecretoAtual = null;
 let guiaSecretoReavaliarTimer = null;
 let guiaCriacaoCampanhaAtiva = false;
+
+function dataLocalISOHoje() {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, "0");
+  const dia = String(agora.getDate()).padStart(2, "0");
+
+  return `${ano}-${mes}-${dia}`;
+}
+
+function mesmaDataLocal(valor, dataISO = dataLocalISOHoje()) {
+  if (!valor) return false;
+
+  const data = new Date(valor);
+
+  if (Number.isNaN(data.getTime())) {
+    return false;
+  }
+
+  return (
+    `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-${String(data.getDate()).padStart(2, "0")}`
+    === dataISO
+  );
+}
+
+function forcarFiltrosDoDiaAoAutenticar() {
+  const filtroPeriodo =
+    document.getElementById("filtro_periodo");
+
+  if (filtroPeriodo) {
+    filtroPeriodo.value = "hoje";
+  }
+
+  filtroKPI = null;
+}
 
 function atualizarInformacoesPorPlano(
   plano,
@@ -9671,13 +9708,14 @@ async function carregarLeads() {
   
   ];
   
-  atualizarKPIs(todosLeads);
-
   popularFiltroCampanhas(todosLeads);
 
   leadsFiltradosAtuais = todosLeads;
 
   console.log("LEADS:", leads);
+
+  aplicarFiltrosLeads();
+  return;
 
   // 🔥 COLUNAS
   const colunaNovos =
@@ -9989,6 +10027,8 @@ function aplicarFiltrosLeads() {
   }
 
   leadsFiltradosAtuais = filtrados;
+
+  atualizarKPIs(filtrados);
 
   renderizarLeadsFiltrados(filtrados);
 }
@@ -13574,11 +13614,14 @@ async function carregarCampanhas() {
   const filtro =
     document.getElementById("filtro_status")?.value;
   
-  let campanhasFiltradas = campanhas;
+  let campanhasFiltradas =
+    campanhasAtuais.filter(c =>
+      mesmaDataLocal(c.criado_em)
+    );
   
   if (filtro) {
   
-    campanhasFiltradas = campanhas.filter(c =>
+    campanhasFiltradas = campanhasFiltradas.filter(c =>
       c.status === filtro
     );
   }
@@ -13590,7 +13633,7 @@ async function carregarCampanhas() {
   if (!campanhasFiltradas.length) {
 
     div.innerHTML = `
-      <p>Nenhuma campanha criada ainda.</p>
+      <p>Nenhuma campanha de hoje encontrada.</p>
     `;
 
     return;

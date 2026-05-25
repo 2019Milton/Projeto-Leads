@@ -3033,6 +3033,63 @@ body.usuario-super-admin .admin-only-targeting {
   cursor: pointer;
 }
 
+.admin-railway-historico {
+  margin-top: 18px;
+  border-top: 1px solid rgba(148,163,184,0.18);
+  padding-top: 16px;
+}
+
+.admin-railway-historico-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-railway-historico-topo h4 {
+  margin: 0;
+  color: #bfdbfe;
+  font-size: 14px;
+}
+
+.admin-railway-historico-topo span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.admin-railway-historico-table {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(148,163,184,0.16);
+}
+
+.admin-railway-historico-table table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.admin-railway-historico-table th,
+.admin-railway-historico-table td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(148,163,184,0.12);
+  color: #dbeafe;
+  font-size: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-railway-historico-table th {
+  color: #93c5fd;
+  background: rgba(15,23,42,0.62);
+}
+
+.admin-railway-historico-table td:last-child {
+  max-width: 300px;
+  color: #cbd5e1;
+}
+
 .performance-meta-panel {
 
   flex: 0 0 100%;
@@ -8055,6 +8112,32 @@ body.tema-claro .suporte-input {
             <button type="button" onclick="salvarRailwayBillingAdmin()">
               Salvar cobranca Railway
             </button>
+          </div>
+
+          <div class="admin-railway-historico">
+            <div class="admin-railway-historico-topo">
+              <h4>Historico mensal salvo</h4>
+              <span>Ultimos 12 ciclos</span>
+            </div>
+            <div class="admin-railway-historico-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Mes</th>
+                    <th>Plano</th>
+                    <th>Ultimo pagamento</th>
+                    <th>Proxima base</th>
+                    <th>Vencimento</th>
+                    <th>Observacao</th>
+                  </tr>
+                </thead>
+                <tbody id="railway_billing_historico">
+                  <tr>
+                    <td colspan="6">Nenhum historico salvo ainda.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
   
@@ -15417,6 +15500,9 @@ async function carregarRecursosAdmin() {
   const billing =
     data.railway_billing || {};
 
+  const historicoBilling =
+    data.railway_billing_historico || [];
+
   document.getElementById("admin_memoria").innerText =
     `${heapUsado} MB / ${heapTotal} MB`;
 
@@ -15462,6 +15548,10 @@ async function carregarRecursosAdmin() {
   preencherRailwayBillingAdmin(
     billing,
     custoRamMesUsd
+  );
+
+  renderizarHistoricoRailwayBilling(
+    historicoBilling
   );
 
   atualizarStatusRecurso(
@@ -15590,6 +15680,53 @@ function atualizarPrevisaoRailwayBilling(billing, custoRamMesUsd = 0) {
     `Proxima base: ${formatarValorRailway(base, moeda)}${proximaData ? ` em ${proximaData}` : ""}. ` +
     `Pelo RSS atual, a RAM representa cerca de US$ ${custoRamMesUsd.toFixed(2)}/mes; ` +
     `a previsao simples fica em torno de ${formatarValorRailway(previsto, moeda)}, sem considerar CPU, banco, volume, egress, impostos ou cambio.`;
+}
+
+function formatarMesRailway(valor) {
+  const data = normalizarDataInput(valor);
+  if (!data) return "-";
+
+  const [ano, mes] = data.split("-");
+  return `${mes}/${ano}`;
+}
+
+function renderizarHistoricoRailwayBilling(historico = []) {
+  const tbody =
+    document.getElementById(
+      "railway_billing_historico"
+    );
+
+  if (!tbody) return;
+
+  if (!historico.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6">Nenhum historico salvo ainda.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML =
+    historico.map((item) => {
+      const moeda =
+        item.moeda || "USD";
+
+      return `
+        <tr>
+          <td>${formatarMesRailway(item.ciclo_mes)}</td>
+          <td>${item.plano || "-"}</td>
+          <td>
+            ${formatarValorRailway(item.ultimo_pagamento_valor, moeda)}
+            <br>
+            <small>${normalizarDataInput(item.ultimo_pagamento_data) || "-"}</small>
+          </td>
+          <td>${formatarValorRailway(item.proxima_fatura_base, moeda)}</td>
+          <td>${normalizarDataInput(item.proxima_fatura_data) || "-"}</td>
+          <td>${item.observacoes || "-"}</td>
+        </tr>
+      `;
+    }).join("");
 }
 
 async function salvarRailwayBillingAdmin() {

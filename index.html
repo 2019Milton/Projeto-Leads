@@ -7349,7 +7349,7 @@ body.tema-claro .suporte-input {
         <!-- BLOCO 2: Machine Learning -->
         <div
           id="ml_explicacao_lead"
-          class="info-bloco ml-explicacao-lead"
+          class="info-bloco ml-explicacao-lead plano-info-ml"
         >
           <strong>🤖 Machine Learning dos Leads</strong>
           Disponível nos planos <strong>Prata</strong> e <strong>Ouro</strong>.<br><br>
@@ -7362,7 +7362,10 @@ body.tema-claro .suporte-input {
           registrados para começar a identificar.
         </div>
 
-        <div class="info-bloco ia-ouro-card">
+        <div
+          id="ia_explicacao_ouro"
+          class="info-bloco ia-ouro-card plano-info-ia"
+        >
           <h4>IA Ouro em toda a jornada</h4>
           <p>
             Disponivel somente no plano <strong>Ouro</strong>. A IA usa os dados do lead,
@@ -9177,6 +9180,44 @@ let guiaSecretoAtual = null;
 let guiaSecretoReavaliarTimer = null;
 let guiaCriacaoCampanhaAtiva = false;
 
+function atualizarInformacoesPorPlano(
+  plano,
+  acessoTotal = false
+) {
+  const mlInfo =
+    document.getElementById(
+      "ml_explicacao_lead"
+    );
+
+  const iaInfo =
+    document.getElementById(
+      "ia_explicacao_ouro"
+    );
+
+  const temML =
+    acessoTotal ||
+    plano === "prata" ||
+    plano === "ouro";
+
+  const temIA =
+    acessoTotal ||
+    plano === "ouro";
+
+  if (mlInfo) {
+    mlInfo.style.display =
+      temML
+        ? "block"
+        : "none";
+  }
+
+  if (iaInfo) {
+    iaInfo.style.display =
+      temIA
+        ? "block"
+        : "none";
+  }
+}
+
 async function carregarPlanoAtual() {
 
   const token =
@@ -9193,6 +9234,10 @@ async function carregarPlanoAtual() {
     );
 
   if (!token || !topo || !nome) {
+    atualizarInformacoesPorPlano(
+      "bronze",
+      false
+    );
     return;
   }
 
@@ -9225,10 +9270,21 @@ async function carregarPlanoAtual() {
     if (usuarioLogado) {
       usuarioLogado.plano =
         plano;
+      usuarioLogado.acesso_total =
+        Boolean(data.acesso_total);
     }
+
+    atualizarInformacoesPorPlano(
+      plano,
+      Boolean(data.acesso_total)
+    );
 
   } catch (err) {
     console.error("PLANO ATUAL:", err);
+    atualizarInformacoesPorPlano(
+      "bronze",
+      false
+    );
   }
 }
   

@@ -7942,10 +7942,6 @@ body.tema-claro .suporte-input {
             Excluídas
           </option>
 
-          <option value="DRAFT">
-            Rascunho
-          </option>
-
         </select>
 
         <button
@@ -9566,6 +9562,22 @@ function campanhaEstaAtiva(campanha) {
   return ["ACTIVE", "ENABLED"].includes(
     String(campanha?.status || "").toUpperCase()
   );
+}
+
+function campanhaEstaPausada(campanha) {
+  return String(campanha?.status || "").toUpperCase() === "PAUSED";
+}
+
+function campanhaEstaExcluida(campanha) {
+  return String(campanha?.status || "").toUpperCase() === "DELETED";
+}
+
+function mensagemCampanhasVazias(filtro) {
+  if (filtro === "ACTIVE") return "Nenhuma campanha ativa encontrada.";
+  if (filtro === "PAUSED") return "Nenhuma campanha pausada encontrada.";
+  if (filtro === "DELETED") return "Nenhuma campanha excluida encontrada.";
+
+  return "Nenhuma campanha criada ainda.";
 }
 
 function forcarFiltrosDoDiaAoAutenticar() {
@@ -13645,7 +13657,7 @@ async function carregarCampanhas() {
   if (!campanhasFiltradas.length) {
 
     div.innerHTML = `
-      <p>Nenhuma campanha ativa encontrada.</p>
+      <p>${mensagemCampanhasVazias(filtro)}</p>
     `;
 
     return;
@@ -13675,9 +13687,9 @@ async function carregarCampanhas() {
     <div class="
       campanha-card
     
-      ${c.status === "ACTIVE"
+      ${campanhaEstaAtiva(c)
         ? "active-card"
-        : c.status === "PAUSED"
+        : campanhaEstaPausada(c)
         ? "paused-card"
         : "deleted-card"
       }
@@ -13701,7 +13713,7 @@ async function carregarCampanhas() {
     
           <input
             type="checkbox"
-            ${c.status === "ACTIVE" ? "checked" : ""}
+            ${campanhaEstaAtiva(c) ? "checked" : ""}
             onchange="
               toggleCampanha(
                 '${c.campaign_id}',
@@ -13718,20 +13730,22 @@ async function carregarCampanhas() {
     
       <div class="
         status-badge
-        ${c.status === "ACTIVE"
+        ${campanhaEstaAtiva(c)
           ? "status-active"
-          : c.status === "PAUSED"
+          : campanhaEstaPausada(c)
           ? "status-paused"
           : "status-deleted"
         }
       ">
     
         ${
-          c.status === "ACTIVE"
-            ? "🟢 ACTIVE"
-            : c.status === "PAUSED"
+          campanhaEstaAtiva(c)
+            ? `🟢 ${String(c.status || "ACTIVE").toUpperCase()}`
+            : campanhaEstaPausada(c)
             ? "🟡 PAUSED"
-            : "🔴 DELETED"
+            : campanhaEstaExcluida(c)
+            ? "🔴 DELETED"
+            : `🔴 ${String(c.status || "UNKNOWN").toUpperCase()}`
         }
     
       </div>

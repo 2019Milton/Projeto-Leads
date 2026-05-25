@@ -7598,50 +7598,90 @@ body.tema-claro .suporte-input {
         <!-- BLOCO 1: Inteligência do Lead -->
         <div class="info-bloco score-legenda">
 
-          <h4>🧠 Inteligência do Lead</h4>
+          <h4>Inteligencia do Lead</h4>
 
           <div class="score-legenda-box">
 
             <div class="score-item positivo">
-              <span>🆕 Lead novo</span>
+              <span>Lead recem capturado</span>
               <strong>+10</strong>
             </div>
 
             <div class="score-item positivo">
-              <span>📢 Veio da Meta Ads</span>
-              <strong>+15</strong>
-            </div>
-
-            <div class="score-item positivo">
-              <span>📈 CTR acima de 4%</span>
+              <span>Telefone informado</span>
               <strong>+10</strong>
             </div>
 
             <div class="score-item positivo">
-              <span>⚡ Cadastro rápido</span>
+              <span>Email informado</span>
+              <strong>+5</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>Veio de campanha Meta</span>
               <strong>+15</strong>
             </div>
 
             <div class="score-item positivo">
-              <span>🔁 Lead recorrente</span>
+              <span>Intencao forte: visita, financiamento, valor, compra ou parcela</span>
+              <strong>+30</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>Urgencia: hoje, rapido, urgente ou essa semana</span>
               <strong>+20</strong>
             </div>
 
             <div class="score-item positivo">
-              <span>🏠 Interesse em visita</span>
+              <span>Preparo financeiro: renda, credito, FGTS ou pre-aprovado</span>
+              <strong>+15</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>Lead recorrente</span>
+              <strong>+20</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>Primeiro contato realizado</span>
+              <strong>+10</strong>
+            </div>
+
+            <div class="score-item positivo">
+              <span>Lead em conversa</span>
               <strong>+30</strong>
             </div>
 
+            <div class="score-item positivo">
+              <span>Lead fechado</span>
+              <strong>+50</strong>
+            </div>
+
             <div class="score-item negativo">
-              <span>⌛ 7 dias sem interação</span>
+              <span>Baixo interesse: sem interesse, desistiu, curioso ou pesquisando</span>
+              <strong>-30</strong>
+            </div>
+
+            <div class="score-item negativo">
+              <span>7 dias parado</span>
               <strong>-20</strong>
             </div>
 
             <div class="score-item negativo">
-              <span>🚫 15 dias parado</span>
+              <span>15 dias parado</span>
               <strong>-40</strong>
             </div>
 
+            <div class="score-item negativo">
+              <span>Lead perdido</span>
+              <strong>-60</strong>
+            </div>
+
+          </div>
+
+          <div class="metrica-explicacao">
+            <strong>Resultado visual</strong>
+            <span>Frio fica abaixo de 35 pontos, Morno de 35 a 69 pontos e Quente a partir de 70 pontos. Se houver score manual, o manual prevalece.</span>
           </div>
 
         </div>
@@ -7651,15 +7691,15 @@ body.tema-claro .suporte-input {
           id="ml_explicacao_lead"
           class="info-bloco ml-explicacao-lead plano-info-ml"
         >
-          <strong>🤖 Machine Learning dos Leads</strong>
-          Disponível nos planos <strong>Prata</strong> e <strong>Ouro</strong>.<br><br>
-          Com o uso recorrente, a plataforma reconhece no histórico da sua conta pessoal
-          quais leads você fechou e quais perdeu, e passa a identificar
-          automaticamente quais dos seus novos leads têm mais chance de virar negócio.
+          <strong>Machine Learning dos Leads</strong>
+          Disponivel nos planos <strong>Prata</strong> e <strong>Ouro</strong>.<br><br>
+          O ML usa o historico de leads fechados e perdidos da sua conta para calcular
+          probabilidade de conversao e tendencia do lead. Quando a previsao fica forte,
+          ele pode ajustar o rotulo visual Frio/Morno/Quente.
           <br><br>
-          Quanto mais leads você marcar como <em>Fechado</em> ou <em>Perdido</em>,
-          melhor fica a previsão. Mas atenção, o sistema precisa de pelo menos 10 resultados
-          registrados para começar a identificar.
+          Para sair do modo aprendendo, o sistema precisa de pelo menos
+          <strong>10 leads de historico</strong>, sendo no minimo
+          <strong>4 fechados</strong> e <strong>4 perdidos</strong>.
         </div>
 
         <div
@@ -7670,7 +7710,8 @@ body.tema-claro .suporte-input {
           <p>
             Disponivel somente no plano <strong>Ouro</strong>. A IA usa os dados do lead,
             a classificacao Frio/Morno/Quente, o historico, as respostas do formulario
-            e o ML para entregar um apoio comercial completo.
+            e a previsao do ML quando existir para gerar explicacao, prioridade,
+            proxima acao, perguntas e mensagem pronta.
           </p>
           <div class="lead-ia-grid">
             <div class="lead-ia-mini">
@@ -7689,6 +7730,10 @@ body.tema-claro .suporte-input {
               <strong>Perguntas de qualificacao</strong>
               Ajuda o corretor a descobrir valor, regiao, financiamento e prazo.
             </div>
+            <div class="lead-ia-mini">
+              <strong>Sinais e riscos</strong>
+              Identifica urgencia, intencao, preparo financeiro e possiveis objecoes.
+            </div>
           </div>
         </div>
         <!-- BLOCO 3: Métricas da Campanha -->
@@ -7700,32 +7745,32 @@ body.tema-claro .suporte-input {
 
             <div class="metrica-explicacao">
               <strong>💰 Gasto</strong>
-              <span>Total investido na campanha até agora.</span>
+              <span>Valor de gasto retornado pela Meta para o periodo recente analisado.</span>
             </div>
 
             <div class="metrica-explicacao">
               <strong>🎯 Leads</strong>
-              <span>Quantidade de contatos capturados pela campanha.</span>
+              <span>Quantidade de contatos salvos na plataforma e vinculados a campanha.</span>
             </div>
 
             <div class="metrica-explicacao">
               <strong>👁️ Impressões</strong>
-              <span>Quantidade de vezes que o anúncio apareceu.</span>
+              <span>Quantidade de vezes que o anuncio apareceu no periodo retornado pela Meta.</span>
             </div>
 
             <div class="metrica-explicacao">
               <strong>🖱️ Cliques</strong>
-              <span>Total de cliques recebidos no anúncio.</span>
+              <span>Total de cliques recebidos no anuncio no periodo retornado pela Meta.</span>
             </div>
 
             <div class="metrica-explicacao">
               <strong>📈 CTR</strong>
-              <span>Percentual de pessoas que clicaram após ver o anúncio.</span>
+              <span>Percentual de pessoas que clicaram apos ver o anuncio.</span>
             </div>
 
             <div class="metrica-explicacao">
               <strong>💵 CPC</strong>
-              <span>Custo médio pago por cada clique.</span>
+              <span>Custo medio pago por clique conforme retorno da Meta.</span>
             </div>
 
           </div>

@@ -2953,6 +2953,86 @@ body.usuario-super-admin .admin-only-targeting {
   line-height: 1.55;
 }
 
+.admin-railway-billing {
+  margin: 16px 0 20px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(34,197,94,0.24);
+  background: rgba(2,6,23,0.58);
+}
+
+.admin-railway-billing h4 {
+  margin: 0;
+  color: #bbf7d0;
+  font-size: 15px;
+}
+
+.admin-railway-billing p {
+  margin: 8px 0 0;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.admin-railway-billing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.admin-railway-billing label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-railway-billing input,
+.admin-railway-billing select,
+.admin-railway-billing textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(148,163,184,0.24);
+  background: rgba(15,23,42,0.84);
+  color: #e5e7eb;
+  padding: 10px;
+}
+
+.admin-railway-billing textarea {
+  min-height: 74px;
+  margin-top: 12px;
+  resize: vertical;
+}
+
+.admin-railway-billing-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+#railway_previsao_pagamento {
+  color: #dbeafe;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-railway-billing-footer button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #16a34a;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .performance-meta-panel {
 
   flex: 0 0 100%;
@@ -7918,6 +7998,64 @@ body.tema-claro .suporte-input {
           Hobby US$ 5/mes, Pro US$ 20/mes, RAM US$ 10/GB/mes,
           CPU US$ 20/vCPU/mes, Egress US$ 0,05/GB e Volume US$ 0,15/GB/mes.
           Se o uso passar do valor incluso no plano, a Railway cobra a diferenca.
+        </div>
+
+        <div class="admin-railway-billing">
+          <div>
+            <h4>Pagamento Railway</h4>
+            <p>
+              A Railway nao envia estes valores automaticamente para a plataforma.
+              Preencha com os dados da sua fatura para comparar ultimo pagamento,
+              base do proximo mes e estimativa tecnica de uso.
+            </p>
+          </div>
+
+          <div class="admin-railway-billing-grid">
+            <label>
+              Plano
+              <select id="railway_billing_plano">
+                <option value="hobby">Hobby</option>
+                <option value="pro">Pro</option>
+              </select>
+            </label>
+            <label>
+              Moeda
+              <select id="railway_billing_moeda">
+                <option value="USD">USD</option>
+                <option value="BRL">BRL</option>
+              </select>
+            </label>
+            <label>
+              Ultimo pagamento
+              <input id="railway_ultimo_pagamento_valor" type="number" step="0.01" placeholder="20.00">
+            </label>
+            <label>
+              Data do ultimo pagamento
+              <input id="railway_ultimo_pagamento_data" type="date">
+            </label>
+            <label>
+              Base da proxima fatura
+              <input id="railway_proxima_fatura_base" type="number" step="0.01" placeholder="20.00">
+            </label>
+            <label>
+              Data da proxima fatura
+              <input id="railway_proxima_fatura_data" type="date">
+            </label>
+          </div>
+
+          <textarea
+            id="railway_billing_observacoes"
+            placeholder="Observacoes sobre creditos, impostos, cambio, cobranca antecipada ou diferenca da fatura."
+          ></textarea>
+
+          <div class="admin-railway-billing-footer">
+            <div id="railway_previsao_pagamento">
+              Previsao do proximo pagamento aparece aqui.
+            </div>
+            <button type="button" onclick="salvarRailwayBillingAdmin()">
+              Salvar cobranca Railway
+            </button>
+          </div>
         </div>
   
         <div class="dashboard-grid">
@@ -15276,6 +15414,9 @@ async function carregarRecursosAdmin() {
   const custoRamMesUsd =
     (rss / 1024) * 10;
 
+  const billing =
+    data.railway_billing || {};
+
   document.getElementById("admin_memoria").innerText =
     `${heapUsado} MB / ${heapTotal} MB`;
 
@@ -15318,6 +15459,11 @@ async function carregarRecursosAdmin() {
       `CPU, banco, volume e egress entram separados na fatura Railway.`;
   }
 
+  preencherRailwayBillingAdmin(
+    billing,
+    custoRamMesUsd
+  );
+
   atualizarStatusRecurso(
     "admin_uptime_status",
     uptimeMin < 10
@@ -15346,6 +15492,141 @@ function atualizarStatusRecurso(id, texto, nivel = "ok") {
   if (nivel !== "ok") {
     el.classList.add(nivel);
   }
+}
+
+function preencherRailwayBillingAdmin(billing, custoRamMesUsd = 0) {
+  const moeda =
+    billing.moeda || "USD";
+
+  preencherValor(
+    "railway_billing_plano",
+    billing.plano || "pro"
+  );
+
+  preencherValor(
+    "railway_billing_moeda",
+    moeda
+  );
+
+  preencherValor(
+    "railway_ultimo_pagamento_valor",
+    billing.ultimo_pagamento_valor || ""
+  );
+
+  preencherValor(
+    "railway_ultimo_pagamento_data",
+    normalizarDataInput(
+      billing.ultimo_pagamento_data
+    )
+  );
+
+  preencherValor(
+    "railway_proxima_fatura_base",
+    billing.proxima_fatura_base || 20
+  );
+
+  preencherValor(
+    "railway_proxima_fatura_data",
+    normalizarDataInput(
+      billing.proxima_fatura_data
+    )
+  );
+
+  preencherValor(
+    "railway_billing_observacoes",
+    billing.observacoes || ""
+  );
+
+  atualizarPrevisaoRailwayBilling(
+    billing,
+    custoRamMesUsd
+  );
+}
+
+function normalizarDataInput(valor) {
+  if (!valor) return "";
+  return String(valor).slice(0, 10);
+}
+
+function formatarValorRailway(valor, moeda = "USD") {
+  return new Intl.NumberFormat(
+    moeda === "BRL" ? "pt-BR" : "en-US",
+    {
+      style: "currency",
+      currency: moeda
+    }
+  ).format(Number(valor || 0));
+}
+
+function atualizarPrevisaoRailwayBilling(billing, custoRamMesUsd = 0) {
+  const el =
+    document.getElementById(
+      "railway_previsao_pagamento"
+    );
+
+  if (!el) return;
+
+  const moeda =
+    billing.moeda || "USD";
+
+  const ultimo =
+    Number(billing.ultimo_pagamento_valor || 0);
+
+  const base =
+    Number(billing.proxima_fatura_base || 20);
+
+  const proximaData =
+    normalizarDataInput(
+      billing.proxima_fatura_data
+    );
+
+  const previsto =
+    moeda === "USD"
+      ? Math.max(base, custoRamMesUsd)
+      : base;
+
+  el.innerText =
+    `Ultimo pagamento informado: ${formatarValorRailway(ultimo, moeda)}. ` +
+    `Proxima base: ${formatarValorRailway(base, moeda)}${proximaData ? ` em ${proximaData}` : ""}. ` +
+    `Pelo RSS atual, a RAM representa cerca de US$ ${custoRamMesUsd.toFixed(2)}/mes; ` +
+    `a previsao simples fica em torno de ${formatarValorRailway(previsto, moeda)}, sem considerar CPU, banco, volume, egress, impostos ou cambio.`;
+}
+
+async function salvarRailwayBillingAdmin() {
+  const token =
+    localStorage.getItem("token");
+
+  const body = {
+    plano: document.getElementById("railway_billing_plano")?.value,
+    moeda: document.getElementById("railway_billing_moeda")?.value,
+    ultimo_pagamento_valor: document.getElementById("railway_ultimo_pagamento_valor")?.value,
+    ultimo_pagamento_data: document.getElementById("railway_ultimo_pagamento_data")?.value,
+    proxima_fatura_base: document.getElementById("railway_proxima_fatura_base")?.value,
+    proxima_fatura_data: document.getElementById("railway_proxima_fatura_data")?.value,
+    observacoes: document.getElementById("railway_billing_observacoes")?.value
+  };
+
+  const res = await fetch(
+    `${API}/admin/railway-billing`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify(body)
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    alert(data.error || "Erro ao salvar cobranca Railway");
+    return;
+  }
+
+  alert("Cobranca Railway salva.");
+  await carregarRecursosAdmin();
 }
 
 

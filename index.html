@@ -2867,6 +2867,92 @@ body.usuario-super-admin .admin-only-targeting {
 
 /* 🔥 TABELA ADMIN */
 
+.admin-recursos-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.admin-recursos-header h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #e5e7eb;
+}
+
+.admin-recursos-header p {
+  margin: 8px 0 0;
+  max-width: 760px;
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.admin-recursos-header a {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(59,130,246,0.38);
+  color: #bfdbfe;
+  background: rgba(15,23,42,0.72);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.admin-railway-resumo {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(59,130,246,0.28);
+  background: rgba(15,23,42,0.68);
+  color: #dbeafe;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-recurso-box {
+  justify-content: flex-start;
+  min-height: 230px;
+}
+
+.dashboard-box.admin-recurso-box div {
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.admin-recurso-status {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 12px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.28);
+  color: #bbf7d0;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-recurso-status.alerta {
+  background: rgba(245,158,11,0.14);
+  border-color: rgba(245,158,11,0.36);
+  color: #fde68a;
+}
+
+.admin-recurso-status.critico {
+  background: rgba(239,68,68,0.14);
+  border-color: rgba(239,68,68,0.36);
+  color: #fecaca;
+}
+
+.admin-recurso-box p {
+  margin: 12px 0 0;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .performance-meta-panel {
 
   flex: 0 0 100%;
@@ -7808,38 +7894,87 @@ body.tema-claro .suporte-input {
       <!-- RECURSOS -->
       <div style="margin-top:40px;">
   
-        <h3 style="margin-bottom:20px;">
-          🖥️ Recursos da Aplicação
-        </h3>
+        <div class="admin-recursos-header">
+          <div>
+            <h3>Recursos Railway da Aplicacao</h3>
+            <p>
+              Aqui voce acompanha o consumo tecnico do backend hospedado na Railway.
+              O ponto mais importante para custo e estabilidade e o RSS, porque ele
+              representa a memoria real usada pelo processo.
+            </p>
+          </div>
+          <a
+            href="https://docs.railway.com/pricing"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ver precos Railway
+          </a>
+        </div>
+
+        <div class="admin-railway-resumo">
+          <strong>Como a Railway cobra:</strong>
+          plano mensal + uso real de recursos. Referencia atual:
+          Hobby US$ 5/mes, Pro US$ 20/mes, RAM US$ 10/GB/mes,
+          CPU US$ 20/vCPU/mes, Egress US$ 0,05/GB e Volume US$ 0,15/GB/mes.
+          Se o uso passar do valor incluso no plano, a Railway cobra a diferenca.
+        </div>
   
         <div class="dashboard-grid">
   
-          <div class="dashboard-box">
-            <h3>🧠 Heap</h3>
+          <div class="dashboard-box admin-recurso-box">
+            <h3>Heap do Node</h3>
             <div id="admin_memoria">
               0 MB
             </div>
+            <span id="admin_memoria_status" class="admin-recurso-status">
+              Aguardando leitura
+            </span>
+            <p>
+              E a memoria que o JavaScript esta usando internamente. Importante para
+              achar vazamento de memoria, mas nao e a medida principal de cobranca.
+            </p>
           </div>
   
-          <div class="dashboard-box">
-            <h3>📦 RSS</h3>
+          <div class="dashboard-box admin-recurso-box">
+            <h3>RAM real na Railway</h3>
             <div id="admin_rss">
               0 MB
             </div>
+            <span id="admin_rss_status" class="admin-recurso-status">
+              Aguardando leitura
+            </span>
+            <p id="admin_rss_custo">
+              Estimativa de custo aparece aqui.
+            </p>
           </div>
   
-          <div class="dashboard-box">
-            <h3>⏱️ Uptime</h3>
+          <div class="dashboard-box admin-recurso-box">
+            <h3>Tempo ligado</h3>
             <div id="admin_uptime">
               0 min
             </div>
+            <span id="admin_uptime_status" class="admin-recurso-status">
+              Aguardando leitura
+            </span>
+            <p>
+              Mostra ha quanto tempo o backend esta rodando desde o ultimo deploy
+              ou reinicio. Reinicios frequentes podem indicar crash.
+            </p>
           </div>
   
-          <div class="dashboard-box">
-            <h3>🟢 Node</h3>
+          <div class="dashboard-box admin-recurso-box">
+            <h3>Runtime Node.js</h3>
             <div id="admin_node">
               -
             </div>
+            <span id="admin_node_status" class="admin-recurso-status">
+              Aguardando leitura
+            </span>
+            <p>
+              Versao do Node que executa o backend. Se mudar na Railway, vale
+              testar a plataforma depois do deploy.
+            </p>
           </div>
   
         </div>
@@ -15124,17 +15259,93 @@ async function carregarRecursosAdmin() {
 
   console.log("RECURSOS:", data);
 
+  const heapUsado =
+    Number(data.memoria?.heap_usado_mb || 0);
+
+  const heapTotal =
+    Number(data.memoria?.heap_total_mb || 0);
+
+  const rss =
+    Number(data.memoria?.rss_mb || 0);
+
+  const uptimeMin =
+    Math.floor(
+      Number(data.uptime_segundos || 0) / 60
+    );
+
+  const custoRamMesUsd =
+    (rss / 1024) * 10;
+
   document.getElementById("admin_memoria").innerText =
-    `${data.memoria.heap_usado_mb} MB / ${data.memoria.heap_total_mb} MB`;
+    `${heapUsado} MB / ${heapTotal} MB`;
 
   document.getElementById("admin_rss").innerText =
-    `${data.memoria.rss_mb} MB`;
+    `${rss} MB`;
 
   document.getElementById("admin_uptime").innerText =
-    `${Math.floor(data.uptime_segundos / 60)} min`;
+    `${uptimeMin} min`;
 
   document.getElementById("admin_node").innerText =
     data.versao_node;
+
+  atualizarStatusRecurso(
+    "admin_memoria_status",
+    heapTotal > 0 && heapUsado / heapTotal > 0.85
+      ? "Atencao: heap perto do limite"
+      : "Normal",
+    heapTotal > 0 && heapUsado / heapTotal > 0.85
+      ? "alerta"
+      : "ok"
+  );
+
+  atualizarStatusRecurso(
+    "admin_rss_status",
+    rss >= 1024
+      ? "Observar custo"
+      : "Baixo consumo",
+    rss >= 1024
+      ? "alerta"
+      : "ok"
+  );
+
+  const custoEl =
+    document.getElementById("admin_rss_custo");
+
+  if (custoEl) {
+    custoEl.innerText =
+      `Estimativa simples: se ficar nesse consumo 24h por dia, ` +
+      `a RAM custaria cerca de US$ ${custoRamMesUsd.toFixed(2)}/mes. ` +
+      `CPU, banco, volume e egress entram separados na fatura Railway.`;
+  }
+
+  atualizarStatusRecurso(
+    "admin_uptime_status",
+    uptimeMin < 10
+      ? "Reiniciou ha pouco"
+      : "Rodando estavel",
+    uptimeMin < 10
+      ? "alerta"
+      : "ok"
+  );
+
+  atualizarStatusRecurso(
+    "admin_node_status",
+    "Ambiente ativo",
+    "ok"
+  );
+}
+
+function atualizarStatusRecurso(id, texto, nivel = "ok") {
+  const el = document.getElementById(id);
+
+  if (!el) return;
+
+  el.innerText = texto;
+  el.classList.remove("alerta", "critico");
+
+  if (nivel !== "ok") {
+    el.classList.add(nivel);
+  }
 }
 
 

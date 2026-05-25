@@ -9572,6 +9572,10 @@ function campanhaEstaExcluida(campanha) {
   return String(campanha?.status || "").toUpperCase() === "DELETED";
 }
 
+function campanhaUsaHistoricoLocal(campanha) {
+  return campanha?.metricas_origem === "local";
+}
+
 function mensagemCampanhasVazias(filtro) {
   if (filtro === "ACTIVE") return "Nenhuma campanha ativa encontrada.";
   if (filtro === "PAUSED") return "Nenhuma campanha pausada encontrada.";
@@ -13709,6 +13713,10 @@ async function carregarCampanhas() {
     
         </div>
     
+        ${
+          campanhaEstaExcluida(c)
+            ? ""
+            : `
         <label class="switch">
     
           <input
@@ -13725,6 +13733,8 @@ async function carregarCampanhas() {
           <span class="slider"></span>
     
         </label>
+            `
+        }
     
       </div>
     
@@ -13749,6 +13759,16 @@ async function carregarCampanhas() {
         }
     
       </div>
+
+      ${
+        campanhaUsaHistoricoLocal(c)
+          ? `
+            <div class="campanha-encaminhada">
+              Historico local da plataforma. Metricas da Meta indisponiveis.
+            </div>
+          `
+          : ""
+      }
 
       ${
         c.recebida_por_encaminhamento
@@ -13924,6 +13944,20 @@ async function carregarCampanhas() {
           ${
             c.recebida_por_encaminhamento
               ? ""
+              : campanhaEstaExcluida(c)
+              ? `
+                <button
+                  class="btn-acao"
+                  title="Restaurar"
+                  onclick="
+                    restaurarCampanha(
+                      '${c.campaign_id}'
+                    )
+                  "
+                >
+                  ♻
+                </button>
+              `
               : `
                 <button
                   class="btn-danger"
@@ -14419,8 +14453,11 @@ async function toggleCampanha(campaign_id, statusAtual) {
 
   const token = localStorage.getItem("token");
 
+  const statusNormalizado =
+    String(statusAtual || "").toUpperCase();
+
   const novoStatus =
-    statusAtual === "ACTIVE"
+    ["ACTIVE", "ENABLED"].includes(statusNormalizado)
       ? "PAUSED"
       : "ACTIVE";
 
@@ -14507,6 +14544,60 @@ async function excluirCampanha(campaign_id) {
     console.error("ERRO EXCLUIR:", err);
 
     alert("Erro ao excluir campanha");
+  }
+}
+
+async function restaurarCampanha(campaign_id) {
+
+  const confirmar = confirm(
+    "Restaurar esta campanha como pausada?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `${API}/meta/restaurar-campanha`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+
+        body: JSON.stringify({
+          campaign_id
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.error) {
+
+      alert(data.error);
+      return;
+    }
+
+    await carregarCampanhas();
+
+    alert(
+      data.aviso
+        ? `Campanha restaurada na plataforma.\n\nObservacao: ${data.aviso}`
+        : "Campanha restaurada como pausada."
+    );
+
+  } catch (err) {
+
+    console.error("ERRO RESTAURAR:", err);
+
+    alert("Erro ao restaurar campanha");
   }
 }
 

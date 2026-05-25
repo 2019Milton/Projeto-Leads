@@ -9562,12 +9562,25 @@ function mesmaDataLocal(valor, dataISO = dataLocalISOHoje()) {
   );
 }
 
+function campanhaEstaAtiva(campanha) {
+  return ["ACTIVE", "ENABLED"].includes(
+    String(campanha?.status || "").toUpperCase()
+  );
+}
+
 function forcarFiltrosDoDiaAoAutenticar() {
   const filtroPeriodo =
     document.getElementById("filtro_periodo");
 
+  const filtroStatus =
+    document.getElementById("filtro_status");
+
   if (filtroPeriodo) {
     filtroPeriodo.value = "hoje";
+  }
+
+  if (filtroStatus) {
+    filtroStatus.value = "ACTIVE";
   }
 
   filtroKPI = null;
@@ -13614,15 +13627,14 @@ async function carregarCampanhas() {
   const filtro =
     document.getElementById("filtro_status")?.value;
   
-  let campanhasFiltradas =
-    campanhasAtuais.filter(c =>
-      mesmaDataLocal(c.criado_em)
-    );
+  let campanhasFiltradas = [...campanhasAtuais];
   
   if (filtro) {
   
     campanhasFiltradas = campanhasFiltradas.filter(c =>
-      c.status === filtro
+      filtro === "ACTIVE"
+        ? campanhaEstaAtiva(c)
+        : String(c.status || "").toUpperCase() === filtro
     );
   }
 
@@ -13633,7 +13645,7 @@ async function carregarCampanhas() {
   if (!campanhasFiltradas.length) {
 
     div.innerHTML = `
-      <p>Nenhuma campanha de hoje encontrada.</p>
+      <p>Nenhuma campanha ativa encontrada.</p>
     `;
 
     return;

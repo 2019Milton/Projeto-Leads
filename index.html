@@ -15501,7 +15501,10 @@ async function carregarRecursosAdmin() {
     data.railway_billing || {};
 
   const historicoBilling =
-    data.railway_billing_historico || [];
+    Array.isArray(data.railway_billing_historico) &&
+    data.railway_billing_historico.length
+      ? data.railway_billing_historico
+      : montarHistoricoRailwayInicial(billing);
 
   document.getElementById("admin_memoria").innerText =
     `${heapUsado} MB / ${heapTotal} MB`;
@@ -15688,6 +15691,28 @@ function formatarMesRailway(valor) {
 
   const [ano, mes] = data.split("-");
   return `${mes}/${ano}`;
+}
+
+function montarHistoricoRailwayInicial(billing) {
+  if (!billing) return [];
+
+  const temValor =
+    Number(billing.ultimo_pagamento_valor || 0) > 0 ||
+    Number(billing.proxima_fatura_base || 0) > 0;
+
+  if (!temValor) return [];
+
+  const dataReferencia =
+    normalizarDataInput(billing.proxima_fatura_data) ||
+    normalizarDataInput(billing.ultimo_pagamento_data) ||
+    new Date().toISOString().slice(0, 10);
+
+  return [
+    {
+      ...billing,
+      ciclo_mes: `${dataReferencia.slice(0, 7)}-01`
+    }
+  ];
 }
 
 function renderizarHistoricoRailwayBilling(historico = []) {

@@ -1578,6 +1578,14 @@ body.usuario-super-admin .admin-only-targeting {
   outline: none;
 }
 
+.campanhas-contador {
+
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .campanhas-acoes {
 
   display: flex;
@@ -7944,6 +7952,13 @@ body.tema-claro .suporte-input {
 
         </select>
 
+        <span
+          id="campanhas_contador"
+          class="campanhas-contador"
+        >
+          0 filtradas
+        </span>
+
         <button
           id="btn-sync"
           class="btn-sync"
@@ -13652,6 +13667,17 @@ async function carregarCampanhas() {
         ? campanhaEstaAtiva(c)
         : String(c.status || "").toUpperCase() === filtro
     );
+  }
+
+  const contador =
+    document.getElementById("campanhas_contador");
+
+  if (contador) {
+    const total =
+      campanhasFiltradas.length;
+
+    contador.innerText =
+      `${total} ${total === 1 ? "filtrada" : "filtradas"}`;
   }
 
   const div = document.getElementById("campanhas_lista");

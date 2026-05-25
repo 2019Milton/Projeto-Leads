@@ -13307,7 +13307,7 @@ async function carregarStatusMeta() {
             ? conta?.saldo !== null &&
               conta?.saldo !== undefined
               ? `Saldo pre-pago na Meta: ${formatarSaldoMeta(conta)}`
-              : "PIX, boleto ou saldo disponível na conta Meta"
+              : "Conta manual/pre-paga. A Meta nao confirmou o saldo pela API."
             : conta?.tipo_pagamento === "metodo_detectado"
             ? "A Meta retornou uma fonte de pagamento, mas a API não confirmou o modo de cobrança."
             : "Revise o pagamento no Gerenciador de Anúncios";

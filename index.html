@@ -3168,6 +3168,42 @@ body.usuario-super-admin .admin-only-targeting {
   white-space:nowrap;
 }
 
+.performance-meta-actions {
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  flex-wrap:wrap;
+
+  justify-content:flex-end;
+}
+
+.performance-meta-periodo {
+
+  width:auto;
+
+  min-width:130px;
+
+  height:34px;
+
+  margin:0;
+
+  padding:7px 10px;
+
+  border-radius:10px;
+
+  border:1px solid rgba(34,197,94,0.28);
+
+  background:rgba(15,23,42,0.82);
+
+  color:#e5e7eb;
+
+  font-size:12px;
+}
+
 .performance-meta-cards {
 
   display:grid;
@@ -6260,6 +6296,7 @@ body.tema-claro .performance-meta-card { background: rgba(255,255,255,0.72); bor
 body.tema-claro .performance-meta-card span { color: #526174; }
 body.tema-claro .performance-meta-card strong { color: #1e293b; }
 body.tema-claro .performance-meta-badge { border-color: rgba(22,163,74,0.46); color: #15803d; }
+body.tema-claro .performance-meta-periodo { background: #fff; border-color: #9fb0c4; color: #152238; }
 body.tema-claro .performance-meta-table th { color: #526174; }
 body.tema-claro .performance-meta-table td { color: #1e293b; }
 body.tema-claro .performance-meta-table th,
@@ -9627,6 +9664,7 @@ let statusMetaGuia = null;
 let guiaSecretoAtual = null;
 let guiaSecretoReavaliarTimer = null;
 let guiaCriacaoCampanhaAtiva = false;
+let performanceMetaPeriodoAtual = "semanal";
 
 function dataLocalISOHoje() {
   const agora = new Date();
@@ -11744,6 +11782,34 @@ function formatarDataPerformance(data) {
   );
 }
 
+function formatarRegistroPerformance(registro, agrupamento) {
+  if (agrupamento === "mensal") {
+    const [ano, mes] =
+      String(registro.data || registro.periodo || "")
+        .split("-");
+
+    if (ano && mes) {
+      return `${mes}/${ano}`;
+    }
+  }
+
+  return formatarDataPerformance(registro.data);
+}
+
+function tituloPeriodoPerformance(periodo) {
+  if (periodo === "anual") return "Anual";
+  if (periodo === "mensal") return "Mensal";
+
+  return "Semanal";
+}
+
+function descricaoPeriodoPerformance(periodo) {
+  if (periodo === "anual") return "ultimos 12 meses";
+  if (periodo === "mensal") return "ultimos 30 dias";
+
+  return "ultimos 7 dias";
+}
+
 function renderizarPainelPerformanceMeta(data) {
 
   const painel =
@@ -11770,37 +11836,63 @@ function renderizarPainelPerformanceMeta(data) {
       ? `${formatarPercentualPerformance(economia)} melhor que a media`
       : `${formatarPercentualPerformance(Math.abs(economia))} acima da media`;
 
-  const diasOrdenados = (data.dias || []).slice().reverse();
+  const periodo =
+    data.periodo || performanceMetaPeriodoAtual || "semanal";
 
-  const linhas = diasOrdenados.map((dia, i) => {
-    const temDados = dia.gasto > 0 || dia.leads > 0 || dia.cliques > 0;
-    const rowId = `perf_row_${dia.data.replace(/-/g, "")}`;
-    const detalheId = `perf_detalhe_${dia.data.replace(/-/g, "")}`;
+  const agrupamento =
+    data.agrupamento || "diario";
+
+  const registrosOrdenados =
+    (data.registros || data.dias || [])
+      .slice()
+      .reverse();
+
+  const linhas = registrosOrdenados.map((registro) => {
+    const temDados =
+      registro.gasto > 0 ||
+      registro.leads > 0 ||
+      registro.cliques > 0;
+
+    const podeDetalhar =
+      agrupamento === "diario";
+
+    const chave =
+      String(registro.data || registro.periodo || "")
+        .replace(/-/g, "");
+
+    const rowId = `perf_row_${chave}`;
+    const detalheId = `perf_detalhe_${chave}`;
     return `
-      <tr id="${rowId}" data-data="${dia.data}">
+      <tr id="${rowId}" data-data="${registro.data}">
         <td>
-          ${temDados
-            ? `<button class="perf-expand-btn" id="btn_exp_${dia.data.replace(/-/g,"")}" onclick="togglePerfDetalhe('${dia.data}')">▶</button>`
+          ${temDados && podeDetalhar
+            ? `<button class="perf-expand-btn" id="btn_exp_${chave}" onclick="togglePerfDetalhe('${registro.data}')">▶</button>`
             : `<span style="display:inline-block;width:22px;"></span>`
           }
-          ${formatarDataPerformance(dia.data)}
+          ${formatarRegistroPerformance(registro, agrupamento)}
         </td>
-        <td>${formatarMoeda(dia.gasto)}</td>
-        <td>${dia.leads || 0}</td>
+        <td>${formatarMoeda(registro.gasto)}</td>
+        <td>${registro.leads || 0}</td>
         <td>${
-          dia.custo_por_lead === null || dia.custo_por_lead === undefined
+          registro.custo_por_lead === null || registro.custo_por_lead === undefined
             ? "-"
-            : formatarMoeda(dia.custo_por_lead)
+            : formatarMoeda(registro.custo_por_lead)
         }</td>
-        <td>${dia.cliques || 0}</td>
+        <td>${registro.cliques || 0}</td>
       </tr>
-      <tr class="perf-detalhe-row" id="${detalheId}" style="display:none;">
-        <td colspan="5">
-          <div class="perf-detalhe-inner">
-            <span class="perf-detalhe-loading">Carregando campanhas...</span>
-          </div>
-        </td>
-      </tr>
+      ${
+        podeDetalhar
+          ? `
+            <tr class="perf-detalhe-row" id="${detalheId}" style="display:none;">
+              <td colspan="5">
+                <div class="perf-detalhe-inner">
+                  <span class="perf-detalhe-loading">Carregando campanhas...</span>
+                </div>
+              </td>
+            </tr>
+          `
+          : ""
+      }
     `;
   }).join("");
 
@@ -11811,25 +11903,35 @@ function renderizarPainelPerformanceMeta(data) {
       <div>
         <h3>Performance de leads Meta</h3>
         <small>
-          Dados diarios vindos dos insights da Meta para gasto, leads e custo por lead.
+          Registro ${tituloPeriodoPerformance(periodo).toLowerCase()} (${descricaoPeriodoPerformance(periodo)}) de gasto, leads e custo por lead.
         </small>
       </div>
-      <div class="performance-meta-badge">
-        ${badge}
+      <div class="performance-meta-actions">
+        <select
+          class="performance-meta-periodo"
+          onchange="carregarPerformanceMeta(this.value)"
+        >
+          <option value="semanal" ${periodo === "semanal" ? "selected" : ""}>Semanal - 7 dias</option>
+          <option value="mensal" ${periodo === "mensal" ? "selected" : ""}>Mensal - 30 dias</option>
+          <option value="anual" ${periodo === "anual" ? "selected" : ""}>Anual - 12 meses</option>
+        </select>
+        <div class="performance-meta-badge">
+          ${badge}
+        </div>
       </div>
     </div>
 
     <div class="performance-meta-cards">
       <div class="performance-meta-card">
-        <span>Gasto hoje</span>
-        <strong>${formatarMoeda(hoje.gasto || 0)}</strong>
+        <span>Gasto no periodo</span>
+        <strong>${formatarMoeda(resumo.gasto_total || 0)}</strong>
       </div>
       <div class="performance-meta-card">
-        <span>Leads hoje</span>
-        <strong>${hoje.leads || 0}</strong>
+        <span>Leads no periodo</span>
+        <strong>${resumo.leads_total || 0}</strong>
       </div>
       <div class="performance-meta-card">
-        <span>Custo por lead hoje</span>
+        <span>CPL hoje</span>
         <strong>${
           hoje.custo_por_lead
             ? formatarMoeda(hoje.custo_por_lead)
@@ -11837,7 +11939,7 @@ function renderizarPainelPerformanceMeta(data) {
         }</strong>
       </div>
       <div class="performance-meta-card">
-        <span>CPL medio ${data.periodo_dias || 7} dias</span>
+        <span>CPL medio ${tituloPeriodoPerformance(periodo).toLowerCase()}</span>
         <strong>${
           resumo.custo_por_lead_medio
             ? formatarMoeda(resumo.custo_por_lead_medio)
@@ -11849,7 +11951,7 @@ function renderizarPainelPerformanceMeta(data) {
     <table class="performance-meta-table">
       <thead>
         <tr>
-          <th>Dia</th>
+          <th>${agrupamento === "mensal" ? "Mes" : "Dia"}</th>
           <th>Gasto</th>
           <th>Leads</th>
           <th>CPL</th>
@@ -11866,8 +11968,8 @@ function renderizarPainelPerformanceMeta(data) {
     </table>
 
     <div class="performance-meta-note">
-      <strong>CPL (Custo Por Lead)</strong> é quanto você pagou em média para gerar cada lead — calculado dividindo o valor gasto pelo número de leads recebidos no dia.
-      A plataforma acompanha esse valor diariamente e compara com a média dos dias anteriores para indicar se sua campanha está mais barata ou mais cara que o normal.
+      <strong>CPL (Custo Por Lead)</strong> e quanto voce pagou em media para gerar cada lead, calculado dividindo o gasto pelo numero de leads do registro.
+      A plataforma mostra essa leitura por semana, mes e ano para facilitar a comparacao de evolucao. No anual, os dados aparecem agrupados por mes.
       <br><br>
       <strong>Sobre a cobrança da Meta:</strong> a Meta não cobra por lead nem por clique — ela cobra por <strong>impressões</strong> (quantas vezes seu anúncio foi exibido). O CPL é uma métrica calculada: quanto do valor gasto resultou em cada lead. Nem todo clique vira lead — a pessoa pode clicar no anúncio e não preencher o formulário.
       <br><br>
@@ -12125,7 +12227,12 @@ async function carregarCampanhasDia(data) {
   }
 }
 
-async function carregarPerformanceMeta() {
+async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
+
+  performanceMetaPeriodoAtual =
+    ["semanal", "mensal", "anual"].includes(periodo)
+      ? periodo
+      : "semanal";
 
   const token =
     localStorage.getItem("token");
@@ -12140,7 +12247,7 @@ async function carregarPerformanceMeta() {
   try {
 
     const res = await fetch(
-      `${API}/meta/performance-diaria?dias=7`,
+      `${API}/meta/performance-diaria?periodo=${performanceMetaPeriodoAtual}`,
       {
         headers: {
           "Authorization": `Bearer ${token}`

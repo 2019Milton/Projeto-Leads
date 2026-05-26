@@ -8886,7 +8886,8 @@ function renderizarPaginaLegal() {
     ![
       "/privacy-policy",
       "/data-deletion",
-      "/terms"
+      "/terms",
+      "/empresa"
     ].includes(path)
   ) {
     return false;
@@ -8900,7 +8901,55 @@ function renderizarPaginaLegal() {
 
   legalPage.style.display = "flex";
 
-  if (path === "/privacy-policy") {
+  if (path === "/empresa") {
+    legalContent.innerHTML = `
+      <h1>Dados da Empresa</h1>
+
+      <p>
+        A Plataforma de Leads e operada por
+        <strong>55.848.095 MICHELE CRISTINE DOS SANTOS</strong>,
+        Microempreendedor Individual (MEI), inscrito no CNPJ
+        <strong>55.848.095/0001-90</strong>.
+      </p>
+
+      <h2>Identificacao</h2>
+
+      <ul>
+        <li>Razao social: 55.848.095 MICHELE CRISTINE DOS SANTOS</li>
+        <li>CNPJ: 55.848.095/0001-90</li>
+        <li>Situacao cadastral: ativa</li>
+        <li>Tipo: Microempreendedor Individual (MEI)</li>
+      </ul>
+
+      <h2>Endereco comercial</h2>
+
+      <p>
+        RUA SERRA DO MAR, 490<br>
+        VILA PRINCESA ISABEL<br>
+        Sao Paulo - SP<br>
+        CEP 08410-160<br>
+        Brasil
+      </p>
+
+      <h2>Contato</h2>
+
+      <p>
+        Telefone: +55 11 91007-9616<br>
+        Email:
+        <a href="mailto:negociosdefamilia2024@gmail.com">negociosdefamilia2024@gmail.com</a><br>
+        Site:
+        <a href="https://plataformadeleads.com.br">https://plataformadeleads.com.br</a>
+      </p>
+
+      <h2>Links legais</h2>
+
+      <p>
+        <a href="/privacy-policy">Politica de Privacidade</a><br>
+        <a href="/terms">Termos de Servico</a><br>
+        <a href="/data-deletion">Instrucoes de Exclusao de Dados</a>
+      </p>
+    `;
+  } else if (path === "/privacy-policy") {
     legalContent.innerHTML = `
       <h1>Política de Privacidade</h1>
 

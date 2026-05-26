@@ -11,6 +11,10 @@
     {
       "source": "/terms",
       "destination": "/index.html"
+    },
+    {
+      "source": "/empresa",
+      "destination": "/index.html"
     }
   ]
 }

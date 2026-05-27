@@ -12206,6 +12206,7 @@ function renderizarDetalhesIALead(analise) {
       <div class="ia-copy-box">
         <strong>Mensagem sugerida para WhatsApp</strong><br>
         ${escaparHtml(analise.mensagem_whatsapp || "-")}
+        ${renderizarBotaoWhatsAppIA(leadAtual?.telefone, analise.mensagem_whatsapp)}
       </div>
 
       ${
@@ -12409,7 +12410,30 @@ function reanalisarLeadAtualIA() {
   carregarAnaliseIALead(leadAtual.id, true);
 }
 
-function renderizarSugestaoIA(sugestao) {
+function renderizarBotaoWhatsAppIA(telefone, mensagem) {
+  if (!telefone || !mensagem) {
+    return "";
+  }
+
+  return `
+    <button
+      class="btn-reanalisar-ia"
+      style="margin-top:10px;"
+      data-telefone="${escaparHtml(telefone)}"
+      data-mensagem="${escaparHtml(mensagem)}"
+      onclick="abrirWhatsAppDeBotao(this)"
+    >
+      Abrir WhatsApp com esta mensagem
+    </button>
+  `;
+}
+
+function primeiraMensagemSugestaoIA(sugestao) {
+  return (sugestao?.mensagens || [])
+    .find(item => String(item || "").trim()) || "";
+}
+
+function renderizarSugestaoIA(sugestao, opcoes = {}) {
   if (!sugestao) {
     return "IA nao retornou sugestao.";
   }
@@ -12430,6 +12454,8 @@ function renderizarSugestaoIA(sugestao) {
     (sugestao.recomendacoes || [])
       .map(item => `<li>${escaparHtml(item)}</li>`)
       .join("");
+  const mensagemWhatsApp =
+    primeiraMensagemSugestaoIA(sugestao);
 
   return `
     <strong>${escaparHtml(sugestao.titulo || "Sugestao IA")}</strong>
@@ -12442,6 +12468,11 @@ function renderizarSugestaoIA(sugestao) {
     ${motivos ? `<div style="margin-top:8px;"><strong>Motivos:</strong><ul>${motivos}</ul></div>` : ""}
     ${campos ? `<div style="margin-top:8px;"><strong>Campos sugeridos:</strong><ul>${campos}</ul></div>` : ""}
     ${recomendacoes ? `<div style="margin-top:8px;"><strong>Recomendacoes:</strong><ul>${recomendacoes}</ul></div>` : ""}
+    ${
+      opcoes.whatsapp
+        ? renderizarBotaoWhatsAppIA(opcoes.telefone, mensagemWhatsApp)
+        : ""
+    }
     <span class="ia-gerada-em">
       ${sugestao.origem === "openai" ? "Gerado com OpenAI" : "Gerado com IA interna"}
       em ${new Date().toLocaleString("pt-BR")}
@@ -12483,7 +12514,13 @@ async function gerarSugestaoLeadIA(tipo) {
     }
 
     box.innerHTML =
-      renderizarSugestaoIA(data.sugestao);
+      renderizarSugestaoIA(
+        data.sugestao,
+        {
+          whatsapp: true,
+          telefone: leadAtual.telefone
+        }
+      );
   } catch (err) {
     box.innerHTML =
       escaparHtml(err.message || "Erro ao gerar sugestao de IA.");
@@ -12772,6 +12809,7 @@ function renderizarDetalhesRecuperacaoLead(lead) {
         >
           WhatsApp
         </button>
+        ${renderizarBotaoWhatsAppIA(lead.telefone, mensagemRecuperacaoLead(lead, recuperacao))}
       </div>
     </div>
   `;
@@ -16624,11 +16662,10 @@ function atualizarTempoSync(dataSync) {
 
   
 // 🔥 ABRIR WHATSAPP
-function abrirWhatsApp(numero) {
+function normalizarTelefoneWhatsApp(numero) {
 
   if (!numero) {
-    alert("Lead sem telefone");
-    return;
+    return "";
   }
 
   // remove tudo que não é número
@@ -16639,10 +16676,31 @@ function abrirWhatsApp(numero) {
     numero = "55" + numero;
   }
 
+  return numero;
+}
+
+function abrirWhatsApp(numero, mensagem = "") {
+
+  numero = normalizarTelefoneWhatsApp(numero);
+
+  if (!numero) {
+    alert("Lead sem telefone");
+    return;
+  }
+
   const url =
-    `https://wa.me/${numero}`;
+    mensagem
+      ? `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`
+      : `https://wa.me/${numero}`;
 
   window.open(url, "_blank");
+}
+
+function abrirWhatsAppDeBotao(botao) {
+  abrirWhatsApp(
+    botao?.dataset?.telefone || "",
+    botao?.dataset?.mensagem || ""
+  );
 }
 
 

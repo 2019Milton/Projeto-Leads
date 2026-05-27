@@ -5374,6 +5374,142 @@ body.tema-claro .cal-nav span { color: #111827; }
   margin: 0 !important;
 }
 
+.recuperacao-leads-panel {
+
+  margin: 0 0 16px;
+
+  padding: 12px;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(37,99,235,0.12),
+      rgba(245,158,11,0.08)
+    );
+
+  border: 1px solid rgba(96,165,250,0.24);
+}
+
+.recuperacao-leads-topo {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 10px;
+}
+
+.recuperacao-leads-topo strong,
+.recuperacao-leads-topo span {
+
+  display: block;
+}
+
+.recuperacao-leads-topo strong {
+
+  color: #fff;
+
+  font-size: 14px;
+}
+
+.recuperacao-leads-topo span {
+
+  margin-top: 3px;
+
+  color: #bfdbfe;
+
+  font-size: 11px;
+}
+
+.recuperacao-leads-actions {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+.recuperacao-leads-actions button {
+
+  width: auto !important;
+
+  min-width: 0 !important;
+
+  margin: 0 !important;
+
+  padding: 8px 10px !important;
+
+  border-radius: 10px !important;
+
+  background: rgba(15,23,42,0.72) !important;
+
+  border: 1px solid rgba(148,163,184,0.18) !important;
+
+  color: #e5e7eb !important;
+
+  font-size: 11px !important;
+
+  box-shadow: none !important;
+}
+
+.recuperacao-leads-actions button.ativo,
+.recuperacao-leads-actions button:hover {
+
+  border-color: rgba(245,158,11,0.48) !important;
+
+  color: #fde68a !important;
+
+  transform: translateY(-1px);
+}
+
+.lead-recuperacao-badge {
+
+  display: inline-flex;
+
+  width: fit-content;
+
+  margin-top: 7px;
+
+  padding: 5px 8px;
+
+  border-radius: 999px;
+
+  border: 1px solid rgba(245,158,11,0.35);
+
+  background: rgba(245,158,11,0.14);
+
+  color: #fde68a;
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+.lead-recuperacao-badge.baixa {
+
+  border-color: rgba(148,163,184,0.28);
+
+  background: rgba(148,163,184,0.12);
+
+  color: #cbd5e1;
+}
+
+.lead-recuperacao-badge.alta {
+
+  border-color: rgba(34,197,94,0.34);
+
+  background: rgba(34,197,94,0.12);
+
+  color: #bbf7d0;
+}
+
 
 /* =====================================
    📈 PERFORMANCE
@@ -7971,6 +8107,18 @@ body.tema-claro .suporte-input {
             Últimos 30 dias
           </option>
       
+          <option value="mais30">
+            Mais de 30 dias
+          </option>
+
+          <option value="mais60">
+            Mais de 60 dias
+          </option>
+
+          <option value="mais90">
+            Mais de 90 dias
+          </option>
+
           <option value="mes">
             Este mês
           </option>
@@ -8038,6 +8186,64 @@ body.tema-claro .suporte-input {
 
 
       <!-- 🔥 KANBAN -->
+      <div class="recuperacao-leads-panel">
+
+        <div class="recuperacao-leads-topo">
+
+          <div>
+            <strong>Recuperacao de Perdidos</strong>
+            <span>
+              Trabalhe primeiro os perdidos com maior chance de voltar para conversa.
+            </span>
+          </div>
+
+          <button
+            class="export-btn"
+            onclick="filtrarRecuperacaoLeads(null)"
+          >
+            Limpar
+          </button>
+
+        </div>
+
+        <div class="recuperacao-leads-actions">
+
+          <button
+            id="btn_recuperacao_recuperaveis"
+            onclick="filtrarRecuperacaoLeads('recuperaveis')"
+          >
+            Recuperaveis
+            <span id="count_recuperaveis">0</span>
+          </button>
+
+          <button
+            id="btn_recuperacao_nao_respondeu"
+            onclick="filtrarRecuperacaoLeads('nao_respondeu')"
+          >
+            Nao respondeu
+            <span id="count_rec_nao_respondeu">0</span>
+          </button>
+
+          <button
+            id="btn_recuperacao_30dias"
+            onclick="filtrarRecuperacaoLeads('30dias')"
+          >
+            30+ dias
+            <span id="count_rec_30dias">0</span>
+          </button>
+
+          <button
+            id="btn_recuperacao_ia"
+            onclick="filtrarRecuperacaoLeads('ia')"
+          >
+            IA Ouro
+            <span id="count_rec_ia">0</span>
+          </button>
+
+        </div>
+
+      </div>
+
       <div class="kanban-board">
       
         <!-- 🆕 NOVOS -->
@@ -9817,6 +10023,8 @@ let todosLeads = [];
 
 let filtroKPI = null;
 
+let filtroRecuperacao = null;
+
 let leadsFiltradosAtuais = [];
 
 let campanhasAtuais = [];
@@ -9883,6 +10091,204 @@ function mensagemCampanhasVazias(filtro) {
   if (filtro === "DELETED") return "Nenhuma campanha excluida encontrada.";
 
   return "Nenhuma campanha criada ainda.";
+}
+
+function usuarioTemIAOuro() {
+  return Boolean(
+    usuarioLogado?.acesso_total ||
+    usuarioLogado?.plano === "ouro"
+  );
+}
+
+function idadeLeadDias(lead) {
+  if (!lead?.criado_em) return null;
+
+  const data = new Date(lead.criado_em);
+
+  if (Number.isNaN(data.getTime())) {
+    return null;
+  }
+
+  const hoje = new Date();
+  const inicioHoje = new Date(
+    hoje.getFullYear(),
+    hoje.getMonth(),
+    hoje.getDate()
+  );
+  const inicioLead = new Date(
+    data.getFullYear(),
+    data.getMonth(),
+    data.getDate()
+  );
+
+  return Math.max(
+    0,
+    Math.round(
+      (inicioHoje - inicioLead) /
+      (1000 * 60 * 60 * 24)
+    )
+  );
+}
+
+function motivoPerdaNormalizado(lead) {
+  return String(lead?.motivo_perda || "")
+    .trim()
+    .toLowerCase();
+}
+
+function classificarRecuperacaoLead(lead) {
+  if (lead?.status !== "perdido") {
+    return {
+      recuperavel: false,
+      chance: "baixa",
+      prioridade: 0,
+      motivo: "Lead nao esta perdido."
+    };
+  }
+
+  const motivo =
+    motivoPerdaNormalizado(lead);
+
+  const dias =
+    idadeLeadDias(lead);
+
+  const motivosBaixaChance = [
+    "numero_invalido",
+    "fake_lead",
+    "sem_credito",
+    "concorrente"
+  ];
+
+  if (motivosBaixaChance.includes(motivo)) {
+    return {
+      recuperavel: false,
+      chance: "baixa",
+      prioridade: 10,
+      motivo: "Melhor arquivar ou manter apenas no historico."
+    };
+  }
+
+  let prioridade = 30;
+  const fatores = [];
+
+  if (lead.score === "quente") {
+    prioridade += 40;
+    fatores.push("score quente");
+  } else if (lead.score === "morno") {
+    prioridade += 24;
+    fatores.push("score morno");
+  }
+
+  if (
+    motivo === "nao_respondeu" ||
+    motivo === "desistiu" ||
+    !motivo
+  ) {
+    prioridade += 25;
+    fatores.push("motivo ainda recuperavel");
+  }
+
+  if (dias !== null && dias >= 30) {
+    prioridade += 10;
+    fatores.push("tempo bom para reativacao");
+  }
+
+  if (lead.telefone) {
+    prioridade += 8;
+    fatores.push("telefone disponivel");
+  }
+
+  if (lead.ia_leads?.prioridade === "alta") {
+    prioridade += 16;
+    fatores.push("IA Ouro priorizou");
+  }
+
+  const chance =
+    prioridade >= 78
+      ? "alta"
+      : prioridade >= 55
+      ? "media"
+      : "baixa";
+
+  return {
+    recuperavel: chance !== "baixa",
+    chance,
+    prioridade,
+    dias,
+    motivo:
+      fatores.join(", ") ||
+      "Poucos sinais de recuperacao."
+  };
+}
+
+function atualizarPainelRecuperacao() {
+  const perdidos =
+    todosLeads.filter(
+      lead => lead.status === "perdido"
+    );
+
+  const recuperaveis =
+    perdidos.filter(
+      lead => classificarRecuperacaoLead(lead).recuperavel
+    );
+
+  const naoRespondeu =
+    perdidos.filter(
+      lead => motivoPerdaNormalizado(lead) === "nao_respondeu"
+    );
+
+  const antigos =
+    perdidos.filter(
+      lead => (idadeLeadDias(lead) || 0) >= 30
+    );
+
+  const ia =
+    usuarioTemIAOuro()
+      ? recuperaveis
+      : [];
+
+  const preencher = (id, valor) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = valor;
+  };
+
+  preencher("count_recuperaveis", recuperaveis.length);
+  preencher("count_rec_nao_respondeu", naoRespondeu.length);
+  preencher("count_rec_30dias", antigos.length);
+  preencher("count_rec_ia", ia.length);
+
+  [
+    "recuperaveis",
+    "nao_respondeu",
+    "30dias",
+    "ia"
+  ].forEach(tipo => {
+    const btn =
+      document.getElementById(
+        `btn_recuperacao_${tipo}`
+      );
+
+    if (btn) {
+      btn.classList.toggle(
+        "ativo",
+        filtroRecuperacao === tipo
+      );
+    }
+  });
+}
+
+function filtrarRecuperacaoLeads(tipo) {
+  filtroRecuperacao = tipo;
+  filtroKPI = null;
+
+  const periodo =
+    document.getElementById("filtro_periodo");
+
+  if (periodo) {
+    periodo.value = "todos";
+  }
+
+  aplicarFiltrosLeads();
 }
 
 function forcarFiltrosDoDiaAoAutenticar() {
@@ -10195,6 +10601,7 @@ function atualizarKPIs(leads) {
 function filtrarPorKPI(tipo) {
 
   filtroKPI = tipo;
+  filtroRecuperacao = null;
 
   aplicarFiltrosLeads();
 }
@@ -10300,6 +10707,18 @@ function aplicarFiltrosLeads() {
       if (periodoSelecionado === "30dias") {
         return diffDias < 30;
       }
+
+      if (periodoSelecionado === "mais30") {
+        return diffDias >= 30;
+      }
+
+      if (periodoSelecionado === "mais60") {
+        return diffDias >= 60;
+      }
+
+      if (periodoSelecionado === "mais90") {
+        return diffDias >= 90;
+      }
   
       // 🔥 ESTE MÊS
       if (
@@ -10356,7 +10775,50 @@ function aplicarFiltrosLeads() {
     }
   }
 
+  if (filtroRecuperacao) {
+
+    filtrados = filtrados.filter(lead => {
+
+      const recuperacao =
+        classificarRecuperacaoLead(lead);
+
+      if (filtroRecuperacao === "recuperaveis") {
+        return recuperacao.recuperavel;
+      }
+
+      if (filtroRecuperacao === "nao_respondeu") {
+        return (
+          lead.status === "perdido" &&
+          motivoPerdaNormalizado(lead) === "nao_respondeu"
+        );
+      }
+
+      if (filtroRecuperacao === "30dias") {
+        return (
+          lead.status === "perdido" &&
+          (idadeLeadDias(lead) || 0) >= 30
+        );
+      }
+
+      if (filtroRecuperacao === "ia") {
+        return (
+          usuarioTemIAOuro() &&
+          recuperacao.recuperavel
+        );
+      }
+
+      return true;
+    });
+
+    filtrados.sort((a, b) =>
+      classificarRecuperacaoLead(b).prioridade -
+      classificarRecuperacaoLead(a).prioridade
+    );
+  }
+
   leadsFiltradosAtuais = filtrados;
+
+  atualizarPainelRecuperacao();
 
   atualizarKPIs(filtrados);
 
@@ -10796,6 +11258,32 @@ function formatarDataExcel(data) {
   
   
   
+function renderizarBadgeRecuperacaoLead(lead) {
+
+  if (lead.status !== "perdido") {
+    return "";
+  }
+
+  const recuperacao =
+    classificarRecuperacaoLead(lead);
+
+  const label =
+    recuperacao.chance === "alta"
+      ? "Alta chance de recuperar"
+      : recuperacao.chance === "media"
+      ? "Chance media de recuperar"
+      : "Baixa chance";
+
+  return `
+    <span
+      class="lead-recuperacao-badge ${recuperacao.chance}"
+      title="${escaparHtml(recuperacao.motivo)}"
+    >
+      ${label}
+    </span>
+  `;
+}
+
 function criarLeadCard(lead) {
 
   const iniciais =
@@ -10883,6 +11371,8 @@ function criarLeadCard(lead) {
           ${renderizarBadgeMLLead(lead)}
 
           ${renderizarBadgeIALead(lead)}
+
+          ${renderizarBadgeRecuperacaoLead(lead)}
 
         </div>
 
@@ -11307,6 +11797,18 @@ function renderizarDetalhesIALead(analise) {
         ${escaparHtml(analise.mensagem_whatsapp || "-")}
       </div>
 
+      ${
+        analise.recuperacao
+          ? `
+            <div class="ia-copy-box">
+              <strong>Recuperacao IA Ouro</strong><br>
+              Chance: ${escaparHtml(analise.recuperacao.chance || "-")}<br>
+              ${escaparHtml(analise.recuperacao.recomendacao || "-")}
+            </div>
+          `
+          : ""
+      }
+
       <div class="lead-ia-grid">
         <div class="lead-ia-mini">
           <strong>Sinais encontrados</strong>
@@ -11441,6 +11943,80 @@ async function carregarAnaliseIALead(leadId) {
   }
 }
 
+function renderizarDetalhesRecuperacaoLead(lead) {
+
+  const recuperacao =
+    classificarRecuperacaoLead(lead);
+
+  const diasTexto =
+    recuperacao.dias === null ||
+    recuperacao.dias === undefined
+      ? "idade nao identificada"
+      : `${recuperacao.dias} dias`;
+
+  const acao =
+    recuperacao.recuperavel
+      ? "Mover para Em Conversa e fazer uma tentativa objetiva de retomada."
+      : "Manter no historico ou arquivar depois de revisar o motivo da perda.";
+
+  return `
+    <div class="lead-ia-detalhes">
+      <h4>Fila de Recuperacao</h4>
+      <div class="lead-ia-grid">
+        <div class="lead-ia-mini">
+          <strong>Chance</strong>
+          ${escaparHtml(recuperacao.chance)}
+        </div>
+        <div class="lead-ia-mini">
+          <strong>Tempo</strong>
+          ${escaparHtml(diasTexto)}
+        </div>
+        <div class="lead-ia-mini">
+          <strong>Motivo</strong>
+          ${escaparHtml(lead.motivo_perda || "nao informado")}
+        </div>
+        <div class="lead-ia-mini">
+          <strong>Proxima acao</strong>
+          ${escaparHtml(acao)}
+        </div>
+      </div>
+      <div class="ia-copy-box">
+        <strong>Mensagem base</strong><br>
+        ${escaparHtml(mensagemRecuperacaoLead(lead, recuperacao))}
+      </div>
+      <div class="drawer-actions">
+        <button
+          onclick="atualizarStatusLead(obterLeadPorId(${lead.id}), 'em_conversa')"
+        >
+          Retomar conversa
+        </button>
+        <button
+          onclick="abrirWhatsApp('${lead.telefone || ""}')"
+        >
+          WhatsApp
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function mensagemRecuperacaoLead(lead, recuperacao) {
+
+  if (usuarioTemIAOuro() && lead.ia_leads?.mensagem_whatsapp) {
+    return lead.ia_leads.mensagem_whatsapp;
+  }
+
+  if (recuperacao.chance === "alta") {
+    return `Oi ${lead.nome || "tudo bem"}! Vi que seu atendimento ficou parado, mas talvez ainda faca sentido te ajudar. Quer que eu te envie opcoes atualizadas?`;
+  }
+
+  if (recuperacao.chance === "media") {
+    return `Oi ${lead.nome || "tudo bem"}! Passando para confirmar se ainda existe interesse. Se fizer sentido, posso retomar com opcoes mais alinhadas ao que voce busca.`;
+  }
+
+  return `Oi ${lead.nome || "tudo bem"}! So confirmando: ainda faz sentido mantermos seu contato para futuras oportunidades?`;
+}
+
 let leadAtual = null;
   
 // 🔥 ABRIR DRAWER
@@ -11542,6 +12118,28 @@ function abrirLeadDrawer(lead) {
   }
 
   // 🔥 CARREGA HISTÓRICO
+  const recuperacaoBox =
+    document.getElementById(
+      "drawer_recuperacao_box"
+    );
+
+  const recuperacaoConteudo =
+    document.getElementById(
+      "drawer_recuperacao_lead"
+    );
+
+  if (recuperacaoBox && recuperacaoConteudo) {
+    recuperacaoBox.style.display =
+      lead.status === "perdido"
+        ? "block"
+        : "none";
+
+    if (lead.status === "perdido") {
+      recuperacaoConteudo.innerHTML =
+        renderizarDetalhesRecuperacaoLead(lead);
+    }
+  }
+
   carregarHistoricoLead(lead.id);
 
   // 🔥 ABRE
@@ -17743,6 +18341,19 @@ async function enviarFeedback() {
           </div>
 
         </div>
+
+      </div>
+
+      <!-- RECUPERACAO -->
+      <div
+        class="drawer-box"
+        id="drawer_recuperacao_box"
+        style="display:none;"
+      >
+
+        <h4>Recuperacao do Lead</h4>
+
+        <div id="drawer_recuperacao_lead"></div>
 
       </div>
 

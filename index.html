@@ -4394,6 +4394,53 @@ body.tema-claro .cal-nav span { color: #111827; }
   font-size: 11px;
 }
 
+.ia-acoes-lead,
+.ia-acoes-campanha {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.ia-resultado-box {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15,23,42,0.62);
+  border: 1px solid rgba(96,165,250,0.22);
+  color: #e5e7eb;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ia-resultado-box strong {
+  color: #93c5fd;
+}
+
+.ia-resultado-box ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.ia-ouro-destaque {
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(30,41,59,0.68);
+  border: 1px solid rgba(139,92,246,0.32);
+}
+
+.ia-ouro-destaque h4 {
+  margin: 0 0 6px;
+  color: #c4b5fd;
+}
+
+.ia-ouro-destaque p {
+  margin: 0 0 10px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
 /* TEXTAREA */
 .drawer-box textarea {
 
@@ -7522,6 +7569,32 @@ body.tema-claro .suporte-input {
       <div class="card card-criar-campanha">
 
         <h3>📢 Criar Campanha</h3>
+
+        <div class="ia-ouro-destaque">
+          <h4>IA Ouro - Criador de anuncio</h4>
+          <p>
+            Gere titulo, texto, descricao, perguntas do formulario e interesses com IA.
+          </p>
+          <button
+            type="button"
+            class="btn-reanalisar-ia"
+            onclick="gerarCampanhaComIA()"
+          >
+            Gerar campanha com IA
+          </button>
+          <button
+            type="button"
+            class="btn-reanalisar-ia"
+            onclick="aplicarCampanhaIA()"
+          >
+            Aplicar sugestao
+          </button>
+          <div
+            id="ia_campanha_criador_resultado"
+            class="ia-resultado-box"
+            style="display:none;"
+          ></div>
+        </div>
   
         <!-- 📝 NOME -->
         <label>Nome da campanha</label>
@@ -8100,6 +8173,22 @@ body.tema-claro .suporte-input {
               <strong>Sinais e riscos</strong>
               Identifica urgencia, intencao, preparo financeiro e possiveis objecoes.
             </div>
+            <div class="lead-ia-mini">
+              <strong>Resposta e follow-up</strong>
+              Gera mensagem para atendimento e retomada conforme tempo parado.
+            </div>
+            <div class="lead-ia-mini">
+              <strong>Perdidos e reativacao</strong>
+              Sugere motivo de perda e campanhas de recuperacao em lote.
+            </div>
+            <div class="lead-ia-mini">
+              <strong>Campanhas</strong>
+              Cria textos de anuncio e analisa CPL, leads, publico e criativo.
+            </div>
+            <div class="lead-ia-mini">
+              <strong>Resumo diario</strong>
+              Prioriza os leads que merecem atencao hoje.
+            </div>
           </div>
         </div>
         <!-- BLOCO 3: Métricas da Campanha -->
@@ -8334,6 +8423,27 @@ body.tema-claro .suporte-input {
 
 
       <!-- 🔥 KANBAN -->
+      <div
+        class="ia-ouro-destaque"
+        id="ia_resumo_diario_box"
+      >
+        <h4>IA Ouro - Resumo diario do corretor</h4>
+        <p>
+          A IA analisa os leads da sua conta e mostra onde focar hoje.
+        </p>
+        <button
+          class="btn-reanalisar-ia"
+          onclick="gerarResumoDiarioIA()"
+        >
+          Gerar resumo com IA
+        </button>
+        <div
+          id="ia_resumo_diario_resultado"
+          class="ia-resultado-box"
+          style="display:none;"
+        ></div>
+      </div>
+
       <div class="recuperacao-leads-panel">
 
         <div class="recuperacao-leads-topo">
@@ -8390,7 +8500,21 @@ body.tema-claro .suporte-input {
             <span id="count_rec_ia">0</span>
           </button>
 
+          <button
+            class="ia-filtro"
+            onclick="gerarReativacaoLoteIA()"
+            title="IA Ouro: gera mensagens de reativacao para os leads perdidos filtrados"
+          >
+            Reativacao em lote IA
+          </button>
+
         </div>
+
+        <div
+          id="ia_reativacao_lote_resultado"
+          class="ia-resultado-box"
+          style="display:none;"
+        ></div>
 
       </div>
 
@@ -12200,6 +12324,308 @@ function reanalisarLeadAtualIA() {
   carregarAnaliseIALead(leadAtual.id, true);
 }
 
+function renderizarSugestaoIA(sugestao) {
+  if (!sugestao) {
+    return "IA nao retornou sugestao.";
+  }
+
+  const mensagens =
+    (sugestao.mensagens || [])
+      .map(item => `<li>${escaparHtml(item)}</li>`)
+      .join("");
+  const motivos =
+    (sugestao.motivos || [])
+      .map(item => `<li>${escaparHtml(item)}</li>`)
+      .join("");
+  const campos =
+    (sugestao.campos || [])
+      .map(item => `<li><strong>${escaparHtml(item.chave || "-")}:</strong> ${escaparHtml(item.valor || "-")}</li>`)
+      .join("");
+  const recomendacoes =
+    (sugestao.recomendacoes || [])
+      .map(item => `<li>${escaparHtml(item)}</li>`)
+      .join("");
+
+  return `
+    <strong>${escaparHtml(sugestao.titulo || "Sugestao IA")}</strong>
+    <div>${escaparHtml(sugestao.resumo || "")}</div>
+    <div style="margin-top:8px;">
+      <strong>Acao principal:</strong>
+      ${escaparHtml(sugestao.acao_principal || "-")}
+    </div>
+    ${mensagens ? `<div style="margin-top:8px;"><strong>Mensagens:</strong><ul>${mensagens}</ul></div>` : ""}
+    ${motivos ? `<div style="margin-top:8px;"><strong>Motivos:</strong><ul>${motivos}</ul></div>` : ""}
+    ${campos ? `<div style="margin-top:8px;"><strong>Campos sugeridos:</strong><ul>${campos}</ul></div>` : ""}
+    ${recomendacoes ? `<div style="margin-top:8px;"><strong>Recomendacoes:</strong><ul>${recomendacoes}</ul></div>` : ""}
+    <span class="ia-gerada-em">
+      ${sugestao.origem === "openai" ? "Gerado com OpenAI" : "Gerado com IA interna"}
+      em ${new Date().toLocaleString("pt-BR")}
+    </span>
+  `;
+}
+
+async function gerarSugestaoLeadIA(tipo) {
+  if (!leadAtual?.id) return;
+
+  const box =
+    document.getElementById("drawer_ia_sugestao");
+
+  if (!box) return;
+
+  box.style.display = "block";
+  box.innerHTML = "Gerando sugestao com IA...";
+
+  try {
+    const token =
+      localStorage.getItem("token");
+    const res =
+      await fetch(
+        `${API}/ia/leads/${leadAtual.id}/sugestao`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ tipo })
+        }
+      );
+    const data =
+      await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar sugestao");
+    }
+
+    box.innerHTML =
+      renderizarSugestaoIA(data.sugestao);
+  } catch (err) {
+    box.innerHTML =
+      escaparHtml(err.message || "Erro ao gerar sugestao de IA.");
+  }
+}
+
+async function gerarResumoDiarioIA() {
+  const box =
+    document.getElementById("ia_resumo_diario_resultado");
+
+  if (!box) return;
+
+  box.style.display = "block";
+  box.innerHTML = "Gerando resumo diario com IA...";
+
+  try {
+    const token =
+      localStorage.getItem("token");
+    const res =
+      await fetch(
+        `${API}/ia/resumo-diario`,
+        {
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        }
+      );
+    const data =
+      await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar resumo");
+    }
+
+    box.innerHTML =
+      renderizarSugestaoIA(data.sugestao);
+  } catch (err) {
+    box.innerHTML =
+      escaparHtml(err.message || "Erro ao gerar resumo diario.");
+  }
+}
+
+async function gerarReativacaoLoteIA() {
+  const box =
+    document.getElementById("ia_reativacao_lote_resultado");
+
+  if (!box) return;
+
+  const candidatos =
+    leadsFiltradosAtuais
+      .filter(lead =>
+        lead.status === "perdido" ||
+        classificarRecuperacaoLead(lead).recuperavel
+      )
+      .slice(0, 10);
+
+  if (!candidatos.length) {
+    box.style.display = "block";
+    box.innerHTML = "Nenhum lead perdido ou recuperavel encontrado no filtro atual.";
+    return;
+  }
+
+  box.style.display = "block";
+  box.innerHTML = "Gerando reativacao em lote com IA...";
+
+  try {
+    const token =
+      localStorage.getItem("token");
+    const res =
+      await fetch(
+        `${API}/ia/leads/reativacao-lote`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({
+            ids: candidatos.map(lead => lead.id)
+          })
+        }
+      );
+    const data =
+      await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar reativacao");
+    }
+
+    box.innerHTML =
+      renderizarSugestaoIA(data.sugestao);
+  } catch (err) {
+    box.innerHTML =
+      escaparHtml(err.message || "Erro ao gerar reativacao.");
+  }
+}
+
+let sugestaoCampanhaIAAtual = null;
+
+function campoSugestaoIA(sugestao, chave) {
+  return (sugestao?.campos || [])
+    .find(item =>
+      String(item.chave || "").toLowerCase() === chave
+    )?.valor || "";
+}
+
+function dadosCampanhaFormularioIA() {
+  return {
+    nome: document.getElementById("campanha_nome")?.value || "",
+    texto: document.getElementById("texto")?.value || "",
+    titulo: document.getElementById("adv_titulo")?.value || "",
+    descricao: document.getElementById("adv_descricao")?.value || "",
+    objetivo: document.getElementById("objetivo_select")?.value || "",
+    cta: document.getElementById("cta")?.value || "",
+    orcamento: document.getElementById("orcamento")?.value || "",
+    localidade: document.getElementById("adv_localidade_nome")?.value || "",
+    perguntas: document.getElementById("adv_perguntas")?.value || "",
+    categoria_especial: document.getElementById("adv_categoria_especial")?.value || ""
+  };
+}
+
+async function gerarCampanhaComIA() {
+  const box =
+    document.getElementById("ia_campanha_criador_resultado");
+
+  if (!box) return;
+
+  box.style.display = "block";
+  box.innerHTML = "Gerando campanha com IA...";
+
+  try {
+    const token =
+      localStorage.getItem("token");
+    const res =
+      await fetch(
+        `${API}/ia/campanhas/criador`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({
+            campanha: dadosCampanhaFormularioIA()
+          })
+        }
+      );
+    const data =
+      await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar campanha");
+    }
+
+    sugestaoCampanhaIAAtual =
+      data.sugestao;
+    box.innerHTML =
+      renderizarSugestaoIA(data.sugestao);
+  } catch (err) {
+    box.innerHTML =
+      escaparHtml(err.message || "Erro ao gerar campanha com IA.");
+  }
+}
+
+function aplicarCampanhaIA() {
+  if (!sugestaoCampanhaIAAtual) {
+    alert("Gere uma sugestao com IA primeiro.");
+    return;
+  }
+
+  const titulo =
+    campoSugestaoIA(sugestaoCampanhaIAAtual, "titulo");
+  const texto =
+    campoSugestaoIA(sugestaoCampanhaIAAtual, "texto");
+  const descricao =
+    campoSugestaoIA(sugestaoCampanhaIAAtual, "descricao");
+  const perguntas =
+    campoSugestaoIA(sugestaoCampanhaIAAtual, "perguntas");
+  const interesses =
+    campoSugestaoIA(sugestaoCampanhaIAAtual, "interesses");
+
+  if (titulo) document.getElementById("adv_titulo").value = titulo;
+  if (texto) document.getElementById("texto").value = texto;
+  if (descricao) document.getElementById("adv_descricao").value = descricao;
+  if (perguntas) document.getElementById("adv_perguntas").value = perguntas;
+  if (interesses) document.getElementById("adv_interesse_busca").value = interesses.split(",")[0]?.trim() || interesses;
+}
+
+async function analisarCampanhaIA(campanha) {
+  const box =
+    document.getElementById("ia_campanha_analise_resultado");
+
+  if (!box) return;
+
+  box.style.display = "block";
+  box.innerHTML = "Analisando campanha com IA...";
+
+  try {
+    const token =
+      localStorage.getItem("token");
+    const res =
+      await fetch(
+        `${API}/ia/campanhas/analise`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ campanha })
+        }
+      );
+    const data =
+      await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao analisar campanha");
+    }
+
+    box.innerHTML =
+      renderizarSugestaoIA(data.sugestao);
+  } catch (err) {
+    box.innerHTML =
+      escaparHtml(err.message || "Erro ao analisar campanha.");
+  }
+}
+
 function renderizarDetalhesRecuperacaoLead(lead) {
 
   const recuperacao =
@@ -15609,6 +16035,23 @@ function abrirCampanhaDrawer(campanhaEncoded) {
     campanha.nome || "Campanha";
 
   conteudo.innerHTML = `
+    <div class="ia-ouro-destaque">
+      <h4>IA Ouro - Analise de campanha</h4>
+      <p>
+        A IA avalia CPL, leads, status e configuracoes para sugerir proxima acao.
+      </p>
+      <button
+        class="btn-reanalisar-ia"
+        onclick='analisarCampanhaIA(${JSON.stringify(campanha).replace(/'/g, "&apos;")})'
+      >
+        Analisar campanha com IA
+      </button>
+      <div
+        id="ia_campanha_analise_resultado"
+        class="ia-resultado-box"
+        style="display:none;"
+      ></div>
+    </div>
     <div class="detalhes-grid">
       ${detalheItem("Status", campanha.status)}
       ${detalheItem("Origem", campanha.origem)}
@@ -18734,6 +19177,33 @@ async function enviarFeedback() {
           Ao carregar esta analise, a plataforma usa a IA do plano Ouro.
           Com a chave configurada, a resposta vem da API da OpenAI.
         </div>
+
+        <div class="ia-acoes-lead">
+          <button
+            class="btn-reanalisar-ia"
+            onclick="gerarSugestaoLeadIA('resposta_chat')"
+          >
+            Gerar resposta com IA
+          </button>
+          <button
+            class="btn-reanalisar-ia"
+            onclick="gerarSugestaoLeadIA('followup')"
+          >
+            Follow-up IA
+          </button>
+          <button
+            class="btn-reanalisar-ia"
+            onclick="gerarSugestaoLeadIA('motivo_perda')"
+          >
+            Motivo de perda IA
+          </button>
+        </div>
+
+        <div
+          id="drawer_ia_sugestao"
+          class="ia-resultado-box"
+          style="display:none;"
+        ></div>
 
         <div id="drawer_ia_lead">
 

@@ -2207,6 +2207,31 @@ body.usuario-super-admin .admin-only-targeting {
   flex-shrink: 0;
 }
 
+.kanban-column.drag-over {
+
+  border-color: rgba(37,99,235,0.75);
+
+  background: rgba(37,99,235,0.12);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(37,99,235,0.24),
+    0 0 24px rgba(37,99,235,0.18);
+}
+
+.lead-card {
+
+  cursor: grab;
+}
+
+.lead-card.dragging {
+
+  cursor: grabbing;
+
+  opacity: 0.55;
+
+  transform: rotate(1deg) scale(0.98);
+}
+
 /* 🔥 SCROLL INTERNO */
 
 .kanban-column::-webkit-scrollbar {
@@ -8016,7 +8041,13 @@ body.tema-claro .suporte-input {
       <div class="kanban-board">
       
         <!-- 🆕 NOVOS -->
-        <div class="kanban-column">
+        <div
+          class="kanban-column"
+          data-status-coluna="novo"
+          ondragover="permitirDropLead(event)"
+          ondragleave="sairDropLead(event)"
+          ondrop="soltarLeadNaColuna(event, 'novo')"
+        >
       
           <div class="kanban-header novo">
             🆕 Novos
@@ -8028,7 +8059,13 @@ body.tema-claro .suporte-input {
         </div>
       
         <!-- 📲 PRIMEIRO CONTATO -->
-        <div class="kanban-column">
+        <div
+          class="kanban-column"
+          data-status-coluna="primeiro_contato"
+          ondragover="permitirDropLead(event)"
+          ondragleave="sairDropLead(event)"
+          ondrop="soltarLeadNaColuna(event, 'primeiro_contato')"
+        >
       
           <div class="kanban-header contato">
             📲 Primeiro Contato
@@ -8040,7 +8077,13 @@ body.tema-claro .suporte-input {
         </div>
       
         <!-- 💬 EM CONVERSA -->
-        <div class="kanban-column">
+        <div
+          class="kanban-column"
+          data-status-coluna="em_conversa"
+          ondragover="permitirDropLead(event)"
+          ondragleave="sairDropLead(event)"
+          ondrop="soltarLeadNaColuna(event, 'em_conversa')"
+        >
       
           <div class="kanban-header conversa">
             💬 Em Conversa
@@ -8052,7 +8095,13 @@ body.tema-claro .suporte-input {
         </div>
 
         <!-- ✅ FECHADO -->
-        <div class="kanban-column">
+        <div
+          class="kanban-column"
+          data-status-coluna="fechado"
+          ondragover="permitirDropLead(event)"
+          ondragleave="sairDropLead(event)"
+          ondrop="soltarLeadNaColuna(event, 'fechado')"
+        >
         
           <div class="kanban-header fechado">
         
@@ -8069,7 +8118,13 @@ body.tema-claro .suporte-input {
         </div>
 
         <!-- ❌ PERDIDO -->
-        <div class="kanban-column">
+        <div
+          class="kanban-column"
+          data-status-coluna="perdido"
+          ondragover="permitirDropLead(event)"
+          ondragleave="sairDropLead(event)"
+          ondrop="soltarLeadNaColuna(event, 'perdido')"
+        >
         
           <div class="kanban-header perdido">
         
@@ -10765,8 +10820,24 @@ function criarLeadCard(lead) {
 
     <div
       class="lead-card ${classeScore}"
+
+      draggable="true"
+
+      data-lead-id="${lead.id}"
+
+      data-lead-status="${lead.status || "novo"}"
+
+      ondragstart="iniciarArrastoLead(event)"
+
+      ondragend="finalizarArrastoLead(event)"
     
-      onclick='abrirLeadDrawer(${JSON.stringify(lead)})'
+      onclick='
+        if (leadFoiArrastado) {
+          leadFoiArrastado = false;
+          return;
+        }
+        abrirLeadDrawerPorId(${lead.id})
+      '
     >
 
       <div class="lead-prioridade ${classeScore}"></div>
@@ -11479,6 +11550,198 @@ function abrirLeadDrawer(lead) {
 
 
 let leadMoverAtual = null;
+let leadArrastadoAtual = null;
+let leadFoiArrastado = false;
+
+function atualizarLeadLocal(id, status) {
+
+  const lead =
+    obterLeadPorId(id);
+
+  if (lead) {
+    lead.status = status;
+  }
+
+  aplicarFiltrosLeads();
+}
+
+function obterLeadPorId(id) {
+
+  return todosLeads.find(
+    item => Number(item.id) === Number(id)
+  );
+}
+
+function abrirLeadDrawerPorId(id) {
+
+  const lead =
+    obterLeadPorId(id);
+
+  if (lead) {
+    abrirLeadDrawer(lead);
+  }
+}
+
+async function atualizarStatusLead(lead, status) {
+
+  if (!lead || !status) return false;
+
+  const statusAtual =
+    lead.status || "novo";
+
+  if (statusAtual === status) {
+    return true;
+  }
+
+  const token =
+    localStorage.getItem("token");
+
+  atualizarLeadLocal(lead.id, status);
+
+  try {
+
+    const res = await fetch(
+      `${API}/leads/${lead.id}`,
+      {
+        method: "PUT",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          "Authorization":
+            "Bearer " + token
+        },
+
+        body: JSON.stringify({
+          observacao:
+            lead.observacao || "",
+          status,
+          motivo_perda:
+            lead.motivo_perda || "",
+          score_manual:
+            lead.score_manual || null
+        })
+      }
+    );
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.error) {
+      throw new Error(
+        data.error || "Erro ao mover lead"
+      );
+    }
+
+    lead.status = status;
+    return true;
+
+  } catch (err) {
+
+    lead.status = statusAtual;
+    atualizarLeadLocal(lead.id, statusAtual);
+
+    alert(
+      err.message ||
+      "Nao foi possivel mover o lead."
+    );
+
+    return false;
+  }
+}
+
+function obterColunaKanban(event) {
+
+  return event.target.closest(
+    ".kanban-column"
+  );
+}
+
+function iniciarArrastoLead(event) {
+
+  event.stopPropagation();
+
+  const lead =
+    obterLeadPorId(
+      event.currentTarget.dataset.leadId
+    );
+
+  if (!lead) return;
+
+  leadArrastadoAtual = lead;
+  leadFoiArrastado = true;
+
+  event.currentTarget.classList.add(
+    "dragging"
+  );
+
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData(
+    "text/plain",
+    String(lead.id)
+  );
+}
+
+function permitirDropLead(event) {
+
+  if (!leadArrastadoAtual) return;
+
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+
+  obterColunaKanban(event)
+    ?.classList.add("drag-over");
+}
+
+function sairDropLead(event) {
+
+  const coluna =
+    obterColunaKanban(event);
+
+  if (
+    coluna &&
+    !coluna.contains(event.relatedTarget)
+  ) {
+    coluna.classList.remove("drag-over");
+  }
+}
+
+async function soltarLeadNaColuna(event, status) {
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  obterColunaKanban(event)
+    ?.classList.remove("drag-over");
+
+  if (!leadArrastadoAtual) return;
+
+  await atualizarStatusLead(
+    leadArrastadoAtual,
+    status
+  );
+
+  leadArrastadoAtual = null;
+}
+
+function finalizarArrastoLead(event) {
+
+  event.currentTarget.classList.remove(
+    "dragging"
+  );
+
+  document
+    .querySelectorAll(".kanban-column.drag-over")
+    .forEach(coluna =>
+      coluna.classList.remove("drag-over")
+    );
+
+  leadArrastadoAtual = null;
+
+  setTimeout(() => {
+    leadFoiArrastado = false;
+  }, 80);
+}
 
 // 🔥 MENU MOVER
 function abrirMenuMover(event, lead) {
@@ -11524,33 +11787,19 @@ async function moverLeadRapido(status) {
 
   if (!leadMoverAtual) return;
 
-  const token =
-    localStorage.getItem("token");
-
-  await fetch(
-    `${API}/leads/${leadMoverAtual.id}`,
-    {
-      method: "PUT",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-
-        "Authorization":
-          "Bearer " + token
-      },
-
-      body: JSON.stringify({
-        status
-      })
-    }
-  );
-
-  carregarLeads();
+  const movido =
+    await atualizarStatusLead(
+      leadMoverAtual,
+      status
+    );
 
   document.getElementById(
     "menuMover"
   ).style.display = "none";
+
+  if (movido) {
+    leadMoverAtual = null;
+  }
 }
 
 // 🔥 HISTÓRICO

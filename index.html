@@ -5773,6 +5773,49 @@ body.tema-claro .cal-nav span { color: #111827; }
   min-height: 72px;
 }
 
+.admin-ia-status-card {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15,23,42,0.62);
+  border: 1px solid rgba(245,158,11,0.22);
+}
+
+.admin-ia-status-card strong,
+.admin-ia-status-card span,
+.admin-ia-status-card small {
+  display: block;
+}
+
+.admin-ia-status-card strong {
+  color: #facc15;
+  font-size: 13px;
+}
+
+.admin-ia-status-card span {
+  margin-top: 5px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.admin-ia-status-card small {
+  margin-top: 5px;
+  color: #fef3c7;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.admin-ia-form label {
+  color: #fef3c7;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-ia-form label span {
+  display: block;
+  margin-bottom: 6px;
+}
+
 .admin-ia-table-wrap {
   overflow-x: auto;
   margin-top: 18px;
@@ -8725,7 +8768,7 @@ body.tema-claro .suporte-input {
       >
         <h3>Painel IA Ouro</h3>
         <p style="color:#fef3c7;margin-top:8px;font-size:13px;">
-          Controle de usuarios Ouro, uso mensal, limites e assinatura da API de IA.
+          Controle operacional da IA: ativar, pausar, acompanhar custo e limitar consumo por usuario Ouro.
         </p>
 
         <div class="admin-ia-grid">
@@ -8754,32 +8797,60 @@ body.tema-claro .suporte-input {
             <span id="ia_admin_media_usuario">0 chamada(s)</span>
           </div>
           <div class="admin-ia-mini">
-            <strong>Status API</strong>
+            <strong>Status da IA</strong>
             <span id="ia_admin_status_api">-</span>
           </div>
         </div>
 
+        <div class="admin-ia-status-card">
+          <strong>Operacao da IA</strong>
+          <span id="ia_admin_status_operacao">-</span>
+          <small id="ia_admin_status_detalhe">
+            Use o status abaixo para ativar ou pausar a IA para todos os usuarios Ouro.
+          </small>
+        </div>
+
         <div class="admin-ia-form">
-          <input id="ia_config_provedor" placeholder="Provedor. Ex: openai">
-          <input id="ia_config_modelo" placeholder="Modelo. Ex: gpt-4.1-mini">
-          <select id="ia_config_status">
-            <option value="nao_contratado">Nao contratado</option>
-            <option value="contratado">Contratado</option>
-            <option value="pausado">IA pausada/desativada</option>
-          </select>
-          <select id="ia_config_assinatura">
+          <input id="ia_config_provedor" type="hidden" value="openai">
+          <select id="ia_config_assinatura" style="display:none;">
             <option value="pendente">Pagamento pendente</option>
             <option value="ativa">Pagamento ativo</option>
             <option value="vencida">Pagamento vencido</option>
           </select>
-          <input id="ia_config_limite_req" type="number" placeholder="Limite mensal requisicoes">
-          <input id="ia_config_limite_custo" type="number" placeholder="Limite custo mensal">
-          <input id="ia_config_custo_contratado" type="number" placeholder="Custo contratado">
-          <textarea id="ia_config_observacoes" placeholder="Observacoes da contratacao, billing, limites ou renovacao"></textarea>
+          <input id="ia_config_custo_contratado" type="hidden" value="0">
+
+          <label>
+            <span>Status da IA</span>
+            <select id="ia_config_status">
+              <option value="contratado">IA ativa</option>
+              <option value="pausado">IA pausada para todos</option>
+              <option value="nao_contratado">IA nao configurada</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Modelo da OpenAI</span>
+            <input id="ia_config_modelo" placeholder="Ex: gpt-5-mini">
+          </label>
+
+          <label>
+            <span>Limite mensal total de chamadas</span>
+            <input id="ia_config_limite_req" type="number" placeholder="Ex: 1000">
+          </label>
+
+          <label>
+            <span>Limite mensal total de custo</span>
+            <input id="ia_config_limite_custo" type="number" placeholder="Ex: 300">
+          </label>
+
+          <label>
+            <span>Observacoes internas</span>
+            <textarea id="ia_config_observacoes" placeholder="Ex: revisar custo semanalmente, chave ativa na Railway, limite de seguranca..."></textarea>
+          </label>
         </div>
 
         <button style="margin-top:14px;" onclick="salvarConfigIAAdmin()">
-          Salvar configuracao de IA
+          Salvar operacao da IA
         </button>
 
         <div class="admin-ia-table-wrap">
@@ -8787,7 +8858,7 @@ body.tema-claro .suporte-input {
             <thead>
               <tr>
                 <th>Usuario Ouro</th>
-                <th>Assinatura</th>
+                <th>Status interno</th>
                 <th>Uso mensal</th>
                 <th>Tokens</th>
                 <th>Limites</th>
@@ -8797,7 +8868,7 @@ body.tema-claro .suporte-input {
             </thead>
             <tbody id="admin_ia_tabela_usuarios">
               <tr>
-                <td colspan="6">Carregando IA...</td>
+                <td colspan="7">Carregando IA...</td>
               </tr>
             </tbody>
           </table>
@@ -16793,24 +16864,54 @@ async function carregarPainelIAAdmin() {
     document.getElementById("ia_admin_media_usuario").innerText =
       `${(usuariosOuro ? chamadasMes / usuariosOuro : 0).toFixed(1)} chamada(s)`;
 
-    document.getElementById("ia_admin_status_api").innerText =
-      `${config.status || "-"} / ${config.assinatura_status || "-"} / chave ${config.chave_configurada ? "ok" : "ausente"}`;
+    const iaTemChave = !!config.chave_configurada;
+    const iaStatus = config.status || "nao_contratado";
+    let iaStatusTexto = "IA nao configurada";
+    let iaStatusDetalhe =
+      "Defina como IA ativa quando a chave da OpenAI estiver configurada no Railway.";
+    let iaStatusCor = "#fca5a5";
+
+    if (!iaTemChave) {
+      iaStatusTexto = "Chave ausente";
+      iaStatusDetalhe =
+        "Configure OPENAI_API_KEY no Railway do backend para a IA Ouro usar a OpenAI.";
+    } else if (iaStatus === "contratado") {
+      iaStatusTexto = "IA ativa";
+      iaStatusDetalhe =
+        `OpenAI conectada. Modelo em uso: ${config.modelo || "padrao do backend"}.`;
+      iaStatusCor = "#86efac";
+    } else if (iaStatus === "pausado") {
+      iaStatusTexto = "IA pausada";
+      iaStatusDetalhe =
+        "A IA esta bloqueada para todos os usuarios Ouro ate voce reativar.";
+      iaStatusCor = "#fbbf24";
+    }
 
     const statusApiEl =
       document.getElementById("ia_admin_status_api");
+    const statusOperacaoEl =
+      document.getElementById("ia_admin_status_operacao");
+    const statusDetalheEl =
+      document.getElementById("ia_admin_status_detalhe");
 
     if (statusApiEl) {
-      statusApiEl.style.color =
-        config.status === "pausado" ||
-        !config.chave_configurada
-          ? "#fca5a5"
-          : "#86efac";
+      statusApiEl.innerText = iaStatusTexto;
+      statusApiEl.style.color = iaStatusCor;
+    }
+
+    if (statusOperacaoEl) {
+      statusOperacaoEl.innerText = iaStatusTexto;
+      statusOperacaoEl.style.color = iaStatusCor;
+    }
+
+    if (statusDetalheEl) {
+      statusDetalheEl.innerText = iaStatusDetalhe;
     }
 
     preencherValor("ia_config_provedor", config.provedor || "openai");
     preencherValor("ia_config_modelo", config.modelo || "");
-    preencherValor("ia_config_status", config.status || "nao_contratado");
-    preencherValor("ia_config_assinatura", config.assinatura_status || "pendente");
+    preencherValor("ia_config_status", iaStatus);
+    preencherValor("ia_config_assinatura", config.assinatura_status || "ativa");
     preencherValor("ia_config_limite_req", config.limite_mensal_requisicoes || 0);
     preencherValor("ia_config_limite_custo", config.limite_mensal_custo || 0);
     preencherValor("ia_config_custo_contratado", config.custo_mensal_contratado || 0);
@@ -16825,7 +16926,7 @@ async function carregarPainelIAAdmin() {
     if (!usuarios.length) {
       tabela.innerHTML = `
         <tr>
-          <td colspan="6">Nenhum usuario Ouro ativo ou configurado ainda.</td>
+          <td colspan="7">Nenhum usuario Ouro ativo ou configurado ainda.</td>
         </tr>
       `;
       return;
@@ -16883,14 +16984,17 @@ async function salvarConfigIAAdmin() {
 
   const token = localStorage.getItem("token");
 
+  const statusIA =
+    document.getElementById("ia_config_status")?.value || "nao_contratado";
+
   const body = {
-    provedor: document.getElementById("ia_config_provedor")?.value,
+    provedor: "openai",
     modelo: document.getElementById("ia_config_modelo")?.value,
-    status: document.getElementById("ia_config_status")?.value,
-    assinatura_status: document.getElementById("ia_config_assinatura")?.value,
+    status: statusIA,
+    assinatura_status: statusIA === "nao_contratado" ? "pendente" : "ativa",
     limite_mensal_requisicoes: document.getElementById("ia_config_limite_req")?.value,
     limite_mensal_custo: document.getElementById("ia_config_limite_custo")?.value,
-    custo_mensal_contratado: document.getElementById("ia_config_custo_contratado")?.value,
+    custo_mensal_contratado: 0,
     observacoes: document.getElementById("ia_config_observacoes")?.value
   };
 
@@ -16913,7 +17017,7 @@ async function salvarConfigIAAdmin() {
     return;
   }
 
-  alert("Configuracao de IA salva.");
+  alert("Operacao da IA salva.");
   await carregarPainelIAAdmin();
 }
 

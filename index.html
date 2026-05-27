@@ -137,6 +137,25 @@ body::after {
   text-decoration: underline;
 }
 
+.credito-desenvolvedor-login {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.credito-desenvolvedor-login a {
+  color: #93c5fd;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.credito-desenvolvedor-login a:hover {
+  text-decoration: underline;
+}
+
 /* INPUTS */
 input, textarea {
   width: 100%;
@@ -6092,6 +6111,36 @@ body.tema-claro .cal-nav span { color: #111827; }
   justify-content: flex-end;
 }
 
+.credito-desenvolvedor-topbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.credito-desenvolvedor-topbar strong {
+  display: block;
+  color: #e2e8f0;
+  font-size: 12px;
+}
+
+.credito-desenvolvedor-topbar a {
+  color: #93c5fd;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.credito-desenvolvedor-topbar a:hover {
+  text-decoration: underline;
+}
+
 .tema-seletor {
 
   display: inline-flex;
@@ -6332,6 +6381,16 @@ body.tema-claro .tema-seletor {
   border-color: #ccd8e7;
 
   color: #334155;
+}
+
+body.tema-claro .credito-desenvolvedor-topbar {
+  background: rgba(255,255,255,0.9);
+  border-color: #ccd8e7;
+  color: #64748b;
+}
+
+body.tema-claro .credito-desenvolvedor-topbar strong {
+  color: #1e293b;
 }
 
 body.tema-claro .plano-atual-topo {
@@ -7296,7 +7355,8 @@ body.tema-claro .suporte-input {
 
   .topbar-actions,
   .tema-seletor,
-  .plano-atual-topo {
+  .plano-atual-topo,
+  .credito-desenvolvedor-topbar {
 
     width: 100%;
   }
@@ -7345,6 +7405,16 @@ body.tema-claro .suporte-input {
       Telefone: +55 11 91007-9616<br>
       Email: negociosdefamilia2024@gmail.com<br>
       <a href="/empresa">Dados da empresa</a>
+    </div>
+    <div class="credito-desenvolvedor-login">
+      Plataforma desenvolvida por <strong>Milton Pereira</strong><br>
+      <a
+        href="https://www.linkedin.com/in/milton-santos-b7a712120/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        LinkedIn
+      </a>
     </div>
   </div>
 
@@ -7513,6 +7583,20 @@ body.tema-claro .suporte-input {
         👤 Perfil
       </button>
   
+      <div class="credito-desenvolvedor-topbar">
+        <span>
+          Desenvolvida por
+          <strong>Milton Pereira</strong>
+        </span>
+        <a
+          href="https://www.linkedin.com/in/milton-santos-b7a712120/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          LinkedIn
+        </a>
+      </div>
+
       <button class="logout" onclick="logout()">Sair</button>
     </div>
   </div>

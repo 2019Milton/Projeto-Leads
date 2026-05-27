@@ -8742,6 +8742,18 @@ body.tema-claro .suporte-input {
             <span id="ia_admin_custo_mes">R$ 0,00</span>
           </div>
           <div class="admin-ia-mini">
+            <strong>Tokens no mes</strong>
+            <span id="ia_admin_tokens_mes">0</span>
+          </div>
+          <div class="admin-ia-mini">
+            <strong>Custo medio</strong>
+            <span id="ia_admin_custo_medio">R$ 0,00/chamada</span>
+          </div>
+          <div class="admin-ia-mini">
+            <strong>Uso medio por Ouro</strong>
+            <span id="ia_admin_media_usuario">0 chamada(s)</span>
+          </div>
+          <div class="admin-ia-mini">
             <strong>Status API</strong>
             <span id="ia_admin_status_api">-</span>
           </div>
@@ -8753,7 +8765,7 @@ body.tema-claro .suporte-input {
           <select id="ia_config_status">
             <option value="nao_contratado">Nao contratado</option>
             <option value="contratado">Contratado</option>
-            <option value="pausado">Pausado</option>
+            <option value="pausado">IA pausada/desativada</option>
           </select>
           <select id="ia_config_assinatura">
             <option value="pendente">Pagamento pendente</option>
@@ -8777,6 +8789,7 @@ body.tema-claro .suporte-input {
                 <th>Usuario Ouro</th>
                 <th>Assinatura</th>
                 <th>Uso mensal</th>
+                <th>Tokens</th>
                 <th>Limites</th>
                 <th>Ultimo uso</th>
                 <th>Acoes</th>
@@ -16749,8 +16762,50 @@ async function carregarPainelIAAdmin() {
     document.getElementById("ia_admin_custo_mes").innerText =
       formatarMoeda(resumo.custo_mes || 0);
 
+    const chamadasMes =
+      Number(resumo.chamadas_mes || 0);
+
+    const usuariosOuro =
+      Number(
+        resumo.usuarios_ouro_ativos ||
+        resumo.usuarios_ouro ||
+        0
+      );
+
+    const custoMes =
+      Number(resumo.custo_mes || 0);
+
+    const tokensEntrada =
+      Number(resumo.tokens_entrada_mes || 0);
+
+    const tokensSaida =
+      Number(resumo.tokens_saida_mes || 0);
+
+    const tokensTotal =
+      tokensEntrada + tokensSaida;
+
+    document.getElementById("ia_admin_tokens_mes").innerText =
+      `${tokensTotal.toLocaleString("pt-BR")} tokens`;
+
+    document.getElementById("ia_admin_custo_medio").innerText =
+      `${formatarMoeda(chamadasMes ? custoMes / chamadasMes : 0)}/chamada`;
+
+    document.getElementById("ia_admin_media_usuario").innerText =
+      `${(usuariosOuro ? chamadasMes / usuariosOuro : 0).toFixed(1)} chamada(s)`;
+
     document.getElementById("ia_admin_status_api").innerText =
-      `${config.status || "-"} / ${config.assinatura_status || "-"}`;
+      `${config.status || "-"} / ${config.assinatura_status || "-"} / chave ${config.chave_configurada ? "ok" : "ausente"}`;
+
+    const statusApiEl =
+      document.getElementById("ia_admin_status_api");
+
+    if (statusApiEl) {
+      statusApiEl.style.color =
+        config.status === "pausado" ||
+        !config.chave_configurada
+          ? "#fca5a5"
+          : "#86efac";
+    }
 
     preencherValor("ia_config_provedor", config.provedor || "openai");
     preencherValor("ia_config_modelo", config.modelo || "");
@@ -16781,6 +16836,10 @@ async function carregarPainelIAAdmin() {
       const limite = Number(u.ia_limite_mensal || 0);
       const custo = Number(u.custo_mes || 0);
       const limiteCusto = Number(u.ia_custo_limite_mensal || 0);
+      const usuarioIAAtiva = u.ia_ativo !== false;
+      const tokensUsuario =
+        Number(u.tokens_entrada_mes || 0) +
+        Number(u.tokens_saida_mes || 0);
 
       return `
         <tr>
@@ -16789,14 +16848,21 @@ async function carregarPainelIAAdmin() {
             <div style="font-size:11px;color:#fef3c7;">
               Ouro desde ${u.plano_ativado_em ? new Date(u.plano_ativado_em).toLocaleDateString("pt-BR") : "-"}
             </div>
+            <div style="font-size:11px;color:${usuarioIAAtiva ? "#86efac" : "#fca5a5"};">
+              IA ${usuarioIAAtiva ? "ativa" : "desativada"}
+            </div>
           </td>
           <td>${escaparHtml(u.assinatura_status || "manual")}</td>
           <td>${chamadas} chamada(s)<br>${formatarMoeda(custo)}</td>
+          <td>${tokensUsuario.toLocaleString("pt-BR")}<br><small>entrada + saida</small></td>
           <td>${chamadas}/${limite} req<br>${formatarMoeda(custo)}/${formatarMoeda(limiteCusto)}</td>
           <td>${u.ultimo_uso ? new Date(u.ultimo_uso).toLocaleString("pt-BR") : "-"}</td>
           <td>
-            <button onclick='alterarLimitesIAUsuario(${u.id}, ${limite}, ${limiteCusto}, ${JSON.stringify(u.assinatura_status || "manual")})'>
+            <button onclick='alterarLimitesIAUsuario(${u.id}, ${limite}, ${limiteCusto}, ${JSON.stringify(u.assinatura_status || "manual")}, ${usuarioIAAtiva})'>
               Limites
+            </button>
+            <button onclick='alterarIAUsuario(${u.id}, ${!usuarioIAAtiva})'>
+              ${usuarioIAAtiva ? "Desativar IA" : "Ativar IA"}
             </button>
           </td>
         </tr>
@@ -16851,7 +16917,7 @@ async function salvarConfigIAAdmin() {
   await carregarPainelIAAdmin();
 }
 
-async function alterarLimitesIAUsuario(id, limiteAtual, custoAtual, assinaturaAtual) {
+async function alterarLimitesIAUsuario(id, limiteAtual, custoAtual, assinaturaAtual, iaAtivaAtual = true) {
 
   const limite = prompt("Limite mensal de chamadas de IA:", limiteAtual);
   if (limite === null) return;
@@ -16875,7 +16941,8 @@ async function alterarLimitesIAUsuario(id, limiteAtual, custoAtual, assinaturaAt
       body: JSON.stringify({
         ia_limite_mensal: Number(limite || 0),
         ia_custo_limite_mensal: Number(custo || 0),
-        assinatura_status: assinatura
+        assinatura_status: assinatura,
+        ia_ativo: Boolean(iaAtivaAtual)
       })
     }
   );
@@ -16884,6 +16951,42 @@ async function alterarLimitesIAUsuario(id, limiteAtual, custoAtual, assinaturaAt
 
   if (!res.ok) {
     alert(data.error || "Erro ao salvar limites");
+    return;
+  }
+
+  await carregarPainelIAAdmin();
+}
+
+async function alterarIAUsuario(id, ativo) {
+
+  const confirmar = confirm(
+    ativo
+      ? "Ativar IA para este usuario Ouro?"
+      : "Desativar IA para este usuario Ouro? Ele continuara no plano Ouro, mas nao podera consumir IA."
+  );
+
+  if (!confirmar) return;
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/ia-limites`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        ia_ativo: Boolean(ativo)
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Erro ao alterar IA do usuario");
     return;
   }
 

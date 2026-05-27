@@ -5510,6 +5510,75 @@ body.tema-claro .cal-nav span { color: #111827; }
   color: #bbf7d0;
 }
 
+.ia-uso-chip {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  width: fit-content;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background: rgba(245,158,11,0.16);
+
+  border: 1px solid rgba(245,158,11,0.38);
+
+  color: #fde68a;
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.ia-uso-chip.openai {
+
+  background: rgba(124,58,237,0.20);
+
+  border-color: rgba(168,85,247,0.45);
+
+  color: #e9d5ff;
+}
+
+.ia-uso-alerta {
+
+  margin: 8px 0 12px;
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  background: rgba(124,58,237,0.14);
+
+  border: 1px solid rgba(168,85,247,0.28);
+
+  color: #e9d5ff;
+
+  font-size: 11px;
+
+  line-height: 1.45;
+}
+
+.recuperacao-leads-actions button.ia-filtro {
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(124,58,237,0.34),
+      rgba(245,158,11,0.22)
+    ) !important;
+
+  border-color: rgba(245,158,11,0.46) !important;
+
+  color: #fff7ed !important;
+}
+
 
 /* =====================================
    📈 PERFORMANCE
@@ -8234,9 +8303,11 @@ body.tema-claro .suporte-input {
 
           <button
             id="btn_recuperacao_ia"
+            class="ia-filtro"
             onclick="filtrarRecuperacaoLeads('ia')"
+            title="Filtro do plano Ouro: usa IA para priorizar recuperacao"
           >
-            IA Ouro
+            IA Ouro usa IA
             <span id="count_rec_ia">0</span>
           </button>
 
@@ -11751,9 +11822,9 @@ function renderizarBadgeIALead(lead) {
   return `
     <span
       class="lead-ia-badge"
-      title="Analise inteligente disponivel no plano Ouro"
+      title="Este card tem analise da IA Ouro. Ao abrir os detalhes, a API da OpenAI pode ser acionada."
     >
-      IA Ouro - ${prioridade}
+      IA Ouro usa IA - ${prioridade}
     </span>
   `;
 }
@@ -11770,7 +11841,18 @@ function renderizarDetalhesIALead(analise) {
 
   return `
     <div class="lead-ia-detalhes">
+      <span class="ia-uso-chip ${analise.origem === "openai" ? "openai" : ""}">
+        ${analise.origem === "openai" ? "OpenAI ativa" : "IA interna"}
+      </span>
       <h4>IA Ouro do Lead</h4>
+      <div class="ia-uso-alerta">
+        Este bloco usa IA para resumir o lead, recomendar a proxima acao e gerar mensagem pronta.
+        ${
+          analise.origem === "openai"
+            ? "Esta analise foi gerada pela API da OpenAI."
+            : "Sem retorno da OpenAI, a plataforma usou a IA interna como fallback."
+        }
+      </div>
       <p>${escaparHtml(analise.explicacao || "")}</p>
 
       <div class="lead-ia-grid">
@@ -11801,6 +11883,9 @@ function renderizarDetalhesIALead(analise) {
         analise.recuperacao
           ? `
             <div class="ia-copy-box">
+              <span class="ia-uso-chip ${analise.origem === "openai" ? "openai" : ""}">
+                IA aplicada
+              </span><br>
               <strong>Recuperacao IA Ouro</strong><br>
               Chance: ${escaparHtml(analise.recuperacao.chance || "-")}<br>
               ${escaparHtml(analise.recuperacao.recomendacao || "-")}
@@ -11984,6 +12069,15 @@ function renderizarDetalhesRecuperacaoLead(lead) {
         <strong>Mensagem base</strong><br>
         ${escaparHtml(mensagemRecuperacaoLead(lead, recuperacao))}
       </div>
+      ${
+        usuarioTemIAOuro()
+          ? `
+            <div class="ia-uso-alerta">
+              No plano Ouro, abra o bloco IA Ouro deste lead para gerar uma analise e mensagem com a API de IA.
+            </div>
+          `
+          : ""
+      }
       <div class="drawer-actions">
         <button
           onclick="atualizarStatusLead(obterLeadPorId(${lead.id}), 'em_conversa')"
@@ -18332,7 +18426,12 @@ async function enviarFeedback() {
         style="display:none;"
       >
 
-        <h4>IA Ouro</h4>
+        <h4>IA Ouro - usa IA</h4>
+
+        <div class="ia-uso-alerta">
+          Ao carregar esta analise, a plataforma usa a IA do plano Ouro.
+          Com a chave configurada, a resposta vem da API da OpenAI.
+        </div>
 
         <div id="drawer_ia_lead">
 

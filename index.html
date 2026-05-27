@@ -4358,6 +4358,42 @@ body.tema-claro .cal-nav span { color: #111827; }
   margin-top: 0;
 }
 
+.drawer-box-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.drawer-box-topo h4 {
+  margin: 0;
+}
+
+.btn-reanalisar-ia {
+  border: 1px solid rgba(96,165,250,0.45);
+  background: linear-gradient(135deg,#2563eb,#7c3aed);
+  color: #fff;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-reanalisar-ia:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ia-gerada-em {
+  display: block;
+  margin-top: 10px;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
 /* TEXTAREA */
 .drawer-box textarea {
 
@@ -11999,6 +12035,12 @@ function renderizarDetalhesIALead(analise) {
           .map(item => `<div>• ${escaparHtml(item)}</div>`)
           .join("")}
       </div>
+
+      ${
+        analise.gerada_em
+          ? `<span class="ia-gerada-em">Gerada em ${escaparHtml(analise.gerada_em)}</span>`
+          : ""
+      }
     </div>
   `;
 }
@@ -12067,16 +12109,36 @@ function renderizarDetalhesMLLead(lead) {
   `;
 }
 
-async function carregarAnaliseIALead(leadId) {
+async function carregarAnaliseIALead(leadId, reanaliseManual = false) {
 
   const iaBox =
     document.getElementById(
       "drawer_ia_lead"
     );
+  const btnReanalisar =
+    document.getElementById(
+      "btn_reanalisar_ia_lead"
+    );
 
   if (!iaBox) return;
 
   try {
+    if (btnReanalisar) {
+      btnReanalisar.disabled = true;
+      btnReanalisar.innerText =
+        reanaliseManual
+          ? "Reanalisando..."
+          : "Gerando IA...";
+    }
+
+    if (reanaliseManual) {
+      iaBox.innerHTML = `
+        <div class="timeline-empty">
+          Reanalisando este lead com IA agora...
+        </div>
+      `;
+    }
+
     const token =
       localStorage.getItem("token");
 
@@ -12100,8 +12162,24 @@ async function carregarAnaliseIALead(leadId) {
       return;
     }
 
+    const analiseAtualizada = {
+      ...data.analise,
+      gerada_em: new Date().toLocaleString("pt-BR")
+    };
+
     iaBox.innerHTML =
-      renderizarDetalhesIALead(data.analise);
+      renderizarDetalhesIALead(analiseAtualizada);
+
+    if (leadAtual && Number(leadAtual.id) === Number(leadId)) {
+      leadAtual.ia_leads = analiseAtualizada;
+    }
+
+    const leadLista =
+      todosLeads.find(item => Number(item.id) === Number(leadId));
+
+    if (leadLista) {
+      leadLista.ia_leads = analiseAtualizada;
+    }
 
   } catch (err) {
     iaBox.innerHTML = `
@@ -12109,7 +12187,17 @@ async function carregarAnaliseIALead(leadId) {
         Erro ao carregar IA do lead.
       </div>
     `;
+  } finally {
+    if (btnReanalisar) {
+      btnReanalisar.disabled = false;
+      btnReanalisar.innerText = "Reanalisar agora";
+    }
   }
+}
+
+function reanalisarLeadAtualIA() {
+  if (!leadAtual?.id) return;
+  carregarAnaliseIALead(leadAtual.id, true);
 }
 
 function renderizarDetalhesRecuperacaoLead(lead) {
@@ -18631,8 +18719,16 @@ async function enviarFeedback() {
         id="drawer_ia_box"
         style="display:none;"
       >
-
-        <h4>IA Ouro - usa IA</h4>
+        <div class="drawer-box-topo">
+          <h4>IA Ouro - usa IA</h4>
+          <button
+            id="btn_reanalisar_ia_lead"
+            class="btn-reanalisar-ia"
+            onclick="reanalisarLeadAtualIA()"
+          >
+            Reanalisar agora
+          </button>
+        </div>
 
         <div class="ia-uso-alerta">
           Ao carregar esta analise, a plataforma usa a IA do plano Ouro.

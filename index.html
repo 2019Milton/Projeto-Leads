@@ -8829,8 +8829,8 @@ body.tema-claro .suporte-input {
           </label>
 
           <label>
-            <span>Modelo da OpenAI</span>
-            <input id="ia_config_modelo" placeholder="Ex: gpt-5-mini">
+            <span>Modelo da OpenAI definido na Railway</span>
+            <input id="ia_config_modelo" placeholder="Ex: gpt-5-mini" readonly>
           </label>
 
           <label>
@@ -16878,7 +16878,7 @@ async function carregarPainelIAAdmin() {
     } else if (iaStatus === "contratado") {
       iaStatusTexto = "IA ativa";
       iaStatusDetalhe =
-        `OpenAI conectada. Modelo em uso: ${config.modelo || "padrao do backend"}.`;
+        `OpenAI conectada. Modelo em uso na Railway: ${config.modelo || "gpt-5-mini"}.`;
       iaStatusCor = "#86efac";
     } else if (iaStatus === "pausado") {
       iaStatusTexto = "IA pausada";
@@ -16989,7 +16989,6 @@ async function salvarConfigIAAdmin() {
 
   const body = {
     provedor: "openai",
-    modelo: document.getElementById("ia_config_modelo")?.value,
     status: statusIA,
     assinatura_status: statusIA === "nao_contratado" ? "pendente" : "ativa",
     limite_mensal_requisicoes: document.getElementById("ia_config_limite_req")?.value,

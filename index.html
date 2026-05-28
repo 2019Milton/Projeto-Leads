@@ -11751,8 +11751,12 @@ function renderizarBadgeRecuperacaoLead(lead) {
 
 function criarLeadCard(lead) {
 
+  const leadJsonSeguro =
+    codificarJsonInline(lead);
+  const telefoneSeguro =
+    escaparHtml(lead.telefone || "");
   const iniciais =
-    lead.nome
+    String(lead.nome || "")
       ?.split(" ")
       .map(n => n[0])
       .slice(0,2)
@@ -11776,9 +11780,9 @@ function criarLeadCard(lead) {
 
       draggable="true"
 
-      data-lead-id="${lead.id}"
+      data-lead-id="${escaparHtml(lead.id)}"
 
-      data-lead-status="${lead.status || "novo"}"
+      data-lead-status="${escaparHtml(lead.status || "novo")}"
 
       ondragstart="iniciarArrastoLead(event)"
 
@@ -11789,7 +11793,7 @@ function criarLeadCard(lead) {
           leadFoiArrastado = false;
           return;
         }
-        abrirLeadDrawerPorId(${lead.id})
+        abrirLeadDrawerPorId(${Number(lead.id)})
       '
     >
 
@@ -11804,7 +11808,7 @@ function criarLeadCard(lead) {
 
         <div class="lead-identidade">
 
-          <h4>${lead.nome}</h4>
+          <h4>${escaparHtml(lead.nome || "-")}</h4>
 
           <span
             class="lead-score ${classeScore}"
@@ -11814,7 +11818,7 @@ function criarLeadCard(lead) {
           
               abrirMenuScore(
                 event,
-                ${JSON.stringify(lead).replace(/"/g, '&quot;')}
+                decodificarJsonInline('${leadJsonSeguro}')
               );
             '
           >
@@ -11846,16 +11850,16 @@ function criarLeadCard(lead) {
       <!-- INFO -->
       <div class="lead-info">
 
-        <p>📞 ${lead.telefone || "-"}</p>
+        <p>📞 ${escaparHtml(lead.telefone || "-")}</p>
 
         <div class="lead-meta">
 
           <span>
-            📢 ${lead.origem || "-"}
+            📢 ${escaparHtml(lead.origem || "-")}
           </span>
 
           <span>
-            📍 ${lead.campanha || "-"}
+            📍 ${escaparHtml(lead.campanha || "-")}
           </span>
 
         </div>
@@ -11866,8 +11870,10 @@ function criarLeadCard(lead) {
       <div class="lead-ultima-msg">
 
         💬 ${
-          lead.observacao ||
-          "Sem observações"
+          escaparHtml(
+            lead.observacao ||
+            "Sem observações"
+          )
         }
 
       </div>
@@ -11879,9 +11885,10 @@ function criarLeadCard(lead) {
 
         <button
           title="WhatsApp"
+          data-telefone="${telefoneSeguro}"
           onclick="
             event.stopPropagation();
-            abrirWhatsApp('${lead.telefone}')
+            abrirWhatsAppDeBotao(this)
           "
         >
           💬
@@ -11892,7 +11899,7 @@ function criarLeadCard(lead) {
           onclick="
             abrirMenuLigacao(
               event,
-              ${JSON.stringify(lead).replace(/"/g, '&quot;')}
+              decodificarJsonInline('${leadJsonSeguro}')
             )
           "
         >
@@ -11902,7 +11909,7 @@ function criarLeadCard(lead) {
         <button
           title="Mover"
           onclick="
-            abrirMenuMover(event, ${JSON.stringify(lead).replace(/"/g, '&quot;')})
+            abrirMenuMover(event, decodificarJsonInline('${leadJsonSeguro}'))
           "
         >
           ➡️
@@ -11910,7 +11917,7 @@ function criarLeadCard(lead) {
 
         <button
           title="Detalhes"
-          onclick='event.stopPropagation(); abrirLeadDrawer(${JSON.stringify(lead)})'
+          onclick="event.stopPropagation(); abrirLeadDrawerPorId(${Number(lead.id)})"
         >
           👁️
         </button>
@@ -12158,8 +12165,8 @@ function renderizarRespostasLead(lead, limite = 2) {
         .slice(0, limite)
         .map(item => `
           <div>
-            <strong>${item.pergunta || "Pergunta"}:</strong>
-            ${item.resposta || "-"}
+            <strong>${escaparHtml(item.pergunta || "Pergunta")}:</strong>
+            ${escaparHtml(item.resposta || "-")}
           </div>
         `)
         .join("")}
@@ -12865,12 +12872,13 @@ function renderizarDetalhesRecuperacaoLead(lead) {
       }
       <div class="drawer-actions">
         <button
-          onclick="atualizarStatusLead(obterLeadPorId(${lead.id}), 'em_conversa')"
+          onclick="atualizarStatusLead(obterLeadPorId(${Number(lead.id)}), 'em_conversa')"
         >
           Retomar conversa
         </button>
         <button
-          onclick="abrirWhatsApp('${lead.telefone || ""}')"
+          data-telefone="${escaparHtml(lead.telefone || "")}"
+          onclick="abrirWhatsAppDeBotao(this)"
         >
           WhatsApp
         </button>
@@ -14739,6 +14747,23 @@ function escaparHtml(valor) {
     .replaceAll("'", "&#39;");
 }
 
+function codificarJsonInline(valor) {
+  return encodeURIComponent(
+    JSON.stringify(valor || {})
+  );
+}
+
+function decodificarJsonInline(valor) {
+  try {
+    return JSON.parse(
+      decodeURIComponent(valor || "{}")
+    );
+  } catch (err) {
+    console.error("JSON inline invalido:", err);
+    return {};
+  }
+}
+
 function renderizarInteressesSelecionados() {
 
   const div =
@@ -15354,7 +15379,7 @@ async function carregarStatusMeta() {
             ">
         
               <img
-                src="${data.usuario_meta?.picture?.data?.url || ''}"
+                src="${escaparHtml(data.usuario_meta?.picture?.data?.url || '')}"
                 style="
                   width:50px;
                   height:50px;
@@ -15365,7 +15390,7 @@ async function carregarStatusMeta() {
         
               <div>
                 <div style="font-weight:bold;">
-                  ${data.usuario_meta?.name || "Usuário Meta"}
+                  ${escaparHtml(data.usuario_meta?.name || "Usuário Meta")}
                 </div>
         
                 <div style="color:#22c55e;">
@@ -15383,7 +15408,7 @@ async function carregarStatusMeta() {
                   ${facebookConectado ? "Conectado" : "Não conectado"}
                 </span>
                 <small>
-                  ${data.paginas?.[0]?.name || "Nenhuma página vinculada"}
+                  ${escaparHtml(data.paginas?.[0]?.name || "Nenhuma página vinculada")}
                 </small>
               </div>
 
@@ -15395,7 +15420,7 @@ async function carregarStatusMeta() {
                 <small>
                   ${
                     data.instagram?.username
-                      ? '@' + data.instagram.username
+                      ? '@' + escaparHtml(data.instagram.username)
                       : "Nenhuma conta profissional vinculada"
                   }
                 </small>
@@ -15405,7 +15430,7 @@ async function carregarStatusMeta() {
 
             <p>
               <b>📢 Conta de anúncios:</b><br>
-              ${conta?.nome || "-"}
+              ${escaparHtml(conta?.nome || "-")}
             </p>
 
             ${seletorContaAnuncios}
@@ -16174,8 +16199,8 @@ function detalheItem(titulo, valor, classe = "") {
 
   return `
     <div class="detalhe-item ${classe}">
-      <small>${titulo}</small>
-      <strong>${textoDetalhe(valor)}</strong>
+      <small>${escaparHtml(titulo)}</small>
+      <strong>${escaparHtml(textoDetalhe(valor))}</strong>
     </div>
   `;
 }
@@ -16218,6 +16243,8 @@ function abrirCampanhaDrawer(campanhaEncoded) {
 
   const cfg =
     campanha.configuracoes_avancadas || {};
+  const campanhaJsonSeguro =
+    codificarJsonInline(campanha);
 
   titulo.innerText =
     campanha.nome || "Campanha";
@@ -16230,7 +16257,7 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       </p>
       <button
         class="btn-reanalisar-ia"
-        onclick='analisarCampanhaIA(${JSON.stringify(campanha).replace(/'/g, "&apos;")})'
+        onclick="analisarCampanhaIA(decodificarJsonInline('${campanhaJsonSeguro}'))"
       >
         Analisar campanha com IA
       </button>
@@ -16768,6 +16795,12 @@ function abrirWhatsAppDeBotao(botao) {
   );
 }
 
+function ligarTelefoneDeBotao(botao) {
+  ligarTelefone(
+    botao?.dataset?.telefone || ""
+  );
+}
+
 
 // 🔥 MENU LIGAÇÃO
 function abrirMenuLigacao(
@@ -16799,21 +16832,15 @@ function abrirMenuLigacao(
   menu.innerHTML = `
 
     <button
-      onclick="
-        ligarTelefone(
-          '${lead.telefone}'
-        )
-      "
+      data-telefone="${escaparHtml(lead.telefone || "")}"
+      onclick="ligarTelefoneDeBotao(this)"
     >
       📱 Ligar Telefone
     </button>
 
     <button
-      onclick="
-        ligarWhatsApp(
-          '${lead.telefone}'
-        )
-      "
+      data-telefone="${escaparHtml(lead.telefone || "")}"
+      onclick="abrirWhatsAppDeBotao(this)"
     >
       💬 Chamada WhatsApp
     </button>
@@ -16916,6 +16943,9 @@ function abrirMenuScore(
 
   event.stopPropagation();
 
+  const leadJsonSeguro =
+    codificarJsonInline(lead);
+
   // remove antigo
   const antigo =
     document.getElementById(
@@ -16952,7 +16982,7 @@ function abrirMenuScore(
 
       baseHTML += `
         <div class="score-base-item">
-          • ${item}
+          • ${escaparHtml(item)}
         </div>
       `;
     });
@@ -17006,7 +17036,7 @@ function abrirMenuScore(
     <button
       onclick="
         definirScoreManual(
-          ${JSON.stringify(lead).replace(/"/g, '&quot;')},
+          decodificarJsonInline('${leadJsonSeguro}'),
           'quente'
         )
       "
@@ -17017,7 +17047,7 @@ function abrirMenuScore(
     <button
       onclick="
         definirScoreManual(
-          ${JSON.stringify(lead).replace(/"/g, '&quot;')},
+          decodificarJsonInline('${leadJsonSeguro}'),
           'morno'
         )
       "
@@ -17028,7 +17058,7 @@ function abrirMenuScore(
     <button
       onclick="
         definirScoreManual(
-          ${JSON.stringify(lead).replace(/"/g, '&quot;')},
+          decodificarJsonInline('${leadJsonSeguro}'),
           'frio'
         )
       "
@@ -17039,7 +17069,7 @@ function abrirMenuScore(
     <button
       onclick="
         definirScoreManual(
-          ${JSON.stringify(lead).replace(/"/g, '&quot;')},
+          decodificarJsonInline('${leadJsonSeguro}'),
           null
         )
       "

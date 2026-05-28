@@ -5850,9 +5850,34 @@ body.tema-claro .cal-nav span { color: #111827; }
 
 .lead-ia-mini strong,
 .admin-ia-mini strong {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   color: #facc15;
   margin-bottom: 4px;
+}
+
+.admin-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(250,204,21,0.45);
+  color: #fde68a;
+  background: rgba(15,23,42,0.72);
+  font-size: 10px;
+  font-weight: 900;
+  cursor: help;
+  flex: 0 0 auto;
+}
+
+.admin-ia-form label span,
+.tabela-admin th .admin-th-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .ia-copy-box {
@@ -9014,41 +9039,66 @@ body.tema-claro .suporte-input {
         <h3>Painel IA Ouro</h3>
         <p style="color:#fef3c7;margin-top:8px;font-size:13px;">
           Controle operacional da IA: ativar, pausar, acompanhar custo e limitar consumo por usuario Ouro.
+          Passe o mouse sobre o simbolo ? para entender cada campo.
         </p>
 
         <div class="admin-ia-grid">
           <div class="admin-ia-mini">
-            <strong>Usuarios Ouro</strong>
+            <strong>
+              Usuarios Ouro
+              <span class="admin-help" title="Quantidade de usuarios no plano Ouro. Apenas usuarios Ouro podem usar os recursos de IA, se a IA estiver ativa para eles.">?</span>
+            </strong>
             <span id="ia_admin_usuarios_ouro">0</span>
           </div>
           <div class="admin-ia-mini">
-            <strong>Chamadas no mes</strong>
+            <strong>
+              Chamadas no mes
+              <span class="admin-help" title="Total de vezes que algum recurso de IA foi usado neste mes, como analisar lead, gerar resposta, follow-up, resumo diario ou campanha.">?</span>
+            </strong>
             <span id="ia_admin_chamadas_mes">0</span>
           </div>
           <div class="admin-ia-mini">
-            <strong>Custo estimado</strong>
+            <strong>
+              Custo estimado
+              <span class="admin-help" title="Estimativa em reais do custo mensal da IA. Depende dos valores de tokens configurados no backend e pode ser diferente da fatura final da OpenAI.">?</span>
+            </strong>
             <span id="ia_admin_custo_mes">R$ 0,00</span>
           </div>
           <div class="admin-ia-mini">
-            <strong>Tokens no mes</strong>
+            <strong>
+              Tokens no mes
+              <span class="admin-help" title="Tokens sao pedacos de texto processados pela IA. Quanto mais texto enviado e recebido, mais tokens sao usados.">?</span>
+            </strong>
             <span id="ia_admin_tokens_mes">0</span>
           </div>
           <div class="admin-ia-mini">
-            <strong>Custo medio</strong>
+            <strong>
+              Custo medio
+              <span class="admin-help" title="Custo estimado dividido pela quantidade de chamadas de IA no mes. Ajuda a entender quanto custa, em media, cada uso da IA.">?</span>
+            </strong>
             <span id="ia_admin_custo_medio">R$ 0,00/chamada</span>
           </div>
           <div class="admin-ia-mini">
-            <strong>Uso medio por Ouro</strong>
+            <strong>
+              Uso medio por Ouro
+              <span class="admin-help" title="Media de chamadas de IA por usuario Ouro no mes. Ajuda a perceber se os usuarios estao usando pouco ou muito a IA.">?</span>
+            </strong>
             <span id="ia_admin_media_usuario">0 chamada(s)</span>
           </div>
           <div class="admin-ia-mini">
-            <strong>Status da IA</strong>
+            <strong>
+              Status da IA
+              <span class="admin-help" title="Mostra se a IA esta ativa, pausada, sem configuracao ou sem chave da OpenAI no Railway.">?</span>
+            </strong>
             <span id="ia_admin_status_api">-</span>
           </div>
         </div>
 
         <div class="admin-ia-status-card">
-          <strong>Operacao da IA</strong>
+          <strong>
+            Operacao da IA
+            <span class="admin-help" title="Resumo do estado real da IA. Se estiver ativa, usuarios Ouro com IA liberada podem consumir a API. Se estiver pausada, ninguem usa IA.">?</span>
+          </strong>
           <span id="ia_admin_status_operacao">-</span>
           <small id="ia_admin_status_detalhe">
             Use o status abaixo para ativar ou pausar a IA para todos os usuarios Ouro.
@@ -9065,7 +9115,10 @@ body.tema-claro .suporte-input {
           <input id="ia_config_custo_contratado" type="hidden" value="0">
 
           <label>
-            <span>Status da IA</span>
+            <span>
+              Status da IA
+              <span class="admin-help" title="IA ativa libera os recursos de IA para usuarios Ouro. IA pausada bloqueia para todos. IA nao configurada deixa a IA indisponivel.">?</span>
+            </span>
             <select id="ia_config_status">
               <option value="contratado">IA ativa</option>
               <option value="pausado">IA pausada para todos</option>
@@ -9074,22 +9127,34 @@ body.tema-claro .suporte-input {
           </label>
 
           <label>
-            <span>Modelo da OpenAI definido na Railway</span>
+            <span>
+              Modelo da OpenAI definido na Railway
+              <span class="admin-help" title="Modelo configurado na variavel OPENAI_MODEL do Railway. Este campo e apenas leitura; para mudar, altere no Railway e faca redeploy/restart.">?</span>
+            </span>
             <input id="ia_config_modelo" placeholder="Ex: gpt-5-mini" readonly>
           </label>
 
           <label>
-            <span>Limite mensal total de chamadas</span>
+            <span>
+              Limite mensal total de chamadas
+              <span class="admin-help" title="Quantidade maxima mensal de chamadas de IA considerada como limite operacional global. Use para controlar uso e evitar excesso.">?</span>
+            </span>
             <input id="ia_config_limite_req" type="number" placeholder="Ex: 1000">
           </label>
 
           <label>
-            <span>Limite mensal total de custo</span>
+            <span>
+              Limite mensal total de custo
+              <span class="admin-help" title="Valor mensal maximo estimado para controlar gasto com IA. A plataforma usa estimativas, nao a fatura oficial da OpenAI.">?</span>
+            </span>
             <input id="ia_config_limite_custo" type="number" placeholder="Ex: 300">
           </label>
 
           <label>
-            <span>Observacoes internas</span>
+            <span>
+              Observacoes internas
+              <span class="admin-help" title="Campo livre para registrar anotacoes suas, como chave ativa, data de revisao, limites combinados ou observacoes de custo.">?</span>
+            </span>
             <textarea id="ia_config_observacoes" placeholder="Ex: revisar custo semanalmente, chave ativa na Railway, limite de seguranca..."></textarea>
           </label>
         </div>
@@ -9102,13 +9167,13 @@ body.tema-claro .suporte-input {
           <table class="tabela-admin">
             <thead>
               <tr>
-                <th>Usuario Ouro</th>
-                <th>Status interno</th>
-                <th>Uso mensal</th>
-                <th>Tokens</th>
-                <th>Limites</th>
-                <th>Ultimo uso</th>
-                <th>Acoes</th>
+                <th><span class="admin-th-help">Usuario Ouro <span class="admin-help" title="Usuario no plano Ouro. Abaixo do email aparece desde quando ele esta no plano e se a IA esta ativa para ele.">?</span></span></th>
+                <th><span class="admin-th-help">Status interno <span class="admin-help" title="Status administrativo da assinatura do usuario, usado internamente para controle.">?</span></span></th>
+                <th><span class="admin-th-help">Uso mensal <span class="admin-help" title="Quantidade de chamadas de IA feitas por este usuario no mes e custo estimado desse uso.">?</span></span></th>
+                <th><span class="admin-th-help">Tokens <span class="admin-help" title="Total de tokens de entrada e saida usados por este usuario no mes. Ajuda a entender consumo real de texto pela IA.">?</span></span></th>
+                <th><span class="admin-th-help">Limites <span class="admin-help" title="Limite mensal de chamadas e limite mensal de custo configurados para este usuario.">?</span></span></th>
+                <th><span class="admin-th-help">Ultimo uso <span class="admin-help" title="Data e hora da ultima chamada de IA feita por este usuario.">?</span></span></th>
+                <th><span class="admin-th-help">Acoes <span class="admin-help" title="Permite alterar limites individuais ou desativar a IA para um usuario Ouro especifico.">?</span></span></th>
               </tr>
             </thead>
             <tbody id="admin_ia_tabela_usuarios">

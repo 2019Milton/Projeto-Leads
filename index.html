@@ -7786,6 +7786,10 @@ body.tema-claro .suporte-input {
             style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
             Aceitar Termos agora →
           </a>
+          <button type="button" onclick="confirmarTosAceito(document.getElementById('pagina_select').value)"
+            style="display:inline-block;margin-top:6px;margin-left:6px;padding:5px 12px;background:transparent;border:1px solid #d97706;color:#fde68a;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;">
+            Já aceitei
+          </button>
         </div>
 
         <section class="campaign-setup-section">
@@ -7836,13 +7840,15 @@ body.tema-claro .suporte-input {
 
         <div id="imagens-container" style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px"></div>
 
+        <input type="file" id="input-multiplas-imagens" accept="image/*" multiple style="display:none">
+
         <button
           type="button"
           id="btn-adicionar-imagem"
           style="align-self:flex-start;background:transparent;border:1px dashed rgba(255,255,255,.3);color:inherit;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;margin-top:2px"
-        >+ Adicionar imagem</button>
+        >+ Adicionar imagens</button>
 
-        <p style="font-size:11px;opacity:.55;margin:4px 0 0">Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
+        <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
   
         <!-- ✍️ TEXTO -->
         <label>Texto do anúncio</label>
@@ -15364,7 +15370,7 @@ function atualizarPosicoes() {
   });
 }
 
-function criarItemImagem() {
+function criarItemImagem(arquivoInicial) {
   const item = document.createElement("div");
   item.className = "imagem-item";
   item.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap";
@@ -15373,6 +15379,10 @@ function criarItemImagem() {
   badge.className = "imagem-posicao";
   badge.style.cssText = "font-size:11px;font-weight:700;background:rgba(255,255,255,.12);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0";
   badge.textContent = "1";
+
+  const thumb = document.createElement("img");
+  thumb.className = "imagem-thumb";
+  thumb.style.cssText = "width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;display:none;";
 
   const btnSubir = document.createElement("button");
   btnSubir.type = "button";
@@ -15413,8 +15423,22 @@ function criarItemImagem() {
   nomeSpan.textContent = "Nenhum arquivo";
   nomeSpan.style.cssText = "font-size:12px;opacity:.6;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
 
+  function aplicarArquivo(arquivo) {
+    if (!arquivo) return;
+    const dt = new DataTransfer();
+    dt.items.add(arquivo);
+    fileInput.files = dt.files;
+    nomeSpan.textContent = arquivo.name;
+    if (thumb.dataset.objectUrl) URL.revokeObjectURL(thumb.dataset.objectUrl);
+    const url = URL.createObjectURL(arquivo);
+    thumb.src = url;
+    thumb.dataset.objectUrl = url;
+    thumb.style.display = "block";
+  }
+  item.aplicarArquivo = aplicarArquivo;
+
   fileInput.addEventListener("change", () => {
-    nomeSpan.textContent = fileInput.files[0]?.name || "Nenhum arquivo";
+    aplicarArquivo(fileInput.files[0]);
   });
 
   const btnRemover = document.createElement("button");
@@ -15423,15 +15447,23 @@ function criarItemImagem() {
   btnRemover.style.cssText = "background:transparent;border:1px solid rgba(255,255,255,.2);color:inherit;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center";
   btnRemover.addEventListener("click", () => {
     const container = document.getElementById("imagens-container");
-    if (container.children.length > 1) { item.remove(); atualizarPosicoes(); }
+    if (container.children.length > 1) {
+      if (thumb.dataset.objectUrl) URL.revokeObjectURL(thumb.dataset.objectUrl);
+      item.remove();
+      atualizarPosicoes();
+    }
   });
 
   item.appendChild(badge);
+  item.appendChild(thumb);
   item.appendChild(btnSubir);
   item.appendChild(btnDescer);
   item.appendChild(labelBtn);
   item.appendChild(nomeSpan);
   item.appendChild(btnRemover);
+
+  if (arquivoInicial) aplicarArquivo(arquivoInicial);
+
   return item;
 }
 
@@ -15443,13 +15475,42 @@ function inicializarCarrosselImagens() {
   container.appendChild(criarItemImagem());
   atualizarPosicoes();
 
+  const inputMultiplo = document.getElementById("input-multiplas-imagens");
+
   document.getElementById("btn-adicionar-imagem").addEventListener("click", () => {
     if (container.children.length >= 10) {
       alert("Máximo de 10 imagens permitidas.");
       return;
     }
-    container.appendChild(criarItemImagem());
+    inputMultiplo.click();
+  });
+
+  inputMultiplo.addEventListener("change", () => {
+    const arquivos = Array.from(inputMultiplo.files || []);
+    inputMultiplo.value = "";
+    if (!arquivos.length) return;
+
+    let recusados = 0;
+
+    for (const arquivo of arquivos) {
+      const itemVazio = Array.from(container.children).find(
+        item => !item.querySelector(".imagem-input").files.length
+      );
+
+      if (itemVazio) {
+        itemVazio.aplicarArquivo(arquivo);
+      } else if (container.children.length < 10) {
+        container.appendChild(criarItemImagem(arquivo));
+      } else {
+        recusados++;
+      }
+    }
+
     atualizarPosicoes();
+
+    if (recusados > 0) {
+      alert(`Máximo de 10 imagens permitidas. ${recusados} imagem(ns) não foram adicionadas.`);
+    }
   });
 }
 
@@ -15461,12 +15522,32 @@ function atualizarTosHint() {
   const link = document.getElementById("tos_lead_ads_link");
   if (!hint || !select) return;
   const pageId = select.value;
-  if (pageId && pageId !== "Carregando páginas...") {
+  const tosAceitas = statusMetaGuia?.tos_aceitas || [];
+  if (pageId && pageId !== "Carregando páginas..." && !tosAceitas.includes(pageId)) {
     hint.style.display = "block";
     if (link) link.href = `https://www.facebook.com/ads/leadgen/tos?page_id=${pageId}`;
   } else {
     hint.style.display = "none";
   }
+}
+
+async function confirmarTosAceito(pageId) {
+  const token = localStorage.getItem("token");
+  if (!token || !pageId) return;
+  try {
+    await fetch(`${API}/meta/tos-aceitar`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ page_id: pageId })
+    });
+  } catch (err) {
+    console.error("ERRO TOS ACEITAR:", err);
+  }
+  await carregarStatusMeta();
+  atualizarTosHint();
 }
 
 function setPublishProgress(pct, label) {
@@ -15881,7 +15962,7 @@ async function carregarStatusMeta() {
                   <a href="https://www.facebook.com/pages/create" target="_blank" style="color:#f59e0b;">facebook.com/pages/create</a>
                   e reconecte.
                 </small>` : ""}
-                ${facebookConectado && data.paginas?.[0]?.id ? `
+                ${facebookConectado && data.paginas?.[0]?.id && !(data.tos_aceitas || []).includes(data.paginas[0].id) ? `
                 <div style="margin-top:8px;padding:8px 10px;background:#422006;border:1px solid #d97706;border-radius:6px;">
                   <span style="color:#fbbf24;font-size:12px;font-weight:600;">⚠️ Termos de Lead Ads</span><br>
                   <span style="color:#fde68a;font-size:12px;">Páginas novas precisam aceitar os Termos de Serviço de Geração de Cadastros do Facebook antes de criar anúncios de lead.</span><br>
@@ -15889,6 +15970,10 @@ async function carregarStatusMeta() {
                     style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
                     Aceitar Termos agora →
                   </a>
+                  <button type="button" onclick="confirmarTosAceito('${data.paginas[0].id}')"
+                    style="display:inline-block;margin-top:6px;margin-left:6px;padding:5px 12px;background:transparent;border:1px solid #d97706;color:#fde68a;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;">
+                    Já aceitei
+                  </button>
                 </div>` : ""}
               </div>
 

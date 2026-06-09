@@ -4494,6 +4494,12 @@ body.tema-claro .cal-nav span { color: #111827; }
   font-size: 12px;
   color: #e5e7eb;
   line-height: 1.5;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.ia-opcao-card.ia-opcao-selecionada {
+  background: rgba(34,197,94,0.18);
+  border: 1px solid rgba(34,197,94,0.6);
 }
 
 .ia-opcao-numero {
@@ -12983,7 +12989,7 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
     ].filter(Boolean).join(", ");
 
     return `
-      <div class="ia-opcao-card">
+      <div class="ia-opcao-card" id="ia_opcao_card_${i}">
         <div class="ia-opcao-numero">Opcao ${i + 1}</div>
         ${titulo ? `<div class="ia-opcao-titulo">${escaparHtml(titulo)}</div>` : ""}
         ${texto ? `<div class="ia-opcao-campo"><strong>Texto:</strong> ${escaparHtml(texto)}</div>` : ""}
@@ -12996,6 +13002,7 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
         <button
           type="button"
           class="btn-reanalisar-ia"
+          id="ia_opcao_btn_${i}"
           onclick="aplicarCampanhaIA(${i})"
           style="margin-top:10px;width:100%;"
         >
@@ -13014,6 +13021,13 @@ function aplicarCampanhaIA(indice) {
     alert("Gere uma sugestao com IA primeiro.");
     return;
   }
+
+  (sugestoesCampanhaIAAtual || []).forEach((_, idx) => {
+    const card = document.getElementById(`ia_opcao_card_${idx}`);
+    const btn = document.getElementById(`ia_opcao_btn_${idx}`);
+    if (card) card.classList.toggle("ia-opcao-selecionada", idx === indice);
+    if (btn) btn.textContent = idx === indice ? "Opcao selecionada" : "Usar esta opcao";
+  });
 
   if (s.nome_campanha) {
     const el = document.getElementById("campanha_nome");

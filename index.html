@@ -17973,6 +17973,13 @@ async function carregarPainelIAAdmin() {
       const tokensUsuario =
         Number(u.tokens_entrada_mes || 0) +
         Number(u.tokens_saida_mes || 0);
+      const providerAtual = u.ia_provider || "auto";
+
+      const providerLabels = {
+        auto: "Auto (fallback)",
+        openai: "OpenAI",
+        anthropic: "Anthropic (Claude)"
+      };
 
       return `
         <tr>
@@ -17991,12 +17998,25 @@ async function carregarPainelIAAdmin() {
           <td>${chamadas}/${limite} req<br>${formatarMoeda(custo)}/${formatarMoeda(limiteCusto)}</td>
           <td>${u.ultimo_uso ? new Date(u.ultimo_uso).toLocaleString("pt-BR") : "-"}</td>
           <td>
-            <button onclick='alterarLimitesIAUsuario(${u.id}, ${limite}, ${limiteCusto}, ${JSON.stringify(u.assinatura_status || "manual")}, ${usuarioIAAtiva})'>
-              Limites
-            </button>
-            <button onclick='alterarIAUsuario(${u.id}, ${!usuarioIAAtiva})'>
-              ${usuarioIAAtiva ? "Desativar IA" : "Ativar IA"}
-            </button>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+              <select
+                style="font-size:11px;padding:2px 4px;border-radius:4px;background:#1e1e2e;color:#e2e8f0;border:1px solid #4c4f69;cursor:pointer;"
+                onchange='alterarProviderIAUsuario(${u.id}, this.value, this)'
+                title="Provider de IA para este usuario"
+              >
+                <option value="auto" ${providerAtual === "auto" ? "selected" : ""}>Auto (fallback)</option>
+                <option value="openai" ${providerAtual === "openai" ? "selected" : ""}>OpenAI</option>
+                <option value="anthropic" ${providerAtual === "anthropic" ? "selected" : ""}>Anthropic (Claude)</option>
+              </select>
+              <div style="display:flex;gap:4px;">
+                <button onclick='alterarLimitesIAUsuario(${u.id}, ${limite}, ${limiteCusto}, ${JSON.stringify(u.assinatura_status || "manual")}, ${usuarioIAAtiva})'>
+                  Limites
+                </button>
+                <button onclick='alterarIAUsuario(${u.id}, ${!usuarioIAAtiva})'>
+                  ${usuarioIAAtiva ? "Desativar IA" : "Ativar IA"}
+                </button>
+              </div>
+            </div>
           </td>
         </tr>
       `;
@@ -18127,6 +18147,34 @@ async function alterarIAUsuario(id, ativo) {
   }
 
   await carregarPainelIAAdmin();
+}
+
+async function alterarProviderIAUsuario(id, provider, selectEl) {
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/ia-limites`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ ia_provider: provider })
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Erro ao alterar provider de IA");
+    return;
+  }
+
+  if (selectEl) {
+    selectEl.style.borderColor = "#86efac";
+    setTimeout(() => { selectEl.style.borderColor = "#4c4f69"; }, 1500);
+  }
 }
 
 async function carregarRecursosAdmin() {

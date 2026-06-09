@@ -9149,6 +9149,66 @@ body.tema-claro .suporte-input {
           </div>
         </div>
 
+        <!-- Consumo por provider -->
+        <div style="margin-top:18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <strong style="color:#fef3c7;font-size:13px;">
+              Consumo por Provider — mes atual
+            </strong>
+            <span id="ia_saldos_atualizado" style="font-size:11px;color:#6b7280;">carregando...</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+            <!-- OpenAI -->
+            <div style="background:#1e1e2e;border:1px solid #3b3f5c;border-radius:8px;padding:14px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                <span style="font-size:13px;font-weight:600;color:#7dd3fc;">OpenAI</span>
+                <span id="ia_saldo_openai_badge" style="font-size:10px;padding:2px 6px;border-radius:10px;background:#064e3b;color:#6ee7b7;display:none;">saldo disponivel</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+                <div>
+                  <div style="color:#9ca3af;margin-bottom:2px;">Chamadas</div>
+                  <div id="ia_saldo_openai_chamadas" style="color:#e2e8f0;font-weight:600;">-</div>
+                </div>
+                <div>
+                  <div style="color:#9ca3af;margin-bottom:2px;">Tokens</div>
+                  <div id="ia_saldo_openai_tokens" style="color:#e2e8f0;font-weight:600;">-</div>
+                </div>
+                <div>
+                  <div style="color:#9ca3af;margin-bottom:2px;">Gasto estimado</div>
+                  <div id="ia_saldo_openai_custo" style="color:#fbbf24;font-weight:600;">-</div>
+                </div>
+                <div id="ia_saldo_openai_saldo_wrap">
+                  <div style="color:#9ca3af;margin-bottom:2px;">Saldo restante</div>
+                  <div id="ia_saldo_openai_saldo" style="color:#6ee7b7;font-weight:600;">-</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Anthropic -->
+            <div style="background:#1e1e2e;border:1px solid #3b3f5c;border-radius:8px;padding:14px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                <span style="font-size:13px;font-weight:600;color:#c4b5fd;">Anthropic (Claude)</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+                <div>
+                  <div style="color:#9ca3af;margin-bottom:2px;">Chamadas</div>
+                  <div id="ia_saldo_anthropic_chamadas" style="color:#e2e8f0;font-weight:600;">-</div>
+                </div>
+                <div>
+                  <div style="color:#9ca3af;margin-bottom:2px;">Tokens</div>
+                  <div id="ia_saldo_anthropic_tokens" style="color:#e2e8f0;font-weight:600;">-</div>
+                </div>
+                <div style="grid-column:1/-1;">
+                  <div style="color:#9ca3af;margin-bottom:2px;">Gasto estimado</div>
+                  <div id="ia_saldo_anthropic_custo" style="color:#fbbf24;font-weight:600;">-</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         <div class="admin-ia-status-card">
           <strong>
             Operacao da IA
@@ -18024,6 +18084,71 @@ async function carregarPainelIAAdmin() {
 
   } catch (err) {
     console.error("ERRO PAINEL IA:", err);
+  }
+
+  await carregarSaldosIA();
+}
+
+let _saldosIAInterval = null;
+
+async function carregarSaldosIA() {
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await fetch(`${API}/admin/ia/saldos`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    const openai = data.openai || {};
+    const anthropic = data.anthropic || {};
+
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = val;
+    };
+
+    // OpenAI
+    set("ia_saldo_openai_chamadas", (openai.chamadas || 0) + " chamada(s)");
+    set("ia_saldo_openai_tokens",
+      ((Number(openai.tokens_entrada || 0) + Number(openai.tokens_saida || 0))
+        .toLocaleString("pt-BR")) + " tokens");
+    set("ia_saldo_openai_custo", formatarMoeda(openai.custo_total || 0));
+
+    const saldoApi = openai.saldo_api;
+    const saldoWrap = document.getElementById("ia_saldo_openai_saldo_wrap");
+    const badge = document.getElementById("ia_saldo_openai_badge");
+    if (saldoApi) {
+      set("ia_saldo_openai_saldo", `US$ ${Number(saldoApi.total_available).toFixed(2)} restantes`);
+      if (badge) badge.style.display = "inline";
+      if (saldoWrap) saldoWrap.style.display = "block";
+    } else {
+      if (saldoWrap) saldoWrap.style.display = "none";
+      if (badge) badge.style.display = "none";
+    }
+
+    // Anthropic
+    set("ia_saldo_anthropic_chamadas", (anthropic.chamadas || 0) + " chamada(s)");
+    set("ia_saldo_anthropic_tokens",
+      ((Number(anthropic.tokens_entrada || 0) + Number(anthropic.tokens_saida || 0))
+        .toLocaleString("pt-BR")) + " tokens");
+    set("ia_saldo_anthropic_custo", formatarMoeda(anthropic.custo_total || 0));
+
+    // Timestamp
+    if (data.atualizado_em) {
+      const atualizado = new Date(data.atualizado_em);
+      const hora = atualizado.toLocaleTimeString("pt-BR");
+      set("ia_saldos_atualizado", `Atualizado às ${hora}`);
+    }
+
+    // Auto-refresh a cada 30s
+    if (!_saldosIAInterval) {
+      _saldosIAInterval = setInterval(carregarSaldosIA, 30000);
+    }
+
+  } catch (err) {
+    console.error("ERRO SALDOS IA:", err);
   }
 }
 

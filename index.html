@@ -9183,10 +9183,12 @@ body.tema-claro .suporte-input {
 
           <label>
             <span>
-              Modelo da OpenAI definido na Railway
-              <span class="admin-help" title="Modelo configurado na variavel OPENAI_MODEL do Railway. Este campo e apenas leitura; para mudar, altere no Railway e faca redeploy/restart.">?</span>
+              Modelo de IA ativo
+              <span class="admin-help" title="Modelo que sera usado para todas as chamadas de IA. Os modelos disponiveis sao definidos pela variavel OPENAI_MODELOS_DISPONIVEIS no Railway.">?</span>
             </span>
-            <input id="ia_config_modelo" placeholder="Ex: gpt-5-mini" readonly>
+            <select id="ia_config_modelo">
+              <option value="">Carregando...</option>
+            </select>
           </label>
 
           <label>
@@ -17926,8 +17928,15 @@ async function carregarPainelIAAdmin() {
     }
 
     preencherValor("ia_config_provedor", config.provedor || "openai");
-    preencherValor("ia_config_modelo", config.modelo || "");
     preencherValor("ia_config_status", iaStatus);
+
+    const modeloSelect = document.getElementById("ia_config_modelo");
+    if (modeloSelect) {
+      const modelos = data.modelos_disponiveis || [config.modelo || "gpt-5-mini"];
+      modeloSelect.innerHTML = modelos.map(m =>
+        `<option value="${escaparHtml(m)}" ${m === config.modelo ? "selected" : ""}>${escaparHtml(m)}</option>`
+      ).join("");
+    }
     preencherValor("ia_config_assinatura", config.assinatura_status || "ativa");
     preencherValor("ia_config_limite_req", config.limite_mensal_requisicoes || 0);
     preencherValor("ia_config_limite_custo", config.limite_mensal_custo || 0);
@@ -18006,6 +18015,7 @@ async function salvarConfigIAAdmin() {
 
   const body = {
     provedor: "openai",
+    modelo: document.getElementById("ia_config_modelo")?.value || null,
     status: statusIA,
     assinatura_status: statusIA === "nao_contratado" ? "pendente" : "ativa",
     limite_mensal_requisicoes: document.getElementById("ia_config_limite_req")?.value,

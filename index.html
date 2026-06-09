@@ -17933,9 +17933,15 @@ async function carregarPainelIAAdmin() {
     const modeloSelect = document.getElementById("ia_config_modelo");
     if (modeloSelect) {
       const modelos = data.modelos_disponiveis || [config.modelo || "gpt-5-mini"];
-      modeloSelect.innerHTML = modelos.map(m =>
-        `<option value="${escaparHtml(m)}" ${m === config.modelo ? "selected" : ""}>${escaparHtml(m)}</option>`
-      ).join("");
+      const rotulosModelo = {
+        "gpt-4o":      "gpt-4o — Melhor qualidade",
+        "gpt-4o-mini": "gpt-4o-mini — Recomendado (custo-beneficio)",
+        "gpt-5-mini":  "gpt-5-mini — Mais basico"
+      };
+      modeloSelect.innerHTML = modelos.map(m => {
+        const label = rotulosModelo[m] || m;
+        return `<option value="${escaparHtml(m)}" ${m === config.modelo ? "selected" : ""}>${escaparHtml(label)}</option>`;
+      }).join("");
     }
     preencherValor("ia_config_assinatura", config.assinatura_status || "ativa");
     preencherValor("ia_config_limite_req", config.limite_mensal_requisicoes || 0);

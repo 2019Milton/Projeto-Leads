@@ -8226,6 +8226,16 @@ body.tema-claro .suporte-input {
         >
           🚀 Publicar Campanha
         </button>
+
+        <div id="publicar_progresso" style="display:none;margin-top:14px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <span id="publicar_progresso_label" style="font-size:13px;color:#94a3b8;flex:1;">Iniciando...</span>
+            <span id="publicar_progresso_pct" style="font-size:13px;font-weight:700;color:#6366f1;min-width:36px;text-align:right;">0%</span>
+          </div>
+          <div style="height:6px;background:#1e293b;border-radius:99px;overflow:hidden;">
+            <div id="publicar_progresso_bar" style="height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:99px;transition:width 0.4s ease;"></div>
+          </div>
+        </div>
       </div>
 
       <!-- 📋 PAINEL DE INFORMAÇÕES -->
@@ -15436,6 +15446,25 @@ function inicializarCarrosselImagens() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+function setPublishProgress(pct, label) {
+  const wrap = document.getElementById("publicar_progresso");
+  const bar = document.getElementById("publicar_progresso_bar");
+  const pctEl = document.getElementById("publicar_progresso_pct");
+  const labelEl = document.getElementById("publicar_progresso_label");
+  const btn = document.getElementById("btn_publicar_campanha");
+  if (!wrap) return;
+  if (pct === null) {
+    wrap.style.display = "none";
+    if (btn) btn.disabled = false;
+    return;
+  }
+  wrap.style.display = "block";
+  if (btn) btn.disabled = true;
+  if (bar) bar.style.width = pct + "%";
+  if (pctEl) pctEl.textContent = pct + "%";
+  if (labelEl) labelEl.textContent = label || "";
+}
+
 async function criarCampanhaCompleta() {
 
   try {
@@ -15448,7 +15477,7 @@ async function criarCampanhaCompleta() {
 
     const decoded = atob(token);
     const [usuario_id] = decoded.split(":");
-    
+
     // 📝 CAMPOS
     const campanha_nome =
       document.getElementById("campanha_nome").value;
@@ -15497,8 +15526,13 @@ async function criarCampanhaCompleta() {
 
     // 🔥 UPLOAD DE TODAS AS IMAGENS
     const imageHashes = [];
+    const totalImagens = imagensArquivos.length;
 
-    for (const file of imagensArquivos) {
+    for (let i = 0; i < imagensArquivos.length; i++) {
+      const file = imagensArquivos[i];
+      const pct = Math.round(5 + ((i + 1) / totalImagens) * 20);
+      setPublishProgress(pct, `Enviando imagem ${i + 1} de ${totalImagens}...`);
+
       const formData = new FormData();
       formData.append("imagem", file);
       formData.append("usuario_id", usuario_id);
@@ -15516,6 +15550,7 @@ async function criarCampanhaCompleta() {
       console.log("UPLOAD:", upload);
 
       if (upload.error) {
+        setPublishProgress(null);
         alert(upload.error);
         return;
       }
@@ -15524,6 +15559,8 @@ async function criarCampanhaCompleta() {
     }
 
     const imageHash = imageHashes[0];
+
+    setPublishProgress(35, "Criando campanha no Meta...");
 
     // 🔥 CAMPANHA
     const campanhaRes = await fetch(
@@ -15548,15 +15585,16 @@ async function criarCampanhaCompleta() {
     console.log("CAMPANHA META:", campanha);
     
     if (campanha.error) {
-    
+      setPublishProgress(null);
       alert(
         campanha.error?.message ||
         campanha.error ||
         "Erro campanha"
       );
-    
       return;
     }
+
+    setPublishProgress(55, "Criando formulário de leads...");
 
     // 🔥 FORM
     const formRes = await fetch(
@@ -15580,15 +15618,16 @@ async function criarCampanhaCompleta() {
     console.log("FORM META:", form);
     
     if (form.error) {
-    
+      setPublishProgress(null);
       alert(
         form.error?.message ||
         form.error ||
         "Erro formulário"
       );
-    
       return;
     }
+
+    setPublishProgress(72, "Criando conjunto de anúncios...");
 
     // 🔥 ADSET
     const adsetRes = await fetch(
@@ -15615,16 +15654,17 @@ async function criarCampanhaCompleta() {
     console.log("ADSET META:", adset);
     
     if (adset.error) {
-    
+      setPublishProgress(null);
       alert(
         adset.error?.error_user_msg ||
         adset.error?.message ||
         adset.error ||
         "Erro adset"
       );
-    
       return;
     }
+
+    setPublishProgress(88, "Publicando anúncio...");
 
     // 🔥 ANÚNCIO
     const anuncioRes = await fetch(
@@ -15668,25 +15708,30 @@ async function criarCampanhaCompleta() {
     if (anuncio.error) {
 
       console.error(anuncio);
-    
+      setPublishProgress(null);
       alert(
         anuncio.detalhe?.message ||
         anuncio.error ||
         "Erro ao criar anúncio"
       );
-    
+
       return;
     }
+
+    setPublishProgress(100, "Campanha publicada com sucesso!");
 
     // 🔄 RELOAD
     await sincronizarCampanhas();
 
-    alert("🚀 Campanha criada com sucesso");
+    setTimeout(() => {
+      setPublishProgress(null);
+      alert("🚀 Campanha criada com sucesso");
+    }, 800);
 
   } catch (err) {
 
     console.error(err);
-
+    setPublishProgress(null);
     alert("Erro ao criar campanha");
   }
 }

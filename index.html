@@ -15988,16 +15988,21 @@ async function carregarStatusMeta() {
         }
       </p>
 
-      <a
-        href="https://adsmanager.facebook.com/billing"
-        target="_blank"
-        rel="noopener noreferrer"
-        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;color:inherit;text-decoration:none;margin-top:4px;opacity:.85;transition:opacity .15s"
-        onmouseover="this.style.opacity='1'"
-        onmouseout="this.style.opacity='.85'"
-      >
-        💳 Gerenciar créditos na Meta
-      </a>
+      ${(() => {
+        const rawId = data.conta_anuncios?.id || "";
+        const accountId = rawId.replace("act_", "");
+        const billingUrl = accountId
+          ? `https://business.facebook.com/billing_hub/payment_settings/?placement=ads_manager&asset_id=${accountId}&payment_account_id_from_jsmodule=${accountId}`
+          : "https://business.facebook.com/billing_hub/payment_settings/";
+        return `<a
+          href="${billingUrl}"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;color:inherit;text-decoration:none;margin-top:4px;opacity:.85;transition:opacity .15s"
+          onmouseover="this.style.opacity='1'"
+          onmouseout="this.style.opacity='.85'"
+        >💳 Gerenciar créditos na Meta</a>`;
+      })()}
 
       <hr>
 

@@ -5290,6 +5290,25 @@ body.tema-claro .cal-nav span { color: #111827; }
   font-weight: 700;
 }
 
+.campanha-erro-pagamento {
+
+  width: fit-content;
+
+  margin: 0 0 14px;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  background: rgba(239,68,68,0.14);
+
+  color: #fca5a5;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
 .campanha-encaminhar-modal .pagamento-modal-content {
 
   width: min(430px, 100%);
@@ -16441,6 +16460,16 @@ async function carregarCampanhas() {
           ? `
             <div class="campanha-encaminhada">
               Historico local da plataforma. Metricas da Meta indisponiveis.
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        c.erro_pagamento
+          ? `
+            <div class="campanha-erro-pagamento">
+              💳 Erro no pagamento: ${escaparHtml(c.erro_pagamento)}
             </div>
           `
           : ""

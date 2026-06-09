@@ -7757,28 +7757,25 @@ body.tema-claro .suporte-input {
         <label>Objetivo</label>
   
         <select id="objetivo_select">
-  
+
           <option value="OUTCOME_LEADS">
             Geração de Leads
           </option>
-  
-          <option value="OUTCOME_TRAFFIC">
-            Tráfego
-          </option>
-  
-          <option value="OUTCOME_ENGAGEMENT">
-            Engajamento
-          </option>
-  
+
         </select>
   
-        <!-- 🖼️ IMAGEM -->
-        <label>Imagem do anúncio</label>
-  
-        <input
-          type="file"
-          id="imagem"
-        >
+        <!-- 🖼️ IMAGENS CARROSSEL -->
+        <label>Imagens do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(carrossel — máx. 10)</span></label>
+
+        <div id="imagens-container" style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px"></div>
+
+        <button
+          type="button"
+          id="btn-adicionar-imagem"
+          style="align-self:flex-start;background:transparent;border:1px dashed rgba(255,255,255,.3);color:inherit;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;margin-top:2px"
+        >+ Adicionar imagem</button>
+
+        <p style="font-size:11px;opacity:.55;margin:4px 0 0">Marque como <strong>Principal</strong> a imagem que aparece primeiro no carrossel.</p>
   
         <!-- ✍️ TEXTO -->
         <label>Texto do anúncio</label>
@@ -15044,6 +15041,86 @@ function coletarConfiguracoesAvancadas() {
   };
 }
 
+// ─── CARROSSEL DE IMAGENS ────────────────────────────────────────────────────
+
+function criarItemImagem(isFirst) {
+  const item = document.createElement("div");
+  item.className = "imagem-item";
+  item.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap";
+
+  const radio = document.createElement("input");
+  radio.type = "radio";
+  radio.name = "imagem_principal";
+  radio.title = "Definir como principal";
+  radio.style.cssText = "cursor:pointer;accent-color:#7c5cbf;width:16px;height:16px;flex-shrink:0";
+  if (isFirst) radio.checked = true;
+
+  const labelPrincipal = document.createElement("span");
+  labelPrincipal.textContent = "Principal";
+  labelPrincipal.style.cssText = "font-size:11px;opacity:.6;flex-shrink:0;width:52px";
+
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.className = "imagem-input";
+  fileInput.accept = "image/*";
+  fileInput.style.cssText = "display:none";
+
+  const labelBtn = document.createElement("label");
+  labelBtn.textContent = "Escolher arquivo";
+  labelBtn.style.cssText = "cursor:pointer;padding:5px 10px;border:1px solid rgba(255,255,255,.25);border-radius:6px;font-size:13px;white-space:nowrap;flex-shrink:0";
+  labelBtn.appendChild(fileInput);
+
+  const nomeSpan = document.createElement("span");
+  nomeSpan.textContent = "Nenhum arquivo";
+  nomeSpan.style.cssText = "font-size:12px;opacity:.6;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+
+  fileInput.addEventListener("change", () => {
+    nomeSpan.textContent = fileInput.files[0]?.name || "Nenhum arquivo";
+    if (fileInput.files[0]) radio.checked = true;
+  });
+
+  const btnRemover = document.createElement("button");
+  btnRemover.type = "button";
+  btnRemover.textContent = "×";
+  btnRemover.style.cssText = "background:transparent;border:1px solid rgba(255,255,255,.2);color:inherit;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center";
+  btnRemover.addEventListener("click", () => {
+    const container = document.getElementById("imagens-container");
+    if (container.children.length > 1) {
+      const wasChecked = radio.checked;
+      item.remove();
+      if (wasChecked) {
+        const firstRadio = container.querySelector("input[type=radio]");
+        if (firstRadio) firstRadio.checked = true;
+      }
+    }
+  });
+
+  item.appendChild(radio);
+  item.appendChild(labelPrincipal);
+  item.appendChild(labelBtn);
+  item.appendChild(nomeSpan);
+  item.appendChild(btnRemover);
+  return item;
+}
+
+function inicializarCarrosselImagens() {
+  const container = document.getElementById("imagens-container");
+  if (!container || container.dataset.iniciado) return;
+  container.dataset.iniciado = "1";
+
+  container.appendChild(criarItemImagem(true));
+
+  document.getElementById("btn-adicionar-imagem").addEventListener("click", () => {
+    if (container.children.length >= 10) {
+      alert("Máximo de 10 imagens permitidas.");
+      return;
+    }
+    container.appendChild(criarItemImagem(false));
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function criarCampanhaCompleta() {
 
   try {
@@ -15076,9 +15153,6 @@ async function criarCampanhaCompleta() {
     const orcamento =
       document.getElementById("orcamento").value;
 
-    const imagem =
-      document.getElementById("imagem").files[0];
-
     const configuracoes_avancadas =
       coletarConfiguracoesAvancadas();
 
@@ -15089,51 +15163,56 @@ async function criarCampanhaCompleta() {
       return;
     }
 
-    if (!imagem) {
-    
-      alert("Selecione uma imagem");
-    
+    // 🔥 COLETAR IMAGENS DO CARROSSEL
+    const imagemInputs = document.querySelectorAll(".imagem-input");
+    const imagensArquivos = [];
+    let imagemPrincipalIndex = 0;
+
+    imagemInputs.forEach((input, idx) => {
+      if (input.files[0]) imagensArquivos.push({ file: input.files[0], idx });
+      const radio = input.closest(".imagem-item").querySelector("input[type=radio]");
+      if (radio && radio.checked) imagemPrincipalIndex = imagensArquivos.length - 1;
+    });
+
+    if (imagensArquivos.length === 0) {
+      alert("Selecione ao menos uma imagem");
       return;
     }
+
+    // reordena: principal primeiro
+    const principalItem = imagensArquivos.splice(imagemPrincipalIndex, 1)[0];
+    imagensArquivos.unshift(principalItem);
 
     if (!campanha_nome) {
       alert("Digite o nome da campanha");
       return;
     }
 
-    // 🔥 UPLOAD IMAGEM
-    const formData = new FormData();
-    
-    formData.append(
-      "imagem",
-      imagem
-    );
-    
-    formData.append(
-      "usuario_id",
-      usuario_id
-    );
-    
-    const uploadRes = await fetch(
-      `${API}/meta/upload-imagem`,
-      {
-        method: "POST",
-        body: formData
+    // 🔥 UPLOAD DE TODAS AS IMAGENS
+    const imageHashes = [];
+
+    for (const { file } of imagensArquivos) {
+      const formData = new FormData();
+      formData.append("imagem", file);
+      formData.append("usuario_id", usuario_id);
+
+      const uploadRes = await fetch(
+        `${API}/meta/upload-imagem`,
+        { method: "POST", body: formData }
+      );
+
+      const upload = await uploadRes.json();
+      console.log("UPLOAD:", upload);
+
+      if (upload.error) {
+        alert(upload.error);
+        return;
       }
-    );
-    
-    const upload = await uploadRes.json();
-    
-    console.log("UPLOAD:", upload);
-    
-    if (upload.error) {
-    
-      alert(upload.error);
-    
-      return;
+
+      imageHashes.push(upload.hash);
     }
-    
-    const imageHash = upload.hash;
+
+    const imageHash = imageHashes[0];
 
     // 🔥 CAMPANHA
     const campanhaRes = await fetch(
@@ -15261,7 +15340,8 @@ async function criarCampanhaCompleta() {
           configuracoes_avancadas,
     
           // 🔥 IMAGEM
-          imageHash
+          imageHash,
+          imageHashes
         })
       }
     );
@@ -19907,7 +19987,8 @@ async function enviarFeedback() {
 <script src="https://unpkg.com/xlsx-js-style/dist/xlsx.bundle.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    
-    
+
+<script>inicializarCarrosselImagens();</script>
+
 </body>
 </html>

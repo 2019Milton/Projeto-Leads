@@ -9245,60 +9245,91 @@ body.tema-claro .suporte-input {
           </small>
         </div>
 
-        <div class="admin-ia-form">
-          <input id="ia_config_provedor" type="hidden" value="openai">
-          <select id="ia_config_assinatura" style="display:none;">
-            <option value="pendente">Pagamento pendente</option>
-            <option value="ativa">Pagamento ativo</option>
-            <option value="vencida">Pagamento vencido</option>
-          </select>
-          <input id="ia_config_custo_contratado" type="hidden" value="0">
+        <input id="ia_config_provedor" type="hidden" value="openai">
+        <select id="ia_config_assinatura" style="display:none;">
+          <option value="pendente">Pagamento pendente</option>
+          <option value="ativa">Pagamento ativo</option>
+          <option value="vencida">Pagamento vencido</option>
+        </select>
+        <input id="ia_config_custo_contratado" type="hidden" value="0">
 
-          <label>
-            <span>
-              Status da IA
-              <span class="admin-help" title="IA ativa libera os recursos de IA para usuarios Ouro. IA pausada bloqueia para todos. IA nao configurada deixa a IA indisponivel.">?</span>
-            </span>
-            <select id="ia_config_status">
-              <option value="contratado">IA ativa</option>
-              <option value="pausado">IA pausada para todos</option>
-              <option value="nao_contratado">IA nao configurada</option>
-            </select>
-          </label>
+        <!-- Secao Geral -->
+        <div style="margin-top:16px;border:1px solid #3b3f5c;border-radius:8px;overflow:hidden;">
+          <div style="background:#1e1e2e;padding:10px 14px;border-bottom:1px solid #3b3f5c;">
+            <strong style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;">Geral</strong>
+          </div>
+          <div class="admin-ia-form" style="padding:14px;">
+            <label>
+              <span>
+                Status da IA
+                <span class="admin-help" title="IA ativa libera os recursos para todos os providers. IA pausada bloqueia OpenAI e Anthropic para todos os usuarios.">?</span>
+              </span>
+              <select id="ia_config_status">
+                <option value="contratado">IA ativa</option>
+                <option value="pausado">IA pausada para todos</option>
+                <option value="nao_contratado">IA nao configurada</option>
+              </select>
+            </label>
+            <label>
+              <span>
+                Limite mensal de chamadas (global)
+                <span class="admin-help" title="Limite real: quando a soma de chamadas de todos os usuarios atingir esse numero, a IA e bloqueada para todos ate o proximo mes.">?</span>
+              </span>
+              <input id="ia_config_limite_req" type="number" placeholder="Ex: 1000">
+            </label>
+            <label>
+              <span>
+                Limite mensal de custo (global)
+                <span class="admin-help" title="Limite real: quando o custo estimado total de todos os usuarios atingir esse valor, a IA e bloqueada para todos ate o proximo mes.">?</span>
+              </span>
+              <input id="ia_config_limite_custo" type="number" placeholder="Ex: 300">
+            </label>
+            <label>
+              <span>
+                Observacoes internas
+                <span class="admin-help" title="Campo livre para anotacoes administrativas.">?</span>
+              </span>
+              <textarea id="ia_config_observacoes" placeholder="Ex: revisar custo semanalmente, chave ativa na Railway..."></textarea>
+            </label>
+          </div>
+        </div>
 
-          <label>
-            <span>
-              Modelo de IA ativo
-              <span class="admin-help" title="Modelo que sera usado para todas as chamadas de IA. Os modelos disponiveis sao definidos pela variavel OPENAI_MODELOS_DISPONIVEIS no Railway.">?</span>
-            </span>
-            <select id="ia_config_modelo">
-              <option value="">Carregando...</option>
-            </select>
-          </label>
+        <!-- Secao OpenAI -->
+        <div style="margin-top:12px;border:1px solid #164e63;border-radius:8px;overflow:hidden;">
+          <div style="background:#0c2d3f;padding:10px 14px;border-bottom:1px solid #164e63;display:flex;align-items:center;justify-content:space-between;">
+            <strong style="font-size:12px;color:#7dd3fc;text-transform:uppercase;letter-spacing:.5px;">OpenAI</strong>
+            <span id="ia_openai_chave_status" style="font-size:11px;color:#6b7280;">verificando...</span>
+          </div>
+          <div class="admin-ia-form" style="padding:14px;">
+            <label>
+              <span>
+                Modelo OpenAI ativo
+                <span class="admin-help" title="Modelo usado quando o provider do usuario e OpenAI ou Auto. Os modelos disponiveis vem da variavel OPENAI_MODELOS_DISPONIVEIS no Railway.">?</span>
+              </span>
+              <select id="ia_config_modelo">
+                <option value="">Carregando...</option>
+              </select>
+            </label>
+          </div>
+        </div>
 
-          <label>
-            <span>
-              Limite mensal total de chamadas
-              <span class="admin-help" title="Quantidade maxima mensal de chamadas de IA considerada como limite operacional global. Use para controlar uso e evitar excesso.">?</span>
-            </span>
-            <input id="ia_config_limite_req" type="number" placeholder="Ex: 1000">
-          </label>
-
-          <label>
-            <span>
-              Limite mensal total de custo
-              <span class="admin-help" title="Valor mensal maximo estimado para controlar gasto com IA. A plataforma usa estimativas, nao a fatura oficial da OpenAI.">?</span>
-            </span>
-            <input id="ia_config_limite_custo" type="number" placeholder="Ex: 300">
-          </label>
-
-          <label>
-            <span>
-              Observacoes internas
-              <span class="admin-help" title="Campo livre para registrar anotacoes suas, como chave ativa, data de revisao, limites combinados ou observacoes de custo.">?</span>
-            </span>
-            <textarea id="ia_config_observacoes" placeholder="Ex: revisar custo semanalmente, chave ativa na Railway, limite de seguranca..."></textarea>
-          </label>
+        <!-- Secao Anthropic -->
+        <div style="margin-top:12px;border:1px solid #4c1d95;border-radius:8px;overflow:hidden;">
+          <div style="background:#1e0a3c;padding:10px 14px;border-bottom:1px solid #4c1d95;display:flex;align-items:center;justify-content:space-between;">
+            <strong style="font-size:12px;color:#c4b5fd;text-transform:uppercase;letter-spacing:.5px;">Anthropic (Claude)</strong>
+            <span id="ia_anthropic_chave_status" style="font-size:11px;color:#6b7280;">verificando...</span>
+          </div>
+          <div class="admin-ia-form" style="padding:14px;">
+            <label>
+              <span>
+                Modelo Claude ativo
+                <span class="admin-help" title="Modelo usado quando o provider do usuario e Anthropic. Haiku e mais rapido e barato; Sonnet oferece melhor qualidade criativa.">?</span>
+              </span>
+              <select id="ia_config_anthropic_modelo">
+                <option value="">Carregando...</option>
+              </select>
+            </label>
+          </div>
         </div>
 
         <button style="margin-top:14px;" onclick="salvarConfigIAAdmin()">
@@ -18028,6 +18059,27 @@ async function carregarPainelIAAdmin() {
         return `<option value="${escaparHtml(m)}" ${m === config.modelo ? "selected" : ""}>${escaparHtml(label)}</option>`;
       }).join("");
     }
+
+    const anthropicModeloSelect = document.getElementById("ia_config_anthropic_modelo");
+    if (anthropicModeloSelect) {
+      const modelos = data.anthropic_modelos_disponiveis || [
+        { value: "claude-haiku-4-5-20251001", label: "Claude Haiku — Mais rapido e barato" }
+      ];
+      anthropicModeloSelect.innerHTML = modelos.map(m => {
+        return `<option value="${escaparHtml(m.value)}" ${m.value === config.anthropic_modelo ? "selected" : ""}>${escaparHtml(m.label)}</option>`;
+      }).join("");
+    }
+
+    const openaiStatus = document.getElementById("ia_openai_chave_status");
+    if (openaiStatus) {
+      openaiStatus.innerText = config.chave_configurada ? "Chave configurada" : "Sem chave no Railway";
+      openaiStatus.style.color = config.chave_configurada ? "#6ee7b7" : "#fca5a5";
+    }
+    const anthropicStatus = document.getElementById("ia_anthropic_chave_status");
+    if (anthropicStatus) {
+      anthropicStatus.innerText = config.anthropic_chave_configurada ? "Chave configurada" : "Sem chave no Railway";
+      anthropicStatus.style.color = config.anthropic_chave_configurada ? "#a5b4fc" : "#fca5a5";
+    }
     preencherValor("ia_config_assinatura", config.assinatura_status || "ativa");
     preencherValor("ia_config_limite_req", config.limite_mensal_requisicoes || 0);
     preencherValor("ia_config_limite_custo", config.limite_mensal_custo || 0);
@@ -18208,6 +18260,7 @@ async function salvarConfigIAAdmin() {
   const body = {
     provedor: "openai",
     modelo: document.getElementById("ia_config_modelo")?.value || null,
+    anthropic_modelo: document.getElementById("ia_config_anthropic_modelo")?.value || null,
     status: statusIA,
     assinatura_status: statusIA === "nao_contratado" ? "pendente" : "ativa",
     limite_mensal_requisicoes: document.getElementById("ia_config_limite_req")?.value,

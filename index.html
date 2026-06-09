@@ -12821,11 +12821,11 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
   }
 
   const cards = sugestoes.map((s, i) => {
-    const titulo = campoSugestaoIA(s, "titulo");
-    const texto = campoSugestaoIA(s, "texto");
-    const descricao = campoSugestaoIA(s, "descricao");
-    const perguntas = campoSugestaoIA(s, "perguntas");
-    const interesses = campoSugestaoIA(s, "interesses");
+    const titulo = s.titulo || "";
+    const texto = s.texto || "";
+    const descricao = s.descricao || "";
+    const perguntas = s.perguntas || "";
+    const interesses = s.interesses || "";
 
     return `
       <div class="ia-opcao-card">
@@ -12851,28 +12851,17 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
 }
 
 function aplicarCampanhaIA(indice) {
-  const sugestao = sugestoesCampanhaIAAtual[indice ?? 0];
-  if (!sugestao) {
+  const s = sugestoesCampanhaIAAtual[indice ?? 0];
+  if (!s) {
     alert("Gere uma sugestao com IA primeiro.");
     return;
   }
 
-  const titulo =
-    campoSugestaoIA(sugestao, "titulo");
-  const texto =
-    campoSugestaoIA(sugestao, "texto");
-  const descricao =
-    campoSugestaoIA(sugestao, "descricao");
-  const perguntas =
-    campoSugestaoIA(sugestao, "perguntas");
-  const interesses =
-    campoSugestaoIA(sugestao, "interesses");
-
-  if (titulo) document.getElementById("adv_titulo").value = titulo;
-  if (texto) document.getElementById("texto").value = texto;
-  if (descricao) document.getElementById("adv_descricao").value = descricao;
-  if (perguntas) document.getElementById("adv_perguntas").value = perguntas;
-  if (interesses) document.getElementById("adv_interesse_busca").value = interesses.split(",")[0]?.trim() || interesses;
+  if (s.titulo) document.getElementById("adv_titulo").value = s.titulo;
+  if (s.texto) document.getElementById("texto").value = s.texto;
+  if (s.descricao) document.getElementById("adv_descricao").value = s.descricao;
+  if (s.perguntas) document.getElementById("adv_perguntas").value = s.perguntas;
+  if (s.interesses) document.getElementById("adv_interesse_busca").value = s.interesses.split(",")[0]?.trim() || s.interesses;
 }
 
 async function analisarCampanhaIA(campanha) {

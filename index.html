@@ -15806,6 +15806,13 @@ async function carregarStatusMeta() {
                 <small>
                   ${escaparHtml(data.paginas?.[0]?.name || "Nenhuma página vinculada")}
                 </small>
+                ${!facebookConectado && data.usuario_meta?.id ? `
+                <small style="color:#f59e0b;display:block;margin-top:4px;">
+                  ⚠️ A conta Meta conectada não gerencia nenhuma Página do Facebook.
+                  Crie uma Página em
+                  <a href="https://www.facebook.com/pages/create" target="_blank" style="color:#f59e0b;">facebook.com/pages/create</a>
+                  e reconecte.
+                </small>` : ""}
               </div>
 
               <div class="conexao-status-item">

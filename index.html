@@ -9161,9 +9161,19 @@ body.tema-claro .suporte-input {
 
             <!-- OpenAI -->
             <div style="background:#1e1e2e;border:1px solid #3b3f5c;border-radius:8px;padding:14px;">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
-                <span style="font-size:13px;font-weight:600;color:#7dd3fc;">OpenAI</span>
-                <span id="ia_saldo_openai_badge" style="font-size:10px;padding:2px 6px;border-radius:10px;background:#064e3b;color:#6ee7b7;display:none;">saldo disponivel</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:13px;font-weight:600;color:#7dd3fc;">OpenAI</span>
+                  <span id="ia_saldo_openai_badge" style="font-size:10px;padding:2px 6px;border-radius:10px;background:#064e3b;color:#6ee7b7;display:none;">saldo disponivel</span>
+                </div>
+                <a
+                  href="https://platform.openai.com/settings/organization/billing/overview"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style="font-size:10px;color:#7dd3fc;text-decoration:none;padding:3px 8px;border:1px solid #164e63;border-radius:4px;white-space:nowrap;transition:background 0.15s;"
+                  onmouseover="this.style.background='#0c4a6e'"
+                  onmouseout="this.style.background='transparent'"
+                >Ver saldo no Console</a>
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
                 <div>

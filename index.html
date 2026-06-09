@@ -15483,7 +15483,11 @@ async function criarCampanhaCompleta() {
 
       const uploadRes = await fetch(
         `${API}/meta/upload-imagem`,
-        { method: "POST", body: formData }
+        {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token },
+          body: formData
+        }
       );
 
       const upload = await uploadRes.json();
@@ -15505,7 +15509,8 @@ async function criarCampanhaCompleta() {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
         },
         body: JSON.stringify({
           usuario_id,
@@ -15537,7 +15542,8 @@ async function criarCampanhaCompleta() {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
         },
         body: JSON.stringify({
           usuario_id,
@@ -15568,7 +15574,8 @@ async function criarCampanhaCompleta() {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
         },
         body: JSON.stringify({
           usuario_id,
@@ -15603,7 +15610,8 @@ async function criarCampanhaCompleta() {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
         },
         body: JSON.stringify({
           usuario_id,
@@ -15979,6 +15987,17 @@ async function carregarStatusMeta() {
             : "🔴 Pagamento não identificado"
         }
       </p>
+
+      <a
+        href="https://adsmanager.facebook.com/billing"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;color:inherit;text-decoration:none;margin-top:4px;opacity:.85;transition:opacity .15s"
+        onmouseover="this.style.opacity='1'"
+        onmouseout="this.style.opacity='.85'"
+      >
+        💳 Gerenciar créditos na Meta
+      </a>
 
       <hr>
 

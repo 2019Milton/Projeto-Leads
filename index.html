@@ -13720,11 +13720,35 @@ function conectarMeta() {
     return;
   }
 
-  window.open(
+  const popup = window.open(
     `${API}/auth/meta/login?token=${encodeURIComponent(token)}`,
     "_blank",
     "width=600,height=700"
   );
+
+  let recarregado = false;
+
+  async function aoConectar() {
+    if (recarregado) return;
+    recarregado = true;
+    clearInterval(pollInterval);
+    window.removeEventListener("message", msgHandler);
+    await carregarStatusMeta();
+  }
+
+  function msgHandler(event) {
+    if (event.data?.type === "meta_conectado") {
+      aoConectar();
+    }
+  }
+
+  window.addEventListener("message", msgHandler);
+
+  const pollInterval = setInterval(() => {
+    if (popup && popup.closed) {
+      aoConectar();
+    }
+  }, 600);
 }
 
 async function desconectarMeta() {
@@ -13778,8 +13802,6 @@ async function desconectarMeta() {
       );
       return;
     }
-
-    alert("Conta Meta desconectada.");
 
     await carregarStatusMeta();
 

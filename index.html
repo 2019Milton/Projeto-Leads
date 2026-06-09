@@ -9189,6 +9189,7 @@ body.tema-claro .suporte-input {
             <div style="background:#1e1e2e;border:1px solid #3b3f5c;border-radius:8px;padding:14px;">
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
                 <span style="font-size:13px;font-weight:600;color:#c4b5fd;">Anthropic (Claude)</span>
+                <span id="ia_saldo_anthropic_badge" style="font-size:10px;padding:2px 6px;border-radius:10px;background:#1e1b4b;color:#a5b4fc;display:none;">saldo configurado</span>
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
                 <div>
@@ -9199,9 +9200,13 @@ body.tema-claro .suporte-input {
                   <div style="color:#9ca3af;margin-bottom:2px;">Tokens</div>
                   <div id="ia_saldo_anthropic_tokens" style="color:#e2e8f0;font-weight:600;">-</div>
                 </div>
-                <div style="grid-column:1/-1;">
+                <div>
                   <div style="color:#9ca3af;margin-bottom:2px;">Gasto estimado</div>
                   <div id="ia_saldo_anthropic_custo" style="color:#fbbf24;font-weight:600;">-</div>
+                </div>
+                <div id="ia_saldo_anthropic_saldo_wrap" style="display:none;">
+                  <div style="color:#9ca3af;margin-bottom:2px;">Saldo restante</div>
+                  <div id="ia_saldo_anthropic_saldo" style="color:#a5b4fc;font-weight:600;">-</div>
                 </div>
               </div>
             </div>
@@ -18134,6 +18139,22 @@ async function carregarSaldosIA() {
       ((Number(anthropic.tokens_entrada || 0) + Number(anthropic.tokens_saida || 0))
         .toLocaleString("pt-BR")) + " tokens");
     set("ia_saldo_anthropic_custo", formatarMoeda(anthropic.custo_total || 0));
+
+    const saldoCalc = anthropic.saldo_calculado;
+    const anthropicBadge = document.getElementById("ia_saldo_anthropic_badge");
+    const anthropicSaldoWrap = document.getElementById("ia_saldo_anthropic_saldo_wrap");
+    if (saldoCalc) {
+      const pct = saldoCalc.budget_usd > 0
+        ? Math.round((saldoCalc.saldo_usd / saldoCalc.budget_usd) * 100)
+        : 0;
+      set("ia_saldo_anthropic_saldo",
+        `US$ ${saldoCalc.saldo_usd.toFixed(4)} restantes de US$ ${saldoCalc.budget_usd.toFixed(2)} (${pct}%)`);
+      if (anthropicBadge) anthropicBadge.style.display = "inline";
+      if (anthropicSaldoWrap) anthropicSaldoWrap.style.display = "block";
+    } else {
+      if (anthropicBadge) anthropicBadge.style.display = "none";
+      if (anthropicSaldoWrap) anthropicSaldoWrap.style.display = "none";
+    }
 
     // Timestamp
     if (data.atualizado_em) {

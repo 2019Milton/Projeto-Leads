@@ -7775,9 +7775,18 @@ body.tema-claro .suporte-input {
         <!-- 📘 PÁGINA -->
         <label>Página Facebook</label>
   
-        <select id="pagina_select">
+        <select id="pagina_select" onchange="atualizarTosHint()">
           <option>Carregando páginas...</option>
         </select>
+
+        <div id="tos_lead_ads_hint" style="display:none;margin-top:6px;margin-bottom:4px;padding:8px 10px;background:#422006;border:1px solid #d97706;border-radius:6px;">
+          <span style="color:#fbbf24;font-size:12px;font-weight:600;">⚠️ Termos de Lead Ads obrigatórios</span><br>
+          <span style="color:#fde68a;font-size:12px;">Sua Página precisa aceitar os Termos de Serviço de Geração de Cadastros do Facebook. Faça isso antes de publicar.</span><br>
+          <a id="tos_lead_ads_link" href="#" target="_blank"
+            style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
+            Aceitar Termos agora →
+          </a>
+        </div>
 
         <section class="campaign-setup-section">
           <h4>Onde anunciar</h4>
@@ -15446,6 +15455,20 @@ function inicializarCarrosselImagens() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+function atualizarTosHint() {
+  const select = document.getElementById("pagina_select");
+  const hint = document.getElementById("tos_lead_ads_hint");
+  const link = document.getElementById("tos_lead_ads_link");
+  if (!hint || !select) return;
+  const pageId = select.value;
+  if (pageId && pageId !== "Carregando páginas...") {
+    hint.style.display = "block";
+    if (link) link.href = `https://www.facebook.com/ads/leadgen/tos?page_id=${pageId}`;
+  } else {
+    hint.style.display = "none";
+  }
+}
+
 function setPublishProgress(pct, label) {
   const wrap = document.getElementById("publicar_progresso");
   const bar = document.getElementById("publicar_progresso_bar");
@@ -15858,6 +15881,15 @@ async function carregarStatusMeta() {
                   <a href="https://www.facebook.com/pages/create" target="_blank" style="color:#f59e0b;">facebook.com/pages/create</a>
                   e reconecte.
                 </small>` : ""}
+                ${facebookConectado && data.paginas?.[0]?.id ? `
+                <div style="margin-top:8px;padding:8px 10px;background:#422006;border:1px solid #d97706;border-radius:6px;">
+                  <span style="color:#fbbf24;font-size:12px;font-weight:600;">⚠️ Termos de Lead Ads</span><br>
+                  <span style="color:#fde68a;font-size:12px;">Páginas novas precisam aceitar os Termos de Serviço de Geração de Cadastros do Facebook antes de criar anúncios de lead.</span><br>
+                  <a href="https://www.facebook.com/ads/leadgen/tos?page_id=${data.paginas[0].id}" target="_blank"
+                    style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
+                    Aceitar Termos agora →
+                  </a>
+                </div>` : ""}
               </div>
 
               <div class="conexao-status-item">
@@ -16128,10 +16160,13 @@ async function carregarStatusMeta() {
         `;
       });
 
-      select.onchange =
-        atualizarCanaisPaginaMeta;
+      select.onchange = () => {
+        atualizarCanaisPaginaMeta();
+        atualizarTosHint();
+      };
 
       atualizarCanaisPaginaMeta();
+      atualizarTosHint();
     }
 
     atualizarGuiaSecreto();

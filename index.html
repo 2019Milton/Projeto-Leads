@@ -13871,6 +13871,30 @@ function conectarMeta() {
   }, 600);
 }
 
+function abrirGerenciarPagamentoMeta(billingUrl) {
+
+  const popup = window.open(
+    billingUrl,
+    "_blank",
+    "width=900,height=750"
+  );
+
+  let recarregado = false;
+
+  async function aoFechar() {
+    if (recarregado) return;
+    recarregado = true;
+    clearInterval(pollInterval);
+    await carregarStatusMeta();
+  }
+
+  const pollInterval = setInterval(() => {
+    if (popup && popup.closed) {
+      aoFechar();
+    }
+  }, 600);
+}
+
 async function desconectarMeta() {
 
   const confirmar = confirm(
@@ -16288,14 +16312,13 @@ async function carregarStatusMeta() {
         const billingUrl = accountId
           ? `https://business.facebook.com/billing_hub/payment_settings/?placement=ads_manager&asset_id=${accountId}&payment_account_id_from_jsmodule=${accountId}`
           : "https://business.facebook.com/billing_hub/payment_settings/";
-        return `<a
-          href="${billingUrl}"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;color:inherit;text-decoration:none;margin-top:4px;opacity:.85;transition:opacity .15s"
+        return `<button
+          type="button"
+          onclick="abrirGerenciarPagamentoMeta('${billingUrl}')"
+          style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;color:inherit;background:transparent;cursor:pointer;margin-top:4px;opacity:.85;transition:opacity .15s"
           onmouseover="this.style.opacity='1'"
           onmouseout="this.style.opacity='.85'"
-        >💳 Gerenciar créditos na Meta</a>`;
+        >💳 Gerenciar formas de pagamento na Meta</button>`;
       })()}
 
       <hr>

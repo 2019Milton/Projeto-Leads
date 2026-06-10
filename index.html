@@ -1328,6 +1328,58 @@ body.usuario-super-admin .admin-only-targeting {
   gap: 10px;
 }
 
+.geo-busca-wrap {
+  position: relative;
+}
+
+.geo-sugestoes {
+
+  display: none;
+
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+
+  margin-top: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+.geo-sugestao-item {
+
+  padding: 8px 12px;
+
+  font-size: 13px;
+  cursor: pointer;
+
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.geo-sugestao-item:last-child {
+  border-bottom: none;
+}
+
+.geo-sugestao-item:hover {
+  background: rgba(34,197,94,0.15);
+}
+
+.geo-sugestao-tipo {
+
+  display: inline-block;
+  margin-left: 6px;
+
+  font-size: 11px;
+  opacity: .6;
+}
+
 .hidden-geo-fields {
 
   display: none;
@@ -8113,11 +8165,17 @@ body.tema-claro .suporte-input {
             <div class="advanced-full">
               <label>Área da campanha</label>
               <div class="geo-simple-grid">
-                <input
-                  type="text"
-                  id="adv_localidade_nome"
-                  placeholder="Ex: São Paulo, Santo André, ABC Paulista"
-                >
+                <div class="geo-busca-wrap">
+                  <input
+                    type="text"
+                    id="adv_localidade_nome"
+                    placeholder="Ex: São Paulo, Santo André, ABC Paulista"
+                    autocomplete="off"
+                    oninput="agendarBuscaLocalidade()"
+                    onfocus="if(document.getElementById('adv_localidade_sugestoes').children.length) document.getElementById('adv_localidade_sugestoes').style.display='block'"
+                  >
+                  <div id="adv_localidade_sugestoes" class="geo-sugestoes"></div>
+                </div>
                 <input
                   type="number"
                   id="adv_raio"
@@ -8126,11 +8184,14 @@ body.tema-claro .suporte-input {
                   placeholder="Raio em km, opcional"
                 >
               </div>
+              <p id="adv_localidade_feedback" class="simple-advanced-note" style="margin-top:4px;"></p>
             </div>
 
             <div class="hidden-geo-fields">
               <input type="hidden" id="adv_latitude">
               <input type="hidden" id="adv_longitude">
+              <input type="hidden" id="adv_localidade_key">
+              <input type="hidden" id="adv_localidade_tipo">
             </div>
           </div>
         </details>
@@ -14577,6 +14638,8 @@ function valoresMarcados(seletor) {
 let interessesDetalhadosSelecionados = [];
 let buscaInteressesTimer = null;
 let buscaInteressesSequencia = 0;
+let buscaLocalidadeTimer = null;
+let buscaLocalidadeSequencia = 0;
 let paginasMetaDisponiveis = [];
 let sincronizacaoMetaAtiva = false;
 
@@ -15389,6 +15452,215 @@ async function buscarInteressesDetalhados(opcoes = {}) {
   }
 }
 
+// ─── BUSCA DE LOCALIZAÇÃO (ÁREA DA CAMPANHA) ────────────────────────────────
+
+const ROTULOS_TIPO_LOCALIDADE = {
+  country: "País",
+  region: "Estado",
+  city: "Cidade",
+  neighborhood: "Bairro",
+  zip: "CEP",
+  geo_market: "Região metropolitana",
+  electoral_district: "Distrito eleitoral"
+};
+
+function agendarBuscaLocalidade() {
+
+  const lista =
+    document.getElementById("adv_localidade_sugestoes");
+
+  const feedback =
+    document.getElementById("adv_localidade_feedback");
+
+  document.getElementById("adv_localidade_key").value = "";
+  document.getElementById("adv_localidade_tipo").value = "";
+
+  if (feedback) {
+    feedback.innerText = "";
+  }
+
+  const busca =
+    valorCampo("adv_localidade_nome");
+
+  if (buscaLocalidadeTimer) {
+    clearTimeout(buscaLocalidadeTimer);
+  }
+
+  if (busca.length < 2) {
+    buscaLocalidadeSequencia += 1;
+
+    if (lista) {
+      lista.innerHTML = "";
+      lista.style.display = "none";
+    }
+
+    return;
+  }
+
+  buscaLocalidadeTimer = setTimeout(
+    () => buscarLocalidadeDetalhada(),
+    450
+  );
+}
+
+async function buscarLocalidadeDetalhada() {
+
+  const token =
+    localStorage.getItem("token");
+
+  const busca =
+    valorCampo("adv_localidade_nome");
+
+  const lista =
+    document.getElementById("adv_localidade_sugestoes");
+
+  const feedback =
+    document.getElementById("adv_localidade_feedback");
+
+  if (!token || busca.length < 2 || !lista) {
+    return;
+  }
+
+  const decoded = atob(token);
+  const [usuario_id] = decoded.split(":");
+  const sequenciaAtual =
+    ++buscaLocalidadeSequencia;
+
+  try {
+    const res = await fetch(
+      `${API}/meta/direcionamento/localizacao`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          usuario_id,
+          busca
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (sequenciaAtual !== buscaLocalidadeSequencia) {
+      return;
+    }
+
+    if (!res.ok || data.error) {
+      throw new Error(
+        data.error ||
+        "Erro ao buscar localização"
+      );
+    }
+
+    const locais =
+      Array.isArray(data.data)
+        ? data.data
+        : [];
+
+    if (!locais.length) {
+      lista.innerHTML = "";
+      lista.style.display = "none";
+
+      if (feedback) {
+        feedback.innerText =
+          "Nenhuma localização encontrada. Tente outro termo.";
+      }
+
+      return;
+    }
+
+    lista.innerHTML =
+      locais
+        .map(local => {
+          const rotulo =
+            ROTULOS_TIPO_LOCALIDADE[local.tipo] ||
+            local.tipo;
+
+          const nomeCompleto =
+            [
+              local.nome,
+              local.regiao,
+              local.tipo !== "country" ? local.pais : null
+            ]
+              .filter(Boolean)
+              .join(", ");
+
+          return `
+            <div
+              class="geo-sugestao-item"
+              onclick="selecionarLocalidade('${escaparHtml(local.key)}','${escaparHtml(local.tipo)}','${encodeURIComponent(nomeCompleto)}')"
+            >
+              ${escaparHtml(nomeCompleto)}
+              <span class="geo-sugestao-tipo">${escaparHtml(rotulo)}</span>
+            </div>
+          `;
+        })
+        .join("");
+
+    lista.style.display = "block";
+
+    if (feedback) {
+      feedback.innerText =
+        "Selecione uma sugestão para segmentar a área com precisão.";
+    }
+  } catch (err) {
+
+    if (sequenciaAtual !== buscaLocalidadeSequencia) {
+      return;
+    }
+
+    console.error("BUSCA LOCALIZACAO:", err);
+
+    lista.innerHTML = "";
+    lista.style.display = "none";
+
+    if (feedback) {
+      feedback.innerText =
+        err.message ||
+        "Erro ao buscar localização.";
+    }
+  }
+}
+
+function selecionarLocalidade(key, tipo, nomeCodificado) {
+
+  const nome = decodeURIComponent(nomeCodificado);
+
+  const input = document.getElementById("adv_localidade_nome");
+  const lista = document.getElementById("adv_localidade_sugestoes");
+  const feedback = document.getElementById("adv_localidade_feedback");
+
+  if (input) input.value = nome;
+
+  document.getElementById("adv_localidade_key").value = key;
+  document.getElementById("adv_localidade_tipo").value = tipo;
+
+  if (lista) {
+    lista.innerHTML = "";
+    lista.style.display = "none";
+  }
+
+  if (feedback) {
+    feedback.innerText =
+      tipo === "city"
+        ? "Área definida. Use o raio para ajustar a abrangência."
+        : "Área definida com a localização selecionada.";
+  }
+}
+
+document.addEventListener("click", (event) => {
+  const input = document.getElementById("adv_localidade_nome");
+  const lista = document.getElementById("adv_localidade_sugestoes");
+  const wrap = input?.closest(".geo-busca-wrap");
+  if (!wrap || !lista) return;
+  if (!wrap.contains(event.target)) {
+    lista.style.display = "none";
+  }
+});
+
 function coletarConfiguracoesAvancadas() {
 
   const plataformas = [];
@@ -15444,6 +15716,8 @@ function coletarConfiguracoesAvancadas() {
     idade_min: valorCampo("adv_idade_min"),
     idade_max: valorCampo("adv_idade_max"),
     localidade_nome: valorCampo("adv_localidade_nome"),
+    localidade_key: valorCampo("adv_localidade_key"),
+    localidade_tipo: valorCampo("adv_localidade_tipo"),
     latitude: valorCampo("adv_latitude"),
     longitude: valorCampo("adv_longitude"),
     raio: valorCampo("adv_raio"),

@@ -878,6 +878,15 @@ button {
   line-height: 1.45;
 }
 
+.pagamento-modal-alerta.erro {
+
+  background: rgba(239,68,68,0.10);
+
+  border-color: rgba(239,68,68,0.25);
+
+  color: #fecaca;
+}
+
 .campanha-item {
 
   border: 1px solid rgba(255,255,255,0.05);
@@ -5492,6 +5501,33 @@ body.tema-claro .cal-nav span { color: #111827; }
   color: white;
 }
 
+.campanha-editar-modal .pagamento-modal-content {
+
+  width: min(640px, 100%);
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+}
+
+.campanha-editar-modal #editar_campanha_campos.card {
+
+  margin-top: 14px;
+
+  background: rgba(255,255,255,0.02);
+
+  box-shadow: none;
+
+  transition: none;
+}
+
+.campanha-editar-modal #editar_campanha_campos.card:hover {
+
+  transform: none;
+
+  box-shadow: none;
+}
+
 .campanha-encaminhar-acoes {
 
   display: flex;
@@ -8022,7 +8058,7 @@ body.tema-claro .suporte-input {
           </button>
         </div>
 
-        <section class="campaign-setup-section">
+        <section class="campaign-setup-section" id="bloco_onde_anunciar">
           <h4>Onde anunciar</h4>
           <p>
             Escolha os canais disponiveis para a Pagina selecionada.
@@ -8106,16 +8142,18 @@ body.tema-claro .suporte-input {
         </select>
   
         <!-- 💰 ORÇAMENTO -->
-        <label>Orçamento diário (R$)</label>
-  
-        <input
-          type="number"
-          id="orcamento"
-          value="20"
-          min="5"
-        >
+        <div id="bloco_orcamento">
+          <label>Orçamento diário (R$)</label>
 
-        <section class="campaign-setup-section">
+          <input
+            type="number"
+            id="orcamento"
+            value="20"
+            min="5"
+          >
+        </div>
+
+        <section class="campaign-setup-section" id="bloco_publico">
           <h4>Público</h4>
           <p>
             Defina o público principal da campanha de forma simples.
@@ -8195,7 +8233,7 @@ body.tema-claro .suporte-input {
           </div>
         </section>
 
-        <details class="advanced-campaign" open>
+        <details class="advanced-campaign" id="bloco_agendamento_custo" open>
           <summary>
             Agendamento e custo da campanha
           </summary>
@@ -8272,10 +8310,10 @@ body.tema-claro .suporte-input {
           </div>
         </details>
 
-        <details class="advanced-campaign">
+        <details class="advanced-campaign" id="bloco_segmentacao_adicional">
 
           <summary>
-            ⚙️ Configurações avançadas
+            🎯 Segmentação adicional
           </summary>
 
           <div class="advanced-grid">
@@ -8292,6 +8330,86 @@ body.tema-claro .suporte-input {
                 </option>
               </select>
             </div>
+
+            <div class="advanced-full">
+              <label>Posicionamentos Facebook</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" class="adv-facebook-position" value="feed">
+                  Feed
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-facebook-position" value="story">
+                  Stories
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-facebook-position" value="marketplace">
+                  Marketplace
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-facebook-position" value="video_feeds">
+                  Vídeos
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-full">
+              <label>Posicionamentos Instagram</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" class="adv-instagram-position" value="stream">
+                  Feed
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-instagram-position" value="story">
+                  Stories
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-instagram-position" value="reels">
+                  Reels
+                </label>
+                <label>
+                  <input type="checkbox" class="adv-instagram-position" value="explore">
+                  Explorar
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-full">
+              <label>Dispositivos</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" id="adv_device_mobile">
+                  Mobile
+                </label>
+                <label>
+                  <input type="checkbox" id="adv_device_desktop">
+                  Desktop
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-full">
+              <label>Otimização de público</label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" id="adv_audience_plus">
+                  Advantage+ Audience
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+        </details>
+
+        <details class="advanced-campaign">
+
+          <summary>
+            ⚙️ Conteúdo do anúncio e formulário
+          </summary>
+
+          <div class="advanced-grid">
 
             <div class="advanced-full">
               <label>Título do anúncio</label>
@@ -8383,73 +8501,11 @@ body.tema-claro .suporte-input {
             </div>
 
             <div class="advanced-full">
-              <label>Posicionamentos Facebook</label>
-              <div class="advanced-checks">
-                <label>
-                  <input type="checkbox" class="adv-facebook-position" value="feed">
-                  Feed
-                </label>
-                <label>
-                  <input type="checkbox" class="adv-facebook-position" value="story">
-                  Stories
-                </label>
-                <label>
-                  <input type="checkbox" class="adv-facebook-position" value="marketplace">
-                  Marketplace
-                </label>
-                <label>
-                  <input type="checkbox" class="adv-facebook-position" value="video_feeds">
-                  Vídeos
-                </label>
-              </div>
-            </div>
-
-            <div class="advanced-full">
-              <label>Posicionamentos Instagram</label>
-              <div class="advanced-checks">
-                <label>
-                  <input type="checkbox" class="adv-instagram-position" value="stream">
-                  Feed
-                </label>
-                <label>
-                  <input type="checkbox" class="adv-instagram-position" value="story">
-                  Stories
-                </label>
-                <label>
-                  <input type="checkbox" class="adv-instagram-position" value="reels">
-                  Reels
-                </label>
-                <label>
-                  <input type="checkbox" class="adv-instagram-position" value="explore">
-                  Explorar
-                </label>
-              </div>
-            </div>
-
-            <div class="advanced-full">
-              <label>Dispositivos</label>
-              <div class="advanced-checks">
-                <label>
-                  <input type="checkbox" id="adv_device_mobile">
-                  Mobile
-                </label>
-                <label>
-                  <input type="checkbox" id="adv_device_desktop">
-                  Desktop
-                </label>
-              </div>
-            </div>
-
-            <div class="advanced-full">
               <label>Otimização</label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" id="adv_form_qualidade">
                   Otimizar formulário para qualidade
-                </label>
-                <label>
-                  <input type="checkbox" id="adv_audience_plus">
-                  Advantage+ Audience
                 </label>
               </div>
             </div>
@@ -14790,6 +14846,8 @@ let buscaLocalidadeTimer = null;
 let buscaLocalidadeSequencia = 0;
 let localidadesSelecionadas = [];
 let paginasMetaDisponiveis = [];
+let contasInstagramAnuncioDisponiveis = [];
+let instagramActorIdSelecionado = null;
 let sincronizacaoMetaAtiva = false;
 
 function atualizarEstadoSincronizacaoMeta(ativo) {
@@ -15287,6 +15345,15 @@ function atualizarCanaisPaginaMeta() {
   const instagram =
     pagina?.instagram;
 
+  const instagramContaAnuncio =
+    contasInstagramAnuncioDisponiveis[0] || null;
+
+  const instagramDisponivel =
+    instagram?.id || instagramContaAnuncio?.id || null;
+
+  instagramActorIdSelecionado =
+    instagram?.id || instagramContaAnuncio?.id || null;
+
   const checkboxInstagram =
     document.getElementById(
       "adv_platform_instagram"
@@ -15299,9 +15366,9 @@ function atualizarCanaisPaginaMeta() {
 
   if (checkboxInstagram) {
     checkboxInstagram.disabled =
-      !instagram?.id;
+      !instagramDisponivel;
 
-    if (!instagram?.id) {
+    if (!instagramDisponivel) {
       checkboxInstagram.checked = false;
     }
   }
@@ -15315,6 +15382,16 @@ function atualizarCanaisPaginaMeta() {
     feedback.innerHTML = `
       Instagram vinculado:
       <strong>@${escaparHtml(instagram.username || "conta profissional")}</strong>.
+      Voce pode anunciar no Facebook, Instagram ou nos dois.
+    `;
+    return;
+  }
+
+  if (instagramContaAnuncio?.id) {
+    feedback.classList.remove("alerta");
+    feedback.innerHTML = `
+      Esta Pagina nao tem Instagram vinculado, mas a conta de anuncios tem acesso a:
+      <strong>@${escaparHtml(instagramContaAnuncio.username || "conta profissional")}</strong>.
       Voce pode anunciar no Facebook, Instagram ou nos dois.
     `;
     return;
@@ -15959,6 +16036,10 @@ function coletarConfiguracoesAvancadas() {
     obrigado_url: valorCampo("adv_obrigado_url"),
     perguntas,
     plataformas,
+    instagram_actor_id:
+      plataformas.includes("instagram")
+        ? instagramActorIdSelecionado
+        : null,
     facebook_positions:
       valoresMarcados(".adv-facebook-position"),
     instagram_positions:
@@ -15975,6 +16056,387 @@ function coletarConfiguracoesAvancadas() {
         "adv_audience_plus"
       )?.checked || false
   };
+}
+
+// ─── EDIÇÃO DE CAMPANHA EXISTENTE ───────────────────────────────────────────
+
+const BLOCOS_SEGMENTACAO_EDITAVEL = [
+  "bloco_onde_anunciar",
+  "bloco_orcamento",
+  "bloco_publico",
+  "bloco_agendamento_custo",
+  "bloco_segmentacao_adicional"
+];
+
+let campanhaEmEdicao = null;
+let _snapshotCriarCampanha = null;
+
+function moverBloco(blocoId, destinoId) {
+
+  const bloco = document.getElementById(blocoId);
+  const destino = document.getElementById(destinoId);
+
+  if (!bloco || !destino) {
+    return;
+  }
+
+  if (!bloco.dataset.origemAnchorId) {
+    const anchor = document.createElement("div");
+    anchor.id = `${blocoId}_anchor`;
+    anchor.style.display = "none";
+    bloco.parentNode.insertBefore(anchor, bloco);
+    bloco.dataset.origemAnchorId = anchor.id;
+  }
+
+  destino.appendChild(bloco);
+}
+
+function restaurarBloco(blocoId) {
+
+  const bloco = document.getElementById(blocoId);
+
+  if (!bloco) {
+    return;
+  }
+
+  const anchor =
+    bloco.dataset.origemAnchorId &&
+    document.getElementById(bloco.dataset.origemAnchorId);
+
+  if (anchor) {
+    anchor.parentNode.insertBefore(bloco, anchor.nextSibling);
+  }
+}
+
+function definirValorCampo(id, valor) {
+  const el = document.getElementById(id);
+  if (el) el.value = valor ?? "";
+}
+
+function definirCheckbox(id, valor) {
+  const el = document.getElementById(id);
+  if (el) el.checked = Boolean(valor);
+}
+
+function marcarCheckboxesPorValor(seletor, valores) {
+  const selecionados = new Set(valores || []);
+  document
+    .querySelectorAll(seletor)
+    .forEach(input => {
+      input.checked = selecionados.has(input.value);
+    });
+}
+
+function formatarDataHoraLabel(isoLocal) {
+
+  const m = String(isoLocal || "")
+    .match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+
+  if (!m) {
+    return "Selecionar data e hora";
+  }
+
+  const [, ano, mes, dia, h, min] = m;
+
+  return `${dia}/${mes}/${ano} ${h}:${min}`;
+}
+
+function definirDataCampo(campo, isoLocal) {
+
+  const input = document.getElementById(`adv_${campo}`);
+  const btn = document.getElementById(`adv_${campo}_btn`);
+  const lbl = document.getElementById(`adv_${campo}_label`);
+
+  if (input) input.value = isoLocal || "";
+
+  if (lbl) {
+    lbl.textContent = isoLocal
+      ? formatarDataHoraLabel(isoLocal)
+      : "Selecionar data e hora";
+  }
+
+  if (btn) {
+    btn.classList.toggle("preenchido", Boolean(isoLocal));
+  }
+}
+
+function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
+
+  cfg = cfg || {};
+
+  definirValorCampo("adv_categoria_especial", cfg.categoria_especial || "");
+  definirValorCampo("adv_titulo", cfg.titulo || "");
+  definirValorCampo("adv_descricao", cfg.descricao || "");
+  definirValorCampo("adv_link", cfg.link || "");
+  definirValorCampo("adv_pais", cfg.pais || "BR");
+  definirValorCampo("adv_genero", cfg.genero || "");
+  definirValorCampo("adv_idade_min", cfg.idade_min || "");
+  definirValorCampo("adv_idade_max", cfg.idade_max || "");
+
+  definirValorCampo("adv_bid_strategy", cfg.bid_strategy || "");
+  definirValorCampo("adv_bid_amount", cfg.bid_amount || "");
+  atualizarDescricaoCusto();
+
+  definirDataCampo("inicio", cfg.inicio || "");
+  definirDataCampo("fim", cfg.fim || "");
+
+  definirValorCampo("adv_privacidade_url", cfg.privacidade_url || "");
+  definirValorCampo("adv_privacidade_texto", cfg.privacidade_texto || "");
+  definirValorCampo("adv_obrigado_titulo", cfg.obrigado_titulo || "");
+  definirValorCampo("adv_obrigado_texto", cfg.obrigado_texto || "");
+  definirValorCampo("adv_obrigado_botao", cfg.obrigado_botao || "");
+  definirValorCampo("adv_obrigado_url", cfg.obrigado_url || "");
+  definirValorCampo(
+    "adv_perguntas",
+    (cfg.perguntas || []).join("\n")
+  );
+
+  const plataformas = cfg.plataformas || [];
+  definirCheckbox("adv_platform_facebook", plataformas.includes("facebook"));
+  definirCheckbox("adv_platform_instagram", plataformas.includes("instagram"));
+
+  marcarCheckboxesPorValor(".adv-facebook-position", cfg.facebook_positions);
+  marcarCheckboxesPorValor(".adv-instagram-position", cfg.instagram_positions);
+
+  const dispositivos = cfg.dispositivos || [];
+  definirCheckbox("adv_device_mobile", dispositivos.includes("mobile"));
+  definirCheckbox("adv_device_desktop", dispositivos.includes("desktop"));
+
+  definirCheckbox("adv_form_qualidade", cfg.formulario_qualidade);
+  definirCheckbox("adv_audience_plus", cfg.advantage_audience);
+
+  definirValorCampo("adv_localidade_nome", "");
+
+  const sugestoesLocalidade =
+    document.getElementById("adv_localidade_sugestoes");
+
+  if (sugestoesLocalidade) {
+    sugestoesLocalidade.innerHTML = "";
+    sugestoesLocalidade.style.display = "none";
+  }
+
+  localidadesSelecionadas =
+    (cfg.localidades || []).map(local => ({
+      key: local.key,
+      tipo: local.tipo,
+      nome: local.nome,
+      raio: local.raio ?? null
+    }));
+  renderizarLocalidadesChips();
+
+  definirValorCampo("adv_interesse_busca", "");
+
+  const resultadosInteresses =
+    document.getElementById("adv_interesses_resultados");
+
+  if (resultadosInteresses) {
+    resultadosInteresses.innerHTML = "";
+  }
+
+  const feedbackInteresses =
+    document.getElementById("adv_interesses_feedback");
+
+  if (feedbackInteresses) {
+    feedbackInteresses.innerText =
+      "Busque e selecione um ou mais interesses.";
+  }
+
+  interessesDetalhadosSelecionados =
+    (cfg.interesses_detalhados || []).map(interesse => ({
+      id: interesse.id,
+      nome: interesse.nome
+    }));
+  renderizarInteressesSelecionados();
+
+  definirValorCampo(
+    "orcamento",
+    dailyBudgetCentavos
+      ? Number(dailyBudgetCentavos) / 100
+      : ""
+  );
+}
+
+function abrirEdicaoCampanha(campanhaEncoded) {
+
+  let campanha;
+
+  try {
+    campanha = JSON.parse(decodeURIComponent(campanhaEncoded));
+  } catch (err) {
+    console.error("ERRO CAMPANHA EDITAR:", err);
+    return;
+  }
+
+  campanhaEmEdicao = campanha;
+
+  _snapshotCriarCampanha = {
+    avancadas: coletarConfiguracoesAvancadas(),
+    orcamento: valorCampo("orcamento")
+  };
+
+  BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
+    moverBloco(blocoId, "editar_campanha_campos");
+  });
+
+  const instagramFeedback =
+    document.getElementById("instagram_pagina_feedback");
+
+  if (instagramFeedback) {
+    instagramFeedback.style.display = "none";
+  }
+
+  const nomeEl = document.getElementById("editar_campanha_nome");
+
+  if (nomeEl) {
+    nomeEl.textContent = campanha.nome || "Campanha";
+  }
+
+  preencherConfiguracoesAvancadas(
+    campanha.configuracoes_avancadas || {},
+    campanha.daily_budget
+  );
+
+  const feedback = document.getElementById("editar_campanha_feedback");
+
+  if (feedback) {
+    feedback.style.display = "none";
+    feedback.textContent = "";
+  }
+
+  document
+    .getElementById("campanhaEditarModal")
+    ?.classList.add("active");
+}
+
+function fecharEdicaoCampanha() {
+
+  BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
+    restaurarBloco(blocoId);
+  });
+
+  const instagramFeedback =
+    document.getElementById("instagram_pagina_feedback");
+
+  if (instagramFeedback) {
+    instagramFeedback.style.display = "";
+  }
+
+  if (_snapshotCriarCampanha) {
+    preencherConfiguracoesAvancadas(_snapshotCriarCampanha.avancadas, null);
+    definirValorCampo("orcamento", _snapshotCriarCampanha.orcamento);
+  }
+
+  _snapshotCriarCampanha = null;
+  campanhaEmEdicao = null;
+
+  document
+    .getElementById("campanhaEditarModal")
+    ?.classList.remove("active");
+}
+
+async function salvarEdicaoCampanha() {
+
+  if (!campanhaEmEdicao) {
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return;
+  }
+
+  const decoded = atob(token);
+  const [usuario_id] = decoded.split(":");
+
+  const orcamento = valorCampo("orcamento");
+  const configuracoes_avancadas = coletarConfiguracoesAvancadas();
+
+  const feedback = document.getElementById("editar_campanha_feedback");
+  const btn = document.getElementById("editar_campanha_btn_salvar");
+
+  if (feedback) {
+    feedback.style.display = "none";
+    feedback.textContent = "";
+  }
+
+  if (!configuracoes_avancadas.plataformas.length) {
+    if (feedback) {
+      feedback.textContent =
+        "Escolha Facebook, Instagram ou os dois para anunciar.";
+      feedback.style.display = "block";
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Salvando...";
+  }
+
+  try {
+
+    const res = await fetch(
+      `${API}/meta/editar-campanha`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          usuario_id,
+          campaign_id: campanhaEmEdicao.campaign_id,
+          daily_budget: orcamento ? Number(orcamento) * 100 : null,
+          configuracoes_avancadas
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+
+      const mensagem =
+        data.error?.error_user_msg ||
+        data.error?.message ||
+        (typeof data.error === "string" ? data.error : null) ||
+        "Erro ao salvar alterações";
+
+      if (feedback) {
+        feedback.textContent = mensagem;
+        feedback.style.display = "block";
+      } else {
+        alert(mensagem);
+      }
+
+      return;
+    }
+
+    fecharEdicaoCampanha();
+    await sincronizarCampanhas();
+    alert("Campanha atualizada com sucesso");
+
+  } catch (err) {
+
+    console.error("EDITAR CAMPANHA:", err);
+
+    const mensagem = "Erro ao salvar alterações";
+
+    if (feedback) {
+      feedback.textContent = mensagem;
+      feedback.style.display = "block";
+    } else {
+      alert(mensagem);
+    }
+
+  } finally {
+
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "💾 Salvar alterações";
+    }
+  }
 }
 
 // ─── CARROSSEL DE IMAGENS ────────────────────────────────────────────────────
@@ -16868,6 +17330,11 @@ async function carregarStatusMeta() {
           ? data.paginas
           : [];
 
+      contasInstagramAnuncioDisponiveis =
+        Array.isArray(data.contas_instagram_anuncio)
+          ? data.contas_instagram_anuncio
+          : [];
+
       data.paginas?.forEach(p => {
 
         select.innerHTML += `
@@ -16971,9 +17438,10 @@ async function carregarCampanhas() {
       !c.recebida_por_encaminhamento;
 
     const nomeCorretorEncaminhado =
-      c.corretor_encaminhado_nome ||
-      c.corretor_encaminhado_email ||
-      "";
+      (c.corretores_encaminhados || [])
+        .map(cor => cor.nome || cor.email)
+        .filter(Boolean)
+        .join(", ");
 
     const remetenteEncaminhamento =
       c.criada_por_nome ||
@@ -17236,6 +17704,24 @@ async function carregarCampanhas() {
           >
             🔄
           </button>
+
+          ${
+            campanhaEstaExcluida(c)
+              ? ""
+              : `
+                <button
+                  class="btn-acao"
+                  title="Editar campanha"
+                  onclick="
+                    abrirEdicaoCampanha(
+                      '${encodeURIComponent(JSON.stringify(c))}'
+                    )
+                  "
+                >
+                  ✏️
+                </button>
+              `
+          }
 
           ${
             podeEncaminhar
@@ -17650,32 +18136,31 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
     campanhaEncaminharAtual.nome ||
     "Campanha";
 
-  select.innerHTML = `
-    <option value="">
-      Remover encaminhamento
-    </option>
-    ${corretoresCampanha.map(corretor => {
-      const nomeCompleto =
-        [
-          corretor.nome,
-          corretor.sobrenome
-        ].filter(Boolean).join(" ");
+  const idsEncaminhados = new Set(
+    (campanhaEncaminharAtual.corretores_encaminhados || [])
+      .map(cor => Number(cor.id))
+  );
 
-      return `
-        <option
-          value="${corretor.id}"
-          ${
-            Number(campanhaEncaminharAtual.encaminhada_para_usuario_id) ===
-            Number(corretor.id)
-              ? "selected"
-              : ""
-          }
-        >
-          ${nomeCompleto || corretor.email}
-        </option>
-      `;
-    }).join("")}
-  `;
+  select.innerHTML = corretoresCampanha.map(corretor => {
+    const nomeCompleto =
+      [
+        corretor.nome,
+        corretor.sobrenome
+      ].filter(Boolean).join(" ");
+
+    return `
+      <option
+        value="${corretor.id}"
+        ${
+          idsEncaminhados.has(Number(corretor.id))
+            ? "selected"
+            : ""
+        }
+      >
+        ${nomeCompleto || corretor.email}
+      </option>
+    `;
+  }).join("");
 
   const btnAcessoMeta = document.getElementById(
     "campanha_encaminhar_btn_acesso_meta"
@@ -17725,10 +18210,13 @@ async function salvarEncaminhamentoCampanha() {
   const token =
     localStorage.getItem("token");
 
-  const corretorId =
-    document.getElementById(
-      "campanha_corretor_select"
-    )?.value || null;
+  const select = document.getElementById(
+    "campanha_corretor_select"
+  );
+
+  const corretorIds = Array.from(
+    select?.selectedOptions || []
+  ).map(opt => Number(opt.value));
 
   try {
 
@@ -17741,7 +18229,7 @@ async function salvarEncaminhamentoCampanha() {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          corretor_id: corretorId
+          corretor_ids: corretorIds
         })
       }
     );
@@ -17757,8 +18245,8 @@ async function salvarEncaminhamentoCampanha() {
     }
 
     alert(
-      corretorId
-        ? "Campanha encaminhada ao corretor."
+      corretorIds.length
+        ? "Campanha encaminhada aos corretores selecionados."
         : "Encaminhamento removido."
     );
 
@@ -21254,12 +21742,13 @@ async function enviarFeedback() {
         Campanha
       </strong>
       <p>
-        Escolha um corretor vinculado. A campanha aparecerá no painel dele
-        para ativação com a conexão Meta do próprio corretor.
+        Escolha um ou mais corretores vinculados (Ctrl/Cmd + clique para
+        selecionar vários). A campanha aparecerá no painel deles para
+        ativação com a conexão Meta de cada corretor.
       </p>
     </div>
 
-    <select id="campanha_corretor_select"></select>
+    <select id="campanha_corretor_select" multiple size="6"></select>
 
     <div class="pagamento-modal-alerta">
       O corretor precisa ter acesso à conta de anúncios ou à campanha na Meta
@@ -21284,6 +21773,69 @@ async function enviarFeedback() {
       <button
         class="logout"
         onclick="fecharModalEncaminharCampanha()"
+      >
+        Cancelar
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ✏️ MODAL EDITAR CAMPANHA -->
+<div
+  id="campanhaEditarModal"
+  class="pagamento-modal campanha-editar-modal"
+>
+
+  <div
+    class="pagamento-modal-overlay"
+    onclick="fecharEdicaoCampanha()"
+  ></div>
+
+  <div class="pagamento-modal-content">
+
+    <div class="pagamento-modal-header">
+
+      <h3>Editar campanha — <span id="editar_campanha_nome">Campanha</span></h3>
+
+      <button
+        title="Fechar"
+        onclick="fecharEdicaoCampanha()"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div class="pagamento-modal-text">
+      <p>
+        Ajuste segmentação, orçamento, datas e lance desta campanha. As
+        alterações são enviadas diretamente para a Meta.
+      </p>
+    </div>
+
+    <div id="editar_campanha_campos" class="card campanha-editar-campos"></div>
+
+    <div
+      id="editar_campanha_feedback"
+      class="pagamento-modal-alerta erro"
+      style="display:none;"
+    ></div>
+
+    <div class="campanha-encaminhar-acoes">
+
+      <button
+        id="editar_campanha_btn_salvar"
+        onclick="salvarEdicaoCampanha()"
+      >
+        💾 Salvar alterações
+      </button>
+
+      <button
+        class="logout"
+        onclick="fecharEdicaoCampanha()"
       >
         Cancelar
       </button>

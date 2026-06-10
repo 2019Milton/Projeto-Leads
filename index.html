@@ -17143,7 +17143,34 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
     }).join("")}
   `;
 
+  const btnAcessoMeta = document.getElementById(
+    "campanha_encaminhar_btn_acesso_meta"
+  );
+
+  if (btnAcessoMeta) {
+    btnAcessoMeta.style.display =
+      campanhaEncaminharAtual.conta_anuncios_id
+        ? "inline-flex"
+        : "none";
+  }
+
   modal.classList.add("active");
+}
+
+function abrirAcessoContaAnunciosMeta() {
+
+  const contaId =
+    campanhaEncaminharAtual?.conta_anuncios_id;
+
+  if (!contaId) return;
+
+  const idSemPrefixo =
+    String(contaId).replace(/^act_/, "");
+
+  const url =
+    `https://business.facebook.com/settings/ad-accounts/${idSemPrefixo}`;
+
+  window.open(url, "_blank", "width=1100,height=750");
 }
 
 function fecharModalEncaminharCampanha() {
@@ -20608,6 +20635,15 @@ async function enviarFeedback() {
     <div class="pagamento-modal-alerta">
       O corretor precisa ter acesso à conta de anúncios ou à campanha na Meta
       para conseguir ativá-la.
+      <br />
+      <button
+        type="button"
+        id="campanha_encaminhar_btn_acesso_meta"
+        onclick="abrirAcessoContaAnunciosMeta()"
+        style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;color:inherit;background:transparent;cursor:pointer;margin-top:8px;opacity:.85;transition:opacity .15s"
+        onmouseover="this.style.opacity='1'"
+        onmouseout="this.style.opacity='.85'"
+      >🔗 Dar acesso à conta de anúncios na Meta</button>
     </div>
 
     <div class="campanha-encaminhar-acoes">

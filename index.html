@@ -5308,6 +5308,50 @@ body.tema-claro .cal-nav span { color: #111827; }
   font-weight: 700;
 }
 
+.campanha-veiculacao {
+
+  width: fit-content;
+
+  margin: 8px 0 14px;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  background: rgba(148,163,184,0.12);
+
+  color: #cbd5e1;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.campanha-veiculacao-active {
+
+  background: rgba(34,197,94,0.12);
+
+  color: #86efac;
+}
+
+.campanha-veiculacao-with_issues,
+.campanha-veiculacao-disapproved,
+.campanha-veiculacao-pending_billing_info {
+
+  background: rgba(239,68,68,0.14);
+
+  color: #fca5a5;
+}
+
+.campanha-veiculacao-pending_review,
+.campanha-veiculacao-in_process,
+.campanha-veiculacao-preapproved {
+
+  background: rgba(250,204,21,0.14);
+
+  color: #fde047;
+}
+
 .campanha-erro-pagamento {
 
   width: fit-content;
@@ -16478,8 +16522,18 @@ async function carregarCampanhas() {
             ? "🔴 DELETED"
             : `🔴 ${String(c.status || "UNKNOWN").toUpperCase()}`
         }
-    
+
       </div>
+
+      ${
+        c.veiculacao_label
+          ? `
+            <div class="campanha-veiculacao campanha-veiculacao-${String(c.veiculacao || "").toLowerCase()}">
+              📡 Veiculação: ${escaparHtml(c.veiculacao_label)}
+            </div>
+          `
+          : ""
+      }
 
       ${
         campanhaUsaHistoricoLocal(c)

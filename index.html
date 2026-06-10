@@ -734,6 +734,24 @@ button {
   color: #4ade80;
 }
 
+.pagamento-modo.sem-saldo {
+
+  border-color: rgba(239,68,68,0.45);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(239,68,68,0.08),
+    0 0 18px rgba(239,68,68,0.08);
+
+  opacity: 1;
+}
+
+.pagamento-modo.sem-saldo .pagamento-badge {
+
+  background: rgba(239,68,68,0.14);
+
+  color: #fca5a5;
+}
+
 .pagamento-saldo {
 
   margin-top: 8px;
@@ -16187,7 +16205,7 @@ async function carregarStatusMeta() {
         </div>
 
         <div
-          class="pagamento-modo ${pagamentoManualAtivo ? "ativo" : ""}"
+          class="pagamento-modo ${pagamentoManualAtivo ? "ativo" : ""} ${data.conta_anuncios?.saldo_zerado ? "sem-saldo" : ""}"
           title="Entenda PIX, boleto e saldo"
           onclick="abrirModalPagamento('manual')"
         >
@@ -16197,7 +16215,13 @@ async function carregarStatusMeta() {
             Saldo: ${formatarSaldoMeta(data.conta_anuncios)}
           </span>
           <span class="pagamento-badge">
-            ${pagamentoManualAtivo ? "Em vigor" : "Não detectado"}
+            ${
+              data.conta_anuncios?.saldo_zerado
+                ? "Sem saldo"
+                : pagamentoManualAtivo
+                ? "Em vigor"
+                : "Não detectado"
+            }
           </span>
         </div>
 
@@ -16205,8 +16229,10 @@ async function carregarStatusMeta() {
 
       <p>
         ${
-          data.conta_anuncios?.pagamento_habilitado ||
-          data.conta_anuncios?.possui_pagamento
+          data.conta_anuncios?.erro_pagamento
+            ? `🔴 ${escaparHtml(data.conta_anuncios.erro_pagamento)}`
+            : data.conta_anuncios?.pagamento_habilitado ||
+              data.conta_anuncios?.possui_pagamento
             ? "🟢 Pagamento habilitado"
             : "🔴 Pagamento não identificado"
         }

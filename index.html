@@ -1318,16 +1318,6 @@ body.usuario-super-admin .admin-only-targeting {
   font-size: 12px;
 }
 
-.geo-simple-grid {
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  gap: 10px;
-}
-
 .geo-busca-wrap {
   position: relative;
 }
@@ -1380,9 +1370,66 @@ body.usuario-super-admin .admin-only-targeting {
   opacity: .6;
 }
 
-.hidden-geo-fields {
+.geo-chips {
 
   display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-top: 8px;
+}
+
+.geo-chip {
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 10px;
+
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.35);
+  border-radius: 999px;
+
+  font-size: 12px;
+  color: #e2e8f0;
+}
+
+.geo-chip-tipo {
+  font-size: 10px;
+  opacity: .65;
+  white-space: nowrap;
+}
+
+.geo-chip-raio {
+  width: 64px;
+
+  padding: 2px 6px;
+
+  font-size: 12px;
+  color: #e2e8f0;
+
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+}
+
+.geo-chip-remove {
+
+  padding: 0 2px;
+
+  background: none;
+  border: none;
+
+  font-size: 14px;
+  line-height: 1;
+  color: #f87171;
+
+  cursor: pointer;
+}
+
+.geo-chip-remove:hover {
+  color: #ef4444;
 }
 
 .guia-secreto-overlay {
@@ -8164,34 +8211,19 @@ body.tema-claro .suporte-input {
             <!-- ÁREA DA CAMPANHA -->
             <div class="advanced-full">
               <label>Área da campanha</label>
-              <div class="geo-simple-grid">
-                <div class="geo-busca-wrap">
-                  <input
-                    type="text"
-                    id="adv_localidade_nome"
-                    placeholder="Ex: São Paulo, Santo André, ABC Paulista"
-                    autocomplete="off"
-                    oninput="agendarBuscaLocalidade()"
-                    onfocus="if(document.getElementById('adv_localidade_sugestoes').children.length) document.getElementById('adv_localidade_sugestoes').style.display='block'"
-                  >
-                  <div id="adv_localidade_sugestoes" class="geo-sugestoes"></div>
-                </div>
+              <div class="geo-busca-wrap">
                 <input
-                  type="number"
-                  id="adv_raio"
-                  min="1"
-                  max="80"
-                  placeholder="Raio em km, opcional"
+                  type="text"
+                  id="adv_localidade_nome"
+                  placeholder="Ex: São Paulo, Santo André, ABC Paulista"
+                  autocomplete="off"
+                  oninput="agendarBuscaLocalidade()"
+                  onfocus="if(document.getElementById('adv_localidade_sugestoes').children.length) document.getElementById('adv_localidade_sugestoes').style.display='block'"
                 >
+                <div id="adv_localidade_sugestoes" class="geo-sugestoes"></div>
               </div>
+              <div id="adv_localidades_chips" class="geo-chips"></div>
               <p id="adv_localidade_feedback" class="simple-advanced-note" style="margin-top:4px;"></p>
-            </div>
-
-            <div class="hidden-geo-fields">
-              <input type="hidden" id="adv_latitude">
-              <input type="hidden" id="adv_longitude">
-              <input type="hidden" id="adv_localidade_key">
-              <input type="hidden" id="adv_localidade_tipo">
             </div>
           </div>
         </details>
@@ -14640,6 +14672,7 @@ let buscaInteressesTimer = null;
 let buscaInteressesSequencia = 0;
 let buscaLocalidadeTimer = null;
 let buscaLocalidadeSequencia = 0;
+let localidadesSelecionadas = [];
 let paginasMetaDisponiveis = [];
 let sincronizacaoMetaAtiva = false;
 
@@ -15469,16 +15502,6 @@ function agendarBuscaLocalidade() {
   const lista =
     document.getElementById("adv_localidade_sugestoes");
 
-  const feedback =
-    document.getElementById("adv_localidade_feedback");
-
-  document.getElementById("adv_localidade_key").value = "";
-  document.getElementById("adv_localidade_tipo").value = "";
-
-  if (feedback) {
-    feedback.innerText = "";
-  }
-
   const busca =
     valorCampo("adv_localidade_nome");
 
@@ -15604,7 +15627,7 @@ async function buscarLocalidadeDetalhada() {
 
     if (feedback) {
       feedback.innerText =
-        "Selecione uma sugestão para segmentar a área com precisão.";
+        "Selecione uma sugestão para adicionar à segmentação.";
     }
   } catch (err) {
 
@@ -15631,23 +15654,110 @@ function selecionarLocalidade(key, tipo, nomeCodificado) {
 
   const input = document.getElementById("adv_localidade_nome");
   const lista = document.getElementById("adv_localidade_sugestoes");
-  const feedback = document.getElementById("adv_localidade_feedback");
 
-  if (input) input.value = nome;
+  const jaExiste =
+    localidadesSelecionadas.some(
+      local => local.key === key && local.tipo === tipo
+    );
 
-  document.getElementById("adv_localidade_key").value = key;
-  document.getElementById("adv_localidade_tipo").value = tipo;
+  if (!jaExiste) {
+    localidadesSelecionadas.push({
+      key,
+      tipo,
+      nome,
+      raio: null
+    });
+  }
+
+  if (input) input.value = "";
 
   if (lista) {
     lista.innerHTML = "";
     lista.style.display = "none";
   }
 
+  renderizarLocalidadesChips();
+}
+
+function atualizarRaioLocalidade(indice, valor) {
+  const local = localidadesSelecionadas[indice];
+  if (!local) return;
+
+  const numero = Number(valor);
+
+  local.raio =
+    valor !== "" && Number.isFinite(numero)
+      ? numero
+      : null;
+}
+
+function removerLocalidade(indice) {
+  localidadesSelecionadas.splice(indice, 1);
+  renderizarLocalidadesChips();
+}
+
+function renderizarLocalidadesChips() {
+
+  const container =
+    document.getElementById("adv_localidades_chips");
+
+  const feedback =
+    document.getElementById("adv_localidade_feedback");
+
+  if (!container) return;
+
+  if (!localidadesSelecionadas.length) {
+    container.innerHTML = "";
+    container.style.display = "none";
+
+    if (feedback) feedback.innerText = "";
+
+    return;
+  }
+
+  container.style.display = "flex";
+
+  container.innerHTML =
+    localidadesSelecionadas
+      .map((local, indice) => {
+        const rotulo =
+          ROTULOS_TIPO_LOCALIDADE[local.tipo] ||
+          local.tipo;
+
+        const campoRaio =
+          local.tipo === "city"
+            ? `<input
+                type="number"
+                class="geo-chip-raio"
+                min="1"
+                max="80"
+                placeholder="Raio km"
+                value="${local.raio ?? ""}"
+                oninput="atualizarRaioLocalidade(${indice}, this.value)"
+              >`
+            : "";
+
+        return `
+          <span class="geo-chip">
+            ${escaparHtml(local.nome)}
+            <span class="geo-chip-tipo">${escaparHtml(rotulo)}</span>
+            ${campoRaio}
+            <button type="button" class="geo-chip-remove" onclick="removerLocalidade(${indice})" title="Remover">×</button>
+          </span>
+        `;
+      })
+      .join("");
+
+  const temCidade =
+    localidadesSelecionadas.some(
+      local => local.tipo === "city"
+    );
+
   if (feedback) {
     feedback.innerText =
-      tipo === "city"
-        ? "Área definida. Use o raio para ajustar a abrangência."
-        : "Área definida com a localização selecionada.";
+      temCidade
+        ? "Defina o raio (km) das cidades selecionadas. Você pode continuar buscando para adicionar bairros, regiões, CEPs etc."
+        : "Você pode continuar buscando para adicionar outras áreas (cidade, bairro, região, CEP etc.) à segmentação.";
   }
 }
 
@@ -15715,12 +15825,12 @@ function coletarConfiguracoesAvancadas() {
     genero: valorCampo("adv_genero"),
     idade_min: valorCampo("adv_idade_min"),
     idade_max: valorCampo("adv_idade_max"),
-    localidade_nome: valorCampo("adv_localidade_nome"),
-    localidade_key: valorCampo("adv_localidade_key"),
-    localidade_tipo: valorCampo("adv_localidade_tipo"),
-    latitude: valorCampo("adv_latitude"),
-    longitude: valorCampo("adv_longitude"),
-    raio: valorCampo("adv_raio"),
+    localidades: localidadesSelecionadas.map(local => ({
+      key: local.key,
+      tipo: local.tipo,
+      nome: local.nome,
+      raio: local.raio
+    })),
     bid_strategy: valorCampo("adv_bid_strategy"),
     bid_amount: valorCampo("adv_bid_amount"),
     inicio: valorCampo("adv_inicio"),
@@ -17209,6 +17319,35 @@ function detalheItem(titulo, valor, classe = "") {
   `;
 }
 
+function formatarLocalidadesResumo(cfg) {
+
+  if (Array.isArray(cfg?.localidades) && cfg.localidades.length) {
+    return cfg.localidades.map(local => {
+      const rotulo =
+        ROTULOS_TIPO_LOCALIDADE[local.tipo] ||
+        local.tipo ||
+        "";
+
+      const raioTexto =
+        local.tipo === "city" && local.raio
+          ? ` · raio ${local.raio}km`
+          : "";
+
+      return rotulo
+        ? `${local.nome || local.key} (${rotulo}${raioTexto})`
+        : `${local.nome || local.key}${raioTexto}`;
+    });
+  }
+
+  if (cfg?.localidade_nome) {
+    return cfg.raio
+      ? `${cfg.localidade_nome} (raio ${cfg.raio}km)`
+      : cfg.localidade_nome;
+  }
+
+  return null;
+}
+
 function abrirCampanhaDrawer(campanhaEncoded) {
 
   let campanha = null;
@@ -17280,8 +17419,7 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Descrição", cfg.descricao, "full")}
       ${detalheItem("Link de destino", cfg.link, "full")}
       ${detalheItem("País", cfg.pais || "BR")}
-      ${detalheItem("Raio", cfg.raio ? `${cfg.raio} km` : "-")}
-      ${detalheItem("Área", cfg.localidade_nome)}
+      ${detalheItem("Área da campanha", formatarLocalidadesResumo(cfg))}
       ${detalheItem("Idade mínima", cfg.idade_min)}
       ${detalheItem("Idade máxima", cfg.idade_max)}
       ${detalheItem("Gênero", cfg.genero === "1" ? "Homens" : cfg.genero === "2" ? "Mulheres" : "Todos")}

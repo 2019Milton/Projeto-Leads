@@ -8911,7 +8911,10 @@ body.tema-claro .suporte-input {
 
             <div class="advanced-full">
               <label>Categoria especial da Meta</label>
-              <select id="adv_categoria_especial">
+              <select
+                id="adv_categoria_especial"
+                onchange="atualizarAvisoCategoriaEspecial()"
+              >
                 <option value="">Nenhuma</option>
                 <option value="HOUSING">Moradia / Imóveis</option>
                 <option value="CREDIT">Crédito</option>
@@ -8920,6 +8923,12 @@ body.tema-claro .suporte-input {
                   Política / temas sociais
                 </option>
               </select>
+              <small
+                id="adv_categoria_especial_aviso"
+                style="display:none;color:#fbbf24;font-size:12px;margin-top:6px;"
+              >
+                Para Moradia, Crédito ou Emprego, a Meta não permite segmentar por idade ou gênero. Esses campos serão ignorados no envio.
+              </small>
             </div>
 
             <div class="advanced-full">
@@ -17161,6 +17170,29 @@ function coletarConfiguracoesAvancadas() {
   };
 }
 
+function atualizarAvisoCategoriaEspecial() {
+  const categoria =
+    valorCampo("adv_categoria_especial");
+
+  const aviso =
+    document.getElementById(
+      "adv_categoria_especial_aviso"
+    );
+
+  if (!aviso) {
+    return;
+  }
+
+  aviso.style.display =
+    [
+      "HOUSING",
+      "CREDIT",
+      "EMPLOYMENT"
+    ].includes(categoria)
+      ? "block"
+      : "none";
+}
+
 // ─── EDIÇÃO DE CAMPANHA EXISTENTE ───────────────────────────────────────────
 
 const BLOCOS_SEGMENTACAO_EDITAVEL = [
@@ -17350,6 +17382,7 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
       nome: interesse.nome
     }));
   renderizarInteressesSelecionados();
+  atualizarAvisoCategoriaEspecial();
 
   definirValorCampo(
     "orcamento",
@@ -18012,6 +18045,7 @@ async function criarCampanhaCompleta() {
           cta,
           campanha_nome,
           configuracoes_avancadas,
+          daily_budget: Number(orcamento) * 100,
     
           // 🔥 IMAGEM
           imageHash,

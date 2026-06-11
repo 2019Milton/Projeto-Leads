@@ -3748,6 +3748,15 @@ body.usuario-super-admin .admin-only-targeting {
   white-space:nowrap;
 }
 
+.performance-meta-updated {
+
+  color:#94a3b8;
+
+  font-size:12px;
+
+  white-space:nowrap;
+}
+
 .performance-meta-actions {
 
   display:flex;
@@ -3782,6 +3791,51 @@ body.usuario-super-admin .admin-only-targeting {
   color:#e5e7eb;
 
   font-size:12px;
+}
+
+.performance-meta-btn {
+
+  height:34px;
+
+  border:
+    1px solid rgba(34,197,94,0.28);
+
+  background:rgba(15,23,42,0.82);
+
+  color:#e5e7eb;
+
+  border-radius:10px;
+
+  padding:7px 11px;
+
+  cursor:pointer;
+
+  font-size:12px;
+
+  font-weight:700;
+
+  transition:
+    transform .15s ease,
+    border-color .15s ease,
+    background .15s ease;
+}
+
+.performance-meta-btn:hover {
+
+  transform:translateY(-1px);
+
+  border-color:rgba(34,197,94,0.56);
+
+  background:rgba(20,83,45,0.45);
+}
+
+.performance-meta-btn:disabled {
+
+  opacity:.55;
+
+  cursor:not-allowed;
+
+  transform:none;
 }
 
 .performance-meta-cards {
@@ -3826,6 +3880,27 @@ body.usuario-super-admin .admin-only-targeting {
   font-size:20px;
 }
 
+.performance-meta-card small {
+
+  display:block;
+
+  color:#64748b;
+
+  font-size:11px;
+
+  margin-top:4px;
+}
+
+.performance-meta-table-wrap {
+
+  overflow-x:auto;
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  border-radius:12px;
+}
+
 .performance-meta-table {
 
   width:100%;
@@ -3860,6 +3935,62 @@ body.usuario-super-admin .admin-only-targeting {
 .performance-meta-table td {
 
   color:#e5e7eb;
+}
+
+.performance-meta-table tbody tr:hover {
+
+  background:rgba(34,197,94,0.045);
+}
+
+.performance-meta-table td:nth-child(2),
+.performance-meta-table td:nth-child(3),
+.performance-meta-table td:nth-child(4),
+.performance-meta-table td:nth-child(5),
+.performance-meta-table th:nth-child(2),
+.performance-meta-table th:nth-child(3),
+.performance-meta-table th:nth-child(4),
+.performance-meta-table th:nth-child(5) {
+
+  text-align:right;
+}
+
+.performance-meta-insights {
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(auto-fit,minmax(190px,1fr));
+
+  gap:10px;
+
+  margin-bottom:14px;
+}
+
+.performance-meta-insight {
+
+  border:
+    1px solid rgba(255,255,255,0.07);
+
+  background:rgba(0,0,0,0.16);
+
+  border-radius:10px;
+
+  padding:10px 12px;
+
+  color:#cbd5e1;
+
+  font-size:12px;
+}
+
+.performance-meta-insight strong {
+
+  display:block;
+
+  color:#f8fafc;
+
+  font-size:13px;
+
+  margin-bottom:3px;
 }
 
 .performance-meta-note {
@@ -7428,12 +7559,20 @@ body.tema-claro .performance-meta-head small { color: #526174; }
 body.tema-claro .performance-meta-card { background: rgba(255,255,255,0.72); border-color: rgba(71,85,105,0.26); }
 body.tema-claro .performance-meta-card span { color: #526174; }
 body.tema-claro .performance-meta-card strong { color: #1e293b; }
+body.tema-claro .performance-meta-card small { color: #64748b; }
 body.tema-claro .performance-meta-badge { border-color: rgba(22,163,74,0.46); color: #15803d; }
 body.tema-claro .performance-meta-periodo { background: #fff; border-color: #9fb0c4; color: #152238; }
+body.tema-claro .performance-meta-btn { background: #fff; border-color: #9fb0c4; color: #152238; }
+body.tema-claro .performance-meta-btn:hover { background: #ecfdf5; border-color: #16a34a; }
+body.tema-claro .performance-meta-updated { color: #526174; }
+body.tema-claro .performance-meta-table-wrap { border-color: rgba(0,0,0,0.07); }
 body.tema-claro .performance-meta-table th { color: #526174; }
 body.tema-claro .performance-meta-table td { color: #1e293b; }
 body.tema-claro .performance-meta-table th,
 body.tema-claro .performance-meta-table td { border-bottom-color: rgba(0,0,0,0.07); }
+body.tema-claro .performance-meta-table tbody tr:hover { background: rgba(22,163,74,0.06); }
+body.tema-claro .performance-meta-insight { background: rgba(255,255,255,0.58); border-color: rgba(71,85,105,0.18); color: #526174; }
+body.tema-claro .performance-meta-insight strong { color: #1e293b; }
 body.tema-claro .performance-meta-note { color: #526174; }
 
 /* ── Meta conta selector — tema claro ── */
@@ -11599,6 +11738,7 @@ let guiaSecretoAtual = null;
 let guiaSecretoReavaliarTimer = null;
 let guiaCriacaoCampanhaAtiva = false;
 let performanceMetaPeriodoAtual = "semanal";
+let performanceMetaUltimoRelatorio = null;
 
 function dataLocalISOHoje() {
   const agora = new Date();
@@ -14945,6 +15085,74 @@ function descricaoPeriodoPerformance(periodo) {
   return "ultimos 7 dias";
 }
 
+function valorPerformanceValido(valor) {
+  return valor !== null &&
+    valor !== undefined &&
+    Number.isFinite(Number(valor));
+}
+
+function obterRegistrosPerformance(data) {
+  return (data?.registros || data?.dias || [])
+    .slice();
+}
+
+function calcularInsightsPerformanceMeta(data) {
+  const registros =
+    obterRegistrosPerformance(data);
+
+  const registrosComCpl =
+    registros.filter(registro =>
+      valorPerformanceValido(registro.custo_por_lead) &&
+      Number(registro.leads || 0) > 0
+    );
+
+  const melhorCpl =
+    registrosComCpl
+      .slice()
+      .sort((a, b) =>
+        Number(a.custo_por_lead) -
+        Number(b.custo_por_lead)
+      )[0] || null;
+
+  const piorCpl =
+    registrosComCpl
+      .slice()
+      .sort((a, b) =>
+        Number(b.custo_por_lead) -
+        Number(a.custo_por_lead)
+      )[0] || null;
+
+  const cliques =
+    registros.reduce(
+      (total, registro) =>
+        total + Number(registro.cliques || 0),
+      0
+    );
+
+  const leads =
+    registros.reduce(
+      (total, registro) =>
+        total + Number(registro.leads || 0),
+      0
+    );
+
+  return {
+    melhorCpl,
+    piorCpl,
+    taxaLeadClique:
+      cliques > 0
+        ? (leads / cliques) * 100
+        : null
+  };
+}
+
+function textoRegistroPerformance(registro, agrupamento) {
+  return formatarRegistroPerformance(
+    registro,
+    agrupamento || "diario"
+  );
+}
+
 function renderizarPainelPerformanceMeta(data) {
 
   const painel =
@@ -14963,19 +15171,54 @@ function renderizarPainelPerformanceMeta(data) {
   const economia =
     resumo.economia_percentual;
 
-  const badge =
-    economia === null ||
-    economia === undefined
-      ? "Aguardando historico"
-      : economia >= 0
-      ? `${formatarPercentualPerformance(economia)} melhor que a media`
-      : `${formatarPercentualPerformance(Math.abs(economia))} acima da media`;
-
   const periodo =
     data.periodo || performanceMetaPeriodoAtual || "semanal";
 
   const agrupamento =
     data.agrupamento || "diario";
+
+  performanceMetaUltimoRelatorio = {
+    ...data,
+    periodo,
+    agrupamento,
+    atualizado_em: new Date().toISOString()
+  };
+
+  const insights =
+    calcularInsightsPerformanceMeta(data);
+
+  const melhorCplTexto =
+    insights.melhorCpl
+      ? `${textoRegistroPerformance(insights.melhorCpl, agrupamento)} - ${formatarMoeda(insights.melhorCpl.custo_por_lead)}`
+      : "Sem leads no periodo";
+
+  const piorCplTexto =
+    insights.piorCpl
+      ? `${textoRegistroPerformance(insights.piorCpl, agrupamento)} - ${formatarMoeda(insights.piorCpl.custo_por_lead)}`
+      : "Sem comparativo";
+
+  const taxaLeadCliqueTexto =
+    valorPerformanceValido(insights.taxaLeadClique)
+      ? formatarPercentualPerformance(insights.taxaLeadClique)
+      : "-";
+
+  const leituraCplTexto =
+    economia === null ||
+    economia === undefined
+      ? "Historico insuficiente para comparar o CPL de hoje."
+      : economia >= 0
+      ? `${formatarPercentualPerformance(economia)} melhor que a media recente.`
+      : `${formatarPercentualPerformance(Math.abs(economia))} acima da media recente.`;
+
+  const atualizadoTexto =
+    new Date()
+      .toLocaleTimeString(
+        "pt-BR",
+        {
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      );
 
   const registrosOrdenados =
     (data.registros || data.dias || [])
@@ -15045,14 +15288,27 @@ function renderizarPainelPerformanceMeta(data) {
         <select
           class="performance-meta-periodo"
           onchange="carregarPerformanceMeta(this.value)"
+          title="Periodo da performance"
         >
           <option value="semanal" ${periodo === "semanal" ? "selected" : ""}>Semanal - 7 dias</option>
           <option value="mensal" ${periodo === "mensal" ? "selected" : ""}>Mensal - 30 dias</option>
           <option value="anual" ${periodo === "anual" ? "selected" : ""}>Anual - 12 meses</option>
         </select>
-        <div class="performance-meta-badge">
-          ${badge}
-        </div>
+        <button
+          type="button"
+          class="performance-meta-btn"
+          onclick="carregarPerformanceMeta(performanceMetaPeriodoAtual)"
+          title="Atualizar dados da Meta"
+        >Atualizar</button>
+        <button
+          type="button"
+          class="performance-meta-btn"
+          onclick="exportarPerformanceMetaXLSX()"
+          title="Exportar performance Meta"
+        >Exportar</button>
+        <span class="performance-meta-updated">
+          Atualizado ${atualizadoTexto}
+        </span>
       </div>
     </div>
 
@@ -15080,37 +15336,251 @@ function renderizarPainelPerformanceMeta(data) {
             ? formatarMoeda(resumo.custo_por_lead_medio)
             : "-"
         }</strong>
+        <small>${leituraCplTexto}</small>
       </div>
     </div>
 
-    <table class="performance-meta-table">
-      <thead>
-        <tr>
-          <th>${agrupamento === "mensal" ? "Mes" : "Dia"}</th>
-          <th>Gasto</th>
-          <th>Leads</th>
-          <th>CPL</th>
-          <th>Cliques</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${linhas || `
+    <div class="performance-meta-insights">
+      <div class="performance-meta-insight">
+        <strong>Melhor CPL</strong>
+        ${melhorCplTexto}
+      </div>
+      <div class="performance-meta-insight">
+        <strong>Ponto de atencao</strong>
+        ${piorCplTexto}
+      </div>
+      <div class="performance-meta-insight">
+        <strong>Leads por clique</strong>
+        ${taxaLeadCliqueTexto}
+      </div>
+    </div>
+
+    <div class="performance-meta-table-wrap">
+      <table class="performance-meta-table">
+        <thead>
           <tr>
-            <td colspan="5">Sem dados de performance no periodo.</td>
+            <th>${agrupamento === "mensal" ? "Mes" : "Dia"}</th>
+            <th>Gasto</th>
+            <th>Leads</th>
+            <th>CPL</th>
+            <th>Cliques</th>
           </tr>
-        `}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          ${linhas || `
+            <tr>
+              <td colspan="5">Sem dados de performance no periodo.</td>
+            </tr>
+          `}
+        </tbody>
+      </table>
+    </div>
 
     <div class="performance-meta-note">
-      <strong>CPL (Custo Por Lead)</strong> e quanto voce pagou em media para gerar cada lead, calculado dividindo o gasto pelo numero de leads do registro.
-      A plataforma mostra essa leitura por semana, mes e ano para facilitar a comparacao de evolucao. No anual, os dados aparecem agrupados por mes.
-      <br><br>
-      <strong>Sobre a cobrança da Meta:</strong> a Meta não cobra por lead nem por clique — ela cobra por <strong>impressões</strong> (quantas vezes seu anúncio foi exibido). O CPL é uma métrica calculada: quanto do valor gasto resultou em cada lead. Nem todo clique vira lead — a pessoa pode clicar no anúncio e não preencher o formulário.
-      <br><br>
-      Quando você define um <strong>custo-alvo ou limite de lance</strong> na plataforma, esse valor é enviado à Meta como instrução de otimização. A Meta tenta respeitar esse limite no leilão de anúncios, mas o resultado final depende da concorrência, do público e das condições de entrega do momento.
+      <strong>CPL</strong> e o custo medio por lead. A Meta cobra por impressoes; nem todo clique vira lead.
+      Use a linha expandida para ver quais campanhas puxaram o gasto de cada dia.
     </div>
   `;
+}
+
+function exportarPerformanceMetaXLSX() {
+
+  const data =
+    performanceMetaUltimoRelatorio;
+
+  if (!data) {
+    alert("Carregue a performance Meta antes de exportar.");
+    return;
+  }
+
+  if (typeof XLSX === "undefined") {
+    alert("Modulo de exportacao indisponivel no momento.");
+    return;
+  }
+
+  const periodo =
+    data.periodo || performanceMetaPeriodoAtual || "semanal";
+
+  const agrupamento =
+    data.agrupamento || "diario";
+
+  const resumo =
+    data.resumo || {};
+
+  const registros =
+    obterRegistrosPerformance(data)
+      .slice()
+      .reverse();
+
+  const dados =
+    registros.map(registro => ({
+      [agrupamento === "mensal" ? "Mes" : "Dia"]:
+        textoRegistroPerformance(registro, agrupamento),
+      Gasto:
+        Number(registro.gasto || 0),
+      Leads:
+        Number(registro.leads || 0),
+      CPL:
+        valorPerformanceValido(registro.custo_por_lead)
+          ? Number(registro.custo_por_lead)
+          : "",
+      Cliques:
+        Number(registro.cliques || 0),
+      Impressoes:
+        Number(registro.impressoes || 0),
+      Alcance:
+        Number(registro.alcance || 0)
+    }));
+
+  if (!dados.length) {
+    alert("Nenhum dado de performance para exportar.");
+    return;
+  }
+
+  const worksheet =
+    XLSX.utils.json_to_sheet([]);
+
+  const titulo =
+    `Performance Meta - ${tituloPeriodoPerformance(periodo)}`;
+
+  XLSX.utils.sheet_add_aoa(
+    worksheet,
+    [[titulo]],
+    {
+      origin: "A1"
+    }
+  );
+
+  XLSX.utils.sheet_add_aoa(
+    worksheet,
+    [[
+      `Exportado em: ${
+        new Date().toLocaleString("pt-BR")
+      }`
+    ]],
+    {
+      origin: "F3"
+    }
+  );
+
+  XLSX.utils.sheet_add_aoa(
+    worksheet,
+    [[
+      "Periodo",
+      `${data.periodo_inicio || "-"} a ${data.periodo_fim || "-"}`,
+      "Gasto total",
+      Number(resumo.gasto_total || 0),
+      "Leads",
+      Number(resumo.leads_total || 0),
+      "CPL medio",
+      valorPerformanceValido(resumo.custo_por_lead_medio)
+        ? Number(resumo.custo_por_lead_medio)
+        : ""
+    ]],
+    {
+      origin: "A4"
+    }
+  );
+
+  XLSX.utils.sheet_add_json(
+    worksheet,
+    dados,
+    {
+      origin: "A6"
+    }
+  );
+
+  worksheet["!cols"] = [
+    { wch: 16 },
+    { wch: 14 },
+    { wch: 10 },
+    { wch: 14 },
+    { wch: 10 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 14 }
+  ];
+
+  worksheet["!autofilter"] = {
+    ref: "A6:G6"
+  };
+
+  worksheet["!freeze"] = {
+    xSplit: 0,
+    ySplit: 6
+  };
+
+  worksheet["!merges"] = [
+    XLSX.utils.decode_range("A1:H2"),
+    XLSX.utils.decode_range("F3:H3")
+  ];
+
+  const estiloTitulo = {
+    font: {
+      bold: true,
+      color: { rgb: "FFFFFF" },
+      sz: 16,
+      name: "Segoe UI"
+    },
+    fill: {
+      fgColor: { rgb: "000000" }
+    },
+    alignment: {
+      horizontal: "center",
+      vertical: "center"
+    }
+  };
+
+  const estiloHeader = {
+    font: {
+      bold: true,
+      color: { rgb: "FFFFFF" },
+      sz: 12,
+      name: "Segoe UI"
+    },
+    fill: {
+      fgColor: { rgb: "000000" }
+    },
+    alignment: {
+      horizontal: "center",
+      vertical: "center"
+    }
+  };
+
+  for (let row = 1; row <= 6; row++) {
+    ["A","B","C","D","E","F","G","H"].forEach(col => {
+      const cell = `${col}${row}`;
+      if (!worksheet[cell]) {
+        worksheet[cell] = {
+          t: "s",
+          v: ""
+        };
+      }
+      worksheet[cell].s = estiloHeader;
+    });
+  }
+
+  worksheet["A1"].s =
+    estiloTitulo;
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Performance Meta"
+  );
+
+  const nomeArquivo =
+    `Performance-Meta-${periodo}-${
+      new Date().toISOString().slice(0, 10)
+    }.xlsx`;
+
+  XLSX.writeFile(
+    workbook,
+    nomeArquivo
+  );
 }
 
 /* ===== CONTROLE DE CUSTO — descrição dinâmica ===== */
@@ -15379,6 +15849,16 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
     return;
   }
 
+  const btnAtualizar =
+    painel.querySelector(
+      ".performance-meta-btn"
+    );
+
+  if (btnAtualizar) {
+    btnAtualizar.disabled = true;
+    btnAtualizar.textContent = "Atualizando...";
+  }
+
   try {
 
     const res = await fetch(
@@ -15398,6 +15878,8 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
       return;
     }
 
+    _perfDetalheCarregado.clear();
+
     renderizarPainelPerformanceMeta(data);
 
   } catch (err) {
@@ -15406,6 +15888,11 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
 
     if (painel) {
       painel.style.display = "none";
+    }
+  } finally {
+    if (btnAtualizar) {
+      btnAtualizar.disabled = false;
+      btnAtualizar.textContent = "Atualizar";
     }
   }
 }

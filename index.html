@@ -7616,6 +7616,81 @@ body.tema-claro .targeting-chip {
 }
 .chat-msg-anexo-arquivo:hover { background: rgba(255,255,255,0.16); }
 
+.chat-janela.expandido {
+  width: 460px;
+}
+.chat-janela.expandido .chat-msgs-lista {
+  max-height: 480px;
+  min-height: 360px;
+}
+.chat-expand-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 2px;
+  margin-right: 8px;
+}
+.chat-expand-btn:hover { color: #e2e8f0; }
+
+.chat-anexo-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(139,92,246,0.15);
+  background: rgba(139,92,246,0.06);
+  font-size: 12px;
+  color: #c4b5fd;
+}
+.chat-anexo-preview img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.chat-anexo-preview-icone {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.chat-anexo-preview-nome {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-anexo-preview-remover {
+  background: none;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.chat-anexo-preview-remover:hover { color: #ef4444; }
+
+.chat-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: zoom-out;
+}
+.chat-lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
 /* Painel de suporte (dentro do admin) */
 .suporte-painel { margin-top: 28px; }
 .suporte-painel-titulo {
@@ -7936,6 +8011,11 @@ body.tema-claro .chat-anexo-btn {
 body.tema-claro .chat-msg-anexo-arquivo {
   background: rgba(79,70,229,0.10);
   color: #1e293b;
+}
+body.tema-claro .chat-expand-btn { color: #64748b; }
+body.tema-claro .chat-anexo-preview {
+  background: rgba(79,70,229,0.06);
+  color: #4338ca;
 }
 body.tema-claro .suporte-painel-titulo { color: #4338ca; }
 body.tema-claro .suporte-conv-item {
@@ -8997,18 +9077,22 @@ body.tema-claro .suporte-input {
     <div id="chat_janela" class="chat-janela" style="display:none;">
       <div class="chat-janela-header">
         <h4>💬 Suporte da Plataforma</h4>
-        <button class="chat-janela-fechar" onclick="toggleChatSuporte()">✕</button>
+        <div>
+          <button class="chat-expand-btn" id="chat_expand_btn" title="Expandir" onclick="toggleChatExpandido()">⤢</button>
+          <button class="chat-janela-fechar" onclick="toggleChatSuporte()">✕</button>
+        </div>
       </div>
       <div id="chat_msgs_lista" class="chat-msgs-lista">
         <span class="chat-sem-msgs">Envie uma mensagem para iniciar o atendimento.</span>
       </div>
+      <div id="chat_anexo_preview" class="chat-anexo-preview" style="display:none;"></div>
       <div class="chat-input-area">
         <input
           type="file"
           id="chat_anexo_input"
           accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
           style="display:none;"
-          onchange="enviarAnexoChat(this.files[0])"
+          onchange="selecionarAnexoChat(this.files[0])"
         >
         <button
           type="button"
@@ -9024,6 +9108,11 @@ body.tema-claro .suporte-input {
         ></textarea>
         <button class="chat-enviar" onclick="enviarMensagemChat()">Enviar</button>
       </div>
+    </div>
+
+    <!-- 🔍 LIGHTBOX (visualização de imagem do chat) -->
+    <div id="chat_lightbox" class="chat-lightbox" style="display:none;" onclick="fecharLightboxChat()">
+      <img id="chat_lightbox_img" src="" alt="Visualização">
     </div>
 
     <!-- 🔹 DIREITA -->
@@ -20949,6 +21038,31 @@ function toggleChatSuporte() {
   }
 }
 
+function toggleChatExpandido() {
+  const janela = document.getElementById("chat_janela");
+  const btn = document.getElementById("chat_expand_btn");
+  const expandido = janela.classList.toggle("expandido");
+  if (btn) {
+    btn.textContent = expandido ? "⤡" : "⤢";
+    btn.title = expandido ? "Recolher" : "Expandir";
+  }
+}
+
+function abrirLightboxChat(src) {
+  const lightbox = document.getElementById("chat_lightbox");
+  const img = document.getElementById("chat_lightbox_img");
+  if (!lightbox || !img) return;
+  img.src = src;
+  lightbox.style.display = "flex";
+}
+
+function fecharLightboxChat() {
+  const lightbox = document.getElementById("chat_lightbox");
+  const img = document.getElementById("chat_lightbox_img");
+  if (lightbox) lightbox.style.display = "none";
+  if (img) img.src = "";
+}
+
 async function carregarMensagensChat() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -20989,10 +21103,11 @@ async function carregarMensagensChat() {
   }
 }
 
-async function enviarAnexoChat(arquivo) {
-  const token = localStorage.getItem("token");
+let _chatAnexoSelecionado = null;
+
+function selecionarAnexoChat(arquivo) {
   const input = document.getElementById("chat_anexo_input");
-  if (!arquivo || !token) return;
+  if (!arquivo) return;
 
   if (arquivo.size > 8 * 1024 * 1024) {
     alert("Arquivo muito grande (máximo 8MB)");
@@ -21000,8 +21115,53 @@ async function enviarAnexoChat(arquivo) {
     return;
   }
 
+  _chatAnexoSelecionado = arquivo;
+  renderAnexoPreviewChat();
+}
+
+function removerAnexoChat() {
+  _chatAnexoSelecionado = null;
+  const input = document.getElementById("chat_anexo_input");
+  if (input) input.value = "";
+  renderAnexoPreviewChat();
+}
+
+function renderAnexoPreviewChat() {
+  const preview = document.getElementById("chat_anexo_preview");
+  if (!preview) return;
+
+  if (!_chatAnexoSelecionado) {
+    preview.style.display = "none";
+    preview.innerHTML = "";
+    return;
+  }
+
+  const arquivo = _chatAnexoSelecionado;
+  preview.style.display = "flex";
+
+  if (arquivo.type.startsWith("image/")) {
+    const url = URL.createObjectURL(arquivo);
+    preview.innerHTML = `
+      <img src="${url}" alt="${escHtml(arquivo.name)}">
+      <span class="chat-anexo-preview-nome">${escHtml(arquivo.name)}</span>
+      <button class="chat-anexo-preview-remover" title="Remover" onclick="removerAnexoChat()">✕</button>
+    `;
+  } else {
+    preview.innerHTML = `
+      <span class="chat-anexo-preview-icone">📎</span>
+      <span class="chat-anexo-preview-nome">${escHtml(arquivo.name)}</span>
+      <button class="chat-anexo-preview-remover" title="Remover" onclick="removerAnexoChat()">✕</button>
+    `;
+  }
+}
+
+async function enviarAnexoChat(arquivo, conteudo) {
+  const token = localStorage.getItem("token");
+  if (!arquivo || !token) return false;
+
   const formData = new FormData();
   formData.append("arquivo", arquivo);
+  if (conteudo) formData.append("conteudo", conteudo);
 
   try {
     const res = await fetch(`${API}/chat/anexo`, {
@@ -21014,36 +21174,42 @@ async function enviarAnexoChat(arquivo) {
 
     if (!res.ok || data.error) {
       alert(data.error || "Erro ao enviar arquivo");
-      return;
+      return false;
     }
 
-    await carregarMensagensChat();
+    return true;
   } catch (e) {
     console.error("chat anexo:", e);
     alert("Erro ao enviar arquivo");
-  } finally {
-    if (input) input.value = "";
+    return false;
   }
 }
 
 async function enviarMensagemChat() {
   const token = localStorage.getItem("token");
   const input = document.getElementById("chat_input");
-  const conteudo = input?.value?.trim();
-  if (!conteudo || !token) return;
+  const conteudo = input?.value?.trim() || "";
+  if (!token) return;
+
+  if (!conteudo && !_chatAnexoSelecionado) return;
 
   input.value = "";
   input.disabled = true;
 
   try {
-    await fetch(`${API}/chat/mensagem`, {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ conteudo })
-    });
+    if (_chatAnexoSelecionado) {
+      const ok = await enviarAnexoChat(_chatAnexoSelecionado, conteudo);
+      if (ok) removerAnexoChat();
+    } else {
+      await fetch(`${API}/chat/mensagem`, {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ conteudo })
+      });
+    }
     await carregarMensagensChat();
   } catch (e) {
     console.error("chat send:", e);
@@ -21465,10 +21631,10 @@ function renderAnexoChat(m) {
   if (!m.anexo_url) return "";
 
   if (String(m.anexo_tipo || "").startsWith("image/")) {
-    return `<img src="${m.anexo_url}" alt="${escHtml(m.anexo_nome || "imagem")}" class="chat-msg-anexo-img" onclick="window.open(this.src, '_blank')">`;
+    return `<img src="${m.anexo_url}" alt="${escHtml(m.anexo_nome || "imagem")}" class="chat-msg-anexo-img" onclick="abrirLightboxChat(this.src)">`;
   }
 
-  return `<a href="${m.anexo_url}" download="${escHtml(m.anexo_nome || "arquivo")}" class="chat-msg-anexo-arquivo">📎 ${escHtml(m.anexo_nome || "arquivo")}</a>`;
+  return `<a href="${m.anexo_url}" target="_blank" rel="noopener" class="chat-msg-anexo-arquivo">📎 ${escHtml(m.anexo_nome || "arquivo")}</a>`;
 }
 
 /* =========================================

@@ -1431,11 +1431,13 @@ button {
   flex-shrink: 0;
 }
 
-.imagem-acoes button {
+#imagens-container .imagem-acoes button {
 
   width: 26px;
 
   height: 26px;
+
+  min-width: auto;
 
   display: flex;
 
@@ -1444,6 +1446,8 @@ button {
   justify-content: center;
 
   padding: 0;
+
+  margin-top: 0;
 
   border: 1px solid rgba(255,255,255,0.12);
 
@@ -1455,35 +1459,47 @@ button {
 
   font-size: 11px;
 
+  font-weight: normal;
+
   cursor: pointer;
+
+  box-shadow: none;
 
   transition: border-color 0.2s, color 0.2s;
 }
 
-.imagem-acoes button:hover:not(:disabled) {
+#imagens-container .imagem-acoes button:hover:not(:disabled) {
 
   border-color: rgba(124,92,255,0.5);
 
   color: #fff;
+
+  transform: none;
+
+  box-shadow: none;
 }
 
-.imagem-acoes button:disabled {
+#imagens-container .imagem-acoes button:disabled {
 
   opacity: 0.35;
 
   cursor: default;
 }
 
-.imagem-acoes .btn-remover-imagem:hover:not(:disabled) {
+#imagens-container .imagem-acoes .btn-remover-imagem:hover:not(:disabled) {
 
   border-color: rgba(239,68,68,0.5);
 
   color: #fecaca;
 }
 
-.btn-adicionar-imagem {
+#btn-adicionar-imagem {
 
   align-self: flex-start;
+
+  width: auto;
+
+  min-width: auto;
 
   margin-top: 2px;
 
@@ -1503,16 +1519,22 @@ button {
 
   cursor: pointer;
 
+  box-shadow: none;
+
   transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
-.btn-adicionar-imagem:hover {
+#btn-adicionar-imagem:hover {
 
   border-color: rgba(124,92,255,0.5);
 
   background: rgba(124,92,255,0.08);
 
   color: #fff;
+
+  transform: none;
+
+  box-shadow: none;
 }
 
 .advanced-campaign summary {
@@ -16679,11 +16701,14 @@ async function salvarEdicaoCampanha() {
 
 function atualizarPosicoes() {
   const container = document.getElementById("imagens-container");
+  const total = container.children.length;
   Array.from(container.children).forEach((item, i) => {
     const badge = item.querySelector(".imagem-posicao");
     if (badge) badge.textContent = i + 1;
     item.querySelector(".btn-subir").disabled = i === 0;
-    item.querySelector(".btn-descer").disabled = i === container.children.length - 1;
+    item.querySelector(".btn-descer").disabled = i === total - 1;
+    const btnRemover = item.querySelector(".btn-remover-imagem");
+    if (btnRemover) btnRemover.title = total === 1 ? "Limpar imagem" : "Remover";
   });
 }
 
@@ -16738,6 +16763,21 @@ function criarItemImagem(arquivoInicial) {
   }
   item.aplicarArquivo = aplicarArquivo;
 
+  function limparArquivo() {
+    fileInput.value = "";
+    if (thumb.dataset.objectUrl) {
+      URL.revokeObjectURL(thumb.dataset.objectUrl);
+      delete thumb.dataset.objectUrl;
+    }
+    thumb.removeAttribute("src");
+    thumb.style.display = "none";
+    placeholder.style.display = "";
+    thumbWrap.classList.remove("preenchido");
+    nomeSpan.textContent = "Nenhuma imagem selecionada";
+    nomeSpan.classList.remove("preenchido");
+  }
+  item.limparArquivo = limparArquivo;
+
   fileInput.addEventListener("change", () => {
     aplicarArquivo(fileInput.files[0]);
   });
@@ -16778,6 +16818,8 @@ function criarItemImagem(arquivoInicial) {
       if (thumb.dataset.objectUrl) URL.revokeObjectURL(thumb.dataset.objectUrl);
       item.remove();
       atualizarPosicoes();
+    } else {
+      limparArquivo();
     }
   });
 

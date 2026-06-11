@@ -1279,6 +1279,242 @@ button {
   color: #fde68a;
 }
 
+.imagens-lista {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  margin-bottom: 4px;
+}
+
+.imagem-item {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 8px 10px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 10px;
+
+  background: rgba(255,255,255,0.03);
+
+  transition: border-color 0.2s;
+}
+
+.imagem-item:hover {
+
+  border-color: rgba(255,255,255,0.16);
+}
+
+.imagem-posicao {
+
+  flex-shrink: 0;
+
+  width: 22px;
+
+  height: 22px;
+
+  border-radius: 50%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background: rgba(124,92,255,0.18);
+
+  color: #e0e7ff;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.imagem-thumb-wrap {
+
+  position: relative;
+
+  flex-shrink: 0;
+
+  width: 44px;
+
+  height: 44px;
+
+  border-radius: 8px;
+
+  border: 1px dashed rgba(255,255,255,0.18);
+
+  background: rgba(255,255,255,0.02);
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 18px;
+
+  color: rgba(255,255,255,0.35);
+
+  overflow: hidden;
+
+  transition: border-color 0.2s;
+}
+
+.imagem-thumb-wrap:hover {
+
+  border-color: rgba(124,92,255,0.5);
+}
+
+.imagem-thumb-wrap.preenchido {
+
+  border-style: solid;
+
+  border-color: rgba(34,197,94,0.35);
+}
+
+.imagem-thumb-placeholder {
+
+  line-height: 1;
+}
+
+.imagem-thumb {
+
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+
+  display: none;
+}
+
+.imagem-nome {
+
+  flex: 1;
+
+  min-width: 0;
+
+  font-size: 12px;
+
+  color: #94a3b8;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.imagem-nome.preenchido {
+
+  color: #e2e8f0;
+}
+
+.imagem-acoes {
+
+  display: flex;
+
+  gap: 4px;
+
+  flex-shrink: 0;
+}
+
+.imagem-acoes button {
+
+  width: 26px;
+
+  height: 26px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid rgba(255,255,255,0.12);
+
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: #cbd5e1;
+
+  font-size: 11px;
+
+  cursor: pointer;
+
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.imagem-acoes button:hover:not(:disabled) {
+
+  border-color: rgba(124,92,255,0.5);
+
+  color: #fff;
+}
+
+.imagem-acoes button:disabled {
+
+  opacity: 0.35;
+
+  cursor: default;
+}
+
+.imagem-acoes .btn-remover-imagem:hover:not(:disabled) {
+
+  border-color: rgba(239,68,68,0.5);
+
+  color: #fecaca;
+}
+
+.btn-adicionar-imagem {
+
+  align-self: flex-start;
+
+  margin-top: 2px;
+
+  padding: 8px 16px;
+
+  border: 1px dashed rgba(255,255,255,0.3);
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.btn-adicionar-imagem:hover {
+
+  border-color: rgba(124,92,255,0.5);
+
+  background: rgba(124,92,255,0.08);
+
+  color: #fff;
+}
+
 .advanced-campaign summary {
 
   cursor: pointer;
@@ -8104,14 +8340,14 @@ body.tema-claro .suporte-input {
         <!-- 🖼️ IMAGENS CARROSSEL -->
         <label>Imagens do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(carrossel — máx. 10)</span></label>
 
-        <div id="imagens-container" style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px"></div>
+        <div id="imagens-container" class="imagens-lista"></div>
 
         <input type="file" id="input-multiplas-imagens" accept="image/*" multiple style="display:none">
 
         <button
           type="button"
           id="btn-adicionar-imagem"
-          style="align-self:flex-start;background:transparent;border:1px dashed rgba(255,255,255,.3);color:inherit;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;margin-top:2px"
+          class="btn-adicionar-imagem"
         >+ Adicionar imagens</button>
 
         <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
@@ -16454,23 +16690,66 @@ function atualizarPosicoes() {
 function criarItemImagem(arquivoInicial) {
   const item = document.createElement("div");
   item.className = "imagem-item";
-  item.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap";
 
   const badge = document.createElement("span");
   badge.className = "imagem-posicao";
-  badge.style.cssText = "font-size:11px;font-weight:700;background:rgba(255,255,255,.12);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0";
   badge.textContent = "1";
+
+  const thumbWrap = document.createElement("div");
+  thumbWrap.className = "imagem-thumb-wrap";
+  thumbWrap.title = "Clique para escolher a imagem";
+
+  const placeholder = document.createElement("span");
+  placeholder.className = "imagem-thumb-placeholder";
+  placeholder.textContent = "🖼️";
 
   const thumb = document.createElement("img");
   thumb.className = "imagem-thumb";
-  thumb.style.cssText = "width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;display:none;";
+
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.className = "imagem-input";
+  fileInput.accept = "image/*";
+  fileInput.style.cssText = "display:none";
+
+  thumbWrap.appendChild(placeholder);
+  thumbWrap.appendChild(thumb);
+  thumbWrap.appendChild(fileInput);
+  thumbWrap.addEventListener("click", () => fileInput.click());
+
+  const nomeSpan = document.createElement("span");
+  nomeSpan.className = "imagem-nome";
+  nomeSpan.textContent = "Nenhuma imagem selecionada";
+
+  function aplicarArquivo(arquivo) {
+    if (!arquivo) return;
+    const dt = new DataTransfer();
+    dt.items.add(arquivo);
+    fileInput.files = dt.files;
+    nomeSpan.textContent = arquivo.name;
+    nomeSpan.classList.add("preenchido");
+    if (thumb.dataset.objectUrl) URL.revokeObjectURL(thumb.dataset.objectUrl);
+    const url = URL.createObjectURL(arquivo);
+    thumb.src = url;
+    thumb.dataset.objectUrl = url;
+    thumb.style.display = "block";
+    placeholder.style.display = "none";
+    thumbWrap.classList.add("preenchido");
+  }
+  item.aplicarArquivo = aplicarArquivo;
+
+  fileInput.addEventListener("change", () => {
+    aplicarArquivo(fileInput.files[0]);
+  });
+
+  const acoes = document.createElement("div");
+  acoes.className = "imagem-acoes";
 
   const btnSubir = document.createElement("button");
   btnSubir.type = "button";
   btnSubir.className = "btn-subir";
   btnSubir.title = "Mover para cima";
   btnSubir.textContent = "▲";
-  btnSubir.style.cssText = "background:transparent;border:1px solid rgba(255,255,255,.2);color:inherit;width:24px;height:24px;border-radius:4px;cursor:pointer;font-size:10px;flex-shrink:0;padding:0";
   btnSubir.addEventListener("click", () => {
     const container = document.getElementById("imagens-container");
     const prev = item.previousElementSibling;
@@ -16482,50 +16761,17 @@ function criarItemImagem(arquivoInicial) {
   btnDescer.className = "btn-descer";
   btnDescer.title = "Mover para baixo";
   btnDescer.textContent = "▼";
-  btnDescer.style.cssText = "background:transparent;border:1px solid rgba(255,255,255,.2);color:inherit;width:24px;height:24px;border-radius:4px;cursor:pointer;font-size:10px;flex-shrink:0;padding:0";
   btnDescer.addEventListener("click", () => {
     const container = document.getElementById("imagens-container");
     const next = item.nextElementSibling;
     if (next) { container.insertBefore(next, item); atualizarPosicoes(); }
   });
 
-  const fileInput = document.createElement("input");
-  fileInput.type = "file";
-  fileInput.className = "imagem-input";
-  fileInput.accept = "image/*";
-  fileInput.style.cssText = "display:none";
-
-  const labelBtn = document.createElement("label");
-  labelBtn.textContent = "Escolher arquivo";
-  labelBtn.style.cssText = "cursor:pointer;padding:5px 10px;border:1px solid rgba(255,255,255,.25);border-radius:6px;font-size:13px;white-space:nowrap;flex-shrink:0";
-  labelBtn.appendChild(fileInput);
-
-  const nomeSpan = document.createElement("span");
-  nomeSpan.textContent = "Nenhum arquivo";
-  nomeSpan.style.cssText = "font-size:12px;opacity:.6;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
-
-  function aplicarArquivo(arquivo) {
-    if (!arquivo) return;
-    const dt = new DataTransfer();
-    dt.items.add(arquivo);
-    fileInput.files = dt.files;
-    nomeSpan.textContent = arquivo.name;
-    if (thumb.dataset.objectUrl) URL.revokeObjectURL(thumb.dataset.objectUrl);
-    const url = URL.createObjectURL(arquivo);
-    thumb.src = url;
-    thumb.dataset.objectUrl = url;
-    thumb.style.display = "block";
-  }
-  item.aplicarArquivo = aplicarArquivo;
-
-  fileInput.addEventListener("change", () => {
-    aplicarArquivo(fileInput.files[0]);
-  });
-
   const btnRemover = document.createElement("button");
   btnRemover.type = "button";
+  btnRemover.className = "btn-remover-imagem";
+  btnRemover.title = "Remover";
   btnRemover.textContent = "×";
-  btnRemover.style.cssText = "background:transparent;border:1px solid rgba(255,255,255,.2);color:inherit;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center";
   btnRemover.addEventListener("click", () => {
     const container = document.getElementById("imagens-container");
     if (container.children.length > 1) {
@@ -16535,13 +16781,14 @@ function criarItemImagem(arquivoInicial) {
     }
   });
 
+  acoes.appendChild(btnSubir);
+  acoes.appendChild(btnDescer);
+  acoes.appendChild(btnRemover);
+
   item.appendChild(badge);
-  item.appendChild(thumb);
-  item.appendChild(btnSubir);
-  item.appendChild(btnDescer);
-  item.appendChild(labelBtn);
+  item.appendChild(thumbWrap);
   item.appendChild(nomeSpan);
-  item.appendChild(btnRemover);
+  item.appendChild(acoes);
 
   if (arquivoInicial) aplicarArquivo(arquivoInicial);
 

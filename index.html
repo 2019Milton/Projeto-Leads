@@ -1640,7 +1640,7 @@ body.usuario-super-admin .admin-only-targeting {
 .geo-chips {
 
   display: none;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
 
   margin-top: 8px;
@@ -1650,53 +1650,158 @@ body.usuario-super-admin .admin-only-targeting {
 
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 
-  padding: 6px 10px;
+  padding: 8px 10px;
 
-  background: rgba(34,197,94,0.12);
-  border: 1px solid rgba(34,197,94,0.35);
-  border-radius: 999px;
+  background: rgba(34,197,94,0.06);
+  border: 1px solid rgba(34,197,94,0.25);
+  border-radius: 10px;
 
-  font-size: 12px;
+  font-size: 13px;
   color: #e2e8f0;
+
+  transition: border-color 0.2s;
+}
+
+.geo-chip:hover {
+  border-color: rgba(34,197,94,0.4);
+}
+
+.geo-chip-nome {
+  flex: 1;
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .geo-chip-tipo {
+
+  flex-shrink: 0;
+
+  padding: 2px 8px;
+
+  border-radius: 999px;
+  background: rgba(34,197,94,0.15);
+
   font-size: 10px;
-  opacity: .65;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: #86efac;
+  white-space: nowrap;
+}
+
+.geo-chip-area-exata {
+
+  flex-shrink: 0;
+
+  font-size: 11px;
+  opacity: .55;
   white-space: nowrap;
 }
 
 .geo-chip-raio {
-  width: 64px;
 
-  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  flex-shrink: 0;
+}
+
+#adv_localidades_chips .geo-chip-raio button {
+
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  margin-top: 0;
+
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+
+  background: transparent;
+  color: #cbd5e1;
 
   font-size: 12px;
-  color: #e2e8f0;
+  font-weight: normal;
+  cursor: pointer;
+  box-shadow: none;
 
-  background: #0f172a;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 6px;
+  transition: border-color 0.2s, color 0.2s;
 }
 
-.geo-chip-remove {
+#adv_localidades_chips .geo-chip-raio button:hover:not(:disabled) {
 
-  padding: 0 2px;
+  border-color: rgba(124,92,255,0.5);
+  color: #fff;
 
-  background: none;
-  border: none;
+  transform: none;
+  box-shadow: none;
+}
+
+#adv_localidades_chips .geo-chip-raio button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.geo-chip-raio-valor {
+
+  min-width: 58px;
+
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.geo-chip-raio-valor strong {
+  color: #e2e8f0;
+  font-size: 12px;
+}
+
+#adv_localidades_chips .geo-chip-remove {
+
+  width: 26px;
+  height: 26px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  margin-top: 0;
+
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+
+  background: transparent;
+  color: #cbd5e1;
 
   font-size: 14px;
-  line-height: 1;
-  color: #f87171;
-
+  font-weight: normal;
   cursor: pointer;
+  box-shadow: none;
+
+  transition: border-color 0.2s, color 0.2s;
 }
 
-.geo-chip-remove:hover {
-  color: #ef4444;
+#adv_localidades_chips .geo-chip-remove:hover {
+
+  border-color: rgba(239,68,68,0.5);
+  color: #fecaca;
+
+  transform: none;
+  box-shadow: none;
 }
 
 .guia-secreto-overlay {
@@ -8266,6 +8371,15 @@ body.tema-claro .suporte-input {
       </button>
 
       <button
+        id="btn_parceiro"
+        class="btn-sync"
+        style="display:none;"
+        onclick="abrirPainelParceiro()"
+      >
+        🤝 Painel Parceiro
+      </button>
+
+      <button
         id="btn_perfil"
         class="btn-sync"
         onclick="abrirMenuPerfil()"
@@ -8635,7 +8749,7 @@ body.tema-claro .suporte-input {
                 <input
                   type="text"
                   id="adv_localidade_nome"
-                  placeholder="Ex: São Paulo, Santo André, ABC Paulista"
+                  placeholder="Ex: São Paulo, Mooca, 03318-000"
                   autocomplete="off"
                   oninput="agendarBuscaLocalidade()"
                   onfocus="if(document.getElementById('adv_localidade_sugestoes').children.length) document.getElementById('adv_localidade_sugestoes').style.display='block'"
@@ -10298,6 +10412,8 @@ body.tema-claro .suporte-input {
               <th>Campanhas</th>
               <th>Leads</th>
               <th>Vínculo</th>
+              <th>Parceiro</th>
+              <th>Vínculo Parceiro</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -10325,6 +10441,70 @@ body.tema-claro .suporte-input {
           </button>
         </div>
         <div id="resultado_corrigir_datas" style="margin-top:14px;font-size:13px;display:none;"></div>
+      </div>
+
+      <!-- 🤝 FINANCEIRO DE PARCEIROS -->
+      <div class="card" style="margin-top:30px;padding:25px;">
+        <h3 style="margin-bottom:8px;color:white;">🤝 Financeiro de Parceiros</h3>
+        <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">
+          Lance a mensalidade e a comissão de cada cliente vinculado a um parceiro.
+        </p>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px;">
+
+          <div>
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Cliente</label>
+            <select id="parceiro_fin_cliente"></select>
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Mês de referência</label>
+            <input type="month" id="parceiro_fin_mes" />
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Mensalidade (R$)</label>
+            <input type="number" step="0.01" min="0" id="parceiro_fin_mensalidade" style="width:120px;" />
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Comissão (R$)</label>
+            <input type="number" step="0.01" min="0" id="parceiro_fin_comissao" style="width:120px;" />
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Status</label>
+            <select id="parceiro_fin_status">
+              <option value="pendente">Pendente</option>
+              <option value="pago">Pago</option>
+            </select>
+          </div>
+
+          <div style="flex:1;min-width:180px;">
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Observações</label>
+            <input type="text" id="parceiro_fin_obs" style="width:100%;" />
+          </div>
+
+          <button class="btn" onclick="salvarFinanceiroParceiro()">
+            Salvar lançamento
+          </button>
+
+        </div>
+
+        <table class="tabela-admin">
+          <thead>
+            <tr>
+              <th>Parceiro</th>
+              <th>Cliente</th>
+              <th>Mês</th>
+              <th>Mensalidade</th>
+              <th>Comissão</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="parceiro_fin_tabela"></tbody>
+        </table>
       </div>
 
     </div>
@@ -10436,9 +10616,56 @@ body.tema-claro .suporte-input {
 
 </div>
 
+<!-- =========================================
+🤝 PAINEL DO PARCEIRO
+========================================= -->
+<div
+  id="painel_parceiro"
+  style="margin-top:40px; display:none;"
+>
+  <div class="card" style="background:linear-gradient(145deg,rgba(16,185,129,0.12),rgba(5,150,105,0.05))!important;border:1px solid rgba(16,185,129,0.25)!important;">
+    <h2 style="color:#6ee7b7;">🤝 Painel Parceiro</h2>
+    <p style="color:#94a3b8;margin-top:6px;font-size:13px;">
+      Acompanhamento dos clientes que você trouxe para a plataforma e do financeiro combinado.
+    </p>
+
+    <div style="margin-top:24px;">
+      <h3 style="margin-bottom:8px;color:white;">Clientes vinculados</h3>
+      <table class="tabela-admin">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Tipo</th>
+            <th>Plano</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="parceiro_painel_clientes"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:24px;">
+      <h3 style="margin-bottom:8px;color:white;">Financeiro</h3>
+      <table class="tabela-admin">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Mês</th>
+            <th>Mensalidade</th>
+            <th>Comissão</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="parceiro_painel_financeiro"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
 
 
-    
+
+
 <script>
 
 function abrirLead() {
@@ -11307,6 +11534,10 @@ async function init() {
       tipo === "super_admin"
     ) {
       await carregarCorretoresCampanha();
+    }
+
+    if (tipo === "admin_corretor") {
+      await verificarPainelParceiro();
     }
 
     await carregarPlanoAtual();
@@ -16219,16 +16450,29 @@ function selecionarLocalidade(key, tipo, nomeCodificado) {
   renderizarLocalidadesChips();
 }
 
-function atualizarRaioLocalidade(indice, valor) {
+const RAIO_LOCALIDADE_PASSO = 5;
+const RAIO_LOCALIDADE_MIN = 5;
+const RAIO_LOCALIDADE_MAX = 80;
+
+function localidadeSuportaRaio(tipo) {
+  return tipo === "city" || tipo === "zip";
+}
+
+function ajustarRaioLocalidade(indice, delta) {
   const local = localidadesSelecionadas[indice];
   if (!local) return;
 
-  const numero = Number(valor);
+  const atual =
+    local.raio ?? (delta > 0 ? 0 : RAIO_LOCALIDADE_MIN);
+
+  const novo = atual + delta;
 
   local.raio =
-    valor !== "" && Number.isFinite(numero)
-      ? numero
-      : null;
+    novo < RAIO_LOCALIDADE_MIN
+      ? null
+      : Math.min(RAIO_LOCALIDADE_MAX, novo);
+
+  renderizarLocalidadesChips();
 }
 
 function removerLocalidade(indice) {
@@ -16250,7 +16494,10 @@ function renderizarLocalidadesChips() {
     container.innerHTML = "";
     container.style.display = "none";
 
-    if (feedback) feedback.innerText = "";
+    if (feedback) {
+      feedback.innerText =
+        "Busque cidades, bairros, regiões, CEPs ou estados para definir onde os anúncios serão exibidos. Cidades e CEPs permitem ampliar o alcance com um raio em km.";
+    }
 
     return;
   }
@@ -16264,40 +16511,52 @@ function renderizarLocalidadesChips() {
           ROTULOS_TIPO_LOCALIDADE[local.tipo] ||
           local.tipo;
 
-        const campoRaio =
-          local.tipo === "city"
-            ? `<input
-                type="number"
-                class="geo-chip-raio"
-                min="1"
-                max="80"
-                placeholder="Raio km"
-                value="${local.raio ?? ""}"
-                oninput="atualizarRaioLocalidade(${indice}, this.value)"
-              >`
-            : "";
+        const controleRaio =
+          localidadeSuportaRaio(local.tipo)
+            ? `
+              <span class="geo-chip-raio">
+                <button
+                  type="button"
+                  onclick="ajustarRaioLocalidade(${indice}, -${RAIO_LOCALIDADE_PASSO})"
+                  title="Diminuir raio"
+                  ${local.raio == null ? "disabled" : ""}
+                >−</button>
+                <span class="geo-chip-raio-valor">${
+                  local.raio
+                    ? `<strong>${local.raio}</strong> km`
+                    : "Padrão"
+                }</span>
+                <button
+                  type="button"
+                  onclick="ajustarRaioLocalidade(${indice}, ${RAIO_LOCALIDADE_PASSO})"
+                  title="Aumentar raio"
+                  ${local.raio >= RAIO_LOCALIDADE_MAX ? "disabled" : ""}
+                >+</button>
+              </span>
+            `
+            : `<span class="geo-chip-area-exata">Área exata</span>`;
 
         return `
           <span class="geo-chip">
-            ${escaparHtml(local.nome)}
+            <span class="geo-chip-nome">${escaparHtml(local.nome)}</span>
             <span class="geo-chip-tipo">${escaparHtml(rotulo)}</span>
-            ${campoRaio}
+            ${controleRaio}
             <button type="button" class="geo-chip-remove" onclick="removerLocalidade(${indice})" title="Remover">×</button>
           </span>
         `;
       })
       .join("");
 
-  const temCidade =
+  const temRaioDisponivel =
     localidadesSelecionadas.some(
-      local => local.tipo === "city"
+      local => localidadeSuportaRaio(local.tipo)
     );
 
   if (feedback) {
     feedback.innerText =
-      temCidade
-        ? "Defina o raio (km) das cidades selecionadas. Você pode continuar buscando para adicionar bairros, regiões, CEPs etc."
-        : "Você pode continuar buscando para adicionar outras áreas (cidade, bairro, região, CEP etc.) à segmentação.";
+      temRaioDisponivel
+        ? "Use os botões −/+ para definir um raio (km) ao redor das cidades e CEPs selecionados. Bairros, estados e regiões usam a área exata."
+        : "Continue buscando para adicionar outras áreas (cidade, bairro, região, CEP etc.). Cidades e CEPs permitem ampliar o alcance com um raio.";
   }
 }
 
@@ -18315,7 +18574,7 @@ function formatarLocalidadesResumo(cfg) {
         "";
 
       const raioTexto =
-        local.tipo === "city" && local.raio
+        localidadeSuportaRaio(local.tipo) && local.raio
           ? ` · raio ${local.raio}km`
           : "";
 
@@ -19405,7 +19664,96 @@ function abrirPainelAdmin() {
   painel.scrollIntoView({
     behavior: "smooth"
   });
-}  
+}
+
+
+function abrirPainelParceiro() {
+
+  const painel =
+    document.getElementById("painel_parceiro");
+
+  if (!painel) {
+    return;
+  }
+
+  painel.scrollIntoView({
+    behavior: "smooth"
+  });
+}
+
+
+async function verificarPainelParceiro() {
+
+  const token =
+    localStorage.getItem("token");
+
+  const btnParceiro =
+    document.getElementById("btn_parceiro");
+
+  const painelParceiro =
+    document.getElementById("painel_parceiro");
+
+  try {
+
+    const res = await fetch(
+      `${API}/parceiro/painel`,
+      {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+
+    if (!res.ok) {
+      if (btnParceiro) btnParceiro.style.display = "none";
+      if (painelParceiro) painelParceiro.style.display = "none";
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.error) {
+      if (btnParceiro) btnParceiro.style.display = "none";
+      if (painelParceiro) painelParceiro.style.display = "none";
+      return;
+    }
+
+    if (btnParceiro) btnParceiro.style.display = "block";
+    if (painelParceiro) painelParceiro.style.display = "block";
+
+    const tabelaClientes =
+      document.getElementById("parceiro_painel_clientes");
+
+    tabelaClientes.innerHTML = (data.clientes || []).map(cli => `
+      <tr>
+        <td>${cli.email}</td>
+        <td>${cli.tipo}</td>
+        <td>${cli.plano}</td>
+        <td>${cli.ativo ? "🟢 Ativo" : "🔴 Desativado"}</td>
+      </tr>
+    `).join("") || `<tr><td colspan="4">Nenhum cliente vinculado</td></tr>`;
+
+    const tabelaFinanceiro =
+      document.getElementById("parceiro_painel_financeiro");
+
+    tabelaFinanceiro.innerHTML = (data.lancamentos || []).map(l => `
+      <tr>
+        <td>${l.cliente_email}</td>
+        <td>${new Date(l.mes_referencia).toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric", timeZone: "UTC" })}</td>
+        <td>${formatarMoeda(l.valor_mensalidade)}</td>
+        <td>${formatarMoeda(l.valor_comissao)}</td>
+        <td>${l.status === "pago" ? "🟢 Pago" : "🟡 Pendente"}</td>
+      </tr>
+    `).join("") || `<tr><td colspan="5">Nenhum lançamento ainda</td></tr>`;
+
+  } catch (err) {
+
+    console.error("ERRO PAINEL PARCEIRO:", err);
+
+    if (btnParceiro) btnParceiro.style.display = "none";
+    if (painelParceiro) painelParceiro.style.display = "none";
+  }
+}
 
 
 async function carregarPainelAdmin() {
@@ -19430,6 +19778,11 @@ async function carregarPainelAdmin() {
     const adminsCorretores =
       data.usuarios.filter(
         u => u.tipo === "admin_corretor"
+      );
+
+    const parceiros =
+      data.usuarios.filter(
+        u => u.is_parceiro
       );
 
     console.log(
@@ -19627,12 +19980,55 @@ async function carregarPainelAdmin() {
               `
           
               :
-          
+
               `
               -
               `
             }
-          
+
+          </td>
+
+          <td style="text-align:center;">
+            <input
+              type="checkbox"
+              ${u.is_parceiro ? "checked" : ""}
+              onchange="
+                alterarParceiro(
+                  ${u.id},
+                  this.checked
+                )
+              "
+            />
+          </td>
+
+          <td>
+            <select
+              onchange="alterarVinculoParceiro(
+                ${u.id},
+                this.value
+              )"
+            >
+
+              <option value="">
+                Sem parceiro
+              </option>
+
+              ${parceiros
+                .filter(p => Number(p.id) !== Number(u.id))
+                .map(p => `
+                  <option
+                    value="${p.id}"
+                    ${
+                      Number(u.parceiro_id) === Number(p.id)
+                        ? "selected"
+                        : ""
+                    }
+                  >
+                    ${p.email}
+                  </option>
+                `).join("")}
+
+            </select>
           </td>
 
           <td>
@@ -19684,6 +20080,9 @@ async function carregarPainelAdmin() {
       `;
     }
 
+    await carregarAdminsCorretores();
+    await carregarFinanceiroParceiros(data.usuarios);
+
   } catch (err) {
 
     console.error(
@@ -19691,7 +20090,6 @@ async function carregarPainelAdmin() {
       err
     );
   }
-  await carregarAdminsCorretores();
 }
 
 
@@ -20853,6 +21251,254 @@ async function alterarVinculo(id, admin_id) {
 
   await carregarPainelAdmin();
 }
+
+
+async function alterarParceiro(id, isParceiro) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/parceiro`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        is_parceiro: isParceiro
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+
+  await carregarPainelAdmin();
+}
+
+
+async function alterarVinculoParceiro(id, parceiroId) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/vinculo-parceiro`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        parceiro_id: parceiroId
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+
+  await carregarPainelAdmin();
+}
+
+
+async function carregarFinanceiroParceiros(usuarios) {
+
+  const token =
+    localStorage.getItem("token");
+
+  // 🔹 select de clientes vinculados a um parceiro
+  const selectCliente =
+    document.getElementById("parceiro_fin_cliente");
+
+  if (selectCliente) {
+
+    const clientesVinculados =
+      (usuarios || []).filter(u => u.parceiro_id);
+
+    selectCliente.innerHTML = clientesVinculados.length
+      ? clientesVinculados.map(u => `
+          <option value="${u.id}">
+            ${u.email} (parceiro: ${u.parceiro_email})
+          </option>
+        `).join("")
+      : `<option value="">Nenhum cliente vinculado a parceiro</option>`;
+  }
+
+  try {
+
+    const res = await fetch(
+      `${API}/admin/parceiro-financeiro`,
+      {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      console.error("ERRO FINANCEIRO PARCEIRO:", data);
+      return;
+    }
+
+    const tabela =
+      document.getElementById("parceiro_fin_tabela");
+
+    tabela.innerHTML = data.lancamentos.map(l => `
+      <tr>
+        <td>${l.parceiro_email}</td>
+        <td>${l.cliente_email}</td>
+        <td>${new Date(l.mes_referencia).toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric", timeZone: "UTC" })}</td>
+        <td>${formatarMoeda(l.valor_mensalidade)}</td>
+        <td>${formatarMoeda(l.valor_comissao)}</td>
+        <td>
+          <select onchange="alterarStatusFinanceiroParceiro(${l.id}, this.value)">
+            <option value="pendente" ${l.status === "pendente" ? "selected" : ""}>Pendente</option>
+            <option value="pago" ${l.status === "pago" ? "selected" : ""}>Pago</option>
+          </select>
+        </td>
+        <td>
+          <button class="btn-danger" onclick="excluirFinanceiroParceiro(${l.id})">
+            🗑️ Excluir
+          </button>
+        </td>
+      </tr>
+    `).join("");
+
+  } catch (err) {
+    console.error("ERRO FINANCEIRO PARCEIRO:", err);
+  }
+}
+
+
+async function salvarFinanceiroParceiro() {
+
+  const token =
+    localStorage.getItem("token");
+
+  const clienteId =
+    document.getElementById("parceiro_fin_cliente")?.value;
+
+  const mes =
+    document.getElementById("parceiro_fin_mes")?.value;
+
+  if (!clienteId || !mes) {
+    alert("Selecione o cliente e o mês de referência.");
+    return;
+  }
+
+  const valorMensalidade =
+    document.getElementById("parceiro_fin_mensalidade")?.value || 0;
+
+  const valorComissao =
+    document.getElementById("parceiro_fin_comissao")?.value || 0;
+
+  const status =
+    document.getElementById("parceiro_fin_status")?.value;
+
+  const observacoes =
+    document.getElementById("parceiro_fin_obs")?.value || null;
+
+  const res = await fetch(
+    `${API}/admin/parceiro-financeiro`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        cliente_id: Number(clienteId),
+        mes_referencia: `${mes}-01`,
+        valor_mensalidade: Number(valorMensalidade),
+        valor_comissao: Number(valorComissao),
+        status,
+        observacoes
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    alert(data.error || "Erro ao salvar lançamento");
+    return;
+  }
+
+  await carregarPainelAdmin();
+}
+
+
+async function alterarStatusFinanceiroParceiro(id, status) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/parceiro-financeiro/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ status })
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    alert(data.error || "Erro ao atualizar lançamento");
+    return;
+  }
+
+  await carregarPainelAdmin();
+}
+
+
+async function excluirFinanceiroParceiro(id) {
+
+  if (!confirm("Excluir este lançamento?")) {
+    return;
+  }
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/parceiro-financeiro/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    alert(data.error || "Erro ao excluir lançamento");
+    return;
+  }
+
+  await carregarPainelAdmin();
+}
+
 
 async function alterarPlanoUsuario(id, plano) {
 

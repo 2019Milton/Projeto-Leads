@@ -10447,14 +10447,15 @@ body.tema-claro .suporte-input {
       <div class="card" style="margin-top:30px;padding:25px;">
         <h3 style="margin-bottom:8px;color:white;">🤝 Financeiro de Parceiros</h3>
         <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">
-          Lance a mensalidade e a comissão de cada cliente vinculado a um parceiro.
+          Lance o plano e o valor total cobrado do cliente. A divisão é automática:
+          65% para a plataforma e 35% para o parceiro.
         </p>
 
-        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px;">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px;">
 
           <div>
             <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Cliente</label>
-            <select id="parceiro_fin_cliente"></select>
+            <select id="parceiro_fin_cliente" onchange="atualizarPlanoFinanceiroParceiro()"></select>
           </div>
 
           <div>
@@ -10463,13 +10464,17 @@ body.tema-claro .suporte-input {
           </div>
 
           <div>
-            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Mensalidade (R$)</label>
-            <input type="number" step="0.01" min="0" id="parceiro_fin_mensalidade" style="width:120px;" />
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Plano</label>
+            <select id="parceiro_fin_plano">
+              <option value="bronze">Bronze</option>
+              <option value="prata">Prata</option>
+              <option value="ouro">Ouro</option>
+            </select>
           </div>
 
           <div>
-            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Comissão (R$)</label>
-            <input type="number" step="0.01" min="0" id="parceiro_fin_comissao" style="width:120px;" />
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Valor total (R$)</label>
+            <input type="number" step="0.01" min="0" id="parceiro_fin_valor_total" style="width:120px;" oninput="atualizarSplitFinanceiroParceiro()" />
           </div>
 
           <div>
@@ -10491,14 +10496,18 @@ body.tema-claro .suporte-input {
 
         </div>
 
+        <div id="parceiro_fin_split" style="font-size:12px;color:#9ca3af;margin-bottom:20px;"></div>
+
         <table class="tabela-admin">
           <thead>
             <tr>
               <th>Parceiro</th>
               <th>Cliente</th>
               <th>Mês</th>
-              <th>Mensalidade</th>
-              <th>Comissão</th>
+              <th>Plano</th>
+              <th>Valor total</th>
+              <th>Plataforma (65%)</th>
+              <th>Parceiro (35%)</th>
               <th>Status</th>
               <th>Ações</th>
             </tr>
@@ -10651,8 +10660,9 @@ body.tema-claro .suporte-input {
           <tr>
             <th>Cliente</th>
             <th>Mês</th>
-            <th>Mensalidade</th>
-            <th>Comissão</th>
+            <th>Plano</th>
+            <th>Valor total</th>
+            <th>Sua parte (35%)</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -19740,11 +19750,12 @@ async function verificarPainelParceiro() {
       <tr>
         <td>${l.cliente_email}</td>
         <td>${new Date(l.mes_referencia).toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric", timeZone: "UTC" })}</td>
+        <td>${l.plano || "-"}</td>
         <td>${formatarMoeda(l.valor_mensalidade)}</td>
         <td>${formatarMoeda(l.valor_comissao)}</td>
         <td>${l.status === "pago" ? "🟢 Pago" : "🟡 Pendente"}</td>
       </tr>
-    `).join("") || `<tr><td colspan="5">Nenhum lançamento ainda</td></tr>`;
+    `).join("") || `<tr><td colspan="6">Nenhum lançamento ainda</td></tr>`;
 
   } catch (err) {
 
@@ -21329,11 +21340,13 @@ async function carregarFinanceiroParceiros(usuarios) {
 
     selectCliente.innerHTML = clientesVinculados.length
       ? clientesVinculados.map(u => `
-          <option value="${u.id}">
+          <option value="${u.id}" data-plano="${u.plano || "bronze"}">
             ${u.email} (parceiro: ${u.parceiro_email})
           </option>
         `).join("")
       : `<option value="">Nenhum cliente vinculado a parceiro</option>`;
+
+    atualizarPlanoFinanceiroParceiro();
   }
 
   try {
@@ -21362,7 +21375,9 @@ async function carregarFinanceiroParceiros(usuarios) {
         <td>${l.parceiro_email}</td>
         <td>${l.cliente_email}</td>
         <td>${new Date(l.mes_referencia).toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric", timeZone: "UTC" })}</td>
+        <td>${l.plano || "-"}</td>
         <td>${formatarMoeda(l.valor_mensalidade)}</td>
+        <td>${formatarMoeda(l.valor_mensalidade - l.valor_comissao)}</td>
         <td>${formatarMoeda(l.valor_comissao)}</td>
         <td>
           <select onchange="alterarStatusFinanceiroParceiro(${l.id}, this.value)">
@@ -21400,11 +21415,11 @@ async function salvarFinanceiroParceiro() {
     return;
   }
 
-  const valorMensalidade =
-    document.getElementById("parceiro_fin_mensalidade")?.value || 0;
+  const plano =
+    document.getElementById("parceiro_fin_plano")?.value;
 
-  const valorComissao =
-    document.getElementById("parceiro_fin_comissao")?.value || 0;
+  const valorTotal =
+    document.getElementById("parceiro_fin_valor_total")?.value || 0;
 
   const status =
     document.getElementById("parceiro_fin_status")?.value;
@@ -21423,8 +21438,8 @@ async function salvarFinanceiroParceiro() {
       body: JSON.stringify({
         cliente_id: Number(clienteId),
         mes_referencia: `${mes}-01`,
-        valor_mensalidade: Number(valorMensalidade),
-        valor_comissao: Number(valorComissao),
+        plano,
+        valor_total: Number(valorTotal),
         status,
         observacoes
       })
@@ -21439,6 +21454,49 @@ async function salvarFinanceiroParceiro() {
   }
 
   await carregarPainelAdmin();
+}
+
+
+function atualizarPlanoFinanceiroParceiro() {
+
+  const selectCliente =
+    document.getElementById("parceiro_fin_cliente");
+
+  const selectPlano =
+    document.getElementById("parceiro_fin_plano");
+
+  if (!selectCliente || !selectPlano) return;
+
+  const opcaoSelecionada =
+    selectCliente.options[selectCliente.selectedIndex];
+
+  const plano =
+    opcaoSelecionada?.dataset?.plano || "bronze";
+
+  selectPlano.value = plano;
+
+  atualizarSplitFinanceiroParceiro();
+}
+
+
+function atualizarSplitFinanceiroParceiro() {
+
+  const valorTotal =
+    Number(document.getElementById("parceiro_fin_valor_total")?.value) || 0;
+
+  const valorParceiro =
+    Math.round(valorTotal * 0.35 * 100) / 100;
+
+  const valorPlataforma =
+    Math.round((valorTotal - valorParceiro) * 100) / 100;
+
+  const split =
+    document.getElementById("parceiro_fin_split");
+
+  if (!split) return;
+
+  split.textContent =
+    `Plataforma (65%): ${formatarMoeda(valorPlataforma)} | Parceiro (35%): ${formatarMoeda(valorParceiro)}`;
 }
 
 

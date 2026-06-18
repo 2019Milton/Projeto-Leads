@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>🚀 Plataforma de Leads</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta
   name="description"
   content="Plataforma de Leads operada por 55.848.095 MICHELE CRISTINE DOS SANTOS, CNPJ 55.848.095/0001-90."
@@ -8511,11 +8512,233 @@ body.tema-claro .suporte-input {
     flex: 1;
   }
 }
-  
+
+.rocket-icon {
+  width: 38px;
+  height: 47px;
+  vertical-align: middle;
+  margin-right: 7px;
+  display: inline-block;
+  filter: drop-shadow(0 0 8px rgba(34,197,94,0.45));
+}
+
+/* ─── MODAL GERAR BANNER COM IA ─────────────────────────────────────────────── */
+#modal_banner_ia {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+}
+#modal_banner_ia.active { display: flex; }
+
+.modal-banner-ia-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.68);
+  backdrop-filter: blur(4px);
+}
+
+.modal-banner-ia-content {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 96vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 14px;
+  background: #070b1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.52);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.banner-ia-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.banner-ia-header h3 { margin: 0; font-size: 16px; }
+.banner-ia-header button {
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 9px !important;
+}
+
+.banner-ia-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.banner-ia-imagens-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.banner-ia-imagem-item {
+  position: relative;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.08);
+  transition: border-color 0.15s;
+  aspect-ratio: 1;
+  background: rgba(255,255,255,0.05);
+}
+.banner-ia-imagem-item.selecionada { border-color: #7c5cff; }
+.banner-ia-imagem-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.banner-ia-imagem-check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #7c5cff;
+  color: #fff;
+  font-size: 11px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.banner-ia-imagem-item.selecionada .banner-ia-imagem-check { display: flex; }
+
+.banner-ia-sem-imagens { font-size: 12px; color: #64748b; padding: 4px 0; }
+
+.banner-ia-textarea {
+  width: 100%;
+  min-height: 80px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 13px;
+  padding: 10px 12px;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.banner-ia-textarea:focus { outline: none; border-color: rgba(124,92,255,0.5); }
+
+.banner-ia-preview-wrap {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+.banner-ia-preview-img { width: 100%; border-radius: 10px; display: block; }
+
+.banner-ia-acoes { display: flex; gap: 10px; }
+
+.btn-gerar-banner-ia {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #7c5cff, #a855f7);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  width: auto;
+  margin-top: 6px;
+}
+.btn-gerar-banner-ia:hover { opacity: 0.85; }
+.btn-gerar-banner-ia:disabled { opacity: 0.5; cursor: default; }
+
 </style>
 </head>
 
 <body>
+
+<!-- SVG Rocket Symbol — referenciado como <use href="#rocket-icon"> -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rkt-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#e2e8f0"/>
+      <stop offset="55%"  stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <linearGradient id="rkt-flame-a" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#22c55e"/>
+      <stop offset="45%"  stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#052e16" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rkt-flame-b" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#bbf7d0"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rkt-win" x1="15%" y1="10%" x2="85%" y2="90%">
+      <stop offset="0%"   stop-color="#93c5fd"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <radialGradient id="rkt-glow" cx="50%" cy="75%" r="55%">
+      <stop offset="0%"   stop-color="#22c55e" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <symbol id="rocket-icon" viewBox="0 0 60 78">
+    <!-- Halo de brilho sob a chama -->
+    <ellipse cx="30" cy="68" rx="19" ry="10" fill="url(#rkt-glow)"/>
+
+    <!-- Chama externa -->
+    <path d="M 21 55 Q 18 70 30 77 Q 42 70 39 55 Z" fill="url(#rkt-flame-a)"/>
+    <!-- Chama interna -->
+    <path d="M 24 55 Q 22 66 30 72 Q 38 66 36 55 Z" fill="url(#rkt-flame-b)" opacity="0.85"/>
+    <!-- Núcleo brilhante -->
+    <ellipse cx="30" cy="57" rx="3.5" ry="4" fill="#dcfce7" opacity="0.9"/>
+
+    <!-- Aleta esquerda -->
+    <path d="M 19 44 L 4 59 L 6 47 L 17 35 Z" fill="#334155"/>
+    <path d="M 19 44 L 6 47 L 15 38 Z" fill="#475569"/>
+    <!-- Aleta direita -->
+    <path d="M 41 44 L 56 59 L 54 47 L 43 35 Z" fill="#334155"/>
+    <path d="M 41 44 L 54 47 L 45 38 Z" fill="#475569"/>
+
+    <!-- Bocal de exaustão -->
+    <path d="M 22 47 L 20 57 L 40 57 L 38 47 Z" fill="#1e293b"/>
+    <path d="M 24 47 L 22 55 L 38 55 L 36 47 Z" fill="#0f172a"/>
+
+    <!-- Corpo principal -->
+    <path d="M 30 4 C 13 14 11 30 11 47 L 49 47 C 49 30 47 14 30 4 Z" fill="url(#rkt-body)"/>
+    <!-- Reflexo lateral esquerdo (brilho metálico) -->
+    <path d="M 30 4 C 21 13 19 24 19 36 L 26 36 C 26 24 27 13 30 4 Z" fill="white" opacity="0.18"/>
+
+    <!-- Faixas de detalhe no corpo -->
+    <line x1="17" y1="38" x2="43" y2="38" stroke="#94a3b8" stroke-width="0.9" opacity="0.5"/>
+    <line x1="15" y1="43" x2="45" y2="43" stroke="#94a3b8" stroke-width="0.9" opacity="0.38"/>
+
+    <!-- Moldura da janela -->
+    <circle cx="30" cy="25" r="10.5" fill="#1e293b" stroke="#475569" stroke-width="1.3"/>
+    <!-- Vidro da janela -->
+    <circle cx="30" cy="25" r="8.5"  fill="url(#rkt-win)"/>
+    <!-- Reflexo no vidro -->
+    <ellipse cx="26.5" cy="21.5" rx="3.2" ry="2" fill="white" opacity="0.38" transform="rotate(-20 26.5 21.5)"/>
+    <circle   cx="34"  cy="29"   r="1.2" fill="white" opacity="0.12"/>
+
+    <!-- Estrelas ao redor (detalhe decorativo) -->
+    <circle cx="4"  cy="17" r="1.3" fill="white" opacity="0.7"/>
+    <circle cx="56" cy="10" r="1"   fill="white" opacity="0.6"/>
+    <circle cx="5"  cy="33" r="0.8" fill="white" opacity="0.5"/>
+    <circle cx="57" cy="30" r="1.2" fill="white" opacity="0.65"/>
+    <circle cx="3"  cy="49" r="0.7" fill="white" opacity="0.4"/>
+    <circle cx="58" cy="46" r="0.9" fill="white" opacity="0.5"/>
+  </symbol>
+</svg>
 
 <div
   class="legal-page"
@@ -8532,7 +8755,7 @@ body.tema-claro .suporte-input {
 <!-- LOGIN -->
 <div class="container" id="loginBox">
   <div class="login-box" id="loginFormBox">
-    <h2>🚀 Plataforma de Leads</h2>
+    <h2><svg class="rocket-icon" role="img" aria-label="Foguete"><use href="#rocket-icon"/></svg> Plataforma de Leads</h2>
     <input id="email" placeholder="Email">
     <input id="senha" type="password" placeholder="Senha">
     <button class="btn" onclick="login()">Entrar</button>
@@ -8672,7 +8895,7 @@ body.tema-claro .suporte-input {
 <div id="app">
 
   <div class="topbar">
-    <h2>🚀 Central de Leads</h2>
+    <h2><svg class="rocket-icon" role="img" aria-label="Foguete"><use href="#rocket-icon"/></svg> Central de Leads</h2>
   
     <div class="topbar-actions">
       <div
@@ -8918,6 +9141,12 @@ body.tema-claro .suporte-input {
           id="btn-adicionar-imagem"
           class="btn-adicionar-imagem"
         >+ Adicionar imagens</button>
+
+        <button
+          type="button"
+          class="btn-gerar-banner-ia"
+          onclick="abrirModalGerarBanner()"
+        >✨ Gerar Banner com IA</button>
 
         <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
   
@@ -24095,9 +24324,229 @@ async function enviarFeedback() {
 </div>
 
 
+<!-- ✨ MODAL GERAR BANNER COM IA -->
+<div id="modal_banner_ia">
+  <div class="modal-banner-ia-overlay" onclick="fecharModalGerarBanner()"></div>
+  <div class="modal-banner-ia-content">
+
+    <div class="banner-ia-header">
+      <h3>✨ Gerar Banner com IA</h3>
+      <button onclick="fecharModalGerarBanner()">✕</button>
+    </div>
+
+    <div>
+      <div class="banner-ia-label">Imagens de referência (opcional)</div>
+      <div id="banner_ia_imagens_grid" class="banner-ia-imagens-grid"></div>
+      <p class="banner-ia-sem-imagens" id="banner_ia_sem_imagens" style="display:none;">
+        Adicione imagens ao carrossel primeiro para usá-las como referência visual.
+      </p>
+    </div>
+
+    <div>
+      <div class="banner-ia-label">Descreva o banner que você quer</div>
+      <textarea
+        id="banner_ia_prompt"
+        class="banner-ia-textarea"
+        placeholder="Ex: Banner profissional para apartamento de luxo, fundo claro, destaque a fachada do prédio, cores azul e dourado, texto 'Reserve sua unidade' em destaque, estilo moderno e sofisticado..."
+      ></textarea>
+    </div>
+
+    <div id="banner_ia_feedback" style="font-size:12px;color:#f87171;display:none;"></div>
+
+    <div class="banner-ia-acoes">
+      <button type="button" class="btn-gerar-banner-ia" id="btn_executar_gerar_banner" onclick="gerarBannerComIA()">
+        Gerar
+      </button>
+      <button type="button" class="logout" onclick="fecharModalGerarBanner()" style="flex:0;width:auto;padding:8px 16px;font-size:13px;">
+        Cancelar
+      </button>
+    </div>
+
+    <div id="banner_ia_preview_wrap" class="banner-ia-preview-wrap">
+      <div class="banner-ia-label">Banner gerado</div>
+      <img id="banner_ia_preview_img" class="banner-ia-preview-img" src="" alt="Banner gerado">
+      <button type="button" class="btn-primary" onclick="adicionarBannerGeradoAoCarrossel()" style="width:100%;">
+        + Adicionar ao carrossel
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <script src="https://unpkg.com/xlsx-js-style/dist/xlsx.bundle.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+// ─── MODAL GERAR BANNER COM IA ────────────────────────────────────────────────
+
+let _bannerGeradoBase64 = null;
+
+function abrirModalGerarBanner() {
+  const modal = document.getElementById("modal_banner_ia");
+  if (!modal) return;
+
+  _bannerGeradoBase64 = null;
+
+  const grid = document.getElementById("banner_ia_imagens_grid");
+  const semImagens = document.getElementById("banner_ia_sem_imagens");
+  const previewWrap = document.getElementById("banner_ia_preview_wrap");
+  const feedback = document.getElementById("banner_ia_feedback");
+
+  grid.innerHTML = "";
+  if (previewWrap) previewWrap.style.display = "none";
+  if (feedback) { feedback.style.display = "none"; feedback.textContent = ""; }
+
+  const container = document.getElementById("imagens-container");
+  const itens = container ? Array.from(container.children) : [];
+  const comImagem = itens.filter(item => {
+    const img = item.querySelector(".imagem-thumb");
+    return img && img.src && img.style.display !== "none";
+  });
+
+  if (comImagem.length === 0) {
+    semImagens.style.display = "block";
+    grid.style.display = "none";
+  } else {
+    semImagens.style.display = "none";
+    grid.style.display = "grid";
+    comImagem.forEach((item, i) => {
+      const img = item.querySelector(".imagem-thumb");
+      const div = document.createElement("div");
+      div.className = "banner-ia-imagem-item";
+      div.dataset.src = img.src;
+
+      const imgEl = document.createElement("img");
+      imgEl.src = img.src;
+      imgEl.alt = `Imagem ${i + 1}`;
+
+      const check = document.createElement("span");
+      check.className = "banner-ia-imagem-check";
+      check.textContent = "✓";
+
+      div.appendChild(imgEl);
+      div.appendChild(check);
+      div.addEventListener("click", () => div.classList.toggle("selecionada"));
+      grid.appendChild(div);
+    });
+  }
+
+  modal.classList.add("active");
+}
+
+function fecharModalGerarBanner() {
+  const modal = document.getElementById("modal_banner_ia");
+  if (modal) modal.classList.remove("active");
+}
+
+async function gerarBannerComIA() {
+  const prompt = (document.getElementById("banner_ia_prompt")?.value || "").trim();
+  const feedback = document.getElementById("banner_ia_feedback");
+  const btn = document.getElementById("btn_executar_gerar_banner");
+  const previewWrap = document.getElementById("banner_ia_preview_wrap");
+
+  if (!prompt) {
+    if (feedback) { feedback.textContent = "Descreva o banner antes de gerar."; feedback.style.display = "block"; }
+    return;
+  }
+  if (feedback) { feedback.style.display = "none"; feedback.textContent = ""; }
+
+  const token = localStorage.getItem("token");
+  const usuario_id = localStorage.getItem("usuario_id");
+  if (!token || !usuario_id) return;
+
+  // Converter imagens selecionadas para base64
+  const grid = document.getElementById("banner_ia_imagens_grid");
+  const selecionadas = grid ? Array.from(grid.querySelectorAll(".banner-ia-imagem-item.selecionada")) : [];
+
+  let imagensBase64 = [];
+  if (selecionadas.length > 0) {
+    const resultados = await Promise.all(selecionadas.map(async div => {
+      const src = div.dataset.src;
+      if (!src) return null;
+      try {
+        const resp = await fetch(src);
+        const blob = await resp.blob();
+        return await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const b64 = reader.result.split(",")[1];
+            resolve({ data: b64, tipo: blob.type || "image/png" });
+          };
+          reader.readAsDataURL(blob);
+        });
+      } catch { return null; }
+    }));
+    imagensBase64 = resultados.filter(Boolean);
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = "Gerando..."; }
+  if (previewWrap) previewWrap.style.display = "none";
+
+  try {
+    const res = await fetch(`${API}/ia/gerar-banner`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ usuario_id, prompt, imagens_base64: imagensBase64 })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      const msg = typeof data.error === "string" ? data.error : "Erro ao gerar banner";
+      if (feedback) { feedback.textContent = msg; feedback.style.display = "block"; }
+      return;
+    }
+
+    if (!data.imagem_base64) {
+      if (feedback) { feedback.textContent = "Imagem não retornada pelo servidor."; feedback.style.display = "block"; }
+      return;
+    }
+
+    _bannerGeradoBase64 = data.imagem_base64;
+    const preview = document.getElementById("banner_ia_preview_img");
+    if (preview) preview.src = `data:image/png;base64,${data.imagem_base64}`;
+    if (previewWrap) previewWrap.style.display = "flex";
+
+  } catch (err) {
+    console.error("GERAR BANNER:", err);
+    if (feedback) { feedback.textContent = "Erro de conexão ao gerar banner."; feedback.style.display = "block"; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Gerar"; }
+  }
+}
+
+function adicionarBannerGeradoAoCarrossel() {
+  if (!_bannerGeradoBase64) return;
+
+  const byteStr = atob(_bannerGeradoBase64);
+  const ab = new ArrayBuffer(byteStr.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+  const blob = new Blob([ab], { type: "image/png" });
+  const arquivo = new File([blob], `banner_ia_${Date.now()}.png`, { type: "image/png" });
+
+  const container = document.getElementById("imagens-container");
+  const itemVazio = Array.from(container.children).find(
+    item => !item.querySelector(".imagem-input").files.length
+  );
+
+  if (itemVazio) {
+    itemVazio.aplicarArquivo(arquivo);
+  } else if (container.children.length < 10) {
+    container.appendChild(criarItemImagem(arquivo));
+    atualizarPosicoes();
+  } else {
+    alert("Máximo de 10 imagens permitidas.");
+    return;
+  }
+
+  fecharModalGerarBanner();
+}
+</script>
 
 <script>inicializarCarrosselImagens();</script>
 

@@ -34,11 +34,19 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 /* ===== FUNDO UNIVERSO ===== */
 body { 
   margin: 0;
   background: radial-gradient(circle at 20% 20%, #020617, #000);
   color: #e2e8f0;
+  min-width: 0;
   overflow-x: hidden;
 }
 
@@ -396,7 +404,7 @@ button {
 
   width: 100%;
 
-  max-width: 100vw;
+  max-width: 100%;
 
   padding: 14px;
 
@@ -414,7 +422,16 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
   margin-bottom: 25px;
+  min-width: 0;
+}
+
+.topbar h2 {
+  flex: 1 1 320px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* GRID */
@@ -422,6 +439,8 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* CARDS PREMIUM */
@@ -429,6 +448,8 @@ button {
   background: linear-gradient(145deg, #020617, #020617);
   padding: 10px;
   border-radius: 12px;
+  max-width: 100%;
+  min-width: 0;
 
   border: 1px solid rgba(255,255,255,0.08);
 
@@ -452,6 +473,63 @@ button {
   font-size: 14px;
 
   margin-bottom: 8px;
+}
+
+.painel-recolhivel-titulo {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.painel-recolhivel-toggle {
+  width:30px;
+  height:30px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(148,163,184,0.28);
+  border-radius:8px;
+  background:rgba(15,23,42,0.72);
+  color:#cbd5e1;
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+  transition:
+    background .15s ease,
+    border-color .15s ease,
+    color .15s ease,
+    transform .15s ease;
+}
+
+.painel-recolhivel-toggle:hover {
+  background:rgba(34,197,94,0.16);
+  border-color:rgba(34,197,94,0.5);
+  color:#86efac;
+  transform:translateY(-1px);
+}
+
+.painel-recolhivel-conteudo {
+  overflow:hidden;
+  transition:
+    max-height .22s ease,
+    opacity .18s ease,
+    margin-top .18s ease;
+}
+
+.painel-recolhido > .painel-recolhivel-conteudo {
+  max-height:0 !important;
+  opacity:0;
+  pointer-events:none;
+  margin-top:0;
+}
+
+.painel-recolhido.card:hover {
+  transform:none;
+}
+
+.performance-meta-panel.painel-recolhido {
+  padding-bottom:18px;
 }
 
 .card:hover {
@@ -2346,6 +2424,9 @@ body.usuario-super-admin .admin-only-targeting {
   gap: 14px;
 
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
 
   align-items: stretch;
 
@@ -2364,12 +2445,13 @@ body.usuario-super-admin .admin-only-targeting {
   gap: 18px;
 
   min-width: 0;
+  max-width: 100%;
 }
 
 /* 🔥 ÁREA DIREITA */
 .coluna-direita {
 
-  flex: 1;
+  flex: 1 1 0;
 
   display: flex;
 
@@ -2378,6 +2460,7 @@ body.usuario-super-admin .admin-only-targeting {
   gap: 18px;
 
   min-width: 0;
+  max-width: 100%;
 }
 
 /* 🚀 CENTRAL LEADS */
@@ -2542,6 +2625,9 @@ body.usuario-super-admin .admin-only-targeting {
   gap: 14px;
 
   align-items: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+  min-width: 0;
 
   margin-bottom: 18px;
 }
@@ -2550,6 +2636,8 @@ body.usuario-super-admin .admin-only-targeting {
 .lead-search {
 
   width: 320px;
+  max-width: 100%;
+  flex: 1 1 260px;
 
   height: 44px;
 
@@ -2588,6 +2676,8 @@ body.usuario-super-admin .admin-only-targeting {
   height: 44px;
 
   min-width: 220px;
+  max-width: 100%;
+  flex: 0 1 220px;
 
   padding: 0 14px;
 
@@ -2618,6 +2708,8 @@ body.usuario-super-admin .admin-only-targeting {
   height: 44px;
 
   min-width: 140px;
+  max-width: 100%;
+  flex: 0 0 auto;
 
   padding: 0 24px;
 
@@ -2672,6 +2764,8 @@ body.usuario-super-admin .admin-only-targeting {
   padding-bottom: 8px;
 
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 /* 🔥 SCROLL BONITO */
@@ -3683,6 +3777,9 @@ body.usuario-super-admin .admin-only-targeting {
   flex: 0 0 100%;
 
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 
   background:
     linear-gradient(
@@ -3714,8 +3811,17 @@ body.usuario-super-admin .admin-only-targeting {
   align-items:flex-start;
 
   gap:16px;
+  flex-wrap:wrap;
+  min-width:0;
 
   margin-bottom:16px;
+}
+
+.performance-meta-head > div:first-child {
+
+  flex:1 1 280px;
+
+  min-width:0;
 }
 
 .performance-meta-head h3 {
@@ -3725,11 +3831,13 @@ body.usuario-super-admin .admin-only-targeting {
   font-size:18px;
 
   color:#f8fafc;
+  overflow-wrap:anywhere;
 }
 
 .performance-meta-head small {
 
   color:#94a3b8;
+  overflow-wrap:anywhere;
 }
 
 .performance-meta-badge {
@@ -3768,6 +3876,15 @@ body.usuario-super-admin .admin-only-targeting {
   flex-wrap:wrap;
 
   justify-content:flex-end;
+  max-width:100%;
+  min-width:0;
+}
+
+.performance-meta-actions > * {
+
+  max-width:100%;
+
+  min-width:0;
 }
 
 .performance-meta-periodo {
@@ -3775,6 +3892,7 @@ body.usuario-super-admin .admin-only-targeting {
   width:auto;
 
   min-width:130px;
+  max-width:100%;
 
   height:34px;
 
@@ -3843,7 +3961,7 @@ body.usuario-super-admin .admin-only-targeting {
   display:grid;
 
   grid-template-columns:
-    repeat(auto-fit,minmax(150px,1fr));
+    repeat(auto-fit,minmax(min(210px,100%),1fr));
 
   gap:10px;
 
@@ -3860,6 +3978,7 @@ body.usuario-super-admin .admin-only-targeting {
   border-radius:12px;
 
   padding:12px;
+  min-width:0;
 }
 
 .performance-meta-card span {
@@ -3894,6 +4013,10 @@ body.usuario-super-admin .admin-only-targeting {
 .performance-meta-table-wrap {
 
   overflow-x:auto;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  -webkit-overflow-scrolling:touch;
 
   border:
     1px solid rgba(255,255,255,0.06);
@@ -3904,6 +4027,7 @@ body.usuario-super-admin .admin-only-targeting {
 .performance-meta-table {
 
   width:100%;
+  min-width:640px;
 
   border-collapse:collapse;
 
@@ -3959,7 +4083,7 @@ body.usuario-super-admin .admin-only-targeting {
   display:grid;
 
   grid-template-columns:
-    repeat(auto-fit,minmax(190px,1fr));
+    repeat(auto-fit,minmax(min(220px,100%),1fr));
 
   gap:10px;
 
@@ -3976,6 +4100,7 @@ body.usuario-super-admin .admin-only-targeting {
   border-radius:10px;
 
   padding:10px 12px;
+  min-width:0;
 
   color:#cbd5e1;
 
@@ -6911,6 +7036,44 @@ body.tema-claro .cal-nav span { color: #111827; }
   flex-wrap: wrap;
 
   justify-content: flex-end;
+  flex: 0 1 auto;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.topbar-actions > * {
+
+  max-width: 100%;
+
+  min-width: 0;
+}
+
+.topbar-actions .btn-sync {
+
+  flex: 0 1 auto;
+
+  white-space: normal;
+}
+
+.topbar-actions #btn_perfil {
+
+  text-align: left;
+
+  line-height: 1.15;
+
+  overflow-wrap: anywhere;
+}
+
+.plano-atual-topo,
+.tema-seletor,
+.credito-desenvolvedor-topbar {
+
+  max-width: 100%;
+}
+
+.credito-desenvolvedor-topbar span {
+
+  min-width: 0;
 }
 
 .credito-desenvolvedor-topbar {
@@ -7037,6 +7200,18 @@ body.tema-claro .login-box:hover {
   box-shadow:
     0 0 0 1px rgba(37,99,235,0.12),
     0 20px 46px rgba(15,23,42,0.16);
+}
+
+body.tema-claro .painel-recolhivel-toggle {
+  background:#fff;
+  border-color:#cbd5e1;
+  color:#334155;
+}
+
+body.tema-claro .painel-recolhivel-toggle:hover {
+  background:#ecfdf5;
+  border-color:#16a34a;
+  color:#15803d;
 }
 
 body.tema-claro h1,
@@ -8278,6 +8453,42 @@ body.tema-claro .suporte-input {
   border-color: rgba(79,70,229,0.34);
 }
 
+@media (max-width: 1180px) {
+
+  .topbar {
+
+    align-items: flex-start;
+  }
+
+  .topbar-actions {
+
+    justify-content: flex-start;
+  }
+
+  .coluna-esquerda,
+  .coluna-direita {
+
+    flex: 1 1 100%;
+
+    width: 100%;
+  }
+}
+
+@media (max-width: 980px) {
+
+  .performance-meta-head {
+
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .performance-meta-actions {
+
+    justify-content: flex-start;
+  }
+}
+
 @media (max-width: 760px) {
 
   .topbar {
@@ -8597,7 +8808,10 @@ body.tema-claro .suporte-input {
 
         <h3>📢 Criar Campanha</h3>
 
-        <div class="ia-ouro-destaque">
+        <div
+          id="ia_criador_campanha_box"
+          class="ia-ouro-destaque"
+        >
           <h4>IA Ouro - Criador de anuncio</h4>
           <p>
             Gere 3 opcoes de titulo, texto, descricao, perguntas e interesses com IA. Clique em gerar novamente para criar novas variacoes.
@@ -10595,8 +10809,8 @@ body.tema-claro .suporte-input {
       <div class="card" style="margin-top:30px;padding:25px;">
         <h3 style="margin-bottom:8px;color:white;">🤝 Financeiro de Parceiros</h3>
         <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">
-          Lance o plano e o valor total cobrado do cliente. A divisão é automática:
-          65% para a plataforma e 35% para o parceiro.
+          Lance o plano, o valor total cobrado do cliente e a porcentagem do parceiro.
+          O restante fica com a plataforma.
         </p>
 
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px;">
@@ -10623,6 +10837,11 @@ body.tema-claro .suporte-input {
           <div>
             <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Valor total (R$)</label>
             <input type="number" step="0.01" min="0" id="parceiro_fin_valor_total" style="width:120px;" oninput="atualizarSplitFinanceiroParceiro()" />
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">% do parceiro</label>
+            <input type="number" step="0.01" min="0" max="100" id="parceiro_fin_percentual" value="35" style="width:90px;" oninput="atualizarSplitFinanceiroParceiro()" />
           </div>
 
           <div>
@@ -11716,6 +11935,8 @@ async function init() {
   await carregarCampanhas();
 
   await carregarLeads();
+
+  inicializarPaineisRecolhaveis();
 }
   
 // LOGOUT
@@ -11748,6 +11969,180 @@ let guiaSecretoReavaliarTimer = null;
 let guiaCriacaoCampanhaAtiva = false;
 let performanceMetaPeriodoAtual = "semanal";
 let performanceMetaUltimoRelatorio = null;
+
+const PAINEIS_RECOLHIVEIS = [
+  {
+    seletor: "#painel_performance_meta",
+    cabecalho: ".performance-meta-head",
+    chave: "performance-meta"
+  },
+  {
+    seletor: ".meta-card",
+    cabecalho: "h3",
+    chave: "conectar-meta"
+  },
+  {
+    seletor: ".card-criar-campanha",
+    cabecalho: "h3",
+    chave: "criar-campanha"
+  },
+  {
+    seletor: "#ia_criador_campanha_box",
+    cabecalho: "h4",
+    chave: "ia-criador-campanha"
+  },
+  {
+    seletor: ".info-painel",
+    cabecalho: ".info-painel-titulo",
+    chave: "informacoes"
+  },
+  {
+    seletor: ".leads-central-card",
+    cabecalho: ".leads-central-header",
+    chave: "central-leads"
+  },
+  {
+    seletor: "#ia_resumo_diario_box",
+    cabecalho: "h4",
+    chave: "ia-resumo-diario"
+  },
+  {
+    seletor: ".recuperacao-leads-panel",
+    cabecalho: ".recuperacao-leads-topo",
+    chave: "recuperacao-leads"
+  },
+  {
+    seletor: ".campanhas-card",
+    cabecalho: ".campanhas-topo",
+    chave: "minhas-campanhas"
+  },
+  {
+    seletor: "#painel_admin > .card",
+    cabecalho: "h2",
+    chave: "painel-admin"
+  }
+];
+
+function chavePainelRecolhivel(chave) {
+  return `painel_recolhivel_${chave}`;
+}
+
+function aplicarEstadoPainelRecolhivel(painel, chave, recolhido) {
+  painel.classList.toggle("painel-recolhido", recolhido);
+  painel.dataset.recolhido = recolhido ? "1" : "0";
+
+  const btn =
+    painel.querySelector(
+      ".painel-recolhivel-toggle"
+    );
+
+  if (btn) {
+    btn.textContent = recolhido ? "▸" : "▾";
+    btn.title = recolhido ? "Expandir" : "Recolher";
+    btn.setAttribute(
+      "aria-expanded",
+      recolhido ? "false" : "true"
+    );
+  }
+
+  localStorage.setItem(
+    chavePainelRecolhivel(chave),
+    recolhido ? "1" : "0"
+  );
+}
+
+function configurarPainelRecolhivel(painel, config) {
+  if (!painel) {
+    return;
+  }
+
+  const cabecalho =
+    painel.querySelector(config.cabecalho);
+
+  if (!cabecalho) {
+    return;
+  }
+
+  cabecalho.classList.add("painel-recolhivel-titulo");
+
+  let conteudo =
+    painel.querySelector(
+      ":scope > .painel-recolhivel-conteudo"
+    );
+
+  if (!conteudo) {
+    conteudo =
+      document.createElement("div");
+    conteudo.className =
+      "painel-recolhivel-conteudo";
+
+    const filhos =
+      Array.from(painel.childNodes);
+
+    filhos.forEach((filho) => {
+      if (filho === cabecalho) {
+        return;
+      }
+
+      conteudo.appendChild(filho);
+    });
+
+    painel.appendChild(conteudo);
+  }
+
+  let btn =
+    cabecalho.querySelector(
+      ".painel-recolhivel-toggle"
+    );
+
+  if (!btn) {
+    btn =
+      document.createElement("button");
+    btn.type = "button";
+    btn.className = "painel-recolhivel-toggle";
+    btn.setAttribute("aria-label", "Recolher ou expandir painel");
+
+    btn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const recolhido =
+        painel.dataset.recolhido !== "1";
+
+      aplicarEstadoPainelRecolhivel(
+        painel,
+        config.chave,
+        recolhido
+      );
+    });
+
+    cabecalho.appendChild(btn);
+  }
+
+  const recolhidoSalvo =
+    localStorage.getItem(
+      chavePainelRecolhivel(config.chave)
+    ) === "1";
+
+  aplicarEstadoPainelRecolhivel(
+    painel,
+    config.chave,
+    recolhidoSalvo
+  );
+}
+
+function inicializarPaineisRecolhaveis() {
+  PAINEIS_RECOLHIVEIS.forEach((config) => {
+    document
+      .querySelectorAll(config.seletor)
+      .forEach((painel) =>
+        configurarPainelRecolhivel(
+          painel,
+          config
+        )
+      );
+  });
+}
 
 function dataLocalISOHoje() {
   const agora = new Date();
@@ -15390,6 +15785,11 @@ function renderizarPainelPerformanceMeta(data) {
       Use a linha expandida para ver quais campanhas puxaram o gasto de cada dia.
     </div>
   `;
+
+  configurarPainelRecolhivel(
+    painel,
+    PAINEIS_RECOLHIVEIS[0]
+  );
 }
 
 function exportarPerformanceMetaXLSX() {

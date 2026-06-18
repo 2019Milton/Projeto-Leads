@@ -8514,12 +8514,12 @@ body.tema-claro .suporte-input {
 }
 
 .rocket-icon {
-  width: 38px;
-  height: 47px;
+  width: 50px;
+  height: 81px;
   vertical-align: middle;
-  margin-right: 7px;
+  margin-right: 8px;
   display: inline-block;
-  filter: drop-shadow(0 0 8px rgba(34,197,94,0.45));
+  filter: drop-shadow(0 0 10px rgba(34,197,94,0.55));
 }
 
 /* ─── MODAL GERAR BANNER COM IA ─────────────────────────────────────────────── */
@@ -8668,75 +8668,212 @@ body.tema-claro .suporte-input {
 <!-- SVG Rocket Symbol — referenciado como <use href="#rocket-icon"> -->
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="rkt-body" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#e2e8f0"/>
-      <stop offset="55%"  stop-color="#cbd5e1"/>
+    <!-- Corpo principal: prata metálico -->
+    <linearGradient id="rkt-body" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#f1f5f9"/>
+      <stop offset="40%"  stop-color="#e2e8f0"/>
       <stop offset="100%" stop-color="#94a3b8"/>
     </linearGradient>
+    <!-- Fairing (seção superior): branco quente -->
+    <linearGradient id="rkt-fairing" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <!-- Cone do nariz: azul escuro -->
+    <linearGradient id="rkt-nose" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1e40af"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <!-- Seção de motor: cinza escuro -->
+    <linearGradient id="rkt-engine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#334155"/>
+      <stop offset="50%"  stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <!-- Bocal: preto -->
+    <linearGradient id="rkt-nozzle" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#334155"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <!-- Chama externa: verde da plataforma -->
     <linearGradient id="rkt-flame-a" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%"   stop-color="#22c55e"/>
-      <stop offset="45%"  stop-color="#16a34a"/>
+      <stop offset="40%"  stop-color="#16a34a"/>
       <stop offset="100%" stop-color="#052e16" stop-opacity="0"/>
     </linearGradient>
+    <!-- Chama interna: verde claro -->
     <linearGradient id="rkt-flame-b" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%"   stop-color="#bbf7d0"/>
-      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="rkt-win" x1="15%" y1="10%" x2="85%" y2="90%">
-      <stop offset="0%"   stop-color="#93c5fd"/>
+    <!-- Janela: azul vivo -->
+    <linearGradient id="rkt-win" x1="10%" y1="5%" x2="90%" y2="95%">
+      <stop offset="0%"   stop-color="#7dd3fc"/>
       <stop offset="100%" stop-color="#1d4ed8"/>
     </linearGradient>
-    <radialGradient id="rkt-glow" cx="50%" cy="75%" r="55%">
-      <stop offset="0%"   stop-color="#22c55e" stop-opacity="0.32"/>
+    <!-- Aletas: gradiente escuro -->
+    <linearGradient id="rkt-fin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#475569"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <!-- Halo verde sob o motor -->
+    <radialGradient id="rkt-glow" cx="50%" cy="30%" r="70%">
+      <stop offset="0%"   stop-color="#22c55e" stop-opacity="0.4"/>
       <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
     </radialGradient>
+    <!-- Halo laranja secundário (realismo de chama) -->
+    <radialGradient id="rkt-glow2" cx="50%" cy="20%" r="60%">
+      <stop offset="0%"   stop-color="#fbbf24" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <symbol id="rocket-icon" viewBox="0 0 60 78">
-    <!-- Halo de brilho sob a chama -->
-    <ellipse cx="30" cy="68" rx="19" ry="10" fill="url(#rkt-glow)"/>
 
-    <!-- Chama externa -->
-    <path d="M 21 55 Q 18 70 30 77 Q 42 70 39 55 Z" fill="url(#rkt-flame-a)"/>
-    <!-- Chama interna -->
-    <path d="M 24 55 Q 22 66 30 72 Q 38 66 36 55 Z" fill="url(#rkt-flame-b)" opacity="0.85"/>
-    <!-- Núcleo brilhante -->
-    <ellipse cx="30" cy="57" rx="3.5" ry="4" fill="#dcfce7" opacity="0.9"/>
+  <symbol id="rocket-icon" viewBox="0 0 80 130">
 
+    <!-- ═══════════════════════════════════ -->
+    <!--  HALO DO MOTOR                      -->
+    <!-- ═══════════════════════════════════ -->
+    <ellipse cx="40" cy="122" rx="24" ry="12" fill="url(#rkt-glow)"/>
+    <ellipse cx="40" cy="118" rx="16" ry="8"  fill="url(#rkt-glow2)"/>
+
+    <!-- ═══════════════════════════════════ -->
+    <!--  CHAMAS (desenhadas primeiro, atrás) -->
+    <!-- ═══════════════════════════════════ -->
+    <!-- Chama longa externa -->
+    <path d="M 27 106 Q 20 124 40 130 Q 60 124 53 106 Z" fill="url(#rkt-flame-a)"/>
+    <!-- Chama média -->
+    <path d="M 31 106 Q 26 120 40 126 Q 54 120 49 106 Z" fill="url(#rkt-flame-b)" opacity="0.9"/>
+    <!-- Chama curta amarela -->
+    <path d="M 34 106 Q 31 116 40 120 Q 49 116 46 106 Z" fill="#fde68a" opacity="0.65"/>
+    <!-- Núcleo quase branco -->
+    <ellipse cx="40" cy="109" rx="5"  ry="5.5" fill="#dcfce7" opacity="0.95"/>
+    <ellipse cx="40" cy="108" rx="2.5" ry="3"  fill="white"   opacity="0.7"/>
+
+    <!-- ═══════════════════════════════════ -->
+    <!--  ALETAS PRINCIPAIS (grandes)        -->
+    <!-- ═══════════════════════════════════ -->
     <!-- Aleta esquerda -->
-    <path d="M 19 44 L 4 59 L 6 47 L 17 35 Z" fill="#334155"/>
-    <path d="M 19 44 L 6 47 L 15 38 Z" fill="#475569"/>
+    <path d="M 25 90 L 2 114 L 3 98 L 20 80 Z"  fill="url(#rkt-fin)"/>
+    <path d="M 25 90 L 3  98 L 18 84 Z"          fill="#64748b"/>
+    <line x1="13" y1="106" x2="22" y2="88" stroke="#475569" stroke-width="0.8" opacity="0.5"/>
     <!-- Aleta direita -->
-    <path d="M 41 44 L 56 59 L 54 47 L 43 35 Z" fill="#334155"/>
-    <path d="M 41 44 L 54 47 L 45 38 Z" fill="#475569"/>
+    <path d="M 55 90 L 78 114 L 77 98 L 60 80 Z" fill="url(#rkt-fin)"/>
+    <path d="M 55 90 L 77 98  L 62 84 Z"          fill="#64748b"/>
+    <line x1="67" y1="106" x2="58" y2="88" stroke="#475569" stroke-width="0.8" opacity="0.5"/>
 
-    <!-- Bocal de exaustão -->
-    <path d="M 22 47 L 20 57 L 40 57 L 38 47 Z" fill="#1e293b"/>
-    <path d="M 24 47 L 22 55 L 38 55 L 36 47 Z" fill="#0f172a"/>
+    <!-- ═══════════════════════════════════ -->
+    <!--  BOCAL / CAMPÂNULA DO MOTOR         -->
+    <!-- ═══════════════════════════════════ -->
+    <path d="M 28 100 L 24 108 L 56 108 L 52 100 Z" fill="url(#rkt-nozzle)"/>
+    <!-- Borda do bocal (anel) -->
+    <ellipse cx="40" cy="108" rx="16" ry="3.5" fill="#1e293b"/>
+    <ellipse cx="40" cy="107" rx="13" ry="2.8" fill="#0f172a"/>
+    <!-- Interior incandescente -->
+    <ellipse cx="40" cy="107" rx="8"  ry="2"   fill="#22c55e" opacity="0.3"/>
 
-    <!-- Corpo principal -->
-    <path d="M 30 4 C 13 14 11 30 11 47 L 49 47 C 49 30 47 14 30 4 Z" fill="url(#rkt-body)"/>
-    <!-- Reflexo lateral esquerdo (brilho metálico) -->
-    <path d="M 30 4 C 21 13 19 24 19 36 L 26 36 C 26 24 27 13 30 4 Z" fill="white" opacity="0.18"/>
+    <!-- ═══════════════════════════════════ -->
+    <!--  SEÇÃO DO MOTOR                     -->
+    <!-- ═══════════════════════════════════ -->
+    <rect x="22" y="88" width="36" height="14" rx="2" fill="url(#rkt-engine)"/>
+    <!-- Linhas verticais (compartimentos do motor) -->
+    <line x1="30" y1="88" x2="30" y2="102" stroke="#64748b" stroke-width="1.3" opacity="0.8"/>
+    <line x1="40" y1="88" x2="40" y2="102" stroke="#64748b" stroke-width="1.3" opacity="0.8"/>
+    <line x1="50" y1="88" x2="50" y2="102" stroke="#64748b" stroke-width="1.3" opacity="0.8"/>
+    <!-- Parafusos / rebites -->
+    <circle cx="26" cy="91" r="1.5" fill="#64748b" stroke="#94a3b8" stroke-width="0.5"/>
+    <circle cx="40" cy="91" r="1.5" fill="#64748b" stroke="#94a3b8" stroke-width="0.5"/>
+    <circle cx="54" cy="91" r="1.5" fill="#64748b" stroke="#94a3b8" stroke-width="0.5"/>
+    <circle cx="26" cy="99" r="1.5" fill="#64748b" stroke="#94a3b8" stroke-width="0.5"/>
+    <circle cx="40" cy="99" r="1.5" fill="#64748b" stroke="#94a3b8" stroke-width="0.5"/>
+    <circle cx="54" cy="99" r="1.5" fill="#64748b" stroke="#94a3b8" stroke-width="0.5"/>
 
-    <!-- Faixas de detalhe no corpo -->
-    <line x1="17" y1="38" x2="43" y2="38" stroke="#94a3b8" stroke-width="0.9" opacity="0.5"/>
-    <line x1="15" y1="43" x2="45" y2="43" stroke="#94a3b8" stroke-width="0.9" opacity="0.38"/>
+    <!-- ═══════════════════════════════════ -->
+    <!--  ANEL SEPARADOR INFERIOR            -->
+    <!-- ═══════════════════════════════════ -->
+    <rect x="20" y="83" width="40" height="7" rx="2" fill="#475569"/>
+    <rect x="22" y="84" width="36" height="5" rx="1" fill="#64748b"/>
+    <line x1="20" y1="86.5" x2="60" y2="86.5" stroke="#94a3b8" stroke-width="0.8" opacity="0.45"/>
 
-    <!-- Moldura da janela -->
-    <circle cx="30" cy="25" r="10.5" fill="#1e293b" stroke="#475569" stroke-width="1.3"/>
-    <!-- Vidro da janela -->
-    <circle cx="30" cy="25" r="8.5"  fill="url(#rkt-win)"/>
-    <!-- Reflexo no vidro -->
-    <ellipse cx="26.5" cy="21.5" rx="3.2" ry="2" fill="white" opacity="0.38" transform="rotate(-20 26.5 21.5)"/>
-    <circle   cx="34"  cy="29"   r="1.2" fill="white" opacity="0.12"/>
+    <!-- ═══════════════════════════════════ -->
+    <!--  TANQUE PRINCIPAL (compartimento 2) -->
+    <!-- ═══════════════════════════════════ -->
+    <rect x="22" y="44" width="36" height="41" fill="url(#rkt-body)"/>
+    <!-- Brilho lateral esquerdo -->
+    <rect x="22" y="44" width="7" height="41" fill="white" opacity="0.12"/>
+    <!-- Sombra lateral direita -->
+    <rect x="51" y="44" width="7" height="41" fill="#0f172a" opacity="0.08"/>
+    <!-- FAIXA VERDE LARGA (identidade da plataforma) -->
+    <rect x="22" y="57" width="36" height="8" fill="#22c55e" opacity="0.82"/>
+    <rect x="22" y="65" width="36" height="2" fill="#15803d"/>
+    <!-- Logotipo simulado na faixa (linhas) -->
+    <rect x="30" y="59" width="20" height="1.5" fill="white" opacity="0.35" rx="1"/>
+    <rect x="32" y="62" width="16" height="1.5" fill="white" opacity="0.25" rx="1"/>
+    <!-- Faixa fina secundária -->
+    <rect x="22" y="75" width="36" height="3.5" fill="#1d4ed8" opacity="0.45"/>
+    <!-- Painéis / linhas horizontais -->
+    <line x1="26" y1="49" x2="54" y2="49" stroke="#94a3b8" stroke-width="0.8" opacity="0.4"/>
+    <line x1="26" y1="53" x2="54" y2="53" stroke="#94a3b8" stroke-width="0.8" opacity="0.3"/>
+    <line x1="26" y1="70" x2="54" y2="70" stroke="#94a3b8" stroke-width="0.8" opacity="0.3"/>
+    <line x1="26" y1="79" x2="54" y2="79" stroke="#94a3b8" stroke-width="0.7" opacity="0.25"/>
 
-    <!-- Estrelas ao redor (detalhe decorativo) -->
-    <circle cx="4"  cy="17" r="1.3" fill="white" opacity="0.7"/>
-    <circle cx="56" cy="10" r="1"   fill="white" opacity="0.6"/>
-    <circle cx="5"  cy="33" r="0.8" fill="white" opacity="0.5"/>
-    <circle cx="57" cy="30" r="1.2" fill="white" opacity="0.65"/>
-    <circle cx="3"  cy="49" r="0.7" fill="white" opacity="0.4"/>
-    <circle cx="58" cy="46" r="0.9" fill="white" opacity="0.5"/>
+    <!-- ═══════════════════════════════════ -->
+    <!--  ANEL SEPARADOR SUPERIOR            -->
+    <!-- ═══════════════════════════════════ -->
+    <rect x="20" y="38" width="40" height="8" rx="2" fill="#475569"/>
+    <rect x="22" y="39" width="36" height="6" rx="1" fill="#64748b"/>
+    <line x1="20" y1="42" x2="60" y2="42" stroke="#94a3b8" stroke-width="0.8" opacity="0.5"/>
+    <!-- Pequenos parafusos no anel -->
+    <circle cx="26" cy="42" r="1.2" fill="#334155" stroke="#94a3b8" stroke-width="0.5"/>
+    <circle cx="54" cy="42" r="1.2" fill="#334155" stroke="#94a3b8" stroke-width="0.5"/>
+    <circle cx="40" cy="40" r="1"   fill="#334155" stroke="#94a3b8" stroke-width="0.4"/>
+
+    <!-- ═══════════════════════════════════ -->
+    <!--  FAIRING / COMPARTIMENTO SUPERIOR   -->
+    <!-- ═══════════════════════════════════ -->
+    <rect x="24" y="20" width="32" height="20" rx="3" fill="url(#rkt-fairing)"/>
+    <!-- Brilho lateral -->
+    <rect x="24" y="20" width="6" height="20" rx="2" fill="white" opacity="0.18"/>
+    <!-- Faixa azul de acento -->
+    <rect x="24" y="29" width="32" height="4.5" fill="#3b82f6" opacity="0.72"/>
+    <rect x="24" y="33.5" width="32" height="1.5" fill="#1d4ed8" opacity="0.5"/>
+    <!-- Linhas de painel do fairing -->
+    <line x1="28" y1="23" x2="52" y2="23" stroke="#94a3b8" stroke-width="0.7" opacity="0.35"/>
+    <line x1="28" y1="26" x2="52" y2="26" stroke="#94a3b8" stroke-width="0.7" opacity="0.25"/>
+
+    <!-- ═══════════════════════════════════ -->
+    <!--  JANELA / VISOR                     -->
+    <!-- ═══════════════════════════════════ -->
+    <!-- Anel externo escuro -->
+    <circle cx="40" cy="27" r="8"   fill="#1e293b" stroke="#475569" stroke-width="1.4"/>
+    <!-- Vidro -->
+    <circle cx="40" cy="27" r="6.2" fill="url(#rkt-win)"/>
+    <!-- Reflexo principal -->
+    <ellipse cx="37.2" cy="24.2" rx="2.8" ry="1.7" fill="white" opacity="0.42" transform="rotate(-18 37.2 24.2)"/>
+    <!-- Reflexo secundário menor -->
+    <circle  cx="43"   cy="29.5" r="1"   fill="white" opacity="0.14"/>
+
+    <!-- ═══════════════════════════════════ -->
+    <!--  CONE DO NARIZ                      -->
+    <!-- ═══════════════════════════════════ -->
+    <path d="M 40 3 L 56 20 L 24 20 Z" fill="url(#rkt-nose)"/>
+    <!-- Highlight do nariz -->
+    <path d="M 40 3 L 31 20 L 36 20 Z" fill="white" opacity="0.18"/>
+    <!-- Ponta com brilho -->
+    <circle cx="40" cy="5" r="2.2" fill="#3b82f6" opacity="0.55"/>
+    <!-- Costura do nariz (linha central) -->
+    <line x1="40" y1="3" x2="40" y2="20" stroke="white" stroke-width="0.5" opacity="0.1"/>
+
+    <!-- ═══════════════════════════════════ -->
+    <!--  ESTRELAS DECORATIVAS               -->
+    <!-- ═══════════════════════════════════ -->
+    <circle cx="5"  cy="14" r="1.4" fill="white" opacity="0.75"/>
+    <circle cx="74" cy="8"  r="1"   fill="white" opacity="0.6"/>
+    <circle cx="6"  cy="30" r="0.9" fill="white" opacity="0.55"/>
+    <circle cx="75" cy="26" r="1.3" fill="white" opacity="0.65"/>
+    <circle cx="4"  cy="50" r="0.8" fill="white" opacity="0.45"/>
+    <circle cx="76" cy="54" r="1"   fill="white" opacity="0.5"/>
+    <circle cx="5"  cy="68" r="0.7" fill="white" opacity="0.38"/>
+    <circle cx="75" cy="72" r="0.9" fill="white" opacity="0.42"/>
   </symbol>
 </svg>
 

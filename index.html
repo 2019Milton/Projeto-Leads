@@ -554,114 +554,177 @@ body.tema-claro .card h3 { color: #0f172a; }
   padding-bottom:18px;
 }
 
-.guia-meta-card {
-  background: #06251a !important;
-  border: 1px solid #15803d !important;
-  color: #dcfce7 !important;
+.meta-passo-btn {
+  width: auto !important;
+  margin: 12px 0 4px !important;
+  padding: 10px 14px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px !important;
+  background: #2563eb !important;
+  border: 1px solid #3b82f6 !important;
+  color: #fff !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.25) !important;
 }
 
-.guia-meta-card h3 {
-  color: #bbf7d0 !important;
+.passo-meta-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
 }
 
-.guia-meta-intro {
-  margin: 8px 0 14px;
+.passo-meta-modal.active {
+  display: flex;
+}
+
+.passo-meta-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(2,6,23,0.78);
+  backdrop-filter: blur(5px);
+}
+
+.passo-meta-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, 96vw);
+  max-height: 92vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #071b14;
+  border: 1px solid #15803d;
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.58);
+}
+
+.passo-meta-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(47,155,97,0.45);
+  background: #06251a;
+}
+
+.passo-meta-header h2 {
+  margin: 0;
+  color: #bbf7d0;
+  font-size: 20px;
+}
+
+.passo-meta-header p {
+  margin: 6px 0 0;
   color: #c7f9d8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.passo-meta-close {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  background: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #e5edf7 !important;
+}
+
+.passo-meta-body {
+  overflow-y: auto;
+  padding: 20px;
+  display: grid;
+  gap: 18px;
+}
+
+.passo-meta-nota {
+  padding: 12px;
+  border-radius: 12px;
+  background: #102f24;
+  border: 1px solid #2f9b61;
+  color: #dcfce7;
   font-size: 13px;
   line-height: 1.5;
 }
 
-.guia-meta-alerta {
-  margin: 12px 0;
-  padding: 12px;
-  border-radius: 10px;
-  background: #102f24;
-  border: 1px solid #2f9b61;
-  color: #dcfce7;
-  font-size: 12px;
+.passo-meta-step {
+  background: #0f172a;
+  border: 1px solid #27405a;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.passo-meta-step-text {
+  padding: 14px 16px;
+}
+
+.passo-meta-step-text h3 {
+  margin: 0 0 6px;
+  color: #f8fafc !important;
+  font-size: 16px;
+}
+
+.passo-meta-step-text p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 13px;
   line-height: 1.5;
 }
 
-.guia-meta-passos {
-  display: grid;
-  gap: 10px;
-  margin: 14px 0;
-}
-
-.guia-meta-passo {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 10px;
-  padding: 12px;
-  border-radius: 12px;
-  background: #0f172a;
-  border: 1px solid #27405a;
-}
-
-.guia-meta-numero {
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: #15803d;
-  color: #fff;
+.passo-meta-step-text a {
+  color: #93c5fd;
   font-weight: 900;
-  font-size: 12px;
 }
 
-.guia-meta-passo strong {
+.passo-meta-step img {
   display: block;
-  color: #f8fafc;
-  margin-bottom: 4px;
+  width: 100%;
+  max-height: 620px;
+  object-fit: contain;
+  background: #020617;
+  border-top: 1px solid #27405a;
 }
 
-.guia-meta-passo span {
-  display: block;
-  color: #cbd5e1;
-  font-size: 12px;
-  line-height: 1.45;
+body.tema-claro .passo-meta-dialog {
+  background: #e4f6ec;
+  border-color: #2f9b61;
 }
 
-.guia-meta-exemplos {
-  margin: 12px 0;
-  padding: 12px;
-  border-radius: 12px;
-  background: #0f172a;
-  border: 1px dashed #49627d;
-  color: #cbd5e1;
-  font-size: 12px;
-  line-height: 1.55;
+body.tema-claro .passo-meta-header {
+  background: #d7f0e2;
+  border-bottom-color: #2f9b61;
 }
 
-.guia-meta-exemplos code {
-  color: #bbf7d0;
-  background: #102f24;
-  border-radius: 6px;
-  padding: 2px 6px;
+body.tema-claro .passo-meta-header h2 {
+  color: #166534;
 }
 
-.guia-meta-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+body.tema-claro .passo-meta-header p,
+body.tema-claro .passo-meta-nota {
+  color: #0f3f25;
 }
 
-.guia-meta-actions a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 9px 12px;
-  border-radius: 9px;
-  background: #2563eb;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  text-decoration: none;
-  border: 1px solid #3b82f6;
+body.tema-claro .passo-meta-step {
+  background: #f8fafc;
+  border-color: #9fb4c8;
+}
+
+body.tema-claro .passo-meta-step-text h3 {
+  color: #102033 !important;
+}
+
+body.tema-claro .passo-meta-step-text p {
+  color: #334a60;
 }
 
 .card:hover {
@@ -7565,46 +7628,6 @@ body.tema-claro .painel-recolhivel-toggle:hover {
   color:#15803d;
 }
 
-body.tema-claro .guia-meta-card {
-  background: #e4f6ec !important;
-  border-color: #2f9b61 !important;
-  color: #0f3f25 !important;
-}
-
-body.tema-claro .guia-meta-card h3 {
-  color: #166534 !important;
-}
-
-body.tema-claro .guia-meta-intro,
-body.tema-claro .guia-meta-alerta {
-  color: #0f3f25 !important;
-}
-
-body.tema-claro .guia-meta-alerta {
-  background: #d7f0e2 !important;
-  border-color: #2f9b61 !important;
-}
-
-body.tema-claro .guia-meta-passo,
-body.tema-claro .guia-meta-exemplos {
-  background: #f8fafc !important;
-  border-color: #9fb4c8 !important;
-}
-
-body.tema-claro .guia-meta-passo strong {
-  color: #102033 !important;
-}
-
-body.tema-claro .guia-meta-passo span,
-body.tema-claro .guia-meta-exemplos {
-  color: #334a60 !important;
-}
-
-body.tema-claro .guia-meta-exemplos code {
-  background: #d7f0e2 !important;
-  color: #166534 !important;
-}
-
 body.tema-claro h1,
 body.tema-claro h2,
 body.tema-claro h3,
@@ -8884,7 +8907,6 @@ body:not(.tema-claro) .pagamento-modo {
 
 body:not(.tema-claro) .performance-meta-panel,
 body:not(.tema-claro) .meta-card,
-body:not(.tema-claro) .guia-meta-card,
 body:not(.tema-claro) .leads-central-card,
 body:not(.tema-claro) .campanhas-card {
   background: #06251a !important;
@@ -8996,7 +9018,6 @@ body:not(.tema-claro) .kpi-card strong {
 
 body:not(.tema-claro) .performance-meta-panel h3,
 body:not(.tema-claro) .meta-card h3,
-body:not(.tema-claro) .guia-meta-card h3,
 body:not(.tema-claro) .leads-central-card h3,
 body:not(.tema-claro) .campanhas-card h3 {
   color: #bbf7d0 !important;
@@ -9080,7 +9101,6 @@ body.tema-claro .metrica-explicacao {
 
 body.tema-claro .performance-meta-panel,
 body.tema-claro .meta-card,
-body.tema-claro .guia-meta-card,
 body.tema-claro .leads-central-card,
 body.tema-claro .campanhas-card {
   background: #e4f6ec !important;
@@ -9196,7 +9216,6 @@ body.tema-claro .performance-meta-table td {
 
 body.tema-claro .performance-meta-panel h3,
 body.tema-claro .meta-card h3,
-body.tema-claro .guia-meta-card h3,
 body.tema-claro .leads-central-card h3,
 body.tema-claro .campanhas-card h3 {
   color: #166534 !important;
@@ -10113,160 +10132,19 @@ body.tema-claro .logout {
         <div id="meta_info">
           Carregando conexão...
         </div>
+
+        <button
+          type="button"
+          class="meta-passo-btn"
+          onclick="abrirPassoMetaAnuncios()"
+        >
+          📘 Passo a passo para criar uma conta de anúncio
+        </button>
   
 
 
       </div>
 
-      <!-- GUIA META -->
-      <div class="card guia-meta-card">
-        <h3>📘 Guia Meta: criar página e preparar conta de anúncios</h3>
-
-        <p class="guia-meta-intro">
-          Use este passo a passo quando a plataforma indicar que ainda falta
-          criar uma Página do Facebook, aceitar os termos de Lead Ads ou
-          criar/configurar uma conta de anúncios dentro do Facebook do usuário.
-        </p>
-
-        <div class="guia-meta-alerta">
-          <strong>Privacidade:</strong>
-          o guia foi reescrito com exemplos genéricos. Dados pessoais, fotos,
-          telefones, e-mails e nomes reais foram removidos ou mascarados.
-        </div>
-
-        <div class="guia-meta-passos">
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">1</span>
-            <div>
-              <strong>Entre no Facebook correto</strong>
-              <span>
-                Abra o Facebook no navegador e confirme, no canto superior
-                direito, que está usando o perfil do próprio anunciante.
-              </span>
-            </div>
-          </div>
-
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">2</span>
-            <div>
-              <strong>Crie uma Página do Facebook</strong>
-              <span>
-                Acesse a criação de Página, informe um nome comercial e escolha
-                uma categoria relacionada ao seu negócio. Exemplo:
-                "Imobiliária", "Corretor de imóveis" ou "Serviços".
-              </span>
-            </div>
-          </div>
-
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">3</span>
-            <div>
-              <strong>Preencha somente o necessário</strong>
-              <span>
-                Site, telefone, e-mail, endereço e bio podem ser preenchidos
-                depois. Para conectar com a Plataforma de Leads, o mais
-                importante é concluir a criação da Página.
-              </span>
-            </div>
-          </div>
-
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">4</span>
-            <div>
-              <strong>Confirme telefone se o Facebook solicitar</strong>
-              <span>
-                Se aparecer uma etapa de WhatsApp ou SMS, informe o número do
-                próprio anunciante, aguarde o código e finalize a validação.
-              </span>
-            </div>
-          </div>
-
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">5</span>
-            <div>
-              <strong>Volte para a Plataforma de Leads</strong>
-              <span>
-                Atualize a página da plataforma. A nova Página deve aparecer em
-                "Conectar Meta". Selecione a Página que acabou de criar.
-              </span>
-            </div>
-          </div>
-
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">6</span>
-            <div>
-              <strong>Aceite os termos de Lead Ads</strong>
-              <span>
-                Clique em "Aceitar Termos". O Facebook abrirá uma nova guia.
-                Confirme a Página correta e clique em "Aceitar". Depois volte
-                para a plataforma e, se necessário, clique em "Já aceitei".
-              </span>
-            </div>
-          </div>
-
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">7</span>
-            <div>
-              <strong>Crie ou confirme a Conta Ads</strong>
-              <span>
-                Na área "Conta de anúncios", confirme se já existe uma conta
-                ativa. Se não existir, use a opção "Criar nova conta" e siga o
-                fluxo da Meta com o próprio usuário logado no Facebook.
-              </span>
-            </div>
-          </div>
-
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">8</span>
-            <div>
-              <strong>Confira o Status Meta</strong>
-              <span>
-                Verifique se Meta, Página e Conta Ads aparecem como conectados.
-                Instagram é opcional para anunciar, mas pode ser conectado
-                depois para ampliar os canais.
-              </span>
-            </div>
-          </div>
-
-          <div class="guia-meta-passo">
-            <span class="guia-meta-numero">9</span>
-            <div>
-              <strong>Configure pagamento da Meta</strong>
-              <span>
-                Em "Pagamento", clique para gerenciar formas de pagamento na
-                Meta. A Meta pode aceitar cartão, PIX, boleto ou saldo, conforme
-                disponibilidade da conta.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div class="guia-meta-exemplos">
-          <strong>Exemplos seguros para orientar o cliente:</strong><br>
-          Nome da Página: <code>[Nome do negócio]</code><br>
-          Telefone: <code>(**) *****-****</code><br>
-          E-mail: <code>contato@[dominio].com</code><br>
-          Endereço: <code>[Cidade/UF]</code>
-        </div>
-
-        <div class="guia-meta-alerta">
-          <strong>Importante:</strong>
-          nunca peça a senha do Facebook do cliente. O login, a confirmação de
-          telefone e a aceitação dos termos devem ser feitos pelo próprio dono
-          da conta.
-        </div>
-
-        <div class="guia-meta-actions">
-          <a href="https://www.facebook.com/pages/create" target="_blank" rel="noopener noreferrer">
-            Abrir criação de Página
-          </a>
-          <a href="https://business.facebook.com/settings/ad-accounts" target="_blank" rel="noopener noreferrer">
-            Abrir contas de anúncio
-          </a>
-        </div>
-      </div>
-  
-      <!-- 📢 PUBLICAÇÃO -->
       <div class="card card-criar-campanha">
 
         <h3>📢 Criar Campanha</h3>
@@ -13484,11 +13362,6 @@ const PAINEIS_RECOLHIVEIS = [
     seletor: ".meta-card",
     cabecalho: "h3",
     chave: "conectar-meta"
-  },
-  {
-    seletor: ".guia-meta-card",
-    cabecalho: "h3",
-    chave: "guia-meta"
   },
   {
     seletor: ".card-criar-campanha",
@@ -25680,6 +25553,153 @@ async function enviarFeedback() {
 </div>
 
 
+<!-- PASSO A PASSO META -->
+<div
+  id="modal_passo_meta_anuncios"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoMetaAnuncios()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_meta_titulo"
+  >
+    <div class="passo-meta-header">
+      <div>
+        <h2 id="passo_meta_titulo">
+          Passo a passo para criar uma conta de anúncio
+        </h2>
+        <p>
+          Abra o link em outra guia, execute a etapa no Facebook/Meta e volte
+          para esta janela para continuar acompanhando o guia.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoMetaAnuncios()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-nota">
+        <strong>Dados protegidos:</strong>
+        as imagens abaixo foram mantidas no formato do documento original, mas
+        nomes de perfil, nomes de conta, nomes de página e identificadores foram
+        borrados para preservar a privacidade.
+      </div>
+
+      <article class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>1. Veja se falta criar ou conectar uma Página</h3>
+          <p>
+            No quadro Conectar Meta, confira se a Página está conectada. Se
+            aparecer como não conectada, clique no link de criação de Página.
+          </p>
+        </div>
+        <img src="guia-meta-img/passo-1.png" alt="Plataforma indicando que ainda falta conectar uma Página do Facebook">
+      </article>
+
+      <article class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>2. Abra a criação de Página no Facebook</h3>
+          <p>
+            Clique em
+            <a href="https://www.facebook.com/pages/create" target="_blank" rel="noopener noreferrer">
+              abrir criação de Página
+            </a>
+            para acessar o Facebook em outra guia. Confirme se está logado na
+            conta correta antes de preencher os dados.
+          </p>
+        </div>
+        <img src="guia-meta-img/passo-2.png" alt="Tela do Facebook para criar uma Página">
+      </article>
+
+      <article class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>3. Avance pelas configurações opcionais</h3>
+          <p>
+            Site, telefone, email, endereço e bio podem ser preenchidos depois.
+            Para usar a Plataforma de Leads, o principal é concluir a criação
+            da Página e validar o telefone se o Facebook solicitar.
+          </p>
+        </div>
+        <img src="guia-meta-img/passo-3.png" alt="Tela de configuração opcional da Página do Facebook">
+      </article>
+
+      <article class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>4. Confirme que a Página foi criada</h3>
+          <p>
+            Ao finalizar, o Facebook exibirá a Página. Volte para a Plataforma
+            de Leads e atualize a tela para que a nova Página apareça.
+          </p>
+        </div>
+        <img src="guia-meta-img/passo-4.png" alt="Página criada no Facebook">
+      </article>
+
+      <article class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>5. Aceite os termos de Lead Ads</h3>
+          <p>
+            Se a plataforma mostrar o aviso de Termos de Lead Ads, clique em
+            aceitar. O Facebook abrirá outra guia para confirmar a autorização.
+          </p>
+        </div>
+        <img src="guia-meta-img/passo-5.png" alt="Aviso de termos de Lead Ads na Plataforma de Leads">
+      </article>
+
+      <article class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>6. Confirme os termos no Facebook</h3>
+          <p>
+            Na guia do Facebook, selecione a Página correta e clique em
+            "Aceitar". Depois volte para a plataforma.
+          </p>
+        </div>
+        <img src="guia-meta-img/passo-6.png" alt="Tela do Facebook para aceitar termos de anúncios de lead">
+      </article>
+
+      <article class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>7. Confira Página e Conta Ads conectadas</h3>
+          <p>
+            Na plataforma, confirme se Meta, Página e Conta Ads aparecem como
+            conectadas. Se não houver conta de anúncios, clique em "Criar nova
+            conta" no quadro Conta de anúncios.
+          </p>
+        </div>
+        <img src="guia-meta-img/passo-7.png" alt="Status Meta com Página e Conta Ads conectadas">
+      </article>
+
+      <article class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>8. Configure pagamento na Meta</h3>
+          <p>
+            Para veicular campanhas, a Meta precisa de uma forma de pagamento
+            ou saldo. Use o botão da plataforma ou abra
+            <a href="https://business.facebook.com/billing_hub/payment_settings" target="_blank" rel="noopener noreferrer">
+              configurações de pagamento da Meta
+            </a>
+            em outra guia.
+          </p>
+        </div>
+        <img src="guia-meta-img/passo-8.png" alt="Tela da Meta para configurar pagamento da conta de anúncios">
+      </article>
+    </div>
+  </div>
+</div>
+
 <!-- ✨ MODAL GERAR BANNER COM IA -->
 <div id="modal_banner_ia">
   <div class="modal-banner-ia-overlay" onclick="fecharModalGerarBanner()"></div>
@@ -25734,6 +25754,30 @@ async function enviarFeedback() {
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script>
+function abrirPassoMetaAnuncios() {
+  const modal = document.getElementById("modal_passo_meta_anuncios");
+  if (!modal) return;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function fecharPassoMetaAnuncios() {
+  const modal = document.getElementById("modal_passo_meta_anuncios");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    fecharPassoMetaAnuncios();
+  }
+});
+
 // ─── MODAL GERAR BANNER COM IA ────────────────────────────────────────────────
 
 let _bannerGeradoBase64 = null;

@@ -2230,11 +2230,16 @@ body.usuario-super-admin .admin-only-targeting {
 }
 
 .campanhas-topo {
-
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 20px;
+}
+
+.campanhas-topo .painel-recolhivel-toggle {
+  margin-left: auto !important;
 }
 
 #filtro_status {
@@ -3957,39 +3962,22 @@ body.usuario-super-admin .admin-only-targeting {
 }
 
 .performance-meta-btn {
-
-  height:34px;
-
-  border:
-    1px solid rgba(34,197,94,0.28);
-
-  background:rgba(15,23,42,0.82);
-
-  color:#e5e7eb;
-
-  border-radius:10px;
-
-  padding:7px 11px;
-
-  cursor:pointer;
-
-  font-size:12px;
-
-  font-weight:700;
-
-  transition:
-    transform .15s ease,
-    border-color .15s ease,
-    background .15s ease;
+  height: 34px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  color: #fff;
+  border-radius: 10px;
+  padding: 7px 11px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(37,99,235,0.25);
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
 .performance-meta-btn:hover {
-
-  transform:translateY(-1px);
-
-  border-color:rgba(34,197,94,0.56);
-
-  background:rgba(20,83,45,0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(37,99,235,0.45);
 }
 
 .performance-meta-btn:disabled {
@@ -7923,8 +7911,8 @@ body.tema-claro .performance-meta-card strong { color: #1e293b; }
 body.tema-claro .performance-meta-card small { color: #64748b; }
 body.tema-claro .performance-meta-badge { border-color: rgba(22,163,74,0.46); color: #15803d; }
 body.tema-claro .performance-meta-periodo { background: #fff; border-color: #9fb0c4; color: #152238; }
-body.tema-claro .performance-meta-btn { background: #fff; border-color: #9fb0c4; color: #152238; }
-body.tema-claro .performance-meta-btn:hover { background: #ecfdf5; border-color: #16a34a; }
+body.tema-claro .performance-meta-btn { background: linear-gradient(135deg, #2563eb, #06b6d4); color: #fff; border: none; }
+body.tema-claro .performance-meta-btn:hover { transform: translateY(-1px); box-shadow: 0 0 20px rgba(37,99,235,0.35); }
 body.tema-claro .performance-meta-updated { color: #526174; }
 body.tema-claro .performance-meta-table-wrap { border-color: rgba(0,0,0,0.07); }
 body.tema-claro .performance-meta-table th { color: #526174; }

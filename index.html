@@ -6007,6 +6007,53 @@ body.tema-claro .cal-nav span { color: #111827; }
   flex-shrink: 0;
 }
 
+/* ── Tooltip de ajuda dos campos ── */
+.info-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: rgba(100,116,139,0.35);
+  color: #94a3b8;
+  font-size: 9px;
+  font-weight: 800;
+  font-style: italic;
+  cursor: pointer;
+  margin-left: 5px;
+  vertical-align: middle;
+  border: none;
+  padding: 0;
+  line-height: 1;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.info-icone:hover {
+  background: rgba(124,58,237,0.45);
+  color: #c4b5fd;
+}
+.info-tooltip-popup {
+  position: fixed;
+  z-index: 999999;
+  max-width: 270px;
+  background: #1a2235;
+  border: 1px solid rgba(148,163,184,0.25);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 12.5px;
+  color: #e2e8f0;
+  line-height: 1.55;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+  pointer-events: none;
+}
+body.tema-claro .info-tooltip-popup {
+  background: #ffffff;
+  border-color: #b0c4d8;
+  color: #1e293b;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+}
+
 /* STATUS */
 
 .status-badge {
@@ -9881,7 +9928,7 @@ body.tema-claro .logout {
         </div>
   
         <!-- 📝 NOME -->
-        <label>Nome da campanha</label>
+        <label>Nome da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Um nome para você identificar sua campanha dentro da plataforma. Use algo que faça sentido para você, como o produto anunciado ou o público-alvo.', event)">i</button></label>
   
         <input
           type="text"
@@ -9890,7 +9937,7 @@ body.tema-claro .logout {
         >
   
         <!-- 📘 PÁGINA -->
-        <label>Página Facebook</label>
+        <label>Página Facebook <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione qual página do Facebook vai aparecer como anunciante. É a página que seus clientes vão ver quando o anúncio aparecer para eles.', event)">i</button></label>
   
         <select id="pagina_select" onchange="atualizarTosHint()">
           <option>Carregando páginas...</option>
@@ -9910,7 +9957,7 @@ body.tema-claro .logout {
         </div>
 
         <section class="campaign-setup-section" id="bloco_onde_anunciar">
-          <h4>Onde anunciar</h4>
+          <h4>Onde anunciar <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha se o anúncio vai aparecer no Facebook, no Instagram ou nos dois ao mesmo tempo. Quanto mais canais, mais pessoas podem ver.', event)">i</button></h4>
           <p>
             Escolha os canais disponiveis para a Pagina selecionada.
           </p>
@@ -10000,7 +10047,7 @@ body.tema-claro .logout {
   
         <!-- 💰 ORÇAMENTO -->
         <div id="bloco_orcamento">
-          <label>Orçamento diário (R$)</label>
+          <label>Orçamento diário (R$) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quanto você quer gastar por dia com esse anúncio. O Facebook vai usar esse valor para mostrar o anúncio para o máximo de pessoas possível dentro do orçamento.', event)">i</button></label>
 
           <input
             type="number"
@@ -10018,7 +10065,7 @@ body.tema-claro .logout {
 
           <div class="campaign-setup-grid">
             <div>
-              <label>País do público</label>
+              <label>País do público <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o país onde as pessoas que verão o anúncio estão. Para o Brasil, deixe BR.', event)">i</button></label>
               <input
                 type="text"
                 id="adv_pais"
@@ -10029,7 +10076,7 @@ body.tema-claro .logout {
             </div>
 
             <div>
-              <label>Gênero</label>
+              <label>Gênero <button type="button" class="info-icone" onclick="mostrarInfoCampo('Filtre o público por gênero. Se seu produto é para todo mundo, deixe em Todos.', event)">i</button></label>
               <select id="adv_genero">
                 <option value="">Todos</option>
                 <option value="1">Homens</option>
@@ -10038,7 +10085,7 @@ body.tema-claro .logout {
             </div>
 
             <div>
-              <label>Idade mínima</label>
+              <label>Idade mínima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade mínima das pessoas que vão ver o anúncio. O Facebook não permite anunciar para menores de 18 anos.', event)">i</button></label>
               <input
                 type="number"
                 id="adv_idade_min"
@@ -10049,7 +10096,7 @@ body.tema-claro .logout {
             </div>
 
             <div>
-              <label>Idade máxima</label>
+              <label>Idade máxima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade máxima das pessoas que vão ver o anúncio. Deixe em 65 se não quiser limitar a faixa etária superior.', event)">i</button></label>
               <input
                 type="number"
                 id="adv_idade_max"
@@ -10061,7 +10108,7 @@ body.tema-claro .logout {
           </div>
 
           <div class="detailed-targeting-panel admin-only-targeting">
-            <strong>Direcionamento detalhado</strong>
+            <strong>Direcionamento detalhado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Digite palavras que descrevem o interesse do seu público ideal. O Facebook vai mostrar o anúncio para pessoas que curtem essas páginas ou assuntos. Ex: &quot;imóveis, financiamento&quot;.', event)">i</button></strong>
             <p>
               Procure interesses que descrevem o perfil do público. Eles serão enviados à Meta junto com o público do conjunto de anúncios.
             </p>
@@ -10278,7 +10325,7 @@ body.tema-claro .logout {
           <div class="advanced-grid">
 
             <div class="advanced-full">
-              <label>Título do anúncio</label>
+              <label>Título do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('É o texto em destaque que as pessoas veem primeiro no seu anúncio. Deve ser curto, direto e chamar atenção para o que você está oferecendo.', event)">i</button></label>
               <input
                 type="text"
                 id="adv_titulo"
@@ -10287,7 +10334,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Descrição curta</label>
+              <label>Descrição curta <button type="button" class="info-icone" onclick="mostrarInfoCampo('Um texto complementar que aparece abaixo do título. Use para destacar um benefício ou diferencial da sua oferta em poucas palavras.', event)">i</button></label>
               <input
                 type="text"
                 id="adv_descricao"
@@ -10296,7 +10343,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Perguntas qualificadoras</label>
+              <label>Perguntas qualificadoras <button type="button" class="info-icone" onclick="mostrarInfoCampo('Perguntas que o cliente responde antes de enviar os dados de contato. Ajudam a filtrar quem está mais interessado. Coloque uma pergunta por linha.', event)">i</button></label>
               <textarea
                 id="adv_perguntas"
                 placeholder="Uma pergunta por linha. Ex: Qual faixa de investimento?"
@@ -10304,7 +10351,7 @@ body.tema-claro .logout {
             </div>
 
             <div>
-              <label>Título do obrigado</label>
+              <label>Título do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Mensagem principal que aparece para o cliente depois que ele preenche e envia o formulário. Ex: \"Obrigado! Em breve entraremos em contato.\"', event)">i</button></label>
               <input
                 type="text"
                 id="adv_obrigado_titulo"
@@ -10313,7 +10360,7 @@ body.tema-claro .logout {
             </div>
 
             <div>
-              <label>Botão do obrigado</label>
+              <label>Botão do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto do botão que aparece na tela de confirmação. Pode ser \"Ver mais\", \"Acessar site\" ou qualquer chamada para ação.', event)">i</button></label>
               <input
                 type="text"
                 id="adv_obrigado_botao"
@@ -10322,7 +10369,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Mensagem de obrigado</label>
+              <label>Mensagem de obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto completo que aparece na tela de confirmação. Aproveite para tranquilizar o cliente e dar um próximo passo, como \"Em breve nossa equipe vai entrar em contato\".', event)">i</button></label>
               <input
                 type="text"
                 id="adv_obrigado_texto"
@@ -10331,7 +10378,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Otimização</label>
+              <label>Otimização <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quando ativado, o Facebook prioriza mostrar o anúncio para pessoas com maior chance de preencher o formulário corretamente. Gera menos leads, mas com mais qualidade.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" id="adv_form_qualidade">
@@ -11744,7 +11791,7 @@ body.tema-claro .logout {
             <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
               <input type="checkbox" name="novo_usuario_nicho" value="2">
               <span class="nicho-dot" style="background:#7C3AED;"></span>
-              Convênio Médico
+              Planos de Saúde
             </label>
             <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
               <input type="checkbox" name="novo_usuario_nicho" value="3">
@@ -25453,7 +25500,7 @@ function adicionarBannerGeradoAoCarrossel() {
       <label class="nicho-checkbox-label">
         <input type="checkbox" name="modal_nicho" value="2">
         <span class="nicho-dot" style="background:#7C3AED;"></span>
-        Corretor de Convênio Médico
+        Corretor de Planos de Saúde
       </label>
       <label class="nicho-checkbox-label">
         <input type="checkbox" name="modal_nicho" value="3">
@@ -25530,6 +25577,25 @@ function slugNichoNormalizado(nicho = {}) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
+}
+
+// ── Tooltip de ajuda dos campos ──
+function mostrarInfoCampo(texto, event) {
+  event.stopPropagation();
+  document.getElementById("info_tooltip_popup")?.remove();
+  const popup = document.createElement("div");
+  popup.className = "info-tooltip-popup";
+  popup.id = "info_tooltip_popup";
+  popup.innerText = texto;
+  document.body.appendChild(popup);
+  const r = event.target.getBoundingClientRect();
+  let top = r.bottom + 8;
+  let left = r.left;
+  if (left + 280 > window.innerWidth) left = window.innerWidth - 285;
+  if (top + 120 > window.innerHeight) top = r.top - 130;
+  popup.style.top = top + "px";
+  popup.style.left = left + "px";
+  setTimeout(() => document.addEventListener("click", () => document.getElementById("info_tooltip_popup")?.remove(), { once: true }), 0);
 }
 
 function corSolidaNicho(nicho = {}) {
@@ -25755,11 +25821,13 @@ function selecionarNichoTab(nicho, btnEl) {
   const container = document.getElementById("nicho_campos_extras");
   if (!container) return;
 
+  const _i = (txt) => `<button type="button" class="info-icone" onclick="mostrarInfoCampo('${txt.replace(/'/g,"&#39;")}',event)">i</button>`;
+
   if (nicho.slug === "imoveis") {
     container.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Tipo de imóvel</label>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de imóvel ${_i('Selecione o tipo de imóvel que você está anunciando: residencial (casas e aptos), comercial (salas e lojas) ou rural (sítios, fazendas).')}</label>
           <select id="nicho_tipo_imovel" style="margin-top:4px;">
             <option value="">Qualquer</option>
             <option value="residencial">Residencial</option>
@@ -25768,7 +25836,7 @@ function selecionarNichoTab(nicho, btnEl) {
           </select>
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Finalidade</label>
+          <label style="color:#9ca3af;font-size:12px;">Finalidade ${_i('O imóvel é para vender ou alugar? Isso ajuda a filtrar quem está procurando comprar versus quem quer apenas alugar.')}</label>
           <select id="nicho_finalidade" style="margin-top:4px;">
             <option value="">Qualquer</option>
             <option value="venda">Venda</option>
@@ -25776,16 +25844,16 @@ function selecionarNichoTab(nicho, btnEl) {
           </select>
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Valor mín. (R$)</label>
+          <label style="color:#9ca3af;font-size:12px;">Valor mín. (R$) ${_i('Valor mínimo do imóvel. Ajuda a registrar o perfil da campanha para análise futura.')}</label>
           <input type="number" id="nicho_valor_min" placeholder="Ex: 300000" style="margin-top:4px;">
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Valor máx. (R$)</label>
+          <label style="color:#9ca3af;font-size:12px;">Valor máx. (R$) ${_i('Valor máximo do imóvel. Junto com o mínimo, define a faixa de preço dos imóveis desta campanha.')}</label>
           <input type="number" id="nicho_valor_max" placeholder="Ex: 800000" style="margin-top:4px;">
         </div>
       </div>
       <div style="margin-top:12px;">
-        <label style="color:#9ca3af;font-size:12px;">Região / Bairro</label>
+        <label style="color:#9ca3af;font-size:12px;">Região / Bairro ${_i('Informe a cidade, bairro ou região dos imóveis. Ajuda a identificar campanhas por localização.')}</label>
         <input type="text" id="nicho_regiao" placeholder="Ex: Santo André, SP" style="margin-top:4px;">
       </div>
     `;
@@ -25793,11 +25861,11 @@ function selecionarNichoTab(nicho, btnEl) {
     container.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Operadora</label>
+          <label style="color:#9ca3af;font-size:12px;">Operadora ${_i('A empresa do plano de saúde que você representa. Ex: Amil, Unimed, SulAmérica. Deixe em branco se trabalha com várias.')}</label>
           <input type="text" id="nicho_operadora" placeholder="Ex: Amil, Unimed..." style="margin-top:4px;">
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Tipo de plano</label>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de plano ${_i('Para quem é o plano: só para a pessoa (individual), para a família inteira ou para funcionários de uma empresa.')}</label>
           <select id="nicho_tipo_plano" style="margin-top:4px;">
             <option value="">Qualquer</option>
             <option value="individual">Individual</option>
@@ -25806,15 +25874,15 @@ function selecionarNichoTab(nicho, btnEl) {
           </select>
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Faixa etária mín.</label>
+          <label style="color:#9ca3af;font-size:12px;">Faixa etária mín. ${_i('Idade mínima das pessoas para quem este plano é indicado. Serve para registrar o perfil da campanha.')}</label>
           <input type="number" id="nicho_faixa_min" placeholder="Ex: 18" min="0" max="120" style="margin-top:4px;">
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Faixa etária máx.</label>
+          <label style="color:#9ca3af;font-size:12px;">Faixa etária máx. ${_i('Idade máxima do público desta campanha. Junto com a mínima, define para qual faixa etária o plano é mais adequado.')}</label>
           <input type="number" id="nicho_faixa_max" placeholder="Ex: 59" min="0" max="120" style="margin-top:4px;">
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Cobertura</label>
+          <label style="color:#9ca3af;font-size:12px;">Cobertura ${_i('Nível de cobertura do plano: básica (consultas simples), intermediária (exames e internações) ou premium (tudo incluso).')}</label>
           <select id="nicho_cobertura" style="margin-top:4px;">
             <option value="">Qualquer</option>
             <option value="basica">Básica</option>
@@ -25823,7 +25891,7 @@ function selecionarNichoTab(nicho, btnEl) {
           </select>
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Acomodação</label>
+          <label style="color:#9ca3af;font-size:12px;">Acomodação ${_i('Tipo de quarto em caso de internação: enfermaria (quarto compartilhado) ou apartamento (quarto individual).')}</label>
           <select id="nicho_acomodacao" style="margin-top:4px;">
             <option value="">Qualquer</option>
             <option value="enfermaria">Enfermaria</option>
@@ -25836,7 +25904,7 @@ function selecionarNichoTab(nicho, btnEl) {
     container.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Produto</label>
+          <label style="color:#9ca3af;font-size:12px;">Produto ${_i('O tipo de suplemento que você está anunciando. Ex: Whey Protein, Creatina. Escolha o mais próximo do seu produto.')}</label>
           <select id="nicho_produto" style="margin-top:4px;">
             <option value="">Qualquer</option>
             <option value="whey">Whey Protein</option>
@@ -25849,7 +25917,7 @@ function selecionarNichoTab(nicho, btnEl) {
           </select>
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Objetivo</label>
+          <label style="color:#9ca3af;font-size:12px;">Objetivo ${_i('Para que serve o suplemento anunciado: ganhar massa muscular, emagrecer, melhorar o rendimento nos treinos ou cuidar da saúde em geral.')}</label>
           <select id="nicho_objetivo" style="margin-top:4px;">
             <option value="">Qualquer</option>
             <option value="ganho_massa">Ganho de massa</option>
@@ -25859,11 +25927,11 @@ function selecionarNichoTab(nicho, btnEl) {
           </select>
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Marca</label>
+          <label style="color:#9ca3af;font-size:12px;">Marca ${_i('A marca do suplemento. Ex: Growth, Max Titanium, Integralmédica. Deixe em branco se não quiser especificar.')}</label>
           <input type="text" id="nicho_marca" placeholder="Ex: Growth, Max Titanium..." style="margin-top:4px;">
         </div>
         <div>
-          <label style="color:#9ca3af;font-size:12px;">Público-alvo</label>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Para quem é este suplemento: atletas profissionais, pessoas que malham por hobby, quem quer emagrecer, etc.')}</label>
           <select id="nicho_publico_alvo" style="margin-top:4px;">
             <option value="">Qualquer</option>
             <option value="iniciantes">Iniciantes</option>

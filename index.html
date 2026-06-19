@@ -172,7 +172,7 @@ input, textarea, select {
   margin: 8px 0;
   border-radius: 8px;
 
-  border: 1px solid rgba(148,163,184,0.25);
+  border: 1px solid #334155;
   background: #1e293b;
   color: #e2e8f0;
 
@@ -183,10 +183,14 @@ input::placeholder, textarea::placeholder {
   color: #64748b;
 }
 
+input:hover, textarea:hover, select:hover {
+  border-color: #475569;
+}
+
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
 }
 
 /* BOTÕES */
@@ -1154,7 +1158,7 @@ button {
 
   border-radius: 10px;
 
-  border: 1px solid rgba(148,163,184,0.25);
+  border: 1px solid #334155;
 
   background: #1e293b;
 
@@ -1170,12 +1174,18 @@ button {
   color: #64748b;
 }
 
+.card input:hover,
+.card select:hover,
+.card textarea:hover {
+  border-color: #475569;
+}
+
 .card input:focus,
 .card select:focus,
 .card textarea:focus {
   outline: none;
   border-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
 }
 
 .card textarea {
@@ -2663,7 +2673,7 @@ body.usuario-super-admin .admin-only-targeting {
 
   border-radius: 14px;
 
-  border: 1px solid rgba(148,163,184,0.25);
+  border: 1px solid #334155;
 
   background: #1e293b;
 
@@ -2705,7 +2715,7 @@ body.usuario-super-admin .admin-only-targeting {
 
   border-radius: 14px;
 
-  border: 1px solid rgba(148,163,184,0.25);
+  border: 1px solid #334155;
 
   background: #1e293b;
 
@@ -4543,7 +4553,7 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   border-radius: 10px;
 
-  border: 1px solid rgba(148,163,184,0.25);
+  border: 1px solid #334155;
 
   background: #1e293b;
 
@@ -6199,7 +6209,7 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   border-radius: 10px;
 
-  border: 1px solid rgba(148,163,184,0.25);
+  border: 1px solid #334155;
 
   background: #1e293b;
 
@@ -7233,7 +7243,7 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   border-radius: 8px;
 
-  border: 1px solid rgba(148,163,184,0.25);
+  border: 1px solid #334155;
 
   background: #1e293b;
 
@@ -7246,7 +7256,7 @@ body.tema-claro .cal-nav span { color: #111827; }
 
 body.tema-claro {
 
-  background: #f1f5f9;
+  background: #c8d4e0;
 
   color: #1e293b;
 }
@@ -7272,19 +7282,19 @@ body.tema-claro .card {
 
   background: #ffffff;
 
-  border-color: #e2e8f0;
+  border-color: #b8c8d8;
 
   box-shadow:
-    0 1px 3px rgba(15,23,42,0.06),
-    0 4px 16px rgba(15,23,42,0.08);
+    0 2px 6px rgba(15,23,42,0.1),
+    0 6px 20px rgba(15,23,42,0.12);
 }
 
 body.tema-claro .card:hover,
 body.tema-claro .login-box:hover {
 
   box-shadow:
-    0 1px 3px rgba(15,23,42,0.08),
-    0 8px 24px rgba(15,23,42,0.12);
+    0 4px 12px rgba(15,23,42,0.14),
+    0 10px 28px rgba(15,23,42,0.16);
 }
 
 body.tema-claro .painel-recolhivel-toggle {
@@ -7303,13 +7313,18 @@ body.tema-claro h1,
 body.tema-claro h2,
 body.tema-claro h3,
 body.tema-claro h4,
-body.tema-claro .card label,
-body.tema-claro .metrica-explicacao strong,
 body.tema-claro .campanha-header h3,
 body.tema-claro .lead-topo h4,
 body.tema-claro .kanban-header {
 
-  color: #1e293b;
+  color: #0f172a;
+}
+
+body.tema-claro .card label,
+body.tema-claro .metrica-explicacao strong {
+
+  color: #374151;
+  font-weight: 600;
 }
 
 body.tema-claro p,
@@ -7356,15 +7371,15 @@ body.tema-claro .admin-railway-billing input,
 body.tema-claro .admin-railway-billing select,
 body.tema-claro .admin-railway-billing textarea {
 
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
+  background: #eef3f8;
+  border: 1px solid #8faabe;
   color: #1e293b;
-  box-shadow: none;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
 }
 
 body.tema-claro input::placeholder,
 body.tema-claro textarea::placeholder {
-  color: #94a3b8;
+  color: #7a96ae;
 }
 
 body.tema-claro input:hover,
@@ -7383,7 +7398,8 @@ body.tema-claro .admin-railway-billing input:hover,
 body.tema-claro .admin-railway-billing select:hover,
 body.tema-claro .admin-railway-billing textarea:hover {
 
-  border-color: #94a3b8;
+  border-color: #5b80a0;
+  background: #e8f0f7;
 }
 
 body.tema-claro input:focus,
@@ -7402,8 +7418,9 @@ body.tema-claro .admin-railway-billing input:focus,
 body.tema-claro .admin-railway-billing select:focus,
 body.tema-claro .admin-railway-billing textarea:focus {
 
+  background: #ffffff;
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.14);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.18), inset 0 1px 2px rgba(0,0,0,0.04);
   outline: none;
 }
 
@@ -7419,14 +7436,14 @@ body.tema-claro .tema-seletor {
 
   background: #ffffff;
 
-  border-color: #e2e8f0;
+  border-color: #b8c8d8;
 
   color: #334155;
 }
 
 body.tema-claro .credito-desenvolvedor-topbar {
   background: #ffffff;
-  border-color: #e2e8f0;
+  border-color: #b8c8d8;
   color: #64748b;
 }
 
@@ -7484,9 +7501,9 @@ body.tema-claro .drawer-box,
 body.tema-claro .performance-box,
 body.tema-claro .metrica {
 
-  background: #ffffff;
+  background: #f4f8fb;
 
-  border-color: #e2e8f0;
+  border-color: #b0c4d8;
 }
 
 /* score-item e metrica-explicacao sem fundo no tema claro (parecem texto, não botão) */
@@ -7587,11 +7604,11 @@ body.tema-claro .dashboard-box {
 
   background: #ffffff;
 
-  border-color: #e2e8f0;
+  border-color: #b0c4d8;
 
   box-shadow:
-    0 1px 3px rgba(15,23,42,0.06),
-    0 4px 16px rgba(15,23,42,0.08);
+    0 2px 6px rgba(15,23,42,0.1),
+    0 6px 20px rgba(15,23,42,0.12);
 }
 
 body.tema-claro .campanha-card.active-card {
@@ -7642,9 +7659,9 @@ body.tema-claro .tabela-admin tr:hover {
 body.tema-claro .lead-drawer-content,
 body.tema-claro .lead-sidebar {
 
-  background: #ffffff;
+  background: #f0f5f9;
 
-  border-left-color: #e2e8f0;
+  border-left-color: #b0c4d8;
 }
 
 body.tema-claro .lead-drawer-header {

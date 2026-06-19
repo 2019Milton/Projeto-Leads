@@ -10721,6 +10721,96 @@ body.tema-claro .logout {
 
     <div class="leads-central-content">
 
+      <!-- IA RESUMO DIÁRIO -->
+      <div
+        class="ia-ouro-destaque"
+        id="ia_resumo_diario_box"
+      >
+        <h4>IA Ouro - Resumo diario do corretor</h4>
+        <p>
+          A IA analisa os leads da sua conta e mostra onde focar hoje.
+        </p>
+        <button
+          class="btn-reanalisar-ia"
+          onclick="gerarResumoDiarioIA()"
+        >
+          Gerar resumo com IA
+        </button>
+        <div
+          id="ia_resumo_diario_resultado"
+          class="ia-resultado-box"
+          style="display:none;"
+        ></div>
+      </div>
+
+      <!-- RECUPERAÇÃO DE PERDIDOS -->
+      <div class="recuperacao-leads-panel">
+
+        <div class="recuperacao-leads-topo">
+
+          <div>
+            <strong>Recuperacao de Perdidos</strong>
+            <span>
+              Trabalhe primeiro os perdidos com maior chance de voltar para conversa.
+            </span>
+          </div>
+
+        </div>
+
+        <div class="recuperacao-leads-actions">
+
+          <button
+            id="btn_recuperacao_recuperaveis"
+            onclick="filtrarRecuperacaoLeads('recuperaveis')"
+          >
+            Recuperaveis
+            <span id="count_recuperaveis">0</span>
+          </button>
+
+          <button
+            id="btn_recuperacao_nao_respondeu"
+            onclick="filtrarRecuperacaoLeads('nao_respondeu')"
+          >
+            Nao respondeu
+            <span id="count_rec_nao_respondeu">0</span>
+          </button>
+
+          <button
+            id="btn_recuperacao_30dias"
+            onclick="filtrarRecuperacaoLeads('30dias')"
+          >
+            30+ dias
+            <span id="count_rec_30dias">0</span>
+          </button>
+
+          <button
+            id="btn_recuperacao_ia"
+            class="ia-filtro"
+            onclick="filtrarRecuperacaoLeads('ia')"
+            title="Filtro do plano Ouro: usa IA para priorizar recuperacao"
+          >
+            IA Ouro usa IA
+            <span id="count_rec_ia">0</span>
+          </button>
+
+          <button
+            class="ia-filtro"
+            onclick="gerarReativacaoLoteIA()"
+            title="IA Ouro: gera mensagens de reativacao para os leads perdidos filtrados"
+          >
+            Reativacao em lote IA
+          </button>
+
+        </div>
+
+        <div
+          id="ia_reativacao_lote_resultado"
+          class="ia-resultado-box"
+          style="display:none;"
+        ></div>
+
+      </div>
+
       <!-- 🔥 TOPO CENTRAL LEADS -->
       <div class="leads-toolbar">
       
@@ -10852,95 +10942,6 @@ body.tema-claro .logout {
       
       </div>
 
-
-      <!-- 🔥 KANBAN -->
-      <div
-        class="ia-ouro-destaque"
-        id="ia_resumo_diario_box"
-      >
-        <h4>IA Ouro - Resumo diario do corretor</h4>
-        <p>
-          A IA analisa os leads da sua conta e mostra onde focar hoje.
-        </p>
-        <button
-          class="btn-reanalisar-ia"
-          onclick="gerarResumoDiarioIA()"
-        >
-          Gerar resumo com IA
-        </button>
-        <div
-          id="ia_resumo_diario_resultado"
-          class="ia-resultado-box"
-          style="display:none;"
-        ></div>
-      </div>
-
-      <div class="recuperacao-leads-panel">
-
-        <div class="recuperacao-leads-topo">
-
-          <div>
-            <strong>Recuperacao de Perdidos</strong>
-            <span>
-              Trabalhe primeiro os perdidos com maior chance de voltar para conversa.
-            </span>
-          </div>
-
-        </div>
-
-        <div class="recuperacao-leads-actions">
-
-          <button
-            id="btn_recuperacao_recuperaveis"
-            onclick="filtrarRecuperacaoLeads('recuperaveis')"
-          >
-            Recuperaveis
-            <span id="count_recuperaveis">0</span>
-          </button>
-
-          <button
-            id="btn_recuperacao_nao_respondeu"
-            onclick="filtrarRecuperacaoLeads('nao_respondeu')"
-          >
-            Nao respondeu
-            <span id="count_rec_nao_respondeu">0</span>
-          </button>
-
-          <button
-            id="btn_recuperacao_30dias"
-            onclick="filtrarRecuperacaoLeads('30dias')"
-          >
-            30+ dias
-            <span id="count_rec_30dias">0</span>
-          </button>
-
-          <button
-            id="btn_recuperacao_ia"
-            class="ia-filtro"
-            onclick="filtrarRecuperacaoLeads('ia')"
-            title="Filtro do plano Ouro: usa IA para priorizar recuperacao"
-          >
-            IA Ouro usa IA
-            <span id="count_rec_ia">0</span>
-          </button>
-
-          <button
-            class="ia-filtro"
-            onclick="gerarReativacaoLoteIA()"
-            title="IA Ouro: gera mensagens de reativacao para os leads perdidos filtrados"
-          >
-            Reativacao em lote IA
-          </button>
-
-        </div>
-
-        <div
-          id="ia_reativacao_lote_resultado"
-          class="ia-resultado-box"
-          style="display:none;"
-        ></div>
-
-      </div>
 
       <div class="kanban-board">
       

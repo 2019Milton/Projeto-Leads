@@ -9960,19 +9960,7 @@ body.tema-claro .logout {
           Carregando conexão...
         </div>
   
-        <!-- 🔥 DIVISOR -->
-        <hr class="meta-divider">
-  
-        <!-- 🔥 STATUS META -->
-        <div class="meta-status-inline">
-  
-          <h4>📊 Status Meta</h4>
-  
-          <div id="status_meta">
-            Carregando status...
-          </div>
-  
-        </div>
+
 
       </div>
   
@@ -19951,6 +19939,10 @@ async function carregarStatusMeta() {
 
             ${seletorContaAnuncios}
 
+            <div id="status_meta" class="meta-conta-selector" style="margin-top:10px;">
+              Carregando status...
+            </div>
+
             <p>
               <b>${pagamentoHabilitado ? "🟢" : "🔴"} Pagamento:</b><br>
               ${tipoPagamento}
@@ -20040,6 +20032,7 @@ async function carregarStatusMeta() {
       tipoPagamentoAtivo === "manual_pre_pago";
 
     div.innerHTML = `
+      <b style="font-size:13px;display:block;margin-bottom:10px;">📊 Status Meta</b>
       <div class="meta-status-grid">
 
         <div class="meta-status-tile">

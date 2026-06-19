@@ -4451,25 +4451,17 @@ body.tema-claro .cal-nav span { color: #111827; }
 }
 
 .tabela-admin th{
-
   text-align:left;
-
-  padding:16px;
-
-  font-size:13px;
-
+  padding:10px 12px;
+  font-size:12px;
   color:#cbd5e1;
+  white-space:nowrap;
 }
 
 .tabela-admin td{
-
-  padding:16px;
-
-  border-top:
-    1px solid rgba(255,255,255,0.05);
-
-  font-size:13px;
-
+  padding:10px 12px;
+  border-top:1px solid rgba(255,255,255,0.05);
+  font-size:12px;
   color:#e2e8f0;
 }
 
@@ -11875,10 +11867,11 @@ body.tema-claro .logout {
   
       <!-- TABELA -->
       <div style="margin-top:40px;">
-  
+
         <h3>👥 Usuários da Plataforma</h3>
-  
-        <table class="tabela-admin">
+
+        <div style="overflow-x:auto; width:100%;">
+        <table class="tabela-admin" style="min-width:900px;">
   
           <thead>
             <tr>
@@ -11898,10 +11891,11 @@ body.tema-claro .logout {
           </thead>
   
           <tbody id="admin_tabela_usuarios">
-  
+
           </tbody>
-  
+
         </table>
+        </div>
 
       </div>
 

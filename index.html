@@ -11126,7 +11126,7 @@ body.tema-claro .logout {
       </p>
   
       <!-- KPIS -->
-      <div class="admin-secao admin-secao-a">
+      <div id="admin-secao-kpis" class="admin-secao admin-secao-a">
       <h3>📊 Visão Geral</h3>
       <div class="dashboard-grid">
 
@@ -11162,7 +11162,8 @@ body.tema-claro .logout {
       </div><!-- /admin-secao KPIs -->
 
       <!-- RECURSOS -->
-      <div class="admin-secao admin-secao-b">
+      <div id="admin-secao-railway" class="admin-secao admin-secao-b">
+        <h3>🚂 Recursos Railway</h3>
 
         <div class="admin-recursos-header">
           <div>
@@ -11335,7 +11336,7 @@ body.tema-claro .logout {
   
       </div>
 
-      <div class="admin-secao admin-ia-painel">
+      <div id="admin-secao-ia" class="admin-secao admin-ia-painel">
         <h3>Painel IA Ouro</h3>
         <p style="color:#fef3c7;margin-top:8px;font-size:13px;">
           Controle operacional da IA: ativar, pausar, acompanhar custo e limitar consumo por usuario Ouro.
@@ -11604,7 +11605,7 @@ body.tema-claro .logout {
       </div>
 
       <!-- 🔥 CRIAR USUÁRIO -->
-      <div class="admin-secao admin-secao-a">
+      <div id="admin-secao-criar" class="admin-secao admin-secao-a">
       
         <h3
           style="
@@ -11880,7 +11881,7 @@ body.tema-claro .logout {
       
   
       <!-- TABELA -->
-      <div class="admin-secao admin-secao-b">
+      <div id="admin-secao-usuarios" class="admin-secao admin-secao-b">
 
         <h3>👥 Usuários da Plataforma</h3>
 
@@ -11914,7 +11915,7 @@ body.tema-claro .logout {
       </div>
 
       <!-- 🔧 MANUTENÇÃO -->
-      <div class="admin-secao admin-secao-a">
+      <div id="admin-secao-manutencao" class="admin-secao admin-secao-a">
         <h3 style="margin-bottom:8px;color:white;">🔧 Manutenção de Dados</h3>
         <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">Operações para corrigir dados existentes no banco.</p>
 
@@ -11931,7 +11932,7 @@ body.tema-claro .logout {
       </div>
 
       <!-- 🤝 FINANCEIRO DE PARCEIROS -->
-      <div class="admin-secao admin-secao-b">
+      <div id="admin-secao-financeiro" class="admin-secao admin-secao-b">
         <h3 style="margin-bottom:8px;color:white;">🤝 Financeiro de Parceiros</h3>
         <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">
           Lance o plano, o valor total cobrado do cliente e a porcentagem do parceiro.
@@ -13162,6 +13163,41 @@ const PAINEIS_RECOLHIVEIS = [
     seletor: "#painel_suporte_chat > .card",
     cabecalho: "h2",
     chave: "painel-suporte"
+  },
+  {
+    seletor: "#admin-secao-kpis",
+    cabecalho: "h3",
+    chave: "admin-kpis"
+  },
+  {
+    seletor: "#admin-secao-railway",
+    cabecalho: "h3",
+    chave: "admin-railway"
+  },
+  {
+    seletor: "#admin-secao-ia",
+    cabecalho: "h3",
+    chave: "admin-ia"
+  },
+  {
+    seletor: "#admin-secao-criar",
+    cabecalho: "h3",
+    chave: "admin-criar"
+  },
+  {
+    seletor: "#admin-secao-usuarios",
+    cabecalho: "h3",
+    chave: "admin-usuarios"
+  },
+  {
+    seletor: "#admin-secao-manutencao",
+    cabecalho: "h3",
+    chave: "admin-manutencao"
+  },
+  {
+    seletor: "#admin-secao-financeiro",
+    cabecalho: "h3",
+    chave: "admin-financeiro"
   }
 ];
 

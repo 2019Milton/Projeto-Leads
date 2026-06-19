@@ -10331,15 +10331,6 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>URL do obrigado</label>
-              <input
-                type="url"
-                id="adv_obrigado_url"
-                placeholder="https://seusite.com.br"
-              >
-            </div>
-
-            <div class="advanced-full">
               <label>Otimização</label>
               <div class="advanced-checks">
                 <label>
@@ -25705,6 +25696,7 @@ function inicializarNichoTabs() {
 
 function _placeholdersPorNicho(slug) {
   if (slug === "saude") return {
+    ia:        "Opcional: descreva o plano, público-alvo ou diferencial (ex: plano familiar com cobertura nacional, sem carência, para autônomos)",
     nome:      "Ex: Plano Amil Família Completo",
     titulo:    "Ex: Plano de Saúde com Cobertura Total",
     descricao: "Ex: Sem carência, cobertura nacional",
@@ -25712,6 +25704,7 @@ function _placeholdersPorNicho(slug) {
     interesse: "Ex: saúde, plano médico, bem-estar"
   };
   if (slug === "suplementos") return {
+    ia:        "Opcional: descreva o produto, público-alvo ou diferencial (ex: whey protein importado para ganho de massa, atletas de 20 a 35 anos)",
     nome:      "Ex: Whey Protein para Emagrecimento",
     titulo:    "Ex: Suplementos para Alta Performance",
     descricao: "Ex: Frete grátis e parcelamento em 12x",
@@ -25719,6 +25712,7 @@ function _placeholdersPorNicho(slug) {
     interesse: "Ex: musculação, whey protein, academia"
   };
   return {
+    ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
     titulo:    "Ex: Apartamentos em Santo André",
     descricao: "Ex: Entrada facilitada e financiamento",
@@ -25747,11 +25741,12 @@ function selecionarNichoTab(nicho, btnEl) {
   // atualiza placeholders conforme o nicho
   const ph = _placeholdersPorNicho(nicho.slug);
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.placeholder = val; };
-  set("campanha_nome",       ph.nome);
-  set("adv_titulo",          ph.titulo);
-  set("adv_descricao",       ph.descricao);
-  set("adv_perguntas",       ph.perguntas);
-  set("adv_interesse_busca", ph.interesse);
+  set("ia_campanha_contexto", ph.ia);
+  set("campanha_nome",        ph.nome);
+  set("adv_titulo",           ph.titulo);
+  set("adv_descricao",        ph.descricao);
+  set("adv_perguntas",        ph.perguntas);
+  set("adv_interesse_busca",  ph.interesse);
 
   // guarda nicho ativo
   window._nichoAtivo = nicho;

@@ -19882,6 +19882,12 @@ async function carregarStatusMeta() {
             <p>
               <b>📢 Conta de anúncios:</b><br>
               ${escaparHtml(conta?.nome || "-")}
+              <br>
+              <a
+                href="https://www.facebook.com/adsmanager/manage/accounts"
+                target="_blank"
+                style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 10px;background:rgba(24,119,242,0.15);border:1px solid rgba(24,119,242,0.35);color:#60a5fa;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
+              >Gerenciar contas de anúncios →</a>
             </p>
 
             ${!(data.contas_anuncios?.length) ? `

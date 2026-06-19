@@ -19884,6 +19884,19 @@ async function carregarStatusMeta() {
               ${escaparHtml(conta?.nome || "-")}
             </p>
 
+            ${!(data.contas_anuncios?.length) ? `
+            <div style="margin:-6px 0 10px;padding:10px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;">
+              <span style="font-size:12px;color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta de anúncios encontrada</span><br>
+              <span style="font-size:12px;color:#fde68a;line-height:1.5;">Para criar campanhas é necessário ter uma conta de anúncios ativa na Meta.</span><br>
+              <a
+                href="https://www.facebook.com/adsmanager/manage/accounts"
+                target="_blank"
+                style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 14px;background:#1877f2;color:#fff;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;"
+              >
+                Criar conta de anúncios na Meta →
+              </a>
+            </div>` : ""}
+
             ${seletorContaAnuncios}
 
             <p>

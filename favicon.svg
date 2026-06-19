@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 130">
   <defs>
     <linearGradient id="b" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#0a1a6e"/>
-      <stop offset="15%"  stop-color="#1565c0"/>
-      <stop offset="32%"  stop-color="#42a5f5"/>
-      <stop offset="48%"  stop-color="#90caf9"/>
-      <stop offset="62%"  stop-color="#1976d2"/>
-      <stop offset="82%"  stop-color="#1143a0"/>
-      <stop offset="100%" stop-color="#0d1b7a"/>
+      <stop offset="0%"   stop-color="#0d1a57"/>
+      <stop offset="12%"  stop-color="#1a52bb"/>
+      <stop offset="28%"  stop-color="#4b9ef0"/>
+      <stop offset="45%"  stop-color="#90d0ff"/>
+      <stop offset="60%"  stop-color="#2060d2"/>
+      <stop offset="80%"  stop-color="#1540aa"/>
+      <stop offset="100%" stop-color="#0d1857"/>
     </linearGradient>
     <linearGradient id="n" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%"   stop-color="#7f0000"/>
@@ -77,61 +77,64 @@
     </radialGradient>
   </defs>
 
-  <!-- Halos -->
-  <ellipse cx="40" cy="123" rx="26" ry="10" fill="url(#gp)" opacity="0.8"/>
-  <ellipse cx="40" cy="118" rx="18" ry="7"  fill="url(#go)" opacity="0.7"/>
+  <ellipse cx="40" cy="124" rx="28" ry="11" fill="url(#gp)" opacity="0.8"/>
+  <ellipse cx="40" cy="119" rx="20" ry="8"  fill="url(#go)" opacity="0.7"/>
+  <path d="M 32 108 Q 26 122 28 133 Q 40 129 52 133 Q 54 122 48 108 Z" fill="url(#pl)" opacity="0.75"/>
 
-  <!-- Plasma -->
-  <path d="M 33 108 Q 27 121 29 132 Q 40 128 51 132 Q 53 121 47 108 Z" fill="url(#pl)" opacity="0.75"/>
+  <path d="M 27 107 L 22 118 L 26 114 L 24 124 L 30 116 L 28 126 L 35 118 L 34 128 L 40 121 L 46 128 L 45 118 L 52 126 L 50 116 L 56 124 L 54 114 L 58 118 L 53 107 Z" fill="url(#fa)"/>
+  <path d="M 30 107 L 26 116 L 29 113 L 28 121 L 33 114 L 32 122 L 37 116 L 36 125 L 40 119 L 44 125 L 43 116 L 48 122 L 47 114 L 52 121 L 51 113 L 54 116 L 50 107 Z" fill="url(#fb)" opacity="0.9"/>
+  <path d="M 34 107 Q 31 113 34 119 Q 40 115 46 119 Q 49 113 46 107 Z" fill="white" opacity="0.85"/>
 
-  <!-- Chamas serrilhadas -->
-  <path d="M 28 107 L 23 119 L 27 115 L 25 125 L 31 117 L 29 127 L 36 119 L 35 129 L 40 122 L 45 129 L 44 119 L 51 127 L 49 117 L 55 125 L 53 115 L 57 119 L 52 107 Z" fill="url(#fa)"/>
-  <path d="M 31 107 L 27 117 L 30 114 L 29 122 L 34 115 L 33 123 L 38 117 L 37 126 L 40 120 L 43 126 L 42 117 L 47 123 L 46 115 L 51 122 L 50 114 L 53 117 L 49 107 Z" fill="url(#fb)" opacity="0.9"/>
-  <path d="M 35 107 Q 32 114 35 120 Q 40 116 45 120 Q 48 114 45 107 Z" fill="white" opacity="0.85"/>
+  <!-- Aletas curvadas -->
+  <path d="M 20 80 C 6 83 -1 100 2 116 C 9 112 16 108 20 107 Z" fill="url(#fi)" stroke="#7f0000" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M 20 80 C 8 85 3 99 5 111 C 11 108 16 105 20 103 Z" fill="#ff7043" opacity="0.5"/>
+  <path d="M 60 80 C 74 83 81 100 78 116 C 71 112 64 108 60 107 Z" fill="url(#fi)" stroke="#7f0000" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M 60 80 C 72 85 77 99 75 111 C 69 108 64 105 60 103 Z" fill="#ff7043" opacity="0.5"/>
 
-  <!-- Aletas -->
-  <path d="M 24 84 C 10 87 3 102 5 116 L 24 108 Z" fill="url(#fi)"/>
-  <path d="M 56 84 C 70 87 77 102 75 116 L 56 108 Z" fill="url(#fi)"/>
+  <!-- Collar -->
+  <rect x="24" y="98" width="32" height="12" rx="3" fill="url(#eg)" stroke="#102027" stroke-width="1"/>
+  <ellipse cx="40" cy="98"  rx="16" ry="2.5" fill="#546e7a" opacity="0.7"/>
+  <ellipse cx="40" cy="110" rx="16" ry="2.5" fill="#102027" opacity="0.7"/>
 
-  <!-- Collar motor -->
-  <rect x="25" y="97" width="30" height="12" rx="3" fill="url(#eg)"/>
-  <ellipse cx="40" cy="97"  rx="15" ry="2.5" fill="#546e7a" opacity="0.7"/>
-  <ellipse cx="40" cy="109" rx="15" ry="2.5" fill="#102027" opacity="0.7"/>
+  <!-- Corpo oval -->
+  <path d="M 19 35 C 14 36 12 44 12 58 L 12 85 C 12 97 24 103 40 103 C 56 103 68 97 68 85 L 68 58 C 68 44 66 36 61 35 Z"
+        fill="url(#b)" stroke="#0a1a6e" stroke-width="1.5"/>
+  <path d="M 27 40 C 22 52 21 68 22 82 L 32 82 C 31 68 32 52 35 40 Z" fill="white" opacity="0.22"/>
+  <ellipse cx="40" cy="35"  rx="22" ry="3.5" fill="#1976d2" opacity="0.4"/>
+  <ellipse cx="40" cy="103" rx="22" ry="3"   fill="#0a1a6e" opacity="0.5"/>
 
-  <!-- Corpo azul -->
-  <rect x="24" y="28" width="32" height="70" rx="4" fill="url(#b)"/>
-  <ellipse cx="40" cy="28" rx="16" ry="3"   fill="#1976d2" opacity="0.4"/>
-  <ellipse cx="40" cy="98" rx="15" ry="2.5" fill="#0a1a6e" opacity="0.5"/>
+  <!-- Seam com rebites -->
+  <rect x="19" y="29" width="42" height="8" rx="1" fill="url(#sm)" stroke="#7f2700" stroke-width="1"/>
+  <circle cx="24" cy="33" r="1.8" fill="#1a0a00"/>
+  <circle cx="30" cy="33" r="1.8" fill="#1a0a00"/>
+  <circle cx="36" cy="33" r="1.8" fill="#1a0a00"/>
+  <circle cx="40" cy="33" r="1.8" fill="#1a0a00"/>
+  <circle cx="44" cy="33" r="1.8" fill="#1a0a00"/>
+  <circle cx="50" cy="33" r="1.8" fill="#1a0a00"/>
+  <circle cx="56" cy="33" r="1.8" fill="#1a0a00"/>
 
-  <!-- Seam laranja + rebites -->
-  <rect x="24" y="24" width="32" height="7" rx="1" fill="url(#sm)"/>
-  <circle cx="28"   cy="27.5" r="1.5" fill="#212121"/>
-  <circle cx="33.2" cy="27.5" r="1.5" fill="#212121"/>
-  <circle cx="38.4" cy="27.5" r="1.5" fill="#212121"/>
-  <circle cx="43.6" cy="27.5" r="1.5" fill="#212121"/>
-  <circle cx="48.8" cy="27.5" r="1.5" fill="#212121"/>
-  <circle cx="54"   cy="27.5" r="1.5" fill="#212121"/>
-
-  <!-- Porthole -->
-  <circle cx="40" cy="57" r="13.5" fill="#1a237e"/>
-  <circle cx="40" cy="57" r="12"   fill="url(#fr)"/>
-  <circle cx="40"   cy="45.5" r="1.4" fill="#546e7a"/>
-  <circle cx="50"   cy="48.5" r="1.4" fill="#546e7a"/>
-  <circle cx="51.5" cy="58.5" r="1.4" fill="#546e7a"/>
-  <circle cx="50"   cy="68"   r="1.4" fill="#546e7a"/>
-  <circle cx="40"   cy="71"   r="1.4" fill="#546e7a"/>
-  <circle cx="30"   cy="68"   r="1.4" fill="#546e7a"/>
-  <circle cx="28.5" cy="58.5" r="1.4" fill="#546e7a"/>
-  <circle cx="30"   cy="48.5" r="1.4" fill="#546e7a"/>
-  <circle cx="40" cy="57" r="10" fill="#0d2060"/>
-  <circle cx="40" cy="57" r="9"  fill="url(#gl)"/>
-  <ellipse cx="35.5" cy="51.5" rx="4.5" ry="3" fill="white" opacity="0.80" transform="rotate(-18 35.5 51.5)"/>
-  <ellipse cx="36.5" cy="50.5" rx="2" ry="1.3" fill="white" opacity="0.95"/>
+  <!-- Porthole grande -->
+  <circle cx="40" cy="63" r="17.5" fill="#0d1a5e" stroke="#0a1a6e" stroke-width="1"/>
+  <circle cx="40" cy="63" r="16"   fill="url(#fr)" stroke="#263238" stroke-width="1"/>
+  <circle cx="40"   cy="47.3" r="1.7" fill="#546e7a"/>
+  <circle cx="51.7" cy="50.3" r="1.7" fill="#546e7a"/>
+  <circle cx="57"   cy="62"   r="1.7" fill="#546e7a"/>
+  <circle cx="51.7" cy="73.7" r="1.7" fill="#546e7a"/>
+  <circle cx="40"   cy="78"   r="1.7" fill="#546e7a"/>
+  <circle cx="28.3" cy="73.7" r="1.7" fill="#546e7a"/>
+  <circle cx="23"   cy="62"   r="1.7" fill="#546e7a"/>
+  <circle cx="28.3" cy="50.3" r="1.7" fill="#546e7a"/>
+  <circle cx="40" cy="63" r="13.5" fill="#0a1060"/>
+  <circle cx="40" cy="63" r="12.5" fill="url(#gl)"/>
+  <ellipse cx="34.5" cy="56" rx="6" ry="4" fill="white" opacity="0.85" transform="rotate(-18 34.5 56)"/>
+  <ellipse cx="35.5" cy="55" rx="3" ry="2" fill="white" opacity="1.0"/>
+  <path d="M 29 65 Q 37 68.5 45 65" stroke="#90caf9" stroke-width="1.5" fill="none" opacity="0.5"/>
 
   <!-- Nariz vermelho -->
-  <path d="M 40 3 C 30 5 24 14 24 24 L 56 24 C 56 14 50 5 40 3 Z" fill="url(#n)"/>
-  <path d="M 40 3 C 33 5 29 12 29 22 L 34 22 C 34 14 36 6 40 3 Z" fill="white" opacity="0.25"/>
-  <ellipse cx="40" cy="24" rx="16" ry="3" fill="#c62828" opacity="0.45"/>
-  <circle cx="40" cy="5" r="2.5" fill="#ff8a80" opacity="0.7"/>
-  <circle cx="40" cy="4.5" r="1.2" fill="white" opacity="0.65"/>
+  <path d="M 40 5 C 24 8 19 22 19 30 L 61 30 C 61 22 56 8 40 5 Z"
+        fill="url(#n)" stroke="#7f0000" stroke-width="1.5"/>
+  <path d="M 40 5 C 31 8 27 18 27 27 L 32 27 C 32 18 34 9 40 5 Z" fill="white" opacity="0.28"/>
+  <ellipse cx="40" cy="30" rx="21" ry="3.5" fill="#c62828" opacity="0.45"/>
+  <circle cx="40" cy="7"   r="3.2" fill="#ff8a80" opacity="0.75"/>
+  <circle cx="40" cy="6.5" r="1.6" fill="white"   opacity="0.7"/>
 </svg>

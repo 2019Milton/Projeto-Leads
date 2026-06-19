@@ -554,6 +554,116 @@ body.tema-claro .card h3 { color: #0f172a; }
   padding-bottom:18px;
 }
 
+.guia-meta-card {
+  background: #06251a !important;
+  border: 1px solid #15803d !important;
+  color: #dcfce7 !important;
+}
+
+.guia-meta-card h3 {
+  color: #bbf7d0 !important;
+}
+
+.guia-meta-intro {
+  margin: 8px 0 14px;
+  color: #c7f9d8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.guia-meta-alerta {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 10px;
+  background: #102f24;
+  border: 1px solid #2f9b61;
+  color: #dcfce7;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.guia-meta-passos {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.guia-meta-passo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #0f172a;
+  border: 1px solid #27405a;
+}
+
+.guia-meta-numero {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #15803d;
+  color: #fff;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.guia-meta-passo strong {
+  display: block;
+  color: #f8fafc;
+  margin-bottom: 4px;
+}
+
+.guia-meta-passo span {
+  display: block;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.guia-meta-exemplos {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #0f172a;
+  border: 1px dashed #49627d;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.guia-meta-exemplos code {
+  color: #bbf7d0;
+  background: #102f24;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.guia-meta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.guia-meta-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  border: 1px solid #3b82f6;
+}
+
 .card:hover {
   transform: translateY(-3px);
 
@@ -7455,6 +7565,46 @@ body.tema-claro .painel-recolhivel-toggle:hover {
   color:#15803d;
 }
 
+body.tema-claro .guia-meta-card {
+  background: #e4f6ec !important;
+  border-color: #2f9b61 !important;
+  color: #0f3f25 !important;
+}
+
+body.tema-claro .guia-meta-card h3 {
+  color: #166534 !important;
+}
+
+body.tema-claro .guia-meta-intro,
+body.tema-claro .guia-meta-alerta {
+  color: #0f3f25 !important;
+}
+
+body.tema-claro .guia-meta-alerta {
+  background: #d7f0e2 !important;
+  border-color: #2f9b61 !important;
+}
+
+body.tema-claro .guia-meta-passo,
+body.tema-claro .guia-meta-exemplos {
+  background: #f8fafc !important;
+  border-color: #9fb4c8 !important;
+}
+
+body.tema-claro .guia-meta-passo strong {
+  color: #102033 !important;
+}
+
+body.tema-claro .guia-meta-passo span,
+body.tema-claro .guia-meta-exemplos {
+  color: #334a60 !important;
+}
+
+body.tema-claro .guia-meta-exemplos code {
+  background: #d7f0e2 !important;
+  color: #166534 !important;
+}
+
 body.tema-claro h1,
 body.tema-claro h2,
 body.tema-claro h3,
@@ -8734,6 +8884,7 @@ body:not(.tema-claro) .pagamento-modo {
 
 body:not(.tema-claro) .performance-meta-panel,
 body:not(.tema-claro) .meta-card,
+body:not(.tema-claro) .guia-meta-card,
 body:not(.tema-claro) .leads-central-card,
 body:not(.tema-claro) .campanhas-card {
   background: #06251a !important;
@@ -8845,6 +8996,7 @@ body:not(.tema-claro) .kpi-card strong {
 
 body:not(.tema-claro) .performance-meta-panel h3,
 body:not(.tema-claro) .meta-card h3,
+body:not(.tema-claro) .guia-meta-card h3,
 body:not(.tema-claro) .leads-central-card h3,
 body:not(.tema-claro) .campanhas-card h3 {
   color: #bbf7d0 !important;
@@ -8928,6 +9080,7 @@ body.tema-claro .metrica-explicacao {
 
 body.tema-claro .performance-meta-panel,
 body.tema-claro .meta-card,
+body.tema-claro .guia-meta-card,
 body.tema-claro .leads-central-card,
 body.tema-claro .campanhas-card {
   background: #e4f6ec !important;
@@ -9043,6 +9196,7 @@ body.tema-claro .performance-meta-table td {
 
 body.tema-claro .performance-meta-panel h3,
 body.tema-claro .meta-card h3,
+body.tema-claro .guia-meta-card h3,
 body.tema-claro .leads-central-card h3,
 body.tema-claro .campanhas-card h3 {
   color: #166534 !important;
@@ -9962,6 +10116,154 @@ body.tema-claro .logout {
   
 
 
+      </div>
+
+      <!-- GUIA META -->
+      <div class="card guia-meta-card">
+        <h3>📘 Guia Meta: criar página e preparar conta de anúncios</h3>
+
+        <p class="guia-meta-intro">
+          Use este passo a passo quando a plataforma indicar que ainda falta
+          criar uma Página do Facebook, aceitar os termos de Lead Ads ou
+          criar/configurar uma conta de anúncios dentro do Facebook do usuário.
+        </p>
+
+        <div class="guia-meta-alerta">
+          <strong>Privacidade:</strong>
+          o guia foi reescrito com exemplos genéricos. Dados pessoais, fotos,
+          telefones, e-mails e nomes reais foram removidos ou mascarados.
+        </div>
+
+        <div class="guia-meta-passos">
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">1</span>
+            <div>
+              <strong>Entre no Facebook correto</strong>
+              <span>
+                Abra o Facebook no navegador e confirme, no canto superior
+                direito, que está usando o perfil do próprio anunciante.
+              </span>
+            </div>
+          </div>
+
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">2</span>
+            <div>
+              <strong>Crie uma Página do Facebook</strong>
+              <span>
+                Acesse a criação de Página, informe um nome comercial e escolha
+                uma categoria relacionada ao seu negócio. Exemplo:
+                "Imobiliária", "Corretor de imóveis" ou "Serviços".
+              </span>
+            </div>
+          </div>
+
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">3</span>
+            <div>
+              <strong>Preencha somente o necessário</strong>
+              <span>
+                Site, telefone, e-mail, endereço e bio podem ser preenchidos
+                depois. Para conectar com a Plataforma de Leads, o mais
+                importante é concluir a criação da Página.
+              </span>
+            </div>
+          </div>
+
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">4</span>
+            <div>
+              <strong>Confirme telefone se o Facebook solicitar</strong>
+              <span>
+                Se aparecer uma etapa de WhatsApp ou SMS, informe o número do
+                próprio anunciante, aguarde o código e finalize a validação.
+              </span>
+            </div>
+          </div>
+
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">5</span>
+            <div>
+              <strong>Volte para a Plataforma de Leads</strong>
+              <span>
+                Atualize a página da plataforma. A nova Página deve aparecer em
+                "Conectar Meta". Selecione a Página que acabou de criar.
+              </span>
+            </div>
+          </div>
+
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">6</span>
+            <div>
+              <strong>Aceite os termos de Lead Ads</strong>
+              <span>
+                Clique em "Aceitar Termos". O Facebook abrirá uma nova guia.
+                Confirme a Página correta e clique em "Aceitar". Depois volte
+                para a plataforma e, se necessário, clique em "Já aceitei".
+              </span>
+            </div>
+          </div>
+
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">7</span>
+            <div>
+              <strong>Crie ou confirme a Conta Ads</strong>
+              <span>
+                Na área "Conta de anúncios", confirme se já existe uma conta
+                ativa. Se não existir, use a opção "Criar nova conta" e siga o
+                fluxo da Meta com o próprio usuário logado no Facebook.
+              </span>
+            </div>
+          </div>
+
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">8</span>
+            <div>
+              <strong>Confira o Status Meta</strong>
+              <span>
+                Verifique se Meta, Página e Conta Ads aparecem como conectados.
+                Instagram é opcional para anunciar, mas pode ser conectado
+                depois para ampliar os canais.
+              </span>
+            </div>
+          </div>
+
+          <div class="guia-meta-passo">
+            <span class="guia-meta-numero">9</span>
+            <div>
+              <strong>Configure pagamento da Meta</strong>
+              <span>
+                Em "Pagamento", clique para gerenciar formas de pagamento na
+                Meta. A Meta pode aceitar cartão, PIX, boleto ou saldo, conforme
+                disponibilidade da conta.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="guia-meta-exemplos">
+          <strong>Exemplos seguros para orientar o cliente:</strong><br>
+          Nome da Página: <code>[Nome do negócio]</code><br>
+          Telefone: <code>(**) *****-****</code><br>
+          E-mail: <code>contato@[dominio].com</code><br>
+          Endereço: <code>[Cidade/UF]</code>
+        </div>
+
+        <div class="guia-meta-alerta">
+          <strong>Importante:</strong>
+          nunca peça a senha do Facebook do cliente. O login, a confirmação de
+          telefone e a aceitação dos termos devem ser feitos pelo próprio dono
+          da conta.
+        </div>
+
+        <div class="guia-meta-actions">
+          <a href="https://www.facebook.com/pages/create" target="_blank" rel="noopener noreferrer">
+            Abrir criação de Página
+          </a>
+          <a href="https://business.facebook.com/settings/ad-accounts" target="_blank" rel="noopener noreferrer">
+            Abrir contas de anúncio
+          </a>
+        </div>
       </div>
   
       <!-- 📢 PUBLICAÇÃO -->
@@ -13182,6 +13484,11 @@ const PAINEIS_RECOLHIVEIS = [
     seletor: ".meta-card",
     cabecalho: "h3",
     chave: "conectar-meta"
+  },
+  {
+    seletor: ".guia-meta-card",
+    cabecalho: "h3",
+    chave: "guia-meta"
   },
   {
     seletor: ".card-criar-campanha",

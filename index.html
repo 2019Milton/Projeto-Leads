@@ -5906,13 +5906,16 @@ body.tema-claro .cal-nav span { color: #111827; }
 .nicho-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: 5px;
+  padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 900;
   text-transform: uppercase;
   color: #fff;
+  background: #2563eb;
+  border: 1px solid #1d4ed8;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.22);
 }
 .nicho-stripe {
   width: 4px;
@@ -5922,26 +5925,37 @@ body.tema-claro .cal-nav span { color: #111827; }
 }
 .nicho-tabs {
   display: flex;
-  gap: 0;
+  gap: 8px;
   border-bottom: 2px solid rgba(255,255,255,.08);
   margin-bottom: 20px;
   overflow-x: auto;
+  padding-bottom: 8px;
 }
 .nicho-tab {
   padding: 10px 20px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 900;
   cursor: pointer;
-  border: none;
-  background: transparent;
-  color: #9ca3af;
-  border-bottom: 3px solid transparent;
+  border: 1px solid var(--nicho-cor, #2563eb);
+  background: var(--nicho-cor, #2563eb);
+  color: #fff;
+  border-bottom: 3px solid var(--nicho-cor, #2563eb);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
   margin-bottom: -2px;
-  transition: color .2s, border-color .2s;
+  transition: filter .2s, transform .2s, box-shadow .2s;
   white-space: nowrap;
+  opacity: .72;
 }
 .nicho-tab.ativo {
   color: #fff;
+  opacity: 1;
+  filter: saturate(1.2);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.16), 0 7px 18px rgba(0,0,0,0.30);
+}
+.nicho-tab:hover {
+  opacity: 1;
+  transform: translateY(-1px);
 }
 .nicho-checkboxes {
   display: flex;
@@ -14342,9 +14356,22 @@ function criarLeadCard(lead) {
 
       : "morno";
 
+  const nichoLead =
+    lead.nicho_id || lead.nicho_slug || lead.nicho_nome || lead.nicho_cor
+      ? {
+          id: lead.nicho_id,
+          slug: lead.nicho_slug,
+          nome: lead.nicho_nome,
+          cor: lead.nicho_cor
+        }
+      : null;
+
+  const nichoCorSolida =
+    nichoLead ? corSolidaNicho(nichoLead) : "";
+
   const nichoBorderStyle =
-    lead.nicho_cor
-      ? `border-left: 4px solid ${lead.nicho_cor};`
+    nichoCorSolida
+      ? `border-left: 4px solid ${nichoCorSolida};`
       : "";
 
   return `
@@ -14386,9 +14413,9 @@ function criarLeadCard(lead) {
 
           <h4>${escaparHtml(lead.nome || "-")}</h4>
 
-          ${lead.nicho_cor ? `
-            <span class="nicho-badge" style="background:${lead.nicho_cor}20;color:${lead.nicho_cor};border:1px solid ${lead.nicho_cor}40;margin-bottom:2px;">
-              <span class="nicho-dot" style="background:${lead.nicho_cor};width:5px;height:5px;"></span>
+          ${nichoLead ? `
+            <span class="nicho-badge" style="${estiloNichoBadge(nichoLead)}margin-bottom:2px;">
+              <span class="nicho-dot" style="${estiloNichoDot()}"></span>
               ${escaparHtml(lead.nicho_nome || "")}
             </span>
           ` : ""}
@@ -19964,6 +19991,19 @@ async function carregarCampanhas() {
       c.criada_por_email ||
       "Admin Corretor";
 
+    const nichoCampanha =
+      c.nicho_id || c.nicho_slug || c.nicho_nome || c.nicho_cor
+        ? {
+            id: c.nicho_id,
+            slug: c.nicho_slug,
+            nome: c.nicho_nome,
+            cor: c.nicho_cor
+          }
+        : null;
+
+    const nichoCampanhaCor =
+      nichoCampanha ? corSolidaNicho(nichoCampanha) : "";
+
     div.innerHTML += `
 
     <div class="
@@ -19976,7 +20016,7 @@ async function carregarCampanhas() {
         : "deleted-card"
       }
     "
-      style="${c.nicho_cor ? `border-left: 4px solid ${c.nicho_cor};` : ""}"
+      style="${nichoCampanhaCor ? `border-left: 4px solid ${nichoCampanhaCor};` : ""}"
     >
 
       <div class="campanha-topo">
@@ -19988,9 +20028,9 @@ async function carregarCampanhas() {
           </h3>
 
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            ${c.nicho_cor ? `
-              <span class="nicho-badge" style="background:${c.nicho_cor}20;color:${c.nicho_cor};border:1px solid ${c.nicho_cor}40;">
-                <span class="nicho-dot" style="background:${c.nicho_cor};width:6px;height:6px;"></span>
+            ${nichoCampanha ? `
+              <span class="nicho-badge" style="${estiloNichoBadge(nichoCampanha)}">
+                <span class="nicho-dot" style="${estiloNichoDot()}"></span>
                 ${c.nicho_nome || ""}
               </span>
             ` : ""}
@@ -21754,8 +21794,8 @@ async function carregarPainelAdmin() {
                 (u.nichos || []).length === 0
                   ? `<span style="color:#6b7280;font-size:11px;">Nenhum</span>`
                   : (u.nichos || []).map(n => `
-                      <span class="nicho-badge" style="background:${n.cor}20;color:${n.cor};border:1px solid ${n.cor}40;">
-                        <span class="nicho-dot" style="background:${n.cor};width:6px;height:6px;"></span>
+                      <span class="nicho-badge" style="${estiloNichoBadge(n)}">
+                        <span class="nicho-dot" style="${estiloNichoDot()}"></span>
                         ${n.nome}
                       </span>
                     `).join("")
@@ -25379,6 +25419,42 @@ async function salvarNichosUsuario() {
 
 <!-- ===== TABS DE NICHO NA CRIAÇÃO DE CAMPANHA ===== -->
 <script>
+function slugNichoNormalizado(nicho = {}) {
+  return String(nicho.slug || nicho.nicho_slug || nicho.nome || nicho.nicho_nome || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function corSolidaNicho(nicho = {}) {
+  const slug = slugNichoNormalizado(nicho);
+  const id = Number(nicho.id || nicho.nicho_id);
+
+  if (slug.includes("imove") || id === 1) {
+    return "#2563EB";
+  }
+
+  if (slug.includes("saude") || slug.includes("convenio") || id === 2) {
+    return "#15803D";
+  }
+
+  if (slug.includes("suplement") || id === 3) {
+    return "#C2410C";
+  }
+
+  return nicho.cor || nicho.nicho_cor || "#2563EB";
+}
+
+function estiloNichoBadge(nicho = {}) {
+  const cor = corSolidaNicho(nicho);
+
+  return `background:${cor};color:#fff;border:1px solid ${cor};`;
+}
+
+function estiloNichoDot() {
+  return "background:#fff;width:6px;height:6px;box-shadow:0 0 0 1px rgba(255,255,255,0.45);";
+}
+
 // Injeta tabs de nicho no card de criação de campanha após login
 function inicializarNichoTabs() {
   const nichos = usuarioLogado?.nichos || [];
@@ -25392,13 +25468,15 @@ function inicializarNichoTabs() {
   tabsEl.id = "nicho_campanha_tabs";
 
   nichos.forEach((n, i) => {
+    const cor = corSolidaNicho(n);
     const btn = document.createElement("button");
     btn.className = "nicho-tab" + (i === 0 ? " ativo" : "");
-    btn.style.borderBottomColor = i === 0 ? n.cor : "transparent";
-    btn.style.color = i === 0 ? n.cor : "";
+    btn.style.setProperty("--nicho-cor", cor);
+    btn.style.borderBottomColor = cor;
+    btn.style.color = "#fff";
     btn.dataset.nichoId = n.id;
     btn.dataset.nichoSlug = n.slug;
-    btn.dataset.nichoCor = n.cor;
+    btn.dataset.nichoCor = cor;
     btn.innerText = n.nome;
     btn.onclick = () => selecionarNichoTab(n, btn);
     tabsEl.appendChild(btn);
@@ -25423,19 +25501,22 @@ function inicializarNichoTabs() {
 }
 
 function selecionarNichoTab(nicho, btnEl) {
+  const cor = corSolidaNicho(nicho);
+
   // atualiza visual das tabs
   document.querySelectorAll(".nicho-tab").forEach(b => {
     b.classList.remove("ativo");
-    b.style.borderBottomColor = "transparent";
-    b.style.color = "";
+    b.style.borderBottomColor = b.dataset.nichoCor || "var(--nicho-cor)";
+    b.style.color = "#fff";
   });
   btnEl.classList.add("ativo");
-  btnEl.style.borderBottomColor = nicho.cor;
-  btnEl.style.color = nicho.cor;
+  btnEl.style.setProperty("--nicho-cor", cor);
+  btnEl.style.borderBottomColor = cor;
+  btnEl.style.color = "#fff";
 
   // atualiza cor de acento do card
   const card = document.querySelector(".card-criar-campanha");
-  if (card) card.style.borderTopColor = nicho.cor;
+  if (card) card.style.borderTopColor = cor;
 
   // guarda nicho ativo
   window._nichoAtivo = nicho;

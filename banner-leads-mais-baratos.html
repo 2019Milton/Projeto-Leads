@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banner - Leads Mais Baratos</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #020617;
+      color: #e2e8f0;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(34,197,94,0.28), transparent 30%),
+        radial-gradient(circle at 86% 72%, rgba(185,28,28,0.26), transparent 32%),
+        radial-gradient(circle at 52% 7%, rgba(37,99,235,0.18), transparent 34%),
+        linear-gradient(135deg, #020617 0%, #061313 45%, #130814 100%);
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+      background-position: 0 0, 32px 42px;
+      background-size: 92px 92px, 138px 138px;
+      opacity: 0.44;
+      z-index: 0;
+    }
+
+    .banner {
+      position: relative;
+      z-index: 1;
+      width: 1920px;
+      height: 1080px;
+      padding: 78px 92px 58px;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 70px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 54px;
+      color: #f8fafc;
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .rocket {
+      width: 64px;
+      height: 64px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(34,197,94,0.22), rgba(239,68,68,0.16));
+      border: 1px solid rgba(34,197,94,0.34);
+      box-shadow: 0 0 34px rgba(34,197,94,0.24);
+      font-size: 36px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 11px 17px;
+      border-radius: 999px;
+      border: 1px solid rgba(34,197,94,0.36);
+      background: rgba(15,23,42,0.70);
+      color: #86efac;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 755px;
+      color: #f8fafc;
+      font-size: 68px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .green {
+      color: #86efac;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 24px 0 28px;
+      color: #cbd5e1;
+      font-size: 25px;
+      line-height: 1.34;
+      font-weight: 600;
+    }
+
+    .proof {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 780px;
+      margin-bottom: 30px;
+    }
+
+    .proof-card {
+      min-height: 112px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.28);
+    }
+
+    .proof-card span {
+      display: block;
+      margin-bottom: 9px;
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .proof-card strong {
+      display: block;
+      color: #f8fafc;
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .proof-card small {
+      display: block;
+      margin-top: 8px;
+      color: #86efac;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      max-width: 780px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-height: 62px;
+      padding: 12px 13px;
+      border-radius: 15px;
+      background: rgba(2,6,23,0.58);
+      border: 1px solid rgba(148,163,184,0.15);
+      color: #e5e7eb;
+      font-size: 13.5px;
+      font-weight: 850;
+      line-height: 1.22;
+    }
+
+    .feature::before {
+      content: "";
+      flex: 0 0 auto;
+      width: 9px;
+      height: 9px;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 18px rgba(34,197,94,0.7);
+    }
+
+    .dashboard {
+      position: relative;
+      height: 890px;
+      margin-top: 34px;
+      border-radius: 30px;
+      padding: 28px;
+      background:
+        linear-gradient(135deg, rgba(22,163,74,0.22), rgba(15,23,42,0.92) 49%, rgba(185,28,28,0.18));
+      border: 1px solid rgba(34,197,94,0.28);
+      box-shadow:
+        0 34px 86px rgba(0,0,0,0.56),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+
+    .dashboard::before {
+      content: "";
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      right: -165px;
+      top: -170px;
+      background: radial-gradient(circle, rgba(34,197,94,0.2), transparent 68%);
+      filter: blur(12px);
+    }
+
+    .dash-top {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 26px;
+    }
+
+    .dash-title {
+      color: #f8fafc;
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    .dash-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(34,197,94,0.4);
+      background: rgba(34,197,94,0.12);
+      color: #86efac;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .metric-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .metric {
+      min-height: 118px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+
+    .metric span {
+      display: block;
+      margin-bottom: 13px;
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .metric strong {
+      color: #f8fafc;
+      font-size: 29px;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .metric.low {
+      border-color: rgba(34,197,94,0.42);
+      background: rgba(34,197,94,0.105);
+      box-shadow: 0 0 28px rgba(34,197,94,0.16);
+    }
+
+    .metric.low strong {
+      color: #86efac;
+    }
+
+    .main-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 0.92fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(2,6,23,0.56);
+      border: 1px solid rgba(148,163,184,0.15);
+    }
+
+    .panel h3 {
+      margin: 0 0 16px;
+      color: #f8fafc;
+      font-size: 18px;
+    }
+
+    .table-line {
+      display: grid;
+      grid-template-columns: 1.18fr 0.48fr 0.52fr 0.58fr;
+      gap: 10px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .table-line:first-of-type {
+      color: #94a3b8;
+      border-top: 0;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .table-line .good {
+      color: #86efac;
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .column {
+      min-height: 282px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(15,23,42,0.64);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .column h4 {
+      margin: 0 0 12px;
+      color: #93c5fd;
+      font-size: 12px;
+    }
+
+    .lead-card {
+      min-height: 56px;
+      margin-bottom: 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.075);
+      border-left: 4px solid #22c55e;
+    }
+
+    .lead-card.hot {
+      border-left-color: #ef4444;
+    }
+
+    .lead-card.gold {
+      border-left-color: #facc15;
+    }
+
+    .stack {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .mini {
+      min-height: 128px;
+      padding: 17px;
+      border-radius: 18px;
+      background: rgba(2,6,23,0.50);
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+
+    .mini.gold {
+      background: linear-gradient(145deg, rgba(245,158,11,0.19), rgba(120,53,15,0.16));
+      border-color: rgba(245,158,11,0.35);
+    }
+
+    .mini strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #f8fafc;
+      font-size: 17px;
+    }
+
+    .mini span {
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.35;
+      font-weight: 650;
+    }
+
+    .mini.gold strong,
+    .mini.gold span {
+      color: #fef3c7;
+    }
+
+    .footer {
+      position: absolute;
+      left: 92px;
+      right: 92px;
+      bottom: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.10);
+      color: #94a3b8;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .footer strong {
+      color: #86efac;
+    }
+  </style>
+</head>
+<body>
+  <main class="banner">
+    <section>
+      <div class="brand">
+        <span class="rocket">&#128640;</span>
+        Plataforma de Leads
+      </div>
+
+      <div class="eyebrow">Capta&ccedil;&atilde;o, gest&atilde;o, performance e IA</div>
+
+      <h1>Leads mais baratos. <span class="green">Convers&atilde;o mais inteligente.</span></h1>
+
+      <p class="subtitle">
+        A plataforma ajuda a reduzir desperd&iacute;cio em campanhas, organizar o atendimento
+        e usar dados para melhorar o custo por lead.
+      </p>
+
+      <div class="proof">
+        <div class="proof-card">
+          <span>CPL otimizado</span>
+          <strong>R$ 4,90</strong>
+          <small>exemplo de campanha</small>
+        </div>
+        <div class="proof-card">
+          <span>Leads captados</span>
+          <strong>241</strong>
+          <small>volume com controle</small>
+        </div>
+        <div class="proof-card">
+          <span>Foco comercial</span>
+          <strong>IA + CRM</strong>
+          <small>prioriza oportunidades</small>
+        </div>
+      </div>
+
+      <div class="features">
+        <div class="feature">Integra&ccedil;&atilde;o Meta/Facebook</div>
+        <div class="feature">Campanhas, formul&aacute;rios e Central de Leads</div>
+        <div class="feature">Funil Kanban de atendimento</div>
+        <div class="feature">Performance Meta com CPL e cliques</div>
+        <div class="feature">Exporta&ccedil;&atilde;o de leads e relat&oacute;rios</div>
+        <div class="feature">Recupera&ccedil;&atilde;o de leads perdidos</div>
+        <div class="feature">Machine Learning e Intelig&ecirc;ncia Artificial</div>
+        <div class="feature">Gest&atilde;o de equipes e painel administrativo</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="dashboard">
+        <div class="dash-top">
+          <div class="dash-title">Performance Meta focada em menor CPL</div>
+          <div class="dash-pill">Leads com custo menor</div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <span>Gasto no per&iacute;odo</span>
+            <strong>R$ 1.181</strong>
+          </div>
+          <div class="metric">
+            <span>Leads no per&iacute;odo</span>
+            <strong>241</strong>
+          </div>
+          <div class="metric low">
+            <span>CPL m&eacute;dio</span>
+            <strong>R$ 4,90</strong>
+          </div>
+          <div class="metric">
+            <span>Cliques</span>
+            <strong>1.946</strong>
+          </div>
+        </div>
+
+        <div class="main-grid">
+          <div class="panel">
+            <h3>Campanhas com custo menor</h3>
+            <div class="table-line">
+              <span>Campanha</span>
+              <span>Leads</span>
+              <span>CPL</span>
+              <span>Status</span>
+            </div>
+            <div class="table-line">
+              <span>Residencial Zona Sul</span>
+              <span>96</span>
+              <span class="good">R$ 4,58</span>
+              <span class="good">Otimizar</span>
+            </div>
+            <div class="table-line">
+              <span>Minha Casa Verde</span>
+              <span>83</span>
+              <span class="good">R$ 4,92</span>
+              <span class="good">Escalar</span>
+            </div>
+            <div class="table-line">
+              <span>Lancamento Compacto</span>
+              <span>62</span>
+              <span class="good">R$ 5,36</span>
+              <span>Manter</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Central de Leads</h3>
+            <div class="kanban">
+              <div class="column">
+                <h4>NOVOS</h4>
+                <div class="lead-card hot"></div>
+                <div class="lead-card"></div>
+                <div class="lead-card gold"></div>
+              </div>
+              <div class="column">
+                <h4>EM CONVERSA</h4>
+                <div class="lead-card gold"></div>
+                <div class="lead-card"></div>
+              </div>
+              <div class="column">
+                <h4>FECHADOS</h4>
+                <div class="lead-card"></div>
+                <div class="lead-card gold"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="mini gold">
+            <strong>IA para reduzir desperd&iacute;cio</strong>
+            <span>Sugest&otilde;es de p&uacute;blico, criativo, mensagem, follow-up e recupera&ccedil;&atilde;o.</span>
+          </div>
+          <div class="mini">
+            <strong>Gest&atilde;o completa</strong>
+            <span>Usu&aacute;rios, equipes, planos, parceiros, suporte, feedback e painel administrativo.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>Meta/Facebook • Formul&aacute;rios • Kanban • Exporta&ccedil;&atilde;o • ML • IA</span>
+      <strong>plataformadeleads.com.br</strong>
+    </div>
+  </main>
+</body>
+</html>

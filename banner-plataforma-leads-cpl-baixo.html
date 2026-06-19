@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banner - Plataforma de Leads CPL Baixo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #020617;
+      color: #f8fafc;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 3% 82%, rgba(34,197,94,0.36), transparent 24%),
+        radial-gradient(circle at 96% 42%, rgba(185,28,28,0.30), transparent 26%),
+        radial-gradient(circle at 52% 3%, rgba(37,99,235,0.18), transparent 30%),
+        linear-gradient(135deg, #020617 0%, #061215 48%, #13070c 100%);
+      z-index: 0;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.28) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255,255,255,0.10) 1px, transparent 1px);
+      background-position: 0 0, 34px 42px;
+      background-size: 84px 84px, 138px 138px;
+      opacity: 0.46;
+      z-index: 0;
+    }
+
+    .planet {
+      position: absolute;
+      left: -180px;
+      bottom: -250px;
+      width: 760px;
+      height: 380px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 48% 35%, rgba(34,197,94,0.30), transparent 18%),
+        linear-gradient(150deg, rgba(34,197,94,0.32), rgba(15,23,42,0.20) 42%, transparent 72%);
+      filter: blur(1px);
+      transform: rotate(-13deg);
+      opacity: 0.72;
+      z-index: 1;
+    }
+
+    .banner {
+      position: relative;
+      z-index: 2;
+      width: 1792px;
+      height: 1024px;
+      padding: 70px 54px 48px 88px;
+      display: grid;
+      grid-template-columns: 610px 1fr;
+      gap: 48px;
+    }
+
+    .hero {
+      position: relative;
+      padding-top: 24px;
+    }
+
+    .rocket {
+      position: relative;
+      width: 104px;
+      height: 104px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 36px;
+      font-size: 72px;
+      filter: drop-shadow(0 0 22px rgba(34,197,94,0.62));
+    }
+
+    .rocket::before {
+      content: "";
+      position: absolute;
+      width: 170px;
+      height: 8px;
+      left: -130px;
+      bottom: 4px;
+      background: linear-gradient(90deg, transparent, rgba(34,197,94,0.9), transparent);
+      filter: blur(2px);
+      transform: rotate(-34deg);
+      z-index: -1;
+    }
+
+    h1 {
+      margin: 0 0 24px;
+      color: #f8fafc;
+      font-size: 84px;
+      line-height: 0.98;
+      letter-spacing: 0;
+      text-shadow: 0 8px 30px rgba(0,0,0,0.48);
+    }
+
+    h1 span {
+      display: block;
+      color: #31d158;
+      text-shadow:
+        0 0 22px rgba(34,197,94,0.42),
+        0 8px 30px rgba(0,0,0,0.52);
+    }
+
+    .underline {
+      width: 165px;
+      height: 4px;
+      margin-bottom: 32px;
+      background: linear-gradient(90deg, #22c55e, #86efac, transparent);
+      box-shadow: 0 0 18px rgba(34,197,94,0.9);
+    }
+
+    .tagline {
+      max-width: 490px;
+      margin: 0 0 26px;
+      color: #f1f5f9;
+      font-size: 34px;
+      line-height: 1.22;
+      font-weight: 500;
+    }
+
+    .value-strip {
+      max-width: 610px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .value-card {
+      min-height: 102px;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(2,6,23,0.60);
+      border: 1px solid rgba(34,197,94,0.34);
+      box-shadow: 0 0 28px rgba(34,197,94,0.10);
+    }
+
+    .value-card span {
+      display: block;
+      color: #9ca3af;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+
+    .value-card strong {
+      display: block;
+      color: #86efac;
+      font-size: 29px;
+      line-height: 1;
+    }
+
+    .value-card small {
+      display: block;
+      margin-top: 7px;
+      color: #bbf7d0;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .feature-bar {
+      width: 610px;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      padding: 22px 22px;
+      border-radius: 22px;
+      background: rgba(2,6,23,0.62);
+      border: 1px solid rgba(34,197,94,0.40);
+      box-shadow:
+        0 0 0 1px rgba(34,197,94,0.10),
+        0 22px 55px rgba(0,0,0,0.42);
+    }
+
+    .feature {
+      text-align: center;
+      color: #f8fafc;
+      font-size: 13px;
+      line-height: 1.18;
+      font-weight: 800;
+    }
+
+    .feature .icon {
+      display: grid;
+      place-items: center;
+      height: 35px;
+      margin-bottom: 10px;
+      color: #22c55e;
+      font-size: 30px;
+      text-shadow: 0 0 18px rgba(34,197,94,0.62);
+    }
+
+    .audience {
+      width: 485px;
+      min-height: 96px;
+      margin: 38px auto 0;
+      display: grid;
+      grid-template-columns: 78px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 24px;
+      border-radius: 18px;
+      background: rgba(2,6,23,0.58);
+      border: 1px solid rgba(34,197,94,0.55);
+      box-shadow: 0 0 30px rgba(34,197,94,0.24);
+    }
+
+    .avatar {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 2px solid #22c55e;
+      color: #22c55e;
+      font-size: 34px;
+      box-shadow: inset 0 0 18px rgba(34,197,94,0.22);
+    }
+
+    .audience strong {
+      display: block;
+      color: #f8fafc;
+      font-size: 26px;
+      line-height: 1.22;
+      font-weight: 650;
+    }
+
+    .dashboard-wrap {
+      position: relative;
+      margin-top: 0;
+      transform: rotate(-1.9deg) scale(0.86);
+      transform-origin: center top;
+    }
+
+    .dashboard {
+      position: relative;
+      height: 830px;
+      border-radius: 26px;
+      padding: 20px;
+      background: rgba(2,10,16,0.86);
+      border: 1px solid rgba(148,163,184,0.28);
+      box-shadow:
+        0 32px 95px rgba(0,0,0,0.62),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .dashboard::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(145deg, rgba(34,197,94,0.14), transparent 35%),
+        radial-gradient(circle at 95% 50%, rgba(185,28,28,0.22), transparent 36%);
+      pointer-events: none;
+    }
+
+    .dash-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dash-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .dash-title h2 {
+      margin: 0 0 6px;
+      color: #f8fafc;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .dash-title h2::before {
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 16px rgba(34,197,94,0.8);
+      vertical-align: middle;
+    }
+
+    .dash-title span {
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+
+    .dash-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .plan {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 14px 9px 8px;
+      border-radius: 14px;
+      border: 1px solid rgba(250,204,21,0.42);
+      background: rgba(250,204,21,0.08);
+      color: #fde68a;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .plan::before {
+      content: "";
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fff7ad, #facc15 52%, #854d0e);
+      box-shadow: 0 0 18px rgba(250,204,21,0.54);
+    }
+
+    .period {
+      padding: 12px 18px;
+      min-width: 190px;
+      border-radius: 12px;
+      border: 1px solid rgba(148,163,184,0.32);
+      color: #e2e8f0;
+      font-size: 13px;
+      text-align: center;
+      background: rgba(15,23,42,0.72);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .metric {
+      min-height: 94px;
+      padding: 13px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.82), rgba(2,6,23,0.64));
+      border: 1px solid rgba(148,163,184,0.18);
+      overflow: hidden;
+    }
+
+    .metric span {
+      display: block;
+      color: #cbd5e1;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .metric strong {
+      color: #f8fafc;
+      font-size: 29px;
+      line-height: 1;
+    }
+
+    .metric.low strong,
+    .metric:first-child strong {
+      color: #22c55e;
+    }
+
+    .spark {
+      height: 26px;
+      margin-top: 12px;
+      background:
+        linear-gradient(135deg, transparent 0 8%, #22c55e 8% 11%, transparent 11% 22%, #22c55e 22% 25%, transparent 25% 36%, #22c55e 36% 40%, transparent 40% 52%, #22c55e 52% 55%, transparent 55% 64%, #22c55e 64% 68%, transparent 68% 80%, #22c55e 80% 84%, transparent 84%);
+      filter: drop-shadow(0 0 7px rgba(34,197,94,0.7));
+      opacity: 0.9;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 12px;
+    }
+
+    .panel {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(2,6,23,0.74);
+      border: 1px solid rgba(148,163,184,0.16);
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      color: #f8fafc;
+      font-size: 15px;
+    }
+
+    .daily-row {
+      display: grid;
+      grid-template-columns: 0.8fr 1fr 0.8fr 0.9fr 0.8fr;
+      gap: 8px;
+      padding: 6px 0;
+      border-top: 1px solid rgba(148,163,184,0.14);
+      color: #e5e7eb;
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .daily-row:first-of-type {
+      color: #94a3b8;
+      border-top: 0;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .campaign {
+      display: grid;
+      grid-template-columns: 22px 1fr 66px 74px;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 8px;
+      border-radius: 10px;
+      background: rgba(15,23,42,0.72);
+      border: 1px solid rgba(148,163,184,0.12);
+      margin-bottom: 8px;
+      color: #f8fafc;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 12px rgba(34,197,94,0.7);
+    }
+
+    .campaign .icon {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: rgba(34,197,94,0.18);
+      color: #86efac;
+      font-size: 17px;
+    }
+
+    .campaign small {
+      display: block;
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .campaign strong {
+      color: #22c55e;
+      font-size: 12px;
+    }
+
+    .lower {
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      gap: 12px;
+      margin-top: 12px;
+      align-items: start;
+    }
+
+    .kanban-panel {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(2,6,23,0.74);
+      border: 1px solid rgba(148,163,184,0.16);
+    }
+
+    .kanban-panel h3 {
+      margin: 0 0 8px;
+      color: #f8fafc;
+      font-size: 16px;
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .col {
+      min-height: 204px;
+      padding: 8px;
+      border-radius: 10px;
+      background: rgba(15,23,42,0.72);
+      border: 1px solid rgba(34,197,94,0.26);
+    }
+
+    .col:nth-child(2) { border-color: rgba(245,158,11,0.48); }
+    .col:nth-child(3) { border-color: rgba(14,165,233,0.48); }
+    .col:nth-child(4) { border-color: rgba(34,197,94,0.48); }
+    .col:nth-child(5) { border-color: rgba(239,68,68,0.50); }
+
+    .col h4 {
+      display: flex;
+      justify-content: space-between;
+      margin: 0 0 9px;
+      color: #f8fafc;
+      font-size: 10px;
+    }
+
+    .col h4 span {
+      color: #22c55e;
+      font-size: 12px;
+    }
+
+    .lead {
+      min-height: 48px;
+      margin-bottom: 5px;
+      padding: 6px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.07);
+      color: #f8fafc;
+      font-size: 9px;
+    }
+
+    .lead strong {
+      display: block;
+      font-size: 10px;
+      margin-bottom: 2px;
+    }
+
+    .side-cards {
+      display: grid;
+      gap: 9px;
+    }
+
+    .side-card {
+      padding: 12px;
+      min-height: 116px;
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(22,163,74,0.22), rgba(2,6,23,0.66));
+      border: 1px solid rgba(34,197,94,0.44);
+      box-shadow: 0 0 30px rgba(34,197,94,0.12);
+      color: #f8fafc;
+    }
+
+    .side-card.red {
+      background: linear-gradient(145deg, rgba(185,28,28,0.26), rgba(2,6,23,0.66));
+      border-color: rgba(239,68,68,0.52);
+    }
+
+    .side-card .big {
+      display: block;
+      color: #ef4444;
+      font-size: 32px;
+      font-weight: 950;
+      line-height: 1;
+      margin: 3px 0;
+    }
+
+    .side-card h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .side-card p {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .side-card button {
+      margin-top: 10px;
+      padding: 8px 13px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(15,23,42,0.82);
+      color: #f8fafc;
+      font-weight: 900;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="planet"></div>
+
+  <main class="banner">
+    <section class="hero">
+      <div class="rocket">&#128640;</div>
+
+      <h1>
+        Plataforma
+        <span>de Leads</span>
+      </h1>
+      <div class="underline"></div>
+
+      <p class="tagline">
+        Capta&ccedil;&atilde;o, CRM, Meta Ads e IA em um s&oacute; lugar
+      </p>
+
+      <div class="value-strip">
+        <div class="value-card">
+          <span>CPL otimizado</span>
+          <strong>R$ 4,86</strong>
+          <small>lead mais barato</small>
+        </div>
+        <div class="value-card">
+          <span>Leads captados</span>
+          <strong>257</strong>
+          <small>com controle</small>
+        </div>
+        <div class="value-card">
+          <span>Cliques</span>
+          <strong>1.842</strong>
+          <small>campanhas ativas</small>
+        </div>
+      </div>
+
+      <div class="feature-bar">
+        <div class="feature"><div class="icon">&#128101;</div>Central de Leads</div>
+        <div class="feature"><div class="icon">&#128227;</div>Campanhas Meta</div>
+        <div class="feature"><div class="icon">&#128230;</div>Kanban Comercial</div>
+        <div class="feature"><div class="icon">&#128200;</div>Performance</div>
+        <div class="feature"><div class="icon">&#128196;</div>Exporta&ccedil;&atilde;o</div>
+        <div class="feature"><div class="icon">&#129302;</div>Recupera&ccedil;&atilde;o com IA</div>
+      </div>
+
+      <div class="audience">
+        <div class="avatar">&#9675;</div>
+        <strong>Para corretores, equipes, imobili&aacute;rias e construtoras</strong>
+      </div>
+    </section>
+
+    <section class="dashboard-wrap">
+      <div class="dashboard">
+        <div class="dash-content">
+          <div class="dash-top">
+            <div class="dash-title">
+              <h2>Performance de leads Meta</h2>
+              <span>Registro semanal de gasto, leads e custo por lead.</span>
+            </div>
+            <div class="dash-actions">
+              <div class="plan">PLANO <strong>Ouro</strong></div>
+              <div class="period">Semanal - 7 dias</div>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric">
+              <span>Gasto no per&iacute;odo</span>
+              <strong>R$ 1.249,02</strong>
+              <div class="spark"></div>
+            </div>
+            <div class="metric">
+              <span>Leads no per&iacute;odo</span>
+              <strong>257</strong>
+              <div class="spark"></div>
+            </div>
+            <div class="metric low">
+              <span>CPL m&eacute;dio</span>
+              <strong>R$ 4,86</strong>
+              <div class="spark"></div>
+            </div>
+            <div class="metric">
+              <span>Cliques</span>
+              <strong>1.842</strong>
+              <div class="spark"></div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="panel">
+              <h3>Desempenho por dia</h3>
+              <div class="daily-row">
+                <span>Dia</span><span>Gasto</span><span>Leads</span><span>CPL</span><span>Cliques</span>
+              </div>
+              <div class="daily-row"><span>18/06</span><span>R$ 180,40</span><span>39</span><span>R$ 4,63</span><span>284</span></div>
+              <div class="daily-row"><span>17/06</span><span>R$ 172,20</span><span>36</span><span>R$ 4,78</span><span>260</span></div>
+              <div class="daily-row"><span>16/06</span><span>R$ 166,70</span><span>35</span><span>R$ 4,76</span><span>242</span></div>
+              <div class="daily-row"><span>15/06</span><span>R$ 178,90</span><span>38</span><span>R$ 4,70</span><span>276</span></div>
+              <div class="daily-row"><span>14/06</span><span>R$ 184,60</span><span>37</span><span>R$ 4,99</span><span>252</span></div>
+              <div class="daily-row"><span>13/06</span><span>R$ 176,30</span><span>36</span><span>R$ 4,90</span><span>258</span></div>
+              <div class="daily-row"><span>12/06</span><span>R$ 190,92</span><span>36</span><span>R$ 5,30</span><span>270</span></div>
+            </div>
+
+            <div class="panel">
+              <h3>Campanhas ativas</h3>
+              <div class="campaign">
+                <span class="dot"></span><span class="icon">&#127968;</span><span>Lan&ccedil;amento Reserva<small>Leads</small></span><strong>CPL R$ 4,21</strong>
+              </div>
+              <div class="campaign">
+                <span class="dot"></span><span class="icon">&#127968;</span><span>Vista do Parque<small>Leads</small></span><strong>CPL R$ 4,76</strong>
+              </div>
+              <div class="campaign">
+                <span class="dot"></span><span class="icon">&#127969;</span><span>Viver Bem<small>Leads</small></span><strong>CPL R$ 5,08</strong>
+              </div>
+              <div class="campaign">
+                <span class="dot"></span><span class="icon">&#127970;</span><span>Essence Residence<small>Leads</small></span><strong>CPL R$ 4,95</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="lower">
+            <div class="kanban-panel">
+              <h3>Kanban Comercial</h3>
+              <div class="kanban">
+                <div class="col">
+                  <h4>Novos <span>82</span></h4>
+                  <div class="lead"><strong>Leandro Silva</strong>Reserva das &Aacute;guas<br>H&aacute; 18 min</div>
+                  <div class="lead"><strong>Juliana Costa</strong>Vista do Parque<br>H&aacute; 32 min</div>
+                  <div class="lead"><strong>Carlos Henrique</strong>Essence Residence<br>H&aacute; 1h</div>
+                </div>
+                <div class="col">
+                  <h4>Primeiro contato <span>64</span></h4>
+                  <div class="lead"><strong>Mariana Lima</strong>Reserva das &Aacute;guas<br>H&aacute; 2h</div>
+                  <div class="lead"><strong>Rafael Torres</strong>Viver Bem<br>H&aacute; 3h</div>
+                  <div class="lead"><strong>Fernanda Alves</strong>Vista do Parque<br>H&aacute; 4h</div>
+                </div>
+                <div class="col">
+                  <h4>Em conversa <span>43</span></h4>
+                  <div class="lead"><strong>Patr&iacute;cia Souza</strong>Reserva das &Aacute;guas<br>H&aacute; 1 dia</div>
+                  <div class="lead"><strong>Bruno Martins</strong>Essence Residence<br>H&aacute; 1 dia</div>
+                  <div class="lead"><strong>Camila Rocha</strong>Viver Bem<br>H&aacute; 1 dia</div>
+                </div>
+                <div class="col">
+                  <h4>Fechados <span>28</span></h4>
+                  <div class="lead"><strong>Gabriel Santos</strong>Reserva das &Aacute;guas<br>R$ 560.000</div>
+                  <div class="lead"><strong>Aline Moreira</strong>Vista do Parque<br>R$ 420.000</div>
+                  <div class="lead"><strong>Lucas Almeida</strong>Essence Residence<br>R$ 610.000</div>
+                </div>
+                <div class="col">
+                  <h4>Perdidos <span>19</span></h4>
+                  <div class="lead"><strong>Jo&atilde;o Paulo</strong>Pre&ccedil;o fora do or&ccedil;amento<br>H&aacute; 2 dias</div>
+                  <div class="lead"><strong>Beatriz Lima</strong>N&atilde;o respondeu<br>H&aacute; 3 dias</div>
+                  <div class="lead"><strong>Thiago Silva</strong>Comprou com outro<br>H&aacute; 4 dias</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-cards">
+              <div class="side-card red">
+                <h3>Leads para recuperar</h3>
+                <span class="big">47</span>
+                <p>leads perdidos ou parados podem ser recuperados.</p>
+                <button>Ver leads</button>
+              </div>
+
+              <div class="side-card">
+                <h3>Exportar + Assistente com IA</h3>
+                <p>Relat&oacute;rios em planilhas, Machine Learning, sugest&otilde;es, follow-up e recupera&ccedil;&atilde;o.</p>
+                <button>Exportar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

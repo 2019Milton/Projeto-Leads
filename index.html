@@ -7167,11 +7167,34 @@ body.tema-claro .info-tooltip-popup {
 .campanhas-card h3 { color: #bbf7d0; }
 
 /* 🔴 PAINEL SUPER ADMIN — vermelho */
-#painel_admin .card {
+#painel_admin > div > .card {
   background: linear-gradient(145deg, rgba(185,28,28,0.22), rgba(239,68,68,0.07)) !important;
   border: 1px solid rgba(239,68,68,0.28) !important;
 }
 #painel_admin .card h2 { color: #fca5a5; }
+
+/* Seções internas do Super Admin */
+.admin-secao {
+  margin-top: 22px;
+  border-radius: 12px;
+  padding: 22px 24px;
+}
+.admin-secao-a {
+  background: rgba(8, 20, 52, 0.85);
+  border: 1px solid rgba(37, 99, 235, 0.32);
+}
+.admin-secao-b {
+  background: rgba(18, 7, 38, 0.85);
+  border: 1px solid rgba(124, 58, 237, 0.32);
+}
+.admin-secao > h3:first-child {
+  color: #f1f5f9 !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
 
 .metricas-legenda h4 {
   margin-bottom: 14px;
@@ -11103,8 +11126,10 @@ body.tema-claro .logout {
       </p>
   
       <!-- KPIS -->
+      <div class="admin-secao admin-secao-a">
+      <h3>📊 Visão Geral</h3>
       <div class="dashboard-grid">
-  
+
         <div class="dashboard-box">
           <h3>👥 Usuários</h3>
           <div id="admin_total_usuarios">
@@ -11132,12 +11157,13 @@ body.tema-claro .logout {
             0
           </div>
         </div>
-  
+
       </div>
-  
+      </div><!-- /admin-secao KPIs -->
+
       <!-- RECURSOS -->
-      <div style="margin-top:40px;">
-  
+      <div class="admin-secao admin-secao-b">
+
         <div class="admin-recursos-header">
           <div>
             <h3>Recursos Railway da Aplicacao</h3>
@@ -11309,13 +11335,7 @@ body.tema-claro .logout {
   
       </div>
 
-      <div
-        class="card admin-ia-painel"
-        style="
-          margin-top:30px;
-          padding:25px;
-        "
-      >
+      <div class="admin-secao admin-ia-painel">
         <h3>Painel IA Ouro</h3>
         <p style="color:#fef3c7;margin-top:8px;font-size:13px;">
           Controle operacional da IA: ativar, pausar, acompanhar custo e limitar consumo por usuario Ouro.
@@ -11584,13 +11604,7 @@ body.tema-claro .logout {
       </div>
 
       <!-- 🔥 CRIAR USUÁRIO -->
-      <div
-        class="card"
-        style="
-          margin-top:30px;
-          padding:25px;
-        "
-      >
+      <div class="admin-secao admin-secao-a">
       
         <h3
           style="
@@ -11866,7 +11880,7 @@ body.tema-claro .logout {
       
   
       <!-- TABELA -->
-      <div style="margin-top:40px;">
+      <div class="admin-secao admin-secao-b">
 
         <h3>👥 Usuários da Plataforma</h3>
 
@@ -11900,7 +11914,7 @@ body.tema-claro .logout {
       </div>
 
       <!-- 🔧 MANUTENÇÃO -->
-      <div class="card" style="margin-top:30px;padding:25px;">
+      <div class="admin-secao admin-secao-a">
         <h3 style="margin-bottom:8px;color:white;">🔧 Manutenção de Dados</h3>
         <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">Operações para corrigir dados existentes no banco.</p>
 
@@ -11917,7 +11931,7 @@ body.tema-claro .logout {
       </div>
 
       <!-- 🤝 FINANCEIRO DE PARCEIROS -->
-      <div class="card" style="margin-top:30px;padding:25px;">
+      <div class="admin-secao admin-secao-b">
         <h3 style="margin-bottom:8px;color:white;">🤝 Financeiro de Parceiros</h3>
         <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">
           Lance o plano, o valor total cobrado do cliente e a porcentagem do parceiro.

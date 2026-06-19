@@ -11257,37 +11257,6 @@ body.tema-claro .suporte-input {
 
           </div>
 
-          <!-- NICHOS -->
-          <div>
-            <label
-              style="
-                display:block;
-                margin-bottom:8px;
-                color:#9ca3af;
-                font-size:13px;
-              "
-            >
-              Tipo de Corretor (nichos)
-            </label>
-            <div class="nicho-checkboxes">
-              <label class="nicho-checkbox-label">
-                <input type="checkbox" name="novo_usuario_nicho" value="1">
-                <span class="nicho-dot" style="background:#2563EB;"></span>
-                Corretor de Imóveis
-              </label>
-              <label class="nicho-checkbox-label">
-                <input type="checkbox" name="novo_usuario_nicho" value="2">
-                <span class="nicho-dot" style="background:#16A34A;"></span>
-                Corretor de Convênio Médico
-              </label>
-              <label class="nicho-checkbox-label">
-                <input type="checkbox" name="novo_usuario_nicho" value="3">
-                <span class="nicho-dot" style="background:#EA580C;"></span>
-                Corretor de Suplementos
-              </label>
-            </div>
-          </div>
-
           <!-- BOTÃO -->
           <button
             onclick="criarUsuario()"
@@ -11299,7 +11268,31 @@ body.tema-claro .suporte-input {
           >
             Criar
           </button>
-        
+
+        </div>
+
+        <!-- NICHOS — fora do grid, linha completa -->
+        <div style="margin-top:16px;">
+          <label style="display:block;margin-bottom:10px;color:#9ca3af;font-size:13px;">
+            Tipo de Corretor
+          </label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
+              <input type="checkbox" name="novo_usuario_nicho" value="1">
+              <span class="nicho-dot" style="background:#2563EB;"></span>
+              Corretor de Imóveis
+            </label>
+            <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
+              <input type="checkbox" name="novo_usuario_nicho" value="2">
+              <span class="nicho-dot" style="background:#16A34A;"></span>
+              Convênio Médico
+            </label>
+            <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
+              <input type="checkbox" name="novo_usuario_nicho" value="3">
+              <span class="nicho-dot" style="background:#EA580C;"></span>
+              Suplementos
+            </label>
+          </div>
         </div>
       
         <!-- 🔐 AJUDA -->
@@ -21380,6 +21373,12 @@ async function carregarPainelAdmin() {
 
     tabela.innerHTML = "";
 
+    // cache para o modal de nichos
+    window._adminUsuariosCache = {};
+    for (const u of data.usuarios) {
+      window._adminUsuariosCache[u.id] = u;
+    }
+
     for (const u of data.usuarios) {
 
       tabela.innerHTML += `
@@ -21424,7 +21423,7 @@ async function carregarPainelAdmin() {
               }
               <button
                 style="margin-top:4px;font-size:11px;padding:3px 8px;"
-                onclick="abrirModalNichosUsuario(${u.id}, ${JSON.stringify(JSON.stringify(u.nichos || []))})"
+                onclick="abrirModalNichosUsuario(${u.id})"
               >
                 Editar
               </button>
@@ -24999,27 +24998,19 @@ function adicionarBannerGeradoAoCarrossel() {
 <script>
 let _modalNichosUsuarioId = null;
 
-function abrirModalNichosUsuario(userId, nichosJson) {
+function abrirModalNichosUsuario(userId) {
   _modalNichosUsuarioId = userId;
-  const nichos = JSON.parse(nichosJson);
-  const idsAtivos = nichos.map(n => n.id);
+  const u = (window._adminUsuariosCache || {})[userId] || {};
+  const nichos = u.nichos || [];
+  const idsAtivos = nichos.map(n => Number(n.id));
 
   document.querySelectorAll("input[name='modal_nicho']").forEach(cb => {
     cb.checked = idsAtivos.includes(Number(cb.value));
   });
 
-  // busca email do usuário na tabela
-  const rows = document.querySelectorAll("#admin_tabela_usuarios tr");
-  let email = "";
-  rows.forEach(row => {
-    if (row.cells[0] && String(row.cells[0].innerText).trim() === String(userId)) {
-      email = row.cells[1]?.innerText?.trim() || "";
-    }
-  });
-  document.getElementById("modal_nichos_usuario_email").innerText = email;
+  document.getElementById("modal_nichos_usuario_email").innerText = u.email || "";
 
-  const modal = document.getElementById("modal_nichos_usuario");
-  modal.style.display = "flex";
+  document.getElementById("modal_nichos_usuario").style.display = "flex";
 }
 
 async function salvarNichosUsuario() {

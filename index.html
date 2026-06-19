@@ -5923,35 +5923,50 @@ body.tema-claro .cal-nav span { color: #111827; }
   align-self: stretch;
   flex-shrink: 0;
 }
+.nicho-tabs-wrap {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 12px;
+  margin: 0 0 12px;
+  box-shadow: 0 14px 32px rgba(0,0,0,0.28);
+}
+.nicho-tabs-label {
+  display: block;
+  color: #e5edf7;
+  font-size: 12px;
+  font-weight: 900;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
 .nicho-tabs {
   display: flex;
-  gap: 8px;
-  border-bottom: 2px solid rgba(255,255,255,.08);
-  margin-bottom: 20px;
+  gap: 10px;
+  margin: 0;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding-bottom: 2px;
 }
 .nicho-tab {
   padding: 10px 20px;
   font-size: 13px;
   font-weight: 900;
+  border-radius: 10px;
   cursor: pointer;
   border: 1px solid var(--nicho-cor, #2563eb);
   background: var(--nicho-cor, #2563eb);
   color: #fff;
-  border-bottom: 3px solid var(--nicho-cor, #2563eb);
   box-shadow: 0 4px 14px rgba(0,0,0,0.20);
-  margin-bottom: -2px;
-  transition: filter .2s, transform .2s, box-shadow .2s;
+  transition: filter .2s, transform .2s, box-shadow .2s, opacity .2s;
   white-space: nowrap;
-  opacity: .72;
+  opacity: .86;
 }
 .nicho-tab.ativo {
   color: #fff;
   opacity: 1;
-  filter: saturate(1.2);
-  transform: translateY(-1px);
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.16), 0 7px 18px rgba(0,0,0,0.30);
+  filter: saturate(1.25);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.18), 0 10px 24px rgba(0,0,0,0.34);
 }
 .nicho-tab:hover {
   opacity: 1;
@@ -7061,14 +7076,15 @@ body.tema-claro .cal-nav span { color: #111827; }
 }
 
 .card-criar-campanha {
-  background: linear-gradient(145deg, rgba(185,28,28,0.22), rgba(239,68,68,0.07)) !important;
-  border: 1px solid rgba(239,68,68,0.28) !important;
-  border-top: 4px solid #ef4444 !important;
-  transition: border-top-color .25s;
+  background: var(--nicho-card-bg, #0b1f3f) !important;
+  border: 1px solid var(--nicho-card-border, #2563eb) !important;
+  border-top: 5px solid var(--nicho-card-accent, #2563eb) !important;
+  color: var(--nicho-card-text, #eff6ff) !important;
+  transition: background .25s, border-color .25s, border-top-color .25s, color .25s;
 }
 
 .card-criar-campanha h3 {
-  color: #fca5a5;
+  color: var(--nicho-card-title, #dbeafe) !important;
 }
 
 /* 🟢 CONECTAR META — verde */
@@ -8597,11 +8613,32 @@ body:not(.tema-claro) .ml-explicacao-lead {
   color: #dcfce7 !important;
 }
 
-body:not(.tema-claro) .card-criar-campanha,
+body:not(.tema-claro) .card-criar-campanha {
+  background: var(--nicho-card-bg, #0b1f3f) !important;
+  border-color: var(--nicho-card-border, #2563eb) !important;
+  color: var(--nicho-card-text, #eff6ff) !important;
+}
+
 body:not(.tema-claro) #painel_admin .card {
   background: #2a1118 !important;
   border-color: #dc2626 !important;
   color: #fee2e2 !important;
+}
+
+body:not(.tema-claro) .card-criar-campanha h3,
+body:not(.tema-claro) .card-criar-campanha label {
+  color: var(--nicho-card-title, #dbeafe) !important;
+}
+
+body:not(.tema-claro) .card-criar-campanha input,
+body:not(.tema-claro) .card-criar-campanha textarea,
+body:not(.tema-claro) .card-criar-campanha select,
+body:not(.tema-claro) .card-criar-campanha .campaign-setup-section,
+body:not(.tema-claro) .card-criar-campanha .advanced-campaign,
+body:not(.tema-claro) .card-criar-campanha .detailed-targeting-panel {
+  background: var(--nicho-input-bg, #162235) !important;
+  border-color: var(--nicho-input-border, #49627d) !important;
+  color: #f8fafc !important;
 }
 
 body:not(.tema-claro) .ia-ouro-destaque,
@@ -8704,6 +8741,12 @@ body:not(.tema-claro) .credito-desenvolvedor-topbar {
   color: #e5edf7 !important;
 }
 
+body:not(.tema-claro) .nicho-tabs-wrap {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e5edf7 !important;
+}
+
 body.tema-claro {
   background: #d8e4ef !important;
   color: #102033 !important;
@@ -8759,11 +8802,32 @@ body.tema-claro .channel-picker-status {
   color: #0f3f25 !important;
 }
 
-body.tema-claro .card-criar-campanha,
+body.tema-claro .card-criar-campanha {
+  background: var(--nicho-card-bg-light, #e8f1ff) !important;
+  border-color: var(--nicho-card-border-light, #2563eb) !important;
+  color: var(--nicho-card-text-light, #102033) !important;
+}
+
 body.tema-claro #painel_admin .card {
   background: #fbe9ec !important;
   border-color: #cf3d45 !important;
   color: #3d1116 !important;
+}
+
+body.tema-claro .card-criar-campanha h3,
+body.tema-claro .card-criar-campanha label {
+  color: var(--nicho-card-title-light, #1d4ed8) !important;
+}
+
+body.tema-claro .card-criar-campanha input,
+body.tema-claro .card-criar-campanha textarea,
+body.tema-claro .card-criar-campanha select,
+body.tema-claro .card-criar-campanha .campaign-setup-section,
+body.tema-claro .card-criar-campanha .advanced-campaign,
+body.tema-claro .card-criar-campanha .detailed-targeting-panel {
+  background: #ffffff !important;
+  border-color: var(--nicho-input-border-light, #7f9db8) !important;
+  color: #102033 !important;
 }
 
 body.tema-claro .ia-ouro-destaque,
@@ -8864,6 +8928,16 @@ body.tema-claro .tema-seletor,
 body.tema-claro .credito-desenvolvedor-topbar {
   background: #f8fafc !important;
   border-color: #9fb4c8 !important;
+  color: #102033 !important;
+}
+
+body.tema-claro .nicho-tabs-wrap {
+  background: #f8fafc !important;
+  border-color: #9fb4c8 !important;
+  color: #102033 !important;
+}
+
+body.tema-claro .nicho-tabs-label {
   color: #102033 !important;
 }
 
@@ -25445,6 +25519,80 @@ function corSolidaNicho(nicho = {}) {
   return nicho.cor || nicho.nicho_cor || "#2563EB";
 }
 
+function temaVisualNicho(nicho = {}) {
+  const slug = slugNichoNormalizado(nicho);
+  const id = Number(nicho.id || nicho.nicho_id);
+  const cor = corSolidaNicho(nicho);
+
+  if (slug.includes("saude") || slug.includes("convenio") || id === 2) {
+    return {
+      cor,
+      bg: "#06251a",
+      border: "#15803d",
+      text: "#dcfce7",
+      title: "#bbf7d0",
+      inputBg: "#102f24",
+      inputBorder: "#2f9b61",
+      bgLight: "#e4f6ec",
+      borderLight: "#2f9b61",
+      textLight: "#0f3f25",
+      titleLight: "#166534",
+      inputBorderLight: "#2f9b61"
+    };
+  }
+
+  if (slug.includes("suplement") || id === 3) {
+    return {
+      cor,
+      bg: "#2a1708",
+      border: "#c2410c",
+      text: "#ffedd5",
+      title: "#fed7aa",
+      inputBg: "#3a2312",
+      inputBorder: "#ea580c",
+      bgLight: "#fff1e6",
+      borderLight: "#ea580c",
+      textLight: "#4a2108",
+      titleLight: "#9a3412",
+      inputBorderLight: "#ea580c"
+    };
+  }
+
+  return {
+    cor,
+    bg: "#0b1f3f",
+    border: "#2563eb",
+    text: "#eff6ff",
+    title: "#dbeafe",
+    inputBg: "#13294a",
+    inputBorder: "#3b82f6",
+    bgLight: "#e8f1ff",
+    borderLight: "#2563eb",
+    textLight: "#102033",
+    titleLight: "#1d4ed8",
+    inputBorderLight: "#2563eb"
+  };
+}
+
+function aplicarTemaNichoCampanha(nicho = {}) {
+  const tema = temaVisualNicho(nicho);
+  const card = document.querySelector(".card-criar-campanha");
+  if (!card) return;
+
+  card.style.setProperty("--nicho-card-accent", tema.cor);
+  card.style.setProperty("--nicho-card-bg", tema.bg);
+  card.style.setProperty("--nicho-card-border", tema.border);
+  card.style.setProperty("--nicho-card-text", tema.text);
+  card.style.setProperty("--nicho-card-title", tema.title);
+  card.style.setProperty("--nicho-input-bg", tema.inputBg);
+  card.style.setProperty("--nicho-input-border", tema.inputBorder);
+  card.style.setProperty("--nicho-card-bg-light", tema.bgLight);
+  card.style.setProperty("--nicho-card-border-light", tema.borderLight);
+  card.style.setProperty("--nicho-card-text-light", tema.textLight);
+  card.style.setProperty("--nicho-card-title-light", tema.titleLight);
+  card.style.setProperty("--nicho-input-border-light", tema.inputBorderLight);
+}
+
 function estiloNichoBadge(nicho = {}) {
   const cor = corSolidaNicho(nicho);
 
@@ -25461,7 +25609,18 @@ function inicializarNichoTabs() {
   if (!nichos.length) return;
 
   const card = document.querySelector(".card-criar-campanha");
-  if (!card || card.querySelector(".nicho-tabs")) return;
+  if (!card) return;
+
+  document.getElementById("nicho_campanha_tabs_wrap")?.remove();
+  document.getElementById("nicho_campanha_tabs")?.remove();
+
+  const tabsWrap = document.createElement("div");
+  tabsWrap.className = "nicho-tabs-wrap";
+  tabsWrap.id = "nicho_campanha_tabs_wrap";
+
+  const tabsLabel = document.createElement("span");
+  tabsLabel.className = "nicho-tabs-label";
+  tabsLabel.innerText = "Escolha o nicho da campanha";
 
   const tabsEl = document.createElement("div");
   tabsEl.className = "nicho-tabs";
@@ -25482,10 +25641,12 @@ function inicializarNichoTabs() {
     tabsEl.appendChild(btn);
   });
 
-  // insere antes do bloco IA (primeiro filho do card)
-  card.insertBefore(tabsEl, card.firstElementChild);
+  tabsWrap.appendChild(tabsLabel);
+  tabsWrap.appendChild(tabsEl);
+  card.parentNode.insertBefore(tabsWrap, card);
 
   // container dos campos específicos por nicho
+  document.getElementById("nicho_campos_extras")?.remove();
   const camposExtra = document.createElement("div");
   camposExtra.id = "nicho_campos_extras";
   // injeta após o input de nome da campanha
@@ -25514,9 +25675,8 @@ function selecionarNichoTab(nicho, btnEl) {
   btnEl.style.borderBottomColor = cor;
   btnEl.style.color = "#fff";
 
-  // atualiza cor de acento do card
-  const card = document.querySelector(".card-criar-campanha");
-  if (card) card.style.borderTopColor = cor;
+  // atualiza a cor do bloco completo de criacao da campanha
+  aplicarTemaNichoCampanha(nicho);
 
   // guarda nicho ativo
   window._nichoAtivo = nicho;

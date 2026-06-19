@@ -25796,7 +25796,85 @@ function _placeholdersPorNicho(slug) {
   };
 }
 
+// Persiste o estado do formulário por nicho para não perder ao trocar de aba
+if (!window._nichoFormState) window._nichoFormState = {};
+
+function _salvarEstadoFormNicho(slug) {
+  if (!slug) return;
+  const get = id => document.getElementById(id)?.value ?? "";
+  const state = {
+    campanha_nome:       get("campanha_nome"),
+    texto:               get("texto"),
+    adv_titulo:          get("adv_titulo"),
+    adv_descricao:       get("adv_descricao"),
+    adv_perguntas:       get("adv_perguntas"),
+    ia_campanha_contexto:get("ia_campanha_contexto"),
+    adv_interesse_busca: get("adv_interesse_busca"),
+    orcamento:           get("orcamento"),
+  };
+  if (slug === "imoveis") {
+    state.tipo_imovel = get("nicho_tipo_imovel");
+    state.finalidade  = get("nicho_finalidade");
+    state.valor_min   = get("nicho_valor_min");
+    state.valor_max   = get("nicho_valor_max");
+    state.regiao      = get("nicho_regiao");
+  } else if (slug === "saude") {
+    state.operadora        = get("nicho_operadora");
+    state.tipo_plano       = get("nicho_tipo_plano");
+    state.faixa_etaria_min = get("nicho_faixa_min");
+    state.faixa_etaria_max = get("nicho_faixa_max");
+    state.cobertura        = get("nicho_cobertura");
+    state.acomodacao       = get("nicho_acomodacao");
+  } else if (slug === "suplementos") {
+    state.produto      = get("nicho_produto");
+    state.objetivo     = get("nicho_objetivo");
+    state.marca        = get("nicho_marca");
+    state.publico_alvo = get("nicho_publico_alvo");
+  }
+  window._nichoFormState[slug] = state;
+}
+
+function _restaurarEstadoFormNicho(slug) {
+  const state = window._nichoFormState?.[slug];
+  if (!state) return;
+  const set = (id, val) => {
+    if (val == null || val === "") return;
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  };
+  set("campanha_nome",        state.campanha_nome);
+  set("texto",                state.texto);
+  set("adv_titulo",           state.adv_titulo);
+  set("adv_descricao",        state.adv_descricao);
+  set("adv_perguntas",        state.adv_perguntas);
+  set("ia_campanha_contexto", state.ia_campanha_contexto);
+  set("adv_interesse_busca",  state.adv_interesse_busca);
+  set("orcamento",            state.orcamento);
+  if (slug === "imoveis") {
+    set("nicho_tipo_imovel", state.tipo_imovel);
+    set("nicho_finalidade",  state.finalidade);
+    set("nicho_valor_min",   state.valor_min);
+    set("nicho_valor_max",   state.valor_max);
+    set("nicho_regiao",      state.regiao);
+  } else if (slug === "saude") {
+    set("nicho_operadora",  state.operadora);
+    set("nicho_tipo_plano", state.tipo_plano);
+    set("nicho_faixa_min",  state.faixa_etaria_min);
+    set("nicho_faixa_max",  state.faixa_etaria_max);
+    set("nicho_cobertura",  state.cobertura);
+    set("nicho_acomodacao", state.acomodacao);
+  } else if (slug === "suplementos") {
+    set("nicho_produto",      state.produto);
+    set("nicho_objetivo",     state.objetivo);
+    set("nicho_marca",        state.marca);
+    set("nicho_publico_alvo", state.publico_alvo);
+  }
+}
+
 function selecionarNichoTab(nicho, btnEl) {
+  // salva estado do nicho atual antes de trocar
+  _salvarEstadoFormNicho(window._nichoAtivo?.slug);
+
   const cor = corSolidaNicho(nicho);
 
   // atualiza visual das tabs
@@ -25825,6 +25903,11 @@ function selecionarNichoTab(nicho, btnEl) {
 
   // guarda nicho ativo
   window._nichoAtivo = nicho;
+
+  // limpa campos gerais antes de restaurar (evita misturar conteúdo entre nichos)
+  const _limpar = id => { const el = document.getElementById(id); if (el) el.value = ""; };
+  ["campanha_nome","texto","adv_titulo","adv_descricao","adv_perguntas",
+   "ia_campanha_contexto","adv_interesse_busca","orcamento"].forEach(_limpar);
 
   // renderiza campos extras do nicho
   const container = document.getElementById("nicho_campos_extras");
@@ -25951,6 +26034,9 @@ function selecionarNichoTab(nicho, btnEl) {
       </div>
     `;
   }
+
+  // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
+  _restaurarEstadoFormNicho(nicho.slug);
 }
 
 // Coleta os dados extras do nicho ativo ao criar campanha

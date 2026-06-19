@@ -5183,6 +5183,11 @@ body.tema-claro .cal-nav span { color: #111827; }
   cursor: not-allowed;
 }
 
+.btn-reanalisar-ia.ia-btn-selecionado {
+  background: linear-gradient(135deg,#16a34a,#15803d);
+  border-color: rgba(34,197,94,0.55);
+}
+
 .ia-gerada-em {
   display: block;
   margin-top: 10px;
@@ -10223,7 +10228,7 @@ body.tema-claro .logout {
           <div class="advanced-grid">
 
             <div class="advanced-full">
-              <label>Categoria especial da Meta</label>
+              <label>Categoria especial da Meta <button type="button" class="info-icone" onclick="mostrarInfoCampo('Algumas categorias como imóveis, crédito e emprego têm regras especiais da Meta. Se o seu anúncio se enquadra em alguma delas, selecione aqui — caso contrário, deixe em Nenhuma.', event)">i</button></label>
               <select
                 id="adv_categoria_especial"
                 onchange="atualizarAvisoCategoriaEspecial()"
@@ -10245,7 +10250,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Posicionamentos Facebook</label>
+              <label>Posicionamentos Facebook <button type="button" class="info-icone" onclick="mostrarInfoCampo('Onde dentro do Facebook seu anúncio vai aparecer. Feed é o mais comum (mural de notícias). Stories aparecem no topo da tela. Marketplace é a seção de compras. Vídeos aparece durante vídeos do Facebook.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" class="adv-facebook-position" value="feed">
@@ -10267,7 +10272,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Posicionamentos Instagram</label>
+              <label>Posicionamentos Instagram <button type="button" class="info-icone" onclick="mostrarInfoCampo('Onde dentro do Instagram seu anúncio vai aparecer. Feed é o mural principal. Stories aparecem no topo. Reels é a seção de vídeos curtos. Explorar é onde as pessoas descobrem novos conteúdos.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" class="adv-instagram-position" value="stream">
@@ -10289,7 +10294,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Dispositivos</label>
+              <label>Dispositivos <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha em qual tipo de aparelho seu anúncio vai aparecer: celular (Mobile) ou computador (Desktop). Se não marcar nenhum, a Meta exibe em ambos automaticamente.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" id="adv_device_mobile">
@@ -10303,7 +10308,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Otimização de público</label>
+              <label>Otimização de público <button type="button" class="info-icone" onclick="mostrarInfoCampo('Advantage+ Audience é um recurso da Meta que usa inteligência artificial para encontrar automaticamente as melhores pessoas para ver seu anúncio, expandindo além do público que você configurou.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" id="adv_audience_plus">
@@ -15585,7 +15590,10 @@ function aplicarCampanhaIA(indice) {
     const card = document.getElementById(`ia_opcao_card_${idx}`);
     const btn = document.getElementById(`ia_opcao_btn_${idx}`);
     if (card) card.classList.toggle("ia-opcao-selecionada", idx === indice);
-    if (btn) btn.textContent = idx === indice ? "Opcao selecionada" : "Usar esta opcao";
+    if (btn) {
+      btn.textContent = idx === indice ? "Opcao selecionada" : "Usar esta opcao";
+      btn.classList.toggle("ia-btn-selecionado", idx === indice);
+    }
   });
 
   if (s.nome_campanha) {

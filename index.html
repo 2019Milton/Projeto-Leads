@@ -8514,12 +8514,18 @@ body.tema-claro .suporte-input {
 }
 
 .rocket-icon {
-  width: 50px;
-  height: 81px;
+  width: 56px;
+  height: 91px;
   vertical-align: middle;
-  margin-right: 8px;
+  margin-right: 10px;
   display: inline-block;
-  filter: drop-shadow(0 0 10px rgba(34,197,94,0.55));
+  filter: drop-shadow(0 0 10px rgba(249,115,22,0.45)) drop-shadow(0 0 6px rgba(34,197,94,0.3));
+}
+
+.topbar-hero {
+  display: block;
+  height: 66px;
+  overflow: visible;
 }
 
 /* ─── MODAL GERAR BANNER COM IA ─────────────────────────────────────────────── */
@@ -8679,10 +8685,10 @@ body.tema-claro .suporte-input {
       <stop offset="0%"   stop-color="#f8fafc"/>
       <stop offset="100%" stop-color="#dbeafe"/>
     </linearGradient>
-    <!-- Cone do nariz: azul escuro -->
-    <linearGradient id="rkt-nose" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#1e40af"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+    <!-- Cone do nariz: azul claro no topo, escuro na base -->
+    <linearGradient id="rkt-nose" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#bfdbfe"/>
     </linearGradient>
     <!-- Seção de motor: cinza escuro -->
     <linearGradient id="rkt-engine" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -8701,10 +8707,11 @@ body.tema-claro .suporte-input {
       <stop offset="40%"  stop-color="#16a34a"/>
       <stop offset="100%" stop-color="#052e16" stop-opacity="0"/>
     </linearGradient>
-    <!-- Chama interna: verde claro -->
+    <!-- Chama interna: amarelo-laranja quente (núcleo da chama) -->
     <linearGradient id="rkt-flame-b" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#bbf7d0"/>
-      <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+      <stop offset="0%"   stop-color="#fde68a"/>
+      <stop offset="50%"  stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
     </linearGradient>
     <!-- Janela: azul vivo -->
     <linearGradient id="rkt-win" x1="10%" y1="5%" x2="90%" y2="95%">
@@ -8721,10 +8728,10 @@ body.tema-claro .suporte-input {
       <stop offset="0%"   stop-color="#22c55e" stop-opacity="0.4"/>
       <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
     </radialGradient>
-    <!-- Halo laranja secundário (realismo de chama) -->
-    <radialGradient id="rkt-glow2" cx="50%" cy="20%" r="60%">
-      <stop offset="0%"   stop-color="#fbbf24" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    <!-- Halo laranja (calor da chama) -->
+    <radialGradient id="rkt-glow2" cx="50%" cy="20%" r="70%">
+      <stop offset="0%"   stop-color="#fb923c" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
@@ -8802,14 +8809,15 @@ body.tema-claro .suporte-input {
     <rect x="22" y="44" width="7" height="41" fill="white" opacity="0.12"/>
     <!-- Sombra lateral direita -->
     <rect x="51" y="44" width="7" height="41" fill="#0f172a" opacity="0.08"/>
-    <!-- FAIXA VERDE LARGA (identidade da plataforma) -->
-    <rect x="22" y="57" width="36" height="8" fill="#22c55e" opacity="0.82"/>
-    <rect x="22" y="65" width="36" height="2" fill="#15803d"/>
-    <!-- Logotipo simulado na faixa (linhas) -->
-    <rect x="30" y="59" width="20" height="1.5" fill="white" opacity="0.35" rx="1"/>
-    <rect x="32" y="62" width="16" height="1.5" fill="white" opacity="0.25" rx="1"/>
-    <!-- Faixa fina secundária -->
-    <rect x="22" y="75" width="36" height="3.5" fill="#1d4ed8" opacity="0.45"/>
+    <!-- FAIXA LARANJA (estilo da referência) -->
+    <rect x="22" y="57" width="36" height="9" fill="#f97316" opacity="0.9"/>
+    <rect x="22" y="66" width="36" height="2" fill="#c2410c"/>
+    <rect x="22" y="57" width="8"  height="9" fill="#fb923c" opacity="0.3"/>
+    <!-- Detalhe branco na faixa -->
+    <rect x="30" y="59" width="20" height="1.5" fill="white" opacity="0.3" rx="1"/>
+    <!-- Faixa verde da plataforma (abaixo) -->
+    <rect x="22" y="70" width="36" height="4" fill="#22c55e" opacity="0.78"/>
+    <rect x="22" y="74" width="36" height="1" fill="#15803d"/>
     <!-- Painéis / linhas horizontais -->
     <line x1="26" y1="49" x2="54" y2="49" stroke="#94a3b8" stroke-width="0.8" opacity="0.4"/>
     <line x1="26" y1="53" x2="54" y2="53" stroke="#94a3b8" stroke-width="0.8" opacity="0.3"/>
@@ -8843,10 +8851,11 @@ body.tema-claro .suporte-input {
     <!-- ═══════════════════════════════════ -->
     <!--  JANELA / VISOR                     -->
     <!-- ═══════════════════════════════════ -->
-    <!-- Anel externo escuro -->
-    <circle cx="40" cy="27" r="8"   fill="#1e293b" stroke="#475569" stroke-width="1.4"/>
-    <!-- Vidro -->
-    <circle cx="40" cy="27" r="6.2" fill="url(#rkt-win)"/>
+    <!-- Aro LARANJA (estilo da referência) -->
+    <circle cx="40" cy="27" r="9"   fill="#f97316"/>
+    <circle cx="40" cy="27" r="7.5" fill="#c2410c"/>
+    <!-- Vidro azul -->
+    <circle cx="40" cy="27" r="6"   fill="url(#rkt-win)"/>
     <!-- Reflexo principal -->
     <ellipse cx="37.2" cy="24.2" rx="2.8" ry="1.7" fill="white" opacity="0.42" transform="rotate(-18 37.2 24.2)"/>
     <!-- Reflexo secundário menor -->
@@ -9032,7 +9041,115 @@ body.tema-claro .suporte-input {
 <div id="app">
 
   <div class="topbar">
-    <h2><svg class="rocket-icon" role="img" aria-label="Foguete"><use href="#rocket-icon"/></svg> Central de Leads</h2>
+    <h2>
+      <svg class="topbar-hero" viewBox="0 0 390 66" overflow="visible" xmlns="http://www.w3.org/2000/svg" aria-label="Central de Leads">
+        <defs>
+          <linearGradient id="th-body" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#f1f5f9"/>
+            <stop offset="45%"  stop-color="#e2e8f0"/>
+            <stop offset="100%" stop-color="#94a3b8"/>
+          </linearGradient>
+          <linearGradient id="th-nose" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#1e3a5f"/>
+            <stop offset="100%" stop-color="#bfdbfe"/>
+          </linearGradient>
+          <linearGradient id="th-win" x1="10%" y1="5%" x2="90%" y2="95%">
+            <stop offset="0%"   stop-color="#93c5fd"/>
+            <stop offset="100%" stop-color="#1d4ed8"/>
+          </linearGradient>
+          <linearGradient id="th-fa" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#fb923c"/>
+            <stop offset="45%"  stop-color="#f97316"/>
+            <stop offset="100%" stop-color="#7c2d12" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="th-fb" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#fde68a"/>
+            <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="th-fin" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#64748b"/>
+            <stop offset="100%" stop-color="#1e293b"/>
+          </linearGradient>
+          <radialGradient id="th-glow" cx="50%" cy="20%" r="80%">
+            <stop offset="0%"   stop-color="#fb923c" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Trajetória pontilhada verde -->
+        <path d="M 5 63 C 18 63 30 61 43 58" stroke="#22c55e" stroke-width="2" fill="none" stroke-dasharray="4 3.5" stroke-linecap="round" opacity="0.55"/>
+
+        <!-- Fumaça de rastro -->
+        <circle cx="42" cy="58" r="6"   fill="#e2e8f0" opacity="0.07"/>
+        <circle cx="30" cy="61" r="5.5" fill="#e2e8f0" opacity="0.055"/>
+        <circle cx="18" cy="63" r="4.5" fill="#e2e8f0" opacity="0.04"/>
+        <circle cx="7"  cy="63" r="3.5" fill="#e2e8f0" opacity="0.03"/>
+
+        <!-- Estrelas 4 pontas douradas (estilo da referência) -->
+        <g transform="translate(14,17)"><path d="M0,-8 L1.7,-1.7 L8,0 L1.7,1.7 L0,8 L-1.7,1.7 L-8,0 L-1.7,-1.7Z" fill="#fbbf24" opacity="0.9"/></g>
+        <g transform="translate(97,13) scale(0.85)"><path d="M0,-8 L1.7,-1.7 L8,0 L1.7,1.7 L0,8 L-1.7,1.7 L-8,0 L-1.7,-1.7Z" fill="#fbbf24" opacity="0.72"/></g>
+        <g transform="translate(7,50) scale(0.72)"><path d="M0,-8 L1.7,-1.7 L8,0 L1.7,1.7 L0,8 L-1.7,1.7 L-8,0 L-1.7,-1.7Z" fill="#22c55e" opacity="0.75"/></g>
+        <g transform="translate(108,54) scale(0.6)"><path d="M0,-8 L1.7,-1.7 L8,0 L1.7,1.7 L0,8 L-1.7,1.7 L-8,0 L-1.7,-1.7Z" fill="#fbbf24" opacity="0.55"/></g>
+
+        <!-- Pontos de estrelas menores -->
+        <circle cx="4"   cy="10" r="1.2" fill="white" opacity="0.6"/>
+        <circle cx="107" cy="8"  r="1"   fill="white" opacity="0.55"/>
+        <circle cx="5"   cy="32" r="0.8" fill="white" opacity="0.4"/>
+        <circle cx="103" cy="30" r="0.9" fill="white" opacity="0.45"/>
+
+        <!-- FOGUETE: centro (72,25), inclinado 42° horário, nose aponta cima-direita -->
+        <g transform="translate(72,25) rotate(42) scale(0.88)">
+          <!-- Halo laranja sob chamas -->
+          <ellipse cx="0" cy="32" rx="14" ry="8" fill="url(#th-glow)"/>
+
+          <!-- Chama externa laranja -->
+          <path d="M-10 24 Q-14 42 0 50 Q14 42 10 24Z" fill="url(#th-fa)"/>
+          <!-- Chama interna amarela -->
+          <path d="M-6.5 24 Q-9 38 0 45 Q9 38 6.5 24Z" fill="url(#th-fb)" opacity="0.85"/>
+          <!-- Núcleo pálido -->
+          <path d="M-3.5 24 Q-5 34 0 37 Q5 34 3.5 24Z" fill="#fef9c3" opacity="0.82"/>
+          <ellipse cx="0" cy="27" rx="3.5" ry="4" fill="white" opacity="0.72"/>
+
+          <!-- Aletas -->
+          <path d="M-11 16 L-24 30 L-20 20 L-10 9Z" fill="url(#th-fin)" stroke="#475569" stroke-width="0.4"/>
+          <path d="M-11 16 L-20 20 L-13 12Z"         fill="white" opacity="0.15"/>
+          <path d="M11 16 L24 30 L20 20 L10 9Z"  fill="url(#th-fin)" stroke="#475569" stroke-width="0.4"/>
+
+          <!-- Bocal -->
+          <path d="M-11 24 L-13 28 L13 28 L11 24Z" fill="#1e293b"/>
+          <ellipse cx="0" cy="28" rx="13" ry="2.5" fill="#0f172a"/>
+
+          <!-- Corpo -->
+          <rect x="-11" y="-20" width="22" height="42" rx="11" fill="url(#th-body)"/>
+          <rect x="-11" y="-20" width="6"  height="42" rx="6"  fill="white" opacity="0.2"/>
+
+          <!-- Faixa LARANJA -->
+          <rect x="-11" y="5"  width="22" height="7" fill="#f97316"/>
+          <rect x="-11" y="12" width="22" height="2" fill="#c2410c" opacity="0.85"/>
+          <rect x="-11" y="5"  width="5"  height="7" fill="#fb923c" opacity="0.35"/>
+          <!-- Faixa verde da plataforma -->
+          <rect x="-11" y="15" width="22" height="3" fill="#22c55e" opacity="0.72"/>
+          <line x1="-11" y1="3" x2="11" y2="3" stroke="#cbd5e1" stroke-width="0.7" opacity="0.5"/>
+
+          <!-- Janela: aro laranja + vidro azul -->
+          <circle cx="0" cy="-6" r="9.5" fill="#f97316"/>
+          <circle cx="0" cy="-6" r="8"   fill="#c2410c"/>
+          <circle cx="0" cy="-6" r="6.5" fill="url(#th-win)"/>
+          <ellipse cx="-2" cy="-8" rx="2.5" ry="1.6" fill="white" opacity="0.45" transform="rotate(-15,-2,-8)"/>
+          <circle cx="2.5" cy="-3.5" r="0.9" fill="white" opacity="0.12"/>
+
+          <!-- Cone do nariz -->
+          <path d="M0 -32 L11 -20 L-11 -20Z" fill="url(#th-nose)"/>
+          <path d="M0 -32 L-7 -20 L-3 -20Z" fill="white" opacity="0.22"/>
+          <circle cx="0" cy="-30" r="2" fill="#bfdbfe" opacity="0.5"/>
+        </g>
+
+        <!-- Nome da plataforma -->
+        <text x="122" y="33" fill="white" font-size="23" font-weight="700" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="-0.3">Central de Leads</text>
+        <!-- Subtítulo verde -->
+        <text x="123" y="51" fill="#22c55e" font-size="10.5" font-weight="600" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="1.5" opacity="0.85">PLATAFORMA DE LEADS</text>
+      </svg>
+    </h2>
   
     <div class="topbar-actions">
       <div

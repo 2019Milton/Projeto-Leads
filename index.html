@@ -5875,6 +5875,74 @@ body.tema-claro .cal-nav span { color: #111827; }
     #60a5fa;
 }
 
+/* NICHO BADGES */
+.nicho-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fff;
+}
+.nicho-stripe {
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+.nicho-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid rgba(255,255,255,.08);
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+.nicho-tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color .2s, border-color .2s;
+  white-space: nowrap;
+}
+.nicho-tab.ativo {
+  color: #fff;
+}
+.nicho-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+.nicho-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.08);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background .15s;
+}
+.nicho-checkbox-label:hover {
+  background: rgba(255,255,255,.04);
+}
+.nicho-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 /* STATUS */
 
 .status-badge {
@@ -6954,6 +7022,8 @@ body.tema-claro .cal-nav span { color: #111827; }
 .card-criar-campanha {
   background: linear-gradient(145deg, rgba(185,28,28,0.22), rgba(239,68,68,0.07)) !important;
   border: 1px solid rgba(239,68,68,0.28) !important;
+  border-top: 4px solid #ef4444 !important;
+  transition: border-top-color .25s;
 }
 
 .card-criar-campanha h3 {
@@ -11186,7 +11256,38 @@ body.tema-claro .suporte-input {
             </select>
 
           </div>
-        
+
+          <!-- NICHOS -->
+          <div>
+            <label
+              style="
+                display:block;
+                margin-bottom:8px;
+                color:#9ca3af;
+                font-size:13px;
+              "
+            >
+              Tipo de Corretor (nichos)
+            </label>
+            <div class="nicho-checkboxes">
+              <label class="nicho-checkbox-label">
+                <input type="checkbox" name="novo_usuario_nicho" value="1">
+                <span class="nicho-dot" style="background:#2563EB;"></span>
+                Corretor de Imóveis
+              </label>
+              <label class="nicho-checkbox-label">
+                <input type="checkbox" name="novo_usuario_nicho" value="2">
+                <span class="nicho-dot" style="background:#16A34A;"></span>
+                Corretor de Convênio Médico
+              </label>
+              <label class="nicho-checkbox-label">
+                <input type="checkbox" name="novo_usuario_nicho" value="3">
+                <span class="nicho-dot" style="background:#EA580C;"></span>
+                Corretor de Suplementos
+              </label>
+            </div>
+          </div>
+
           <!-- BOTÃO -->
           <button
             onclick="criarUsuario()"
@@ -11256,6 +11357,7 @@ body.tema-claro .suporte-input {
               <th>ID</th>
               <th>Email</th>
               <th>Tipo</th>
+              <th>Nichos</th>
               <th>Plano</th>
               <th>Status</th>
               <th>Campanhas</th>
@@ -12405,6 +12507,18 @@ async function init() {
     }
 
     await carregarPlanoAtual();
+
+    // carrega nichos do usuário e inicializa tabs
+    try {
+      const resNichos = await fetch(`${API}/usuario/nichos`, {
+        headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+      });
+      const nichosData = await resNichos.json();
+      if (Array.isArray(nichosData)) {
+        usuarioLogado.nichos = nichosData;
+        inicializarNichoTabs();
+      }
+    } catch (_) {}
 
   } catch (err) {
 
@@ -13890,11 +14004,16 @@ function criarLeadCard(lead) {
 
     lead.score === "quente"
       ? "quente"
-  
+
       : lead.score === "frio"
       ? "frio"
-  
+
       : "morno";
+
+  const nichoBorderStyle =
+    lead.nicho_cor
+      ? `border-left: 4px solid ${lead.nicho_cor};`
+      : "";
 
   return `
 
@@ -13910,7 +14029,9 @@ function criarLeadCard(lead) {
       ondragstart="iniciarArrastoLead(event)"
 
       ondragend="finalizarArrastoLead(event)"
-    
+
+      style="${nichoBorderStyle}"
+
       onclick='
         if (leadFoiArrastado) {
           leadFoiArrastado = false;
@@ -13932,6 +14053,13 @@ function criarLeadCard(lead) {
         <div class="lead-identidade">
 
           <h4>${escaparHtml(lead.nome || "-")}</h4>
+
+          ${lead.nicho_cor ? `
+            <span class="nicho-badge" style="background:${lead.nicho_cor}20;color:${lead.nicho_cor};border:1px solid ${lead.nicho_cor}40;margin-bottom:2px;">
+              <span class="nicho-dot" style="background:${lead.nicho_cor};width:5px;height:5px;"></span>
+              ${escaparHtml(lead.nicho_nome || "")}
+            </span>
+          ` : ""}
 
           <span
             class="lead-score ${classeScore}"
@@ -18814,7 +18942,8 @@ async function criarCampanhaCompleta() {
           usuario_id,
           nome: campanha_nome,
           objetivo,
-          configuracoes_avancadas
+          configuracoes_avancadas,
+          nicho_id: window._nichoAtivo?.id || null
         })
       }
     );
@@ -19507,27 +19636,37 @@ async function carregarCampanhas() {
 
     <div class="
       campanha-card
-    
+
       ${campanhaEstaAtiva(c)
         ? "active-card"
         : campanhaEstaPausada(c)
         ? "paused-card"
         : "deleted-card"
       }
-    ">
-        
+    "
+      style="${c.nicho_cor ? `border-left: 4px solid ${c.nicho_cor};` : ""}"
+    >
+
       <div class="campanha-topo">
-    
+
         <div class="campanha-header">
-    
+
           <h3>
             🚀 ${c.nome}
           </h3>
-    
-          <span class="badge meta">
-            ${c.origem}
-          </span>
-    
+
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            ${c.nicho_cor ? `
+              <span class="nicho-badge" style="background:${c.nicho_cor}20;color:${c.nicho_cor};border:1px solid ${c.nicho_cor}40;">
+                <span class="nicho-dot" style="background:${c.nicho_cor};width:6px;height:6px;"></span>
+                ${c.nicho_nome || ""}
+              </span>
+            ` : ""}
+            <span class="badge meta">
+              ${c.origem}
+            </span>
+          </div>
+
         </div>
     
         ${
@@ -21259,59 +21398,37 @@ async function carregarPainelAdmin() {
                 gap:6px;
               "
             >
-          
-              <span>
-                ${u.tipo}
-              </span>
-          
-              ${
-                u.tipo === "admin_corretor"
-          
-                ?
-          
-                `
-                <div
-                  style="
-                    font-size:11px;
-                    color:#9ca3af;
-                    margin-top:4px;
-                  "
-                >
-          
-                  ${
-                    data.usuarios
-                      .filter(
-                        x =>
-                          x.admin_id == u.id
-                      )
-                      .map(
-                        x => `
-                          <div>
-                            👤 ${x.email}
-                          </div>
-                        `
-                      )
-                      .join("")
-          
-                    ||
-          
-                    `
-                    <div>
-                      Nenhum corretor
-                    </div>
-                    `
-                  }
-          
+
+              <span>${u.tipo}</span>
+              ${u.tipo === "admin_corretor" ? `
+                <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
+                  ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${x.email}</div>`).join("") || "<div>Nenhum corretor</div>"}
                 </div>
-                `
-          
-                :
-          
-                ""
-              }
-          
+              ` : ""}
+
             </div>
-          
+
+          </td>
+
+          <td>
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:120px;">
+              ${
+                (u.nichos || []).length === 0
+                  ? `<span style="color:#6b7280;font-size:11px;">Nenhum</span>`
+                  : (u.nichos || []).map(n => `
+                      <span class="nicho-badge" style="background:${n.cor}20;color:${n.cor};border:1px solid ${n.cor}40;">
+                        <span class="nicho-dot" style="background:${n.cor};width:6px;height:6px;"></span>
+                        ${n.nome}
+                      </span>
+                    `).join("")
+              }
+              <button
+                style="margin-top:4px;font-size:11px;padding:3px 8px;"
+                onclick="abrirModalNichosUsuario(${u.id}, ${JSON.stringify(JSON.stringify(u.nichos || []))})"
+              >
+                Editar
+              </button>
+            </div>
           </td>
 
           <td>
@@ -22418,6 +22535,12 @@ async function criarUsuario() {
       "novo_usuario_plano"
     ).value;
 
+  const nicho_ids = Array.from(
+    document.querySelectorAll(
+      "input[name='novo_usuario_nicho']:checked"
+    )
+  ).map(el => Number(el.value));
+
   if (
     !nome ||
     !sobrenome ||
@@ -22448,7 +22571,8 @@ async function criarUsuario() {
         senha,
         tipo,
         admin_id,
-        plano
+        plano,
+        nicho_ids
       })
     }
   );
@@ -24807,6 +24931,340 @@ function adicionarBannerGeradoAoCarrossel() {
 </script>
 
 <script>inicializarCarrosselImagens();</script>
+
+<!-- ===== MODAL NICHOS USUÁRIO (ADMIN) ===== -->
+<div
+  id="modal_nichos_usuario"
+  style="
+    display:none;
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    background:rgba(0,0,0,.6);
+    z-index:10000;
+    align-items:center;
+    justify-content:center;
+  "
+>
+  <div
+    style="
+      background:#1e293b;
+      border-radius:16px;
+      padding:28px;
+      width:360px;
+      max-width:90vw;
+    "
+  >
+    <h3 style="margin:0 0 6px;color:white;">Tipo de Corretor</h3>
+    <p style="color:#9ca3af;font-size:13px;margin:0 0 20px;">
+      Selecione os nichos do usuário <b id="modal_nichos_usuario_email" style="color:white;"></b>
+    </p>
+
+    <div class="nicho-checkboxes" id="modal_nichos_checkboxes">
+      <label class="nicho-checkbox-label">
+        <input type="checkbox" name="modal_nicho" value="1">
+        <span class="nicho-dot" style="background:#2563EB;"></span>
+        Corretor de Imóveis
+      </label>
+      <label class="nicho-checkbox-label">
+        <input type="checkbox" name="modal_nicho" value="2">
+        <span class="nicho-dot" style="background:#16A34A;"></span>
+        Corretor de Convênio Médico
+      </label>
+      <label class="nicho-checkbox-label">
+        <input type="checkbox" name="modal_nicho" value="3">
+        <span class="nicho-dot" style="background:#EA580C;"></span>
+        Corretor de Suplementos
+      </label>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:24px;">
+      <button
+        class="btn-primary"
+        style="flex:1;height:44px;"
+        onclick="salvarNichosUsuario()"
+      >
+        Salvar
+      </button>
+      <button
+        style="flex:1;height:44px;"
+        onclick="document.getElementById('modal_nichos_usuario').style.display='none'"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let _modalNichosUsuarioId = null;
+
+function abrirModalNichosUsuario(userId, nichosJson) {
+  _modalNichosUsuarioId = userId;
+  const nichos = JSON.parse(nichosJson);
+  const idsAtivos = nichos.map(n => n.id);
+
+  document.querySelectorAll("input[name='modal_nicho']").forEach(cb => {
+    cb.checked = idsAtivos.includes(Number(cb.value));
+  });
+
+  // busca email do usuário na tabela
+  const rows = document.querySelectorAll("#admin_tabela_usuarios tr");
+  let email = "";
+  rows.forEach(row => {
+    if (row.cells[0] && String(row.cells[0].innerText).trim() === String(userId)) {
+      email = row.cells[1]?.innerText?.trim() || "";
+    }
+  });
+  document.getElementById("modal_nichos_usuario_email").innerText = email;
+
+  const modal = document.getElementById("modal_nichos_usuario");
+  modal.style.display = "flex";
+}
+
+async function salvarNichosUsuario() {
+  if (!_modalNichosUsuarioId) return;
+
+  const nicho_ids = Array.from(
+    document.querySelectorAll("input[name='modal_nicho']:checked")
+  ).map(el => Number(el.value));
+
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API}/admin/usuarios/${_modalNichosUsuarioId}/nichos`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({ nicho_ids })
+  });
+
+  const data = await res.json();
+  if (data.error) { alert(data.error); return; }
+
+  document.getElementById("modal_nichos_usuario").style.display = "none";
+  await carregarPainelAdmin();
+}
+</script>
+
+<!-- ===== TABS DE NICHO NA CRIAÇÃO DE CAMPANHA ===== -->
+<script>
+// Injeta tabs de nicho no card de criação de campanha após login
+function inicializarNichoTabs() {
+  const nichos = usuarioLogado?.nichos || [];
+  if (!nichos.length) return;
+
+  const card = document.querySelector(".card-criar-campanha");
+  if (!card || card.querySelector(".nicho-tabs")) return;
+
+  const tabsEl = document.createElement("div");
+  tabsEl.className = "nicho-tabs";
+  tabsEl.id = "nicho_campanha_tabs";
+
+  nichos.forEach((n, i) => {
+    const btn = document.createElement("button");
+    btn.className = "nicho-tab" + (i === 0 ? " ativo" : "");
+    btn.style.borderBottomColor = i === 0 ? n.cor : "transparent";
+    btn.style.color = i === 0 ? n.cor : "";
+    btn.dataset.nichoId = n.id;
+    btn.dataset.nichoSlug = n.slug;
+    btn.dataset.nichoCor = n.cor;
+    btn.innerText = n.nome;
+    btn.onclick = () => selecionarNichoTab(n, btn);
+    tabsEl.appendChild(btn);
+  });
+
+  // insere antes do bloco IA (primeiro filho do card)
+  card.insertBefore(tabsEl, card.firstElementChild);
+
+  // container dos campos específicos por nicho
+  const camposExtra = document.createElement("div");
+  camposExtra.id = "nicho_campos_extras";
+  // injeta após o input de nome da campanha
+  const inputNome = document.getElementById("campanha_nome");
+  if (inputNome) {
+    inputNome.parentNode.insertBefore(camposExtra, inputNome.nextSibling);
+  } else {
+    card.appendChild(camposExtra);
+  }
+
+  // define o primeiro nicho como ativo
+  selecionarNichoTab(nichos[0], tabsEl.firstElementChild);
+}
+
+function selecionarNichoTab(nicho, btnEl) {
+  // atualiza visual das tabs
+  document.querySelectorAll(".nicho-tab").forEach(b => {
+    b.classList.remove("ativo");
+    b.style.borderBottomColor = "transparent";
+    b.style.color = "";
+  });
+  btnEl.classList.add("ativo");
+  btnEl.style.borderBottomColor = nicho.cor;
+  btnEl.style.color = nicho.cor;
+
+  // atualiza cor de acento do card
+  const card = document.querySelector(".card-criar-campanha");
+  if (card) card.style.borderTopColor = nicho.cor;
+
+  // guarda nicho ativo
+  window._nichoAtivo = nicho;
+
+  // renderiza campos extras do nicho
+  const container = document.getElementById("nicho_campos_extras");
+  if (!container) return;
+
+  if (nicho.slug === "imoveis") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de imóvel</label>
+          <select id="nicho_tipo_imovel" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="residencial">Residencial</option>
+            <option value="comercial">Comercial</option>
+            <option value="rural">Rural</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Finalidade</label>
+          <select id="nicho_finalidade" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="venda">Venda</option>
+            <option value="locacao">Locação</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Valor mín. (R$)</label>
+          <input type="number" id="nicho_valor_min" placeholder="Ex: 300000" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Valor máx. (R$)</label>
+          <input type="number" id="nicho_valor_max" placeholder="Ex: 800000" style="margin-top:4px;">
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label style="color:#9ca3af;font-size:12px;">Região / Bairro</label>
+        <input type="text" id="nicho_regiao" placeholder="Ex: Santo André, SP" style="margin-top:4px;">
+      </div>
+    `;
+  } else if (nicho.slug === "saude") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Operadora</label>
+          <input type="text" id="nicho_operadora" placeholder="Ex: Amil, Unimed..." style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de plano</label>
+          <select id="nicho_tipo_plano" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="individual">Individual</option>
+            <option value="familiar">Familiar</option>
+            <option value="empresarial">Empresarial</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Faixa etária mín.</label>
+          <input type="number" id="nicho_faixa_min" placeholder="Ex: 18" min="0" max="120" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Faixa etária máx.</label>
+          <input type="number" id="nicho_faixa_max" placeholder="Ex: 59" min="0" max="120" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Cobertura</label>
+          <select id="nicho_cobertura" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="basica">Básica</option>
+            <option value="intermediaria">Intermediária</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Acomodação</label>
+          <select id="nicho_acomodacao" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="enfermaria">Enfermaria</option>
+            <option value="apartamento">Apartamento</option>
+          </select>
+        </div>
+      </div>
+    `;
+  } else if (nicho.slug === "suplementos") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Produto</label>
+          <select id="nicho_produto" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="whey">Whey Protein</option>
+            <option value="creatina">Creatina</option>
+            <option value="pre_workout">Pré-treino</option>
+            <option value="bcaa">BCAA</option>
+            <option value="multivitaminico">Multivitamínico</option>
+            <option value="colageno">Colágeno</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Objetivo</label>
+          <select id="nicho_objetivo" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="ganho_massa">Ganho de massa</option>
+            <option value="emagrecimento">Emagrecimento</option>
+            <option value="performance">Performance</option>
+            <option value="saude">Saúde geral</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Marca</label>
+          <input type="text" id="nicho_marca" placeholder="Ex: Growth, Max Titanium..." style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo</label>
+          <select id="nicho_publico_alvo" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="iniciantes">Iniciantes</option>
+            <option value="intermediario">Intermediário</option>
+            <option value="avancado">Avançado</option>
+          </select>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// Coleta os dados extras do nicho ativo ao criar campanha
+function coletarDadosNichoAtivo() {
+  const nicho = window._nichoAtivo;
+  if (!nicho) return {};
+
+  const dados = { nicho_id: nicho.id };
+
+  if (nicho.slug === "imoveis") {
+    dados.tipo_imovel = document.getElementById("nicho_tipo_imovel")?.value || null;
+    dados.finalidade  = document.getElementById("nicho_finalidade")?.value  || null;
+    dados.valor_min   = Number(document.getElementById("nicho_valor_min")?.value) || null;
+    dados.valor_max   = Number(document.getElementById("nicho_valor_max")?.value) || null;
+    dados.regiao      = document.getElementById("nicho_regiao")?.value || null;
+  } else if (nicho.slug === "saude") {
+    dados.operadora        = document.getElementById("nicho_operadora")?.value  || null;
+    dados.tipo_plano       = document.getElementById("nicho_tipo_plano")?.value || null;
+    dados.faixa_etaria_min = Number(document.getElementById("nicho_faixa_min")?.value) || null;
+    dados.faixa_etaria_max = Number(document.getElementById("nicho_faixa_max")?.value) || null;
+    dados.cobertura        = document.getElementById("nicho_cobertura")?.value  || null;
+    dados.acomodacao       = document.getElementById("nicho_acomodacao")?.value || null;
+  } else if (nicho.slug === "suplementos") {
+    dados.produto      = document.getElementById("nicho_produto")?.value      || null;
+    dados.objetivo     = document.getElementById("nicho_objetivo")?.value     || null;
+    dados.marca        = document.getElementById("nicho_marca")?.value        || null;
+    dados.publico_alvo = document.getElementById("nicho_publico_alvo")?.value || null;
+  }
+
+  return dados;
+}
+</script>
 
 </body>
 </html>

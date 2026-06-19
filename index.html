@@ -10296,33 +10296,6 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Link de destino</label>
-              <input
-                type="url"
-                id="adv_link"
-                placeholder="https://seusite.com.br"
-              >
-            </div>
-
-            <div class="advanced-full">
-              <label>Política de privacidade</label>
-              <input
-                type="url"
-                id="adv_privacidade_url"
-                placeholder="https://seusite.com.br/politica-de-privacidade"
-              >
-            </div>
-
-            <div class="advanced-full">
-              <label>Texto do link da política</label>
-              <input
-                type="text"
-                id="adv_privacidade_texto"
-                placeholder="Política de Privacidade"
-              >
-            </div>
-
-            <div class="advanced-full">
               <label>Perguntas qualificadoras</label>
               <textarea
                 id="adv_perguntas"
@@ -25730,6 +25703,30 @@ function inicializarNichoTabs() {
   selecionarNichoTab(nichos[0], tabsEl.firstElementChild);
 }
 
+function _placeholdersPorNicho(slug) {
+  if (slug === "saude") return {
+    nome:      "Ex: Plano Amil Família Completo",
+    titulo:    "Ex: Plano de Saúde com Cobertura Total",
+    descricao: "Ex: Sem carência, cobertura nacional",
+    perguntas: "Uma pergunta por linha. Ex: Quantas pessoas serão inclusas no plano?",
+    interesse: "Ex: saúde, plano médico, bem-estar"
+  };
+  if (slug === "suplementos") return {
+    nome:      "Ex: Whey Protein para Emagrecimento",
+    titulo:    "Ex: Suplementos para Alta Performance",
+    descricao: "Ex: Frete grátis e parcelamento em 12x",
+    perguntas: "Uma pergunta por linha. Ex: Qual seu objetivo principal?",
+    interesse: "Ex: musculação, whey protein, academia"
+  };
+  return {
+    nome:      "Ex: Casas Alto Padrão",
+    titulo:    "Ex: Apartamentos em Santo André",
+    descricao: "Ex: Entrada facilitada e financiamento",
+    perguntas: "Uma pergunta por linha. Ex: Qual faixa de investimento?",
+    interesse: "Ex: imóveis, financiamento, decoração"
+  };
+}
+
 function selecionarNichoTab(nicho, btnEl) {
   const cor = corSolidaNicho(nicho);
 
@@ -25746,6 +25743,15 @@ function selecionarNichoTab(nicho, btnEl) {
 
   // atualiza a cor do bloco completo de criacao da campanha
   aplicarTemaNichoCampanha(nicho);
+
+  // atualiza placeholders conforme o nicho
+  const ph = _placeholdersPorNicho(nicho.slug);
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.placeholder = val; };
+  set("campanha_nome",       ph.nome);
+  set("adv_titulo",          ph.titulo);
+  set("adv_descricao",       ph.descricao);
+  set("adv_perguntas",       ph.perguntas);
+  set("adv_interesse_busca", ph.interesse);
 
   // guarda nicho ativo
   window._nichoAtivo = nicho;

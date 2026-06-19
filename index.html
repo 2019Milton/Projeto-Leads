@@ -19943,69 +19943,44 @@ async function carregarStatusMeta() {
               Carregando status...
             </div>
 
-            <p>
-              <b>${pagamentoHabilitado ? "🟢" : "🔴"} Pagamento:</b><br>
-              ${tipoPagamento}
-              <br>
-              <small>${detalhePagamento}</small>
-            </p>
-        
-            <p>
-              <b>📢 Campanhas:</b><br>
-              ${data.metricas?.campanhas || 0}
-            </p>
-        
-            <p>
-              <b>🟢 Ativas:</b><br>
-              ${data.metricas?.campanhas_ativas || 0}
-            </p>
-        
-            <p>
-              <b>💰 Gasto hoje:</b><br>
-              ${gastoHoje}
-            </p>
-        
-            <p>
-              <b>🧲 Leads hoje:</b><br>
-              ${data.metricas?.leads_hoje || 0}
-            </p>
-        
-            <div class="sync-box">
+            <div class="meta-conta-selector" style="margin-top:10px;">
+              <b style="font-size:13px;display:block;margin-bottom:10px;">📈 Status Plataforma Leads</b>
 
-              <div>
-                🕒 Último sync:
-                <br>
-            
-                <span id="ultimo_sync_texto">
-                  Nunca sincronizado
-                </span>
-            
-                <br>
-            
-                <small id="ultimo_sync_timer">
-                  -
-                </small>
-              </div>
-            
-              <button
-                class="btn-sync-manual"
-                onclick="sincronizarCampanhas()"
-              >
-                🔄
-              </button>
-            
-            </div>
+              <p style="margin:0 0 6px;">
+                <b>📢 Campanhas:</b><br>
+                ${data.metricas?.campanhas || 0}
+              </p>
 
-            <div
-              id="sync_progress"
-              class="sync-progress"
-            >
-              <div class="sync-progress-bar">
-                <span></span>
+              <p style="margin:0 0 6px;">
+                <b>🟢 Ativas:</b><br>
+                ${data.metricas?.campanhas_ativas || 0}
+              </p>
+
+              <p style="margin:0 0 6px;">
+                <b>💰 Gasto hoje:</b><br>
+                ${gastoHoje}
+              </p>
+
+              <p style="margin:0 0 10px;">
+                <b>🧲 Leads hoje:</b><br>
+                ${data.metricas?.leads_hoje || 0}
+              </p>
+
+              <div class="sync-box">
+                <div>
+                  🕒 Último sync:
+                  <br>
+                  <span id="ultimo_sync_texto">Nunca sincronizado</span>
+                  <br>
+                  <small id="ultimo_sync_timer">-</small>
+                </div>
+                <button class="btn-sync-manual" onclick="sincronizarCampanhas()">🔄</button>
               </div>
-              <small>
-                Sincronizando campanhas, gasto e leads diretamente com a Meta...
-              </small>
+
+              <div id="sync_progress" class="sync-progress">
+                <div class="sync-progress-bar"><span></span></div>
+                <small>Sincronizando campanhas, gasto e leads diretamente com a Meta...</small>
+              </div>
             </div>
         
           </div>

@@ -495,18 +495,22 @@ body.tema-claro .card h3 { color: #0f172a; }
 }
 
 .painel-recolhivel-toggle {
-  width:30px;
-  height:30px;
-  display:inline-flex;
+  width:24px !important;
+  height:24px !important;
+  min-width:24px !important;
+  min-height:24px !important;
+  flex-shrink:0 !important;
+  display:inline-flex !important;
   align-items:center;
   justify-content:center;
-  border:1px solid rgba(148,163,184,0.28);
-  border-radius:8px;
-  background:rgba(15,23,42,0.72);
-  color:#cbd5e1;
+  border:1px solid rgba(148,163,184,0.20);
+  border-radius:6px;
+  background:rgba(8,14,30,0.85);
+  color:#94a3b8;
   cursor:pointer;
-  font-size:14px;
+  font-size:11px;
   line-height:1;
+  box-sizing:border-box;
   transition:
     background .15s ease,
     border-color .15s ease,
@@ -515,8 +519,8 @@ body.tema-claro .card h3 { color: #0f172a; }
 }
 
 .painel-recolhivel-toggle:hover {
-  background:rgba(34,197,94,0.16);
-  border-color:rgba(34,197,94,0.5);
+  background:rgba(34,197,94,0.14);
+  border-color:rgba(34,197,94,0.4);
   color:#86efac;
   transform:translateY(-1px);
 }
@@ -7395,9 +7399,9 @@ body.tema-claro .login-box:hover {
 }
 
 body.tema-claro .painel-recolhivel-toggle {
-  background:#fff;
+  background:rgba(226,232,240,0.85);
   border-color:#cbd5e1;
-  color:#334155;
+  color:#475569;
 }
 
 body.tema-claro .painel-recolhivel-toggle:hover {
@@ -8220,26 +8224,28 @@ body.tema-claro .targeting-chip {
   min-height: 360px;
 }
 .chat-expand-btn {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(148,163,184,0.28);
-  border-radius: 8px;
-  background: rgba(15,23,42,0.72);
-  color: #cbd5e1;
+  border: 1px solid rgba(148,163,184,0.20);
+  border-radius: 6px;
+  background: rgba(8,14,30,0.85);
+  color: #94a3b8;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 11px;
   line-height: 1;
   padding: 0;
   margin-right: 0;
   flex-shrink: 0;
+  box-sizing: border-box;
   transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
 }
 .chat-expand-btn:hover {
-  background: rgba(34,197,94,0.16);
-  border-color: rgba(34,197,94,0.5);
+  background: rgba(34,197,94,0.14);
+  border-color: rgba(34,197,94,0.4);
   color: #86efac;
   transform: translateY(-1px);
 }
@@ -13148,6 +13154,11 @@ const PAINEIS_RECOLHIVEIS = [
     seletor: "#painel_admin > .card",
     cabecalho: "h2",
     chave: "painel-admin"
+  },
+  {
+    seletor: "#painel_suporte_chat > .card",
+    cabecalho: "h2",
+    chave: "painel-suporte"
   }
 ];
 

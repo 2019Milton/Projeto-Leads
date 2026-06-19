@@ -14960,57 +14960,62 @@ function escaparHtmlMeta(valor) {
 
 function montarSeletorContaAnunciosMeta(data) {
 
-  const contas =
-    data.contas_anuncios || [];
+  const contas = data.contas_anuncios || [];
+  const conta = data.conta_anuncios;
+  const contaSelecionadaId = conta?.id || "";
 
-  if (contas.length <= 1) {
-    return "";
-  }
+  const botoes = `
+    <span style="display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+      <a href="https://www.facebook.com/adsmanager/manage/accounts" target="_blank"
+        style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(24,119,242,0.15);border:1px solid rgba(24,119,242,0.35);color:#60a5fa;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
+      >Gerenciar contas →</a>
+      <a href="https://business.facebook.com/settings/ad-accounts" target="_blank"
+        style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
+      >+ Criar nova conta →</a>
+    </span>
+  `;
 
-  const contaSelecionadaId =
-    data.conta_anuncios?.id || "";
+  const avisoSemConta = contas.length === 0 ? `
+    <div style="margin-top:10px;padding:10px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;">
+      <span style="font-size:12px;color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta de anúncios encontrada</span><br>
+      <span style="font-size:12px;color:#fde68a;line-height:1.5;">Para criar campanhas é necessário ter uma conta de anúncios ativa na Meta.</span>
+    </div>
+  ` : "";
 
-  const opcoes = contas.map(conta => {
-    const selecionada =
-      conta.id === contaSelecionadaId
-        ? "selected"
-        : "";
+  const seletor = contas.length > 1 ? (() => {
+    const opcoes = contas.map(c => {
+      const moeda = c.moeda ? ` - ${c.moeda}` : "";
+      return `<option value="${escaparHtmlMeta(c.id)}" ${c.id === contaSelecionadaId ? "selected" : ""}>${escaparHtmlMeta(c.nome || c.id)}${escaparHtmlMeta(moeda)}</option>`;
+    }).join("");
 
-    const moeda =
-      conta.moeda
-        ? ` - ${conta.moeda}`
-        : "";
-
-    return `
-      <option value="${escaparHtmlMeta(conta.id)}" ${selecionada}>
-        ${escaparHtmlMeta(conta.nome || conta.id)}${escaparHtmlMeta(moeda)}
-      </option>
-    `;
-  }).join("");
-
-  const aviso =
-    data.selecao_conta_anuncios_pendente
+    const aviso = data.selecao_conta_anuncios_pendente
       ? "Escolha a conta que a plataforma deve usar antes de sincronizar ou criar campanhas."
       : "Troque a conta ativa quando a conexao Meta tiver mais de uma conta disponivel.";
 
+    return `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(59,130,246,0.15);">
+        <label for="meta_conta_anuncios_select" style="display:block;margin-bottom:7px;font-weight:700;">
+          Conta de anuncios usada pela plataforma
+        </label>
+        <div class="meta-conta-selector-actions">
+          <select id="meta_conta_anuncios_select">
+            <option value="">Selecione uma conta</option>
+            ${opcoes}
+          </select>
+          <button onclick="salvarContaAnunciosMeta()">Usar conta</button>
+        </div>
+        <small style="display:block;margin-top:7px;color:#bfdbfe;line-height:1.4;">${aviso}</small>
+      </div>
+    `;
+  })() : "";
+
   return `
     <div class="meta-conta-selector">
-      <label for="meta_conta_anuncios_select">
-        Conta de anuncios usada pela plataforma
-      </label>
-
-      <div class="meta-conta-selector-actions">
-        <select id="meta_conta_anuncios_select">
-          <option value="">Selecione uma conta</option>
-          ${opcoes}
-        </select>
-
-        <button onclick="salvarContaAnunciosMeta()">
-          Usar conta
-        </button>
-      </div>
-
-      <small>${aviso}</small>
+      <b style="font-size:13px;">📢 Conta de anúncios:</b><br>
+      <span style="font-size:14px;">${escaparHtmlMeta(conta?.nome || "-")}</span>
+      ${botoes}
+      ${avisoSemConta}
+      ${seletor}
     </div>
   `;
 }
@@ -19946,37 +19951,6 @@ async function carregarStatusMeta() {
               </div>
 
             </div>
-
-            <p>
-              <b>📢 Conta de anúncios:</b><br>
-              ${escaparHtml(conta?.nome || "-")}
-              <br>
-              <span style="display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
-                <a
-                  href="https://www.facebook.com/adsmanager/manage/accounts"
-                  target="_blank"
-                  style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(24,119,242,0.15);border:1px solid rgba(24,119,242,0.35);color:#60a5fa;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-                >Gerenciar contas →</a>
-                <a
-                  href="https://business.facebook.com/settings/ad-accounts"
-                  target="_blank"
-                  style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-                >+ Criar nova conta →</a>
-              </span>
-            </p>
-
-            ${!(data.contas_anuncios?.length) ? `
-            <div style="margin:-6px 0 10px;padding:10px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;">
-              <span style="font-size:12px;color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta de anúncios encontrada</span><br>
-              <span style="font-size:12px;color:#fde68a;line-height:1.5;">Para criar campanhas é necessário ter uma conta de anúncios ativa na Meta.</span><br>
-              <a
-                href="https://business.facebook.com/settings/ad-accounts"
-                target="_blank"
-                style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 14px;background:#1877f2;color:#fff;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;"
-              >
-                Criar conta de anúncios na Meta →
-              </a>
-            </div>` : ""}
 
             ${seletorContaAnuncios}
 

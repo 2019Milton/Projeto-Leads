@@ -8519,7 +8519,7 @@ body.tema-claro .suporte-input {
   vertical-align: middle;
   margin-right: 10px;
   display: inline-block;
-  filter: drop-shadow(0 0 10px rgba(249,115,22,0.45)) drop-shadow(0 0 6px rgba(34,197,94,0.3));
+  filter: drop-shadow(0 0 12px rgba(124,77,255,0.5)) drop-shadow(0 0 8px rgba(255,111,0,0.5));
 }
 
 .topbar-hero {
@@ -8674,302 +8674,150 @@ body.tema-claro .suporte-input {
 <!-- SVG Rocket Symbol — referenciado como <use href="#rocket-icon"> -->
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Corpo principal: prata metálico -->
     <linearGradient id="rkt-body" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#f1f5f9"/>
-      <stop offset="40%"  stop-color="#e2e8f0"/>
-      <stop offset="100%" stop-color="#94a3b8"/>
+      <stop offset="0%"   stop-color="#0a1a6e"/>
+      <stop offset="15%"  stop-color="#1565c0"/>
+      <stop offset="32%"  stop-color="#42a5f5"/>
+      <stop offset="48%"  stop-color="#90caf9"/>
+      <stop offset="62%"  stop-color="#1976d2"/>
+      <stop offset="82%"  stop-color="#1143a0"/>
+      <stop offset="100%" stop-color="#0d1b7a"/>
     </linearGradient>
-    <!-- Fairing (seção superior): branco quente -->
-    <linearGradient id="rkt-fairing" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#f8fafc"/>
-      <stop offset="100%" stop-color="#dbeafe"/>
+    <linearGradient id="rkt-nose" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#7f0000"/>
+      <stop offset="18%"  stop-color="#e53935"/>
+      <stop offset="38%"  stop-color="#ff8a80"/>
+      <stop offset="55%"  stop-color="#ef5350"/>
+      <stop offset="80%"  stop-color="#c62828"/>
+      <stop offset="100%" stop-color="#7f0000"/>
     </linearGradient>
-    <!-- Cone do nariz: azul claro no topo, escuro na base -->
-    <linearGradient id="rkt-nose" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#1e3a5f"/>
-      <stop offset="100%" stop-color="#bfdbfe"/>
+    <linearGradient id="rkt-seam" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#bf360c"/>
+      <stop offset="25%"  stop-color="#ff8f00"/>
+      <stop offset="50%"  stop-color="#ffca28"/>
+      <stop offset="75%"  stop-color="#ff8f00"/>
+      <stop offset="100%" stop-color="#bf360c"/>
     </linearGradient>
-    <!-- Seção de motor: cinza escuro -->
-    <linearGradient id="rkt-engine" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#334155"/>
-      <stop offset="50%"  stop-color="#475569"/>
-      <stop offset="100%" stop-color="#1e293b"/>
-    </linearGradient>
-    <!-- Bocal: preto -->
-    <linearGradient id="rkt-nozzle" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#334155"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </linearGradient>
-    <!-- Chama externa: verde da plataforma -->
-    <linearGradient id="rkt-flame-a" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#22c55e"/>
-      <stop offset="40%"  stop-color="#16a34a"/>
-      <stop offset="100%" stop-color="#052e16" stop-opacity="0"/>
-    </linearGradient>
-    <!-- Chama interna: amarelo-laranja quente (núcleo da chama) -->
-    <linearGradient id="rkt-flame-b" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#fde68a"/>
-      <stop offset="50%"  stop-color="#fb923c"/>
-      <stop offset="100%" stop-color="#f97316" stop-opacity="0"/>
-    </linearGradient>
-    <!-- Janela: azul vivo -->
-    <linearGradient id="rkt-win" x1="10%" y1="5%" x2="90%" y2="95%">
-      <stop offset="0%"   stop-color="#7dd3fc"/>
-      <stop offset="100%" stop-color="#1d4ed8"/>
-    </linearGradient>
-    <!-- Aletas: gradiente escuro -->
     <linearGradient id="rkt-fin" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#475569"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+      <stop offset="0%"   stop-color="#b71c1c"/>
+      <stop offset="40%"  stop-color="#e53935"/>
+      <stop offset="70%"  stop-color="#ff7043"/>
+      <stop offset="100%" stop-color="#bf360c"/>
     </linearGradient>
-    <!-- Halo verde sob o motor -->
-    <radialGradient id="rkt-glow" cx="50%" cy="30%" r="70%">
-      <stop offset="0%"   stop-color="#22c55e" stop-opacity="0.4"/>
-      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    <linearGradient id="rkt-engine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#263238"/>
+      <stop offset="25%"  stop-color="#78909c"/>
+      <stop offset="50%"  stop-color="#90a4ae"/>
+      <stop offset="75%"  stop-color="#607d8b"/>
+      <stop offset="100%" stop-color="#263238"/>
+    </linearGradient>
+    <linearGradient id="rkt-frame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#37474f"/>
+      <stop offset="40%"  stop-color="#90a4ae"/>
+      <stop offset="70%"  stop-color="#607d8b"/>
+      <stop offset="100%" stop-color="#263238"/>
+    </linearGradient>
+    <radialGradient id="rkt-glass" cx="33%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#ffffff"/>
+      <stop offset="15%"  stop-color="#e3f2fd"/>
+      <stop offset="40%"  stop-color="#90caf9"/>
+      <stop offset="70%"  stop-color="#1565c0"/>
+      <stop offset="100%" stop-color="#0d47a1"/>
     </radialGradient>
-    <!-- Halo laranja (calor da chama) -->
-    <radialGradient id="rkt-glow2" cx="50%" cy="20%" r="70%">
-      <stop offset="0%"   stop-color="#fb923c" stop-opacity="0.28"/>
-      <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+    <linearGradient id="rkt-flame-a" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#ff6f00"/>
+      <stop offset="30%"  stop-color="#ff8f00"/>
+      <stop offset="70%"  stop-color="#ff6d00"/>
+      <stop offset="100%" stop-color="#e65100" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rkt-flame-b" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#fffde7"/>
+      <stop offset="35%"  stop-color="#ffee58"/>
+      <stop offset="70%"  stop-color="#ffca28"/>
+      <stop offset="100%" stop-color="#ff8f00" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rkt-plasma" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#7c4dff" stop-opacity="0.85"/>
+      <stop offset="40%"  stop-color="#651fff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#aa00ff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="rkt-glow-o" cx="50%" cy="30%" r="70%">
+      <stop offset="0%"   stop-color="#ff8f00" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#ff8f00" stop-opacity="0"/>
     </radialGradient>
-    <!-- ═══ GRADIENTES CILÍNDRICOS (simulam superfície 3D curva) ═══ -->
-    <!-- Corpo principal: prata metálica com especular -->
-    <linearGradient id="rkt-cyl" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#5c7080"/>
-      <stop offset="7%"   stop-color="#ffffff"/>
-      <stop offset="16%"  stop-color="#f1f5f9"/>
-      <stop offset="44%"  stop-color="#d8e2ec"/>
-      <stop offset="72%"  stop-color="#b4c4d2"/>
-      <stop offset="90%"  stop-color="#8fa4b5"/>
-      <stop offset="100%" stop-color="#5c7080"/>
-    </linearGradient>
-    <!-- Fairing: branco-azulado -->
-    <linearGradient id="rkt-cyl-fair" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#4d86ae"/>
-      <stop offset="7%"   stop-color="#ffffff"/>
-      <stop offset="18%"  stop-color="#f5f9fc"/>
-      <stop offset="50%"  stop-color="#ddedf5"/>
-      <stop offset="82%"  stop-color="#b3cedf"/>
-      <stop offset="100%" stop-color="#4d86ae"/>
-    </linearGradient>
-    <!-- Nariz: azul com especular -->
-    <linearGradient id="rkt-cyl-nose" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#1e3a5f"/>
-      <stop offset="9%"   stop-color="#93c5fd"/>
-      <stop offset="22%"  stop-color="#bfdbfe"/>
-      <stop offset="52%"  stop-color="#60a5fa"/>
-      <stop offset="80%"  stop-color="#2563eb"/>
-      <stop offset="100%" stop-color="#1e3a8a"/>
-    </linearGradient>
-    <!-- Anel separador: cinza escuro metálico -->
-    <linearGradient id="rkt-cyl-ring" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#0f172a"/>
-      <stop offset="9%"   stop-color="#94a3b8"/>
-      <stop offset="38%"  stop-color="#64748b"/>
-      <stop offset="75%"  stop-color="#475569"/>
-      <stop offset="100%" stop-color="#0f172a"/>
-    </linearGradient>
-    <!-- Motor: grafite escuro -->
-    <linearGradient id="rkt-cyl-eng" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#020617"/>
-      <stop offset="9%"   stop-color="#64748b"/>
-      <stop offset="32%"  stop-color="#475569"/>
-      <stop offset="65%"  stop-color="#334155"/>
-      <stop offset="88%"  stop-color="#1e293b"/>
-      <stop offset="100%" stop-color="#020617"/>
-    </linearGradient>
-    <!-- Faixa laranja: especular laranja -->
-    <linearGradient id="rkt-cyl-orange" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#7c2d12"/>
-      <stop offset="7%"   stop-color="#fed7aa"/>
-      <stop offset="18%"  stop-color="#f97316"/>
-      <stop offset="48%"  stop-color="#ea580c"/>
-      <stop offset="80%"  stop-color="#c2410c"/>
-      <stop offset="100%" stop-color="#7c2d12"/>
-    </linearGradient>
-    <!-- Faixa verde: especular verde -->
-    <linearGradient id="rkt-cyl-green" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#14532d"/>
-      <stop offset="7%"   stop-color="#86efac"/>
-      <stop offset="18%"  stop-color="#22c55e"/>
-      <stop offset="48%"  stop-color="#16a34a"/>
-      <stop offset="80%"  stop-color="#15803d"/>
-      <stop offset="100%" stop-color="#14532d"/>
-    </linearGradient>
-    <!-- Vidro da janela (radial, simula porthole côncavo) -->
-    <radialGradient id="rkt-glass" cx="36%" cy="33%" r="62%">
-      <stop offset="0%"   stop-color="#dbeafe"/>
-      <stop offset="35%"  stop-color="#7dd3fc"/>
-      <stop offset="80%"  stop-color="#2563eb"/>
-      <stop offset="100%" stop-color="#1e3a8a"/>
+    <radialGradient id="rkt-glow-p" cx="50%" cy="20%" r="80%">
+      <stop offset="0%"   stop-color="#7c4dff" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#7c4dff" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
   <symbol id="rocket-icon" viewBox="0 0 80 130">
 
-    <!-- ═══════════════════════════════════ -->
-    <!--  HALO DO MOTOR                      -->
-    <!-- ═══════════════════════════════════ -->
-    <ellipse cx="40" cy="122" rx="24" ry="12" fill="url(#rkt-glow)"/>
-    <ellipse cx="40" cy="118" rx="16" ry="8"  fill="url(#rkt-glow2)"/>
+    <!-- HALOS DE EXAUSTÃO -->
+    <ellipse cx="40" cy="123" rx="26" ry="10" fill="url(#rkt-glow-p)" opacity="0.8"/>
+    <ellipse cx="40" cy="118" rx="18" ry="7"  fill="url(#rkt-glow-o)" opacity="0.7"/>
 
-    <!-- ═══════════════════════════════════ -->
-    <!--  CHAMAS (desenhadas primeiro, atrás) -->
-    <!-- ═══════════════════════════════════ -->
-    <!-- Chama longa externa -->
-    <path d="M 27 106 Q 20 124 40 130 Q 60 124 53 106 Z" fill="url(#rkt-flame-a)"/>
-    <!-- Chama média -->
-    <path d="M 31 106 Q 26 120 40 126 Q 54 120 49 106 Z" fill="url(#rkt-flame-b)" opacity="0.9"/>
-    <!-- Chama curta amarela -->
-    <path d="M 34 106 Q 31 116 40 120 Q 49 116 46 106 Z" fill="#fde68a" opacity="0.65"/>
-    <!-- Núcleo quase branco -->
-    <ellipse cx="40" cy="109" rx="5"  ry="5.5" fill="#dcfce7" opacity="0.95"/>
-    <ellipse cx="40" cy="108" rx="2.5" ry="3"  fill="white"   opacity="0.7"/>
+    <!-- PLASMA ROXO (rastro atrás das chamas) -->
+    <path d="M 33 108 Q 27 121 29 132 Q 40 128 51 132 Q 53 121 47 108 Z" fill="url(#rkt-plasma)" opacity="0.75"/>
 
-    <!-- ═══════════════════════════════════ -->
-    <!--  ALETAS PRINCIPAIS (grandes)        -->
-    <!-- ═══════════════════════════════════ -->
-    <!-- Aleta esquerda -->
-    <path d="M 25 90 L 2 114 L 3 98 L 20 80 Z"  fill="url(#rkt-fin)"/>
-    <path d="M 25 90 L 3  98 L 18 84 Z"          fill="#64748b"/>
-    <line x1="13" y1="106" x2="22" y2="88" stroke="#475569" stroke-width="0.8" opacity="0.5"/>
-    <!-- Aleta direita -->
-    <path d="M 55 90 L 78 114 L 77 98 L 60 80 Z" fill="url(#rkt-fin)"/>
-    <path d="M 55 90 L 77 98  L 62 84 Z"          fill="#64748b"/>
-    <line x1="67" y1="106" x2="58" y2="88" stroke="#475569" stroke-width="0.8" opacity="0.5"/>
+    <!-- CHAMAS SERRILHADAS (estilo cartoon) -->
+    <path d="M 28 107 L 23 119 L 27 115 L 25 125 L 31 117 L 29 127 L 36 119 L 35 129 L 40 122 L 45 129 L 44 119 L 51 127 L 49 117 L 55 125 L 53 115 L 57 119 L 52 107 Z" fill="url(#rkt-flame-a)"/>
+    <path d="M 31 107 L 27 117 L 30 114 L 29 122 L 34 115 L 33 123 L 38 117 L 37 126 L 40 120 L 43 126 L 42 117 L 47 123 L 46 115 L 51 122 L 50 114 L 53 117 L 49 107 Z" fill="url(#rkt-flame-b)" opacity="0.9"/>
+    <path d="M 35 107 Q 32 114 35 120 Q 40 116 45 120 Q 48 114 45 107 Z" fill="white" opacity="0.85"/>
 
-    <!-- ═══════════════════════════════════ -->
-    <!--  BOCAL / CAMPÂNULA DO MOTOR         -->
-    <!-- ═══════════════════════════════════ -->
-    <path d="M 28 100 L 24 108 L 56 108 L 52 100 Z" fill="url(#rkt-nozzle)"/>
-    <!-- Borda do bocal (anel) -->
-    <ellipse cx="40" cy="108" rx="16" ry="3.5" fill="#1e293b"/>
-    <ellipse cx="40" cy="107" rx="13" ry="2.8" fill="#0f172a"/>
-    <!-- Interior incandescente -->
-    <ellipse cx="40" cy="107" rx="8"  ry="2"   fill="#22c55e" opacity="0.3"/>
+    <!-- ALETAS GRANDES (vermelhas, varridas) -->
+    <path d="M 24 84 C 10 87 3 102 5 116 L 24 108 Z" fill="url(#rkt-fin)"/>
+    <path d="M 24 84 C 14 89 9 100 10 110 L 23 106 Z" fill="#ff7043" opacity="0.45"/>
+    <path d="M 56 84 C 70 87 77 102 75 116 L 56 108 Z" fill="url(#rkt-fin)"/>
+    <path d="M 56 84 C 66 89 71 100 70 110 L 57 106 Z" fill="#ff7043" opacity="0.4"/>
 
-    <!-- ═══════════════════════════════════ -->
-    <!--  SEÇÃO DO MOTOR                     -->
-    <!-- ═══════════════════════════════════ -->
-    <!-- SEÇÃO DO MOTOR (gradiente cilíndrico grafite) -->
-    <rect x="24" y="88" width="32" height="14" rx="1" fill="url(#rkt-cyl-eng)"/>
-    <ellipse cx="40" cy="88" rx="16" ry="2.5" fill="#475569" opacity="0.5"/>
-    <ellipse cx="40" cy="102" rx="16" ry="2.5" fill="#020617" opacity="0.6"/>
-    <!-- Nervuras verticais do motor -->
-    <line x1="31" y1="88" x2="31" y2="102" stroke="#64748b" stroke-width="1.2" opacity="0.7"/>
-    <line x1="37" y1="88" x2="37" y2="102" stroke="#64748b" stroke-width="1.2" opacity="0.7"/>
-    <line x1="43" y1="88" x2="43" y2="102" stroke="#64748b" stroke-width="1.2" opacity="0.7"/>
-    <line x1="49" y1="88" x2="49" y2="102" stroke="#64748b" stroke-width="1.2" opacity="0.7"/>
-    <!-- Parafusos / rebites (2 fileiras) -->
-    <circle cx="28" cy="91" r="1.3" fill="#475569" stroke="#94a3b8" stroke-width="0.4"/>
-    <circle cx="40" cy="91" r="1.3" fill="#475569" stroke="#94a3b8" stroke-width="0.4"/>
-    <circle cx="52" cy="91" r="1.3" fill="#475569" stroke="#94a3b8" stroke-width="0.4"/>
-    <circle cx="28" cy="99" r="1.3" fill="#475569" stroke="#94a3b8" stroke-width="0.4"/>
-    <circle cx="40" cy="99" r="1.3" fill="#475569" stroke="#94a3b8" stroke-width="0.4"/>
-    <circle cx="52" cy="99" r="1.3" fill="#475569" stroke="#94a3b8" stroke-width="0.4"/>
+    <!-- COLLAR / BOCAL DO MOTOR (cinza metálico) -->
+    <rect x="25" y="97" width="30" height="12" rx="3" fill="url(#rkt-engine)"/>
+    <line x1="32" y1="97" x2="32" y2="109" stroke="#b0bec5" stroke-width="1.5" opacity="0.6"/>
+    <line x1="40" y1="97" x2="40" y2="109" stroke="#b0bec5" stroke-width="1.5" opacity="0.6"/>
+    <line x1="48" y1="97" x2="48" y2="109" stroke="#b0bec5" stroke-width="1.5" opacity="0.6"/>
+    <ellipse cx="40" cy="97"  rx="15" ry="2.5" fill="#546e7a" opacity="0.7"/>
+    <ellipse cx="40" cy="109" rx="15" ry="2.5" fill="#102027" opacity="0.7"/>
 
-    <!-- ANEL SEPARADOR INFERIOR (3D metálico) -->
-    <rect x="22" y="83" width="36" height="7" rx="1" fill="url(#rkt-cyl-ring)"/>
-    <ellipse cx="40" cy="83" rx="18" ry="2.2" fill="#94a3b8" opacity="0.4"/>
-    <ellipse cx="40" cy="90" rx="18" ry="2.2" fill="#0f172a" opacity="0.5"/>
-    <circle cx="28" cy="86" r="1.2" fill="#0f172a" stroke="#64748b" stroke-width="0.5"/>
-    <circle cx="40" cy="86" r="1.2" fill="#0f172a" stroke="#64748b" stroke-width="0.5"/>
-    <circle cx="52" cy="86" r="1.2" fill="#0f172a" stroke="#64748b" stroke-width="0.5"/>
+    <!-- CORPO PRINCIPAL (azul profundo glossy) -->
+    <rect x="24" y="28" width="32" height="70" rx="4" fill="url(#rkt-body)"/>
+    <ellipse cx="40" cy="28" rx="16" ry="3"   fill="#1976d2" opacity="0.45"/>
+    <ellipse cx="40" cy="98" rx="15" ry="2.5" fill="#0a1a6e" opacity="0.5"/>
 
-    <!-- ═══════════════════════════════════ -->
-    <!--  TANQUE PRINCIPAL (compartimento 2) -->
-    <!-- ═══════════════════════════════════ -->
-    <!-- TANQUE PRINCIPAL com gradiente cilíndrico 3D -->
-    <rect x="26" y="47" width="28" height="38" fill="url(#rkt-cyl)"/>
-    <!-- Elipse de topo do cilindro (profundidade 3D) -->
-    <ellipse cx="40" cy="47" rx="14" ry="2.8" fill="#b4c4d2"/>
-    <ellipse cx="40" cy="47" rx="12" ry="2"   fill="url(#rkt-cyl)"/>
-    <!-- Borda escura inferior do cilindro -->
-    <ellipse cx="40" cy="85" rx="14" ry="2.2" fill="#5c7080" opacity="0.6"/>
+    <!-- FAIXA SEAM LARANJA COM REBITES -->
+    <rect x="24" y="24" width="32" height="7" rx="1" fill="url(#rkt-seam)"/>
+    <circle cx="28"   cy="27.5" r="1.5" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+    <circle cx="33.2" cy="27.5" r="1.5" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+    <circle cx="38.4" cy="27.5" r="1.5" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+    <circle cx="43.6" cy="27.5" r="1.5" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+    <circle cx="48.8" cy="27.5" r="1.5" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+    <circle cx="54"   cy="27.5" r="1.5" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
 
-    <!-- FAIXA LARANJA cilíndrica -->
-    <rect x="26" y="60" width="28" height="9" fill="url(#rkt-cyl-orange)"/>
-    <ellipse cx="40" cy="60" rx="14" ry="2"   fill="#fed7aa" opacity="0.35"/>
-    <ellipse cx="40" cy="69" rx="14" ry="2"   fill="#7c2d12" opacity="0.45"/>
+    <!-- PORTHOLE / JANELA GRANDE (com moldura parafusada) -->
+    <circle cx="40" cy="57" r="13.5" fill="#1a237e"/>
+    <circle cx="40" cy="57" r="12"   fill="url(#rkt-frame)"/>
+    <circle cx="40"   cy="45.5" r="1.4" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+    <circle cx="50"   cy="48.5" r="1.4" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+    <circle cx="51.5" cy="58.5" r="1.4" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+    <circle cx="50"   cy="68"   r="1.4" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+    <circle cx="40"   cy="71"   r="1.4" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+    <circle cx="30"   cy="68"   r="1.4" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+    <circle cx="28.5" cy="58.5" r="1.4" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+    <circle cx="30"   cy="48.5" r="1.4" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+    <circle cx="40" cy="57" r="10" fill="#0d2060"/>
+    <circle cx="40" cy="57" r="9"  fill="url(#rkt-glass)"/>
+    <ellipse cx="35.5" cy="51.5" rx="4.5" ry="3" fill="white" opacity="0.80" transform="rotate(-18 35.5 51.5)"/>
+    <ellipse cx="36.5" cy="50.5" rx="2" ry="1.3" fill="white" opacity="0.95"/>
+    <path d="M 32.5 59 Q 37 61 41.5 59" stroke="#90caf9" stroke-width="1.2" fill="none" opacity="0.5"/>
+    <path d="M 33 62 Q 38 64 43 62" stroke="#90caf9" stroke-width="0.8" fill="none" opacity="0.35"/>
 
-    <!-- FAIXA VERDE cilíndrica (plataforma) -->
-    <rect x="26" y="72" width="28" height="5" fill="url(#rkt-cyl-green)"/>
-    <ellipse cx="40" cy="72" rx="14" ry="1.6" fill="#86efac" opacity="0.3"/>
-    <ellipse cx="40" cy="77" rx="14" ry="1.6" fill="#14532d" opacity="0.4"/>
+    <!-- CONE DO NARIZ (vermelho, ogival) -->
+    <path d="M 40 3 C 30 5 24 14 24 24 L 56 24 C 56 14 50 5 40 3 Z" fill="url(#rkt-nose)"/>
+    <path d="M 40 3 C 33 5 29 12 29 22 L 34 22 C 34 14 36 6 40 3 Z" fill="white" opacity="0.25"/>
+    <ellipse cx="40" cy="24" rx="16" ry="3" fill="#c62828" opacity="0.45"/>
+    <circle cx="40" cy="5" r="2.5" fill="#ff8a80" opacity="0.7"/>
+    <circle cx="40" cy="4.5" r="1.2" fill="white" opacity="0.65"/>
 
-    <!-- Linhas de painel (sutis) -->
-    <line x1="30" y1="52" x2="50" y2="52" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-    <line x1="30" y1="57" x2="50" y2="57" stroke="rgba(0,0,0,0.12)" stroke-width="0.8"/>
-    <line x1="30" y1="81" x2="50" y2="81" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
-
-    <!-- Antena (detalhe realista) -->
-    <line x1="54" y1="52" x2="62" y2="46" stroke="#94a3b8" stroke-width="0.9"/>
-    <circle cx="62" cy="46" r="1.3" fill="#64748b" stroke="#94a3b8" stroke-width="0.4"/>
-
-    <!-- ═══════════════════════════════════ -->
-    <!--  ANEL SEPARADOR SUPERIOR            -->
-    <!-- ═══════════════════════════════════ -->
-    <!-- ANEL SEPARADOR SUPERIOR (gradiente metálico 3D) -->
-    <rect x="22" y="38" width="36" height="8" rx="1" fill="url(#rkt-cyl-ring)"/>
-    <ellipse cx="40" cy="38" rx="18" ry="2.2" fill="#94a3b8" opacity="0.4"/>
-    <ellipse cx="40" cy="46" rx="18" ry="2.2" fill="#0f172a" opacity="0.5"/>
-    <circle cx="28" cy="42" r="1.2" fill="#0f172a" stroke="#64748b" stroke-width="0.5"/>
-    <circle cx="40" cy="42" r="1.2" fill="#0f172a" stroke="#64748b" stroke-width="0.5"/>
-    <circle cx="52" cy="42" r="1.2" fill="#0f172a" stroke="#64748b" stroke-width="0.5"/>
-
-    <!-- FAIRING / SEÇÃO SUPERIOR (gradiente cilíndrico branco-azulado) -->
-    <rect x="26" y="22" width="28" height="18" fill="url(#rkt-cyl-fair)"/>
-    <!-- Elipse de topo -->
-    <ellipse cx="40" cy="22" rx="14" ry="2.5" fill="white" opacity="0.55"/>
-    <!-- Elipse de fundo do fairing -->
-    <ellipse cx="40" cy="40" rx="14" ry="2.2" fill="#4d86ae" opacity="0.35"/>
-    <!-- Faixa azul de acento cilíndrica -->
-    <rect x="26" y="30" width="28" height="4" fill="#2563eb" opacity="0.6"/>
-    <ellipse cx="40" cy="30" rx="14" ry="1.4" fill="#60a5fa" opacity="0.35"/>
-    <ellipse cx="40" cy="34" rx="14" ry="1.4" fill="#1e40af" opacity="0.4"/>
-    <!-- Linhas de painel -->
-    <line x1="30" y1="25" x2="50" y2="25" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>
-    <line x1="30" y1="28" x2="50" y2="28" stroke="rgba(255,255,255,0.2)" stroke-width="0.8"/>
-
-    <!-- JANELA / PORTHOLE REALISTA -->
-    <!-- Moldura metálica externa (usa gradiente cilíndrico) -->
-    <circle cx="40" cy="27" r="10.5" fill="url(#rkt-cyl)"/>
-    <!-- Aro laranja (estilo da referência) -->
-    <circle cx="40" cy="27" r="9"    fill="url(#rkt-cyl-orange)"/>
-    <!-- Anel interno escuro (recesso da moldura) -->
-    <circle cx="40" cy="27" r="7.5"  fill="#0f172a"/>
-    <!-- Vidro côncavo (radial gradient para profundidade realista) -->
-    <circle cx="40" cy="27" r="6.5"  fill="url(#rkt-glass)"/>
-    <!-- Reflexo especular principal (luz de canto sup-esquerdo) -->
-    <ellipse cx="36.5" cy="23.5" rx="3.2" ry="2" fill="white" opacity="0.55" transform="rotate(-22 36.5 23.5)"/>
-    <!-- Reflexo de borda (arco sutil) -->
-    <path d="M 35 24 Q 38 22 43 24" stroke="white" stroke-width="0.8" fill="none" opacity="0.2"/>
-    <!-- Reflexo inferior sutil -->
-    <circle cx="42.5" cy="30" r="0.9" fill="white" opacity="0.1"/>
-
-    <!-- CONE DO NARIZ (forma ogival realista) -->
-    <!-- Forma ogival com curva Bezier (não triangular) -->
-    <path d="M 40 3 C 29 4 26 13 26 22 L 54 22 C 54 13 51 4 40 3 Z" fill="url(#rkt-cyl-nose)"/>
-    <!-- Reflexo especular esquerdo do nariz -->
-    <path d="M 40 3 C 32 4 29 11 29 20 L 33 20 C 33 13 34 6 40 3 Z" fill="white" opacity="0.22"/>
-    <!-- Elipse de perspectiva na base do nariz -->
-    <ellipse cx="40" cy="22" rx="14" ry="2.5" fill="#4d86ae" opacity="0.4"/>
-    <!-- Ponta com brilho especular -->
-    <circle cx="40" cy="5" r="2.8" fill="#dbeafe" opacity="0.65"/>
-    <circle cx="40" cy="4.5" r="1.2" fill="white" opacity="0.5"/>
-
-    <!-- ═══════════════════════════════════ -->
-    <!--  ESTRELAS DECORATIVAS               -->
-    <!-- ═══════════════════════════════════ -->
-    <circle cx="5"  cy="14" r="1.4" fill="white" opacity="0.75"/>
-    <circle cx="74" cy="8"  r="1"   fill="white" opacity="0.6"/>
-    <circle cx="6"  cy="30" r="0.9" fill="white" opacity="0.55"/>
-    <circle cx="75" cy="26" r="1.3" fill="white" opacity="0.65"/>
-    <circle cx="4"  cy="50" r="0.8" fill="white" opacity="0.45"/>
-    <circle cx="76" cy="54" r="1"   fill="white" opacity="0.5"/>
-    <circle cx="5"  cy="68" r="0.7" fill="white" opacity="0.38"/>
-    <circle cx="75" cy="72" r="0.9" fill="white" opacity="0.42"/>
   </symbol>
 </svg>
 
@@ -9131,192 +8979,166 @@ body.tema-claro .suporte-input {
     <h2>
       <svg class="topbar-hero" viewBox="0 0 390 66" overflow="visible" xmlns="http://www.w3.org/2000/svg" aria-label="Central de Leads">
         <defs>
-          <!-- Cilíndrico prata (corpo) -->
           <linearGradient id="th-body" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#5c7080"/>
-            <stop offset="7%"   stop-color="#ffffff"/>
-            <stop offset="16%"  stop-color="#f1f5f9"/>
-            <stop offset="44%"  stop-color="#d8e2ec"/>
-            <stop offset="72%"  stop-color="#b4c4d2"/>
-            <stop offset="92%"  stop-color="#8fa4b5"/>
-            <stop offset="100%" stop-color="#5c7080"/>
+            <stop offset="0%"   stop-color="#0a1a6e"/>
+            <stop offset="15%"  stop-color="#1565c0"/>
+            <stop offset="32%"  stop-color="#42a5f5"/>
+            <stop offset="48%"  stop-color="#90caf9"/>
+            <stop offset="62%"  stop-color="#1976d2"/>
+            <stop offset="82%"  stop-color="#1143a0"/>
+            <stop offset="100%" stop-color="#0d1b7a"/>
           </linearGradient>
-          <!-- Cilíndrico nariz azul -->
           <linearGradient id="th-nose" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#1e3a5f"/>
-            <stop offset="9%"   stop-color="#93c5fd"/>
-            <stop offset="24%"  stop-color="#bfdbfe"/>
-            <stop offset="52%"  stop-color="#60a5fa"/>
-            <stop offset="82%"  stop-color="#2563eb"/>
-            <stop offset="100%" stop-color="#1e3a8a"/>
+            <stop offset="0%"   stop-color="#7f0000"/>
+            <stop offset="18%"  stop-color="#e53935"/>
+            <stop offset="38%"  stop-color="#ff8a80"/>
+            <stop offset="55%"  stop-color="#ef5350"/>
+            <stop offset="80%"  stop-color="#c62828"/>
+            <stop offset="100%" stop-color="#7f0000"/>
           </linearGradient>
-          <!-- Cilíndrico laranja -->
-          <linearGradient id="th-orange" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#7c2d12"/>
-            <stop offset="7%"   stop-color="#fed7aa"/>
-            <stop offset="20%"  stop-color="#f97316"/>
-            <stop offset="50%"  stop-color="#ea580c"/>
-            <stop offset="82%"  stop-color="#c2410c"/>
-            <stop offset="100%" stop-color="#7c2d12"/>
+          <linearGradient id="th-seam" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#bf360c"/>
+            <stop offset="25%"  stop-color="#ff8f00"/>
+            <stop offset="50%"  stop-color="#ffca28"/>
+            <stop offset="75%"  stop-color="#ff8f00"/>
+            <stop offset="100%" stop-color="#bf360c"/>
           </linearGradient>
-          <!-- Cilíndrico verde -->
-          <linearGradient id="th-green" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#14532d"/>
-            <stop offset="7%"   stop-color="#86efac"/>
-            <stop offset="20%"  stop-color="#22c55e"/>
-            <stop offset="50%"  stop-color="#16a34a"/>
-            <stop offset="82%"  stop-color="#15803d"/>
-            <stop offset="100%" stop-color="#14532d"/>
-          </linearGradient>
-          <!-- Anel metálico -->
-          <linearGradient id="th-ring" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#0f172a"/>
-            <stop offset="9%"   stop-color="#94a3b8"/>
-            <stop offset="40%"  stop-color="#64748b"/>
-            <stop offset="80%"  stop-color="#475569"/>
-            <stop offset="100%" stop-color="#0f172a"/>
-          </linearGradient>
-          <!-- Motor grafite -->
-          <linearGradient id="th-eng" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%"   stop-color="#020617"/>
-            <stop offset="9%"   stop-color="#64748b"/>
-            <stop offset="35%"  stop-color="#475569"/>
-            <stop offset="65%"  stop-color="#334155"/>
-            <stop offset="90%"  stop-color="#1e293b"/>
-            <stop offset="100%" stop-color="#020617"/>
-          </linearGradient>
-          <!-- Chama laranja exterior -->
-          <linearGradient id="th-fa" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   stop-color="#fb923c"/>
-            <stop offset="45%"  stop-color="#f97316"/>
-            <stop offset="100%" stop-color="#7c2d12" stop-opacity="0"/>
-          </linearGradient>
-          <!-- Chama amarela interior -->
-          <linearGradient id="th-fb" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   stop-color="#fde68a"/>
-            <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
-          </linearGradient>
-          <!-- Aletas -->
           <linearGradient id="th-fin" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stop-color="#1e293b"/>
-            <stop offset="50%"  stop-color="#475569"/>
-            <stop offset="100%" stop-color="#1e293b"/>
+            <stop offset="0%"   stop-color="#b71c1c"/>
+            <stop offset="40%"  stop-color="#e53935"/>
+            <stop offset="70%"  stop-color="#ff7043"/>
+            <stop offset="100%" stop-color="#bf360c"/>
           </linearGradient>
-          <!-- Vidro da janela (porthole côncavo) -->
-          <radialGradient id="th-glass" cx="36%" cy="33%" r="62%">
-            <stop offset="0%"   stop-color="#dbeafe"/>
-            <stop offset="35%"  stop-color="#7dd3fc"/>
-            <stop offset="80%"  stop-color="#2563eb"/>
-            <stop offset="100%" stop-color="#1e3a8a"/>
+          <linearGradient id="th-engine" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#263238"/>
+            <stop offset="25%"  stop-color="#78909c"/>
+            <stop offset="50%"  stop-color="#90a4ae"/>
+            <stop offset="75%"  stop-color="#607d8b"/>
+            <stop offset="100%" stop-color="#263238"/>
+          </linearGradient>
+          <linearGradient id="th-frame" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#37474f"/>
+            <stop offset="40%"  stop-color="#90a4ae"/>
+            <stop offset="70%"  stop-color="#607d8b"/>
+            <stop offset="100%" stop-color="#263238"/>
+          </linearGradient>
+          <radialGradient id="th-glass" cx="33%" cy="28%" r="70%">
+            <stop offset="0%"   stop-color="#ffffff"/>
+            <stop offset="15%"  stop-color="#e3f2fd"/>
+            <stop offset="40%"  stop-color="#90caf9"/>
+            <stop offset="70%"  stop-color="#1565c0"/>
+            <stop offset="100%" stop-color="#0d47a1"/>
           </radialGradient>
-          <!-- Halo laranja -->
-          <radialGradient id="th-glow" cx="50%" cy="20%" r="80%">
-            <stop offset="0%"   stop-color="#fb923c" stop-opacity="0.45"/>
-            <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+          <linearGradient id="th-fa" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#ff6f00"/>
+            <stop offset="30%"  stop-color="#ff8f00"/>
+            <stop offset="70%"  stop-color="#ff6d00"/>
+            <stop offset="100%" stop-color="#e65100" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="th-fb" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#fffde7"/>
+            <stop offset="35%"  stop-color="#ffee58"/>
+            <stop offset="70%"  stop-color="#ffca28"/>
+            <stop offset="100%" stop-color="#ff8f00" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="th-plasma" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   stop-color="#7c4dff" stop-opacity="0.85"/>
+            <stop offset="40%"  stop-color="#651fff" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#aa00ff" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="th-glow-o" cx="50%" cy="30%" r="70%">
+            <stop offset="0%"   stop-color="#ff8f00" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#ff8f00" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="th-glow-p" cx="50%" cy="20%" r="80%">
+            <stop offset="0%"   stop-color="#7c4dff" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#7c4dff" stop-opacity="0"/>
           </radialGradient>
         </defs>
 
-        <!-- Trajetória pontilhada verde -->
-        <path d="M 5 63 C 18 63 30 61 43 58" stroke="#22c55e" stroke-width="2" fill="none" stroke-dasharray="4 3.5" stroke-linecap="round" opacity="0.55"/>
+        <!-- Trajetória pontilhada roxa -->
+        <path d="M 5 63 C 18 63 30 61 43 58" stroke="#7c4dff" stroke-width="2" fill="none" stroke-dasharray="4 3.5" stroke-linecap="round" opacity="0.5"/>
 
-        <!-- Fumaça de rastro -->
-        <circle cx="42" cy="58" r="6"   fill="#e2e8f0" opacity="0.07"/>
-        <circle cx="30" cy="61" r="5.5" fill="#e2e8f0" opacity="0.055"/>
-        <circle cx="18" cy="63" r="4.5" fill="#e2e8f0" opacity="0.04"/>
-        <circle cx="7"  cy="63" r="3.5" fill="#e2e8f0" opacity="0.03"/>
+        <!-- Estrelas decorativas -->
+        <g transform="translate(14,17)"><path d="M0,-7 L1.5,-1.5 L7,0 L1.5,1.5 L0,7 L-1.5,1.5 L-7,0 L-1.5,-1.5Z" fill="#fbbf24" opacity="0.9"/></g>
+        <g transform="translate(97,12) scale(0.8)"><path d="M0,-7 L1.5,-1.5 L7,0 L1.5,1.5 L0,7 L-1.5,1.5 L-7,0 L-1.5,-1.5Z" fill="#fbbf24" opacity="0.7"/></g>
+        <g transform="translate(7,50) scale(0.65)"><path d="M0,-7 L1.5,-1.5 L7,0 L1.5,1.5 L0,7 L-1.5,1.5 L-7,0 L-1.5,-1.5Z" fill="#7c4dff" opacity="0.75"/></g>
+        <circle cx="4"   cy="10" r="1.1" fill="white" opacity="0.55"/>
+        <circle cx="107" cy="8"  r="0.9" fill="white" opacity="0.5"/>
+        <circle cx="5"   cy="32" r="0.7" fill="white" opacity="0.4"/>
 
-        <!-- Estrelas 4 pontas douradas (estilo da referência) -->
-        <g transform="translate(14,17)"><path d="M0,-8 L1.7,-1.7 L8,0 L1.7,1.7 L0,8 L-1.7,1.7 L-8,0 L-1.7,-1.7Z" fill="#fbbf24" opacity="0.9"/></g>
-        <g transform="translate(97,13) scale(0.85)"><path d="M0,-8 L1.7,-1.7 L8,0 L1.7,1.7 L0,8 L-1.7,1.7 L-8,0 L-1.7,-1.7Z" fill="#fbbf24" opacity="0.72"/></g>
-        <g transform="translate(7,50) scale(0.72)"><path d="M0,-8 L1.7,-1.7 L8,0 L1.7,1.7 L0,8 L-1.7,1.7 L-8,0 L-1.7,-1.7Z" fill="#22c55e" opacity="0.75"/></g>
-        <g transform="translate(108,54) scale(0.6)"><path d="M0,-8 L1.7,-1.7 L8,0 L1.7,1.7 L0,8 L-1.7,1.7 L-8,0 L-1.7,-1.7Z" fill="#fbbf24" opacity="0.55"/></g>
-
-        <!-- Pontos de estrelas menores -->
-        <circle cx="4"   cy="10" r="1.2" fill="white" opacity="0.6"/>
-        <circle cx="107" cy="8"  r="1"   fill="white" opacity="0.55"/>
-        <circle cx="5"   cy="32" r="0.8" fill="white" opacity="0.4"/>
-        <circle cx="103" cy="30" r="0.9" fill="white" opacity="0.45"/>
-
-        <!-- FOGUETE REALISTA: centro (72,25), 42° horário -->
+        <!-- FOGUETE CARTOON: centro (72,25), 42° horário -->
         <g transform="translate(72,25) rotate(42) scale(0.88)">
-          <!-- Halo laranja -->
-          <ellipse cx="0" cy="32" rx="14" ry="8" fill="url(#th-glow)"/>
 
-          <!-- Chamas (4 camadas) -->
-          <path d="M-10 24 Q-14 42 0 50 Q14 42 10 24Z" fill="url(#th-fa)"/>
-          <path d="M-6.5 24 Q-9 38 0 45 Q9 38 6.5 24Z" fill="url(#th-fb)" opacity="0.85"/>
-          <path d="M-3.5 24 Q-5 34 0 37 Q5 34 3.5 24Z" fill="#fef9c3" opacity="0.82"/>
-          <ellipse cx="0" cy="27" rx="3.5" ry="4" fill="white" opacity="0.72"/>
+          <!-- Halos exaustão -->
+          <ellipse cx="0" cy="38" rx="16" ry="7" fill="url(#th-glow-p)" opacity="0.8"/>
+          <ellipse cx="0" cy="32" rx="11" ry="5" fill="url(#th-glow-o)" opacity="0.7"/>
 
-          <!-- Aletas (com gradiente escuro) -->
-          <path d="M-11 16 L-26 32 L-22 20 L-10 8Z" fill="url(#th-fin)"/>
-          <path d="M-11 16 L-22 20 L-14 11Z"         fill="#475569" opacity="0.5"/>
-          <path d="M11 16 L26 32 L22 20 L10 8Z"  fill="url(#th-fin)"/>
-          <path d="M11 16 L22 20 L14 11Z"         fill="#64748b" opacity="0.4"/>
+          <!-- Plasma roxo -->
+          <path d="M-7 26 Q-10 38 -8 48 Q0 45 8 48 Q10 38 7 26 Z" fill="url(#th-plasma)" opacity="0.75"/>
 
-          <!-- Bocal realista (cone truncado) -->
-          <path d="M-11 24 L-14 29 L14 29 L11 24Z" fill="url(#th-ring)"/>
-          <ellipse cx="0" cy="29" rx="14" ry="2.2" fill="#1e293b"/>
-          <ellipse cx="0" cy="29" rx="10" ry="1.5" fill="#020617"/>
-          <ellipse cx="0" cy="29" rx="5"  ry="0.8" fill="#22c55e" opacity="0.18"/>
+          <!-- Chamas serrilhadas -->
+          <path d="M-12 25 L-16 34 L-12 31 L-14 39 L-8 32 L-9 40 L-4 33 L-4 42 L0 36 L4 42 L4 33 L9 40 L8 32 L14 39 L12 31 L16 34 L12 25 Z" fill="url(#th-fa)"/>
+          <path d="M-9 25 L-12 33 L-9 30 L-10 37 L-5 31 L-6 38 L-2 32 L-2 40 L0 35 L2 40 L2 32 L6 38 L5 31 L10 37 L9 30 L12 33 L9 25 Z" fill="url(#th-fb)" opacity="0.9"/>
+          <path d="M-4 25 Q-7 31 -4 36 Q0 33 4 36 Q7 31 4 25 Z" fill="white" opacity="0.85"/>
 
-          <!-- Seção do motor -->
-          <rect x="-11" y="16" width="22" height="10" rx="1" fill="url(#th-eng)"/>
-          <line x1="-5" y1="16" x2="-5" y2="26" stroke="#64748b" stroke-width="0.9" opacity="0.6"/>
-          <line x1="0"  y1="16" x2="0"  y2="26" stroke="#64748b" stroke-width="0.9" opacity="0.6"/>
-          <line x1="5"  y1="16" x2="5"  y2="26" stroke="#64748b" stroke-width="0.9" opacity="0.6"/>
+          <!-- Aletas grandes vermelhas -->
+          <path d="M-13 14 C-22 16 -28 26 -26 35 L-13 28 Z" fill="url(#th-fin)"/>
+          <path d="M-13 14 C-20 18 -24 26 -22 32 L-13 26 Z" fill="#ff7043" opacity="0.4"/>
+          <path d="M13 14 C22 16 28 26 26 35 L13 28 Z" fill="url(#th-fin)"/>
+          <path d="M13 14 C20 18 24 26 22 32 L13 26 Z" fill="#ff7043" opacity="0.35"/>
 
-          <!-- Anel inferior -->
-          <rect x="-12" y="13" width="24" height="5" rx="1" fill="url(#th-ring)"/>
-          <ellipse cx="0" cy="13" rx="12" ry="1.8" fill="#94a3b8" opacity="0.35"/>
+          <!-- Collar motor metálico -->
+          <rect x="-13" y="14" width="26" height="13" rx="2" fill="url(#th-engine)"/>
+          <line x1="-6" y1="14" x2="-6" y2="27" stroke="#b0bec5" stroke-width="1.1" opacity="0.6"/>
+          <line x1="0"  y1="14" x2="0"  y2="27" stroke="#b0bec5" stroke-width="1.1" opacity="0.6"/>
+          <line x1="6"  y1="14" x2="6"  y2="27" stroke="#b0bec5" stroke-width="1.1" opacity="0.6"/>
+          <ellipse cx="0" cy="14" rx="13" ry="2.2" fill="#546e7a" opacity="0.7"/>
+          <ellipse cx="0" cy="27" rx="13" ry="2.2" fill="#102027" opacity="0.7"/>
 
-          <!-- CORPO CILÍNDRICO (gradiente realista) -->
-          <rect x="-11" y="-18" width="22" height="33" fill="url(#th-body)"/>
-          <!-- Elipse topo do cilindro -->
-          <ellipse cx="0" cy="-18" rx="11" ry="2.2" fill="#b4c4d2" opacity="0.7"/>
-          <!-- Elipse fundo do cilindro -->
-          <ellipse cx="0" cy="15"  rx="11" ry="2.2" fill="#5c7080" opacity="0.55"/>
+          <!-- Corpo azul glossy -->
+          <rect x="-13" y="-20" width="26" height="35" rx="3" fill="url(#th-body)"/>
+          <ellipse cx="0" cy="-20" rx="13" ry="2.5" fill="#1976d2" opacity="0.45"/>
+          <ellipse cx="0" cy="15"  rx="13" ry="2.2" fill="#0a1a6e" opacity="0.5"/>
 
-          <!-- Faixa LARANJA cilíndrica -->
-          <rect x="-11" y="2"  width="22" height="7" fill="url(#th-orange)"/>
-          <ellipse cx="0" cy="2"  rx="11" ry="1.6" fill="#fed7aa" opacity="0.3"/>
-          <ellipse cx="0" cy="9"  rx="11" ry="1.6" fill="#7c2d12" opacity="0.4"/>
+          <!-- Seam laranja com rebites -->
+          <rect x="-13" y="-23" width="26" height="6" rx="1" fill="url(#th-seam)"/>
+          <circle cx="-10"  cy="-20" r="1.2" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+          <circle cx="-5.5" cy="-20" r="1.2" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+          <circle cx="-1"   cy="-20" r="1.2" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+          <circle cx="3.5"  cy="-20" r="1.2" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+          <circle cx="8"    cy="-20" r="1.2" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
+          <circle cx="12.5" cy="-20" r="1.2" fill="#212121" stroke="#ffca28" stroke-width="0.4"/>
 
-          <!-- Faixa verde cilíndrica -->
-          <rect x="-11" y="11" width="22" height="4" fill="url(#th-green)"/>
-          <ellipse cx="0" cy="11" rx="11" ry="1.4" fill="#86efac" opacity="0.25"/>
+          <!-- Porthole grande com parafusos -->
+          <circle cx="0" cy="-6" r="10.5" fill="#1a237e"/>
+          <circle cx="0" cy="-6" r="9.5"  fill="url(#th-frame)"/>
+          <circle cx="0"    cy="-15.8" r="1.1" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+          <circle cx="8"    cy="-13"   r="1.1" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+          <circle cx="9.5"  cy="-5"    r="1.1" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+          <circle cx="8"    cy="2"     r="1.1" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+          <circle cx="0"    cy="4.5"   r="1.1" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+          <circle cx="-8"   cy="2"     r="1.1" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+          <circle cx="-9.5" cy="-5"    r="1.1" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+          <circle cx="-8"   cy="-13"   r="1.1" fill="#546e7a" stroke="#90a4ae" stroke-width="0.4"/>
+          <circle cx="0" cy="-6" r="7.8" fill="#0d2060"/>
+          <circle cx="0" cy="-6" r="7"   fill="url(#th-glass)"/>
+          <ellipse cx="-2.5" cy="-9.5" rx="3.5" ry="2.3" fill="white" opacity="0.80" transform="rotate(-18 -2.5 -9.5)"/>
+          <ellipse cx="-1.5" cy="-10.5" rx="1.5" ry="1" fill="white" opacity="0.95"/>
+          <path d="M-4 -4.5 Q0 -2.5 4 -4.5" stroke="#90caf9" stroke-width="1" fill="none" opacity="0.5"/>
+          <path d="M-3.5 -2 Q0 0 3.5 -2" stroke="#90caf9" stroke-width="0.7" fill="none" opacity="0.35"/>
 
-          <!-- Linha de painel -->
-          <line x1="-9" y1="-2" x2="9" y2="-2" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-
-          <!-- JANELA PORTHOLE REALISTA -->
-          <!-- Moldura metálica -->
-          <circle cx="0" cy="-8" r="9.5" fill="url(#th-body)"/>
-          <!-- Aro laranja -->
-          <circle cx="0" cy="-8" r="8.2" fill="url(#th-orange)"/>
-          <!-- Recesso escuro -->
-          <circle cx="0" cy="-8" r="6.8" fill="#0f172a"/>
-          <!-- Vidro (radial gradient côncavo) -->
-          <circle cx="0" cy="-8" r="6"   fill="url(#th-glass)"/>
-          <!-- Reflexo especular -->
-          <ellipse cx="-2" cy="-10.5" rx="2.8" ry="1.7" fill="white" opacity="0.55" transform="rotate(-20,-2,-10.5)"/>
-          <path d="-4 -9 Q-1 -12 3 -10" stroke="white" stroke-width="0.7" fill="none" opacity="0.2"/>
-
-          <!-- CONE OGIVAL (forma realista, não triangular) -->
-          <path d="M0 -32 C-8 -31 -11 -25 -11 -18 L11 -18 C11 -25 8 -31 0 -32Z" fill="url(#th-nose)"/>
-          <!-- Reflexo especular no nariz -->
-          <path d="M0 -32 C-5 -31 -7 -26 -7 -20 L-4 -20 C-4 -26 -3 -31 0 -32Z" fill="white" opacity="0.22"/>
-          <!-- Elipse de perspectiva na base do nariz -->
-          <ellipse cx="0" cy="-18" rx="11" ry="2" fill="#4d86ae" opacity="0.4"/>
-          <!-- Ponta brilhante -->
-          <circle cx="0" cy="-30" r="2.5" fill="#dbeafe" opacity="0.65"/>
-          <circle cx="0" cy="-30" r="1"   fill="white" opacity="0.5"/>
+          <!-- Cone do nariz vermelho -->
+          <path d="M0 -35 C-9 -34 -13 -27 -13 -23 L13 -23 C13 -27 9 -34 0 -35 Z" fill="url(#th-nose)"/>
+          <path d="M0 -35 C-6 -34 -9 -28 -9 -24 L-5 -24 C-5 -28 -3 -34 0 -35 Z" fill="white" opacity="0.25"/>
+          <ellipse cx="0" cy="-23" rx="13" ry="2.5" fill="#c62828" opacity="0.4"/>
+          <circle cx="0" cy="-33" r="2"   fill="#ff8a80" opacity="0.7"/>
+          <circle cx="0" cy="-33" r="0.9" fill="white" opacity="0.65"/>
         </g>
 
         <!-- Nome da plataforma -->
         <text x="122" y="33" fill="white" font-size="23" font-weight="700" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="-0.3">Central de Leads</text>
-        <!-- Subtítulo verde -->
-        <text x="123" y="51" fill="#22c55e" font-size="10.5" font-weight="600" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="1.5" opacity="0.85">PLATAFORMA DE LEADS</text>
+        <text x="123" y="51" fill="#7c4dff" font-size="10.5" font-weight="600" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="1.5" opacity="0.85">PLATAFORMA DE LEADS</text>
       </svg>
     </h2>
   

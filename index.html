@@ -43,9 +43,9 @@ body {
 }
 
 /* ===== FUNDO UNIVERSO ===== */
-body { 
+body {
   margin: 0;
-  background: radial-gradient(circle at 20% 20%, #020617, #000);
+  background: #060b18;
   color: #e2e8f0;
   min-width: 0;
   overflow-x: hidden;
@@ -166,23 +166,27 @@ body::after {
 }
 
 /* INPUTS */
-input, textarea {
+input, textarea, select {
   width: 100%;
   padding: 12px;
   margin: 8px 0;
   border-radius: 8px;
 
-  border: 1px solid rgba(255,255,255,0.08);
-  background: #020617;
-  color: white;
+  border: 1px solid rgba(148,163,184,0.25);
+  background: #1e293b;
+  color: #e2e8f0;
 
-  transition: 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-input:focus, textarea:focus {
+input::placeholder, textarea::placeholder {
+  color: #64748b;
+}
+
+input:focus, textarea:focus, select:focus {
   outline: none;
-  border: 1px solid #22c55e;
-  box-shadow: 0 0 10px rgba(34,197,94,0.3);
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
 }
 
 /* BOTÕES */
@@ -446,18 +450,18 @@ button {
 
 /* CARDS PREMIUM */
 .card {
-  background: linear-gradient(145deg, #020617, #020617);
+  background: #0f172a;
   padding: 10px;
   border-radius: 12px;
   max-width: 100%;
   min-width: 0;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
 
-  box-shadow: 
-    0 0 0 1px rgba(34,197,94,0.15),
-    0 0 20px rgba(34,197,94,0.05),
-    0 10px 40px rgba(0,0,0,0.8);
+  box-shadow:
+    0 0 0 1px rgba(34,197,94,0.12),
+    0 4px 20px rgba(0,0,0,0.6),
+    0 10px 40px rgba(0,0,0,0.5);
 
   transition: 0.3s;
 }
@@ -549,11 +553,11 @@ button {
 
 /* LEADS */
 .lead {
-  background: #020617;
+  background: #0f172a;
   padding: 12px;
   margin-top: 10px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
   transition: 0.2s;
 }
 
@@ -584,9 +588,9 @@ button {
 
   border-radius: 12px;
 
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
 
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
 
   min-width: 0;
 }
@@ -701,9 +705,9 @@ button {
 .meta-status-tile,
 .pagamento-modo {
 
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
 
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
 
   border-radius: 10px;
 
@@ -887,11 +891,11 @@ button {
 
   border-radius: 12px;
 
-  background: #070b1a;
+  background: #131c2e;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
 
-  box-shadow: 0 18px 48px rgba(0,0,0,0.52);
+  box-shadow: 0 24px 56px rgba(0,0,0,0.7);
 }
 
 .pagamento-modal-header {
@@ -1015,9 +1019,9 @@ button {
 
 .metrica {
 
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
 
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
 
   border-radius: 8px;
 
@@ -1150,15 +1154,28 @@ button {
 
   border-radius: 10px;
 
-  border: 1px solid #1f2937;
+  border: 1px solid rgba(148,163,184,0.25);
 
-  background: #020617;
+  background: #1e293b;
 
-  color: white;
+  color: #e2e8f0;
 
   margin-bottom: 5px;
 
   box-sizing: border-box;
+}
+
+.card input::placeholder,
+.card textarea::placeholder {
+  color: #64748b;
+}
+
+.card input:focus,
+.card select:focus,
+.card textarea:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
 }
 
 .card textarea {
@@ -2554,9 +2571,9 @@ body.usuario-super-admin .admin-only-targeting {
 /* 🔥 CARDS */
 .lead-card {
 
-  background: rgba(255,255,255,0.035);
+  background: rgba(255,255,255,0.05);
 
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
 
   border-radius: 8px;
 
@@ -2565,7 +2582,7 @@ body.usuario-super-admin .admin-only-targeting {
   margin-bottom: 6px;
 
   cursor: pointer;
-  
+
   transition: .2s ease;
 }
 
@@ -2646,29 +2663,33 @@ body.usuario-super-admin .admin-only-targeting {
 
   border-radius: 14px;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(148,163,184,0.25);
 
-  background: rgba(255,255,255,0.03);
+  background: #1e293b;
 
-  color: #fff;
+  color: #e2e8f0;
 
   font-size: 14px;
 
   outline: none;
 
-  transition: 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 
   box-sizing: border-box;
 
   margin-bottom: 0 !important;
 }
-  
+
+.lead-search::placeholder {
+  color: #64748b;
+}
+
 .lead-search:focus {
 
   border-color: #7c5cff;
 
   box-shadow:
-    0 0 0 3px rgba(124,92,255,0.15);
+    0 0 0 3px rgba(124,92,255,0.18);
 }
 
 
@@ -2684,11 +2705,11 @@ body.usuario-super-admin .admin-only-targeting {
 
   border-radius: 14px;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(148,163,184,0.25);
 
-  background: rgba(255,255,255,0.03);
+  background: #1e293b;
 
-  color: #fff;
+  color: #e2e8f0;
 
   font-size: 14px;
 
@@ -2793,9 +2814,9 @@ body.usuario-super-admin .admin-only-targeting {
 
   max-width: 300px;
 
-  background: rgba(255,255,255,0.02);
+  background: rgba(0,0,0,0.25);
 
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
 
   border-radius: 16px;
 
@@ -2922,9 +2943,9 @@ body.usuario-super-admin .admin-only-targeting {
 
 .kpi-card {
 
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
 
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
 
   border-radius: 14px;
 
@@ -4522,11 +4543,11 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   border-radius: 10px;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(148,163,184,0.25);
 
-  background: #0b1024;
+  background: #1e293b;
 
-  color: white;
+  color: #e2e8f0;
 }
 
 .plano-atual-topo {
@@ -4714,9 +4735,9 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   height: 100%;
 
-  background: #070b1a;
+  background: #111827;
 
-  border-left: 1px solid rgba(255,255,255,0.08);
+  border-left: 1px solid rgba(255,255,255,0.12);
 
   padding: 24px;
 
@@ -4795,9 +4816,9 @@ body.tema-claro .cal-nav span { color: #111827; }
 
 .info-box {
 
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.07);
 
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
 
   border-radius: 14px;
 
@@ -4822,7 +4843,7 @@ body.tema-claro .cal-nav span { color: #111827; }
 
 .historico-item {
 
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.07);
 
   padding: 12px;
 
@@ -4930,9 +4951,9 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   height: 100%;
 
-  background: #060b1f;
+  background: #111827;
 
-  border-left: 1px solid rgba(0,255,180,0.15);
+  border-left: 1px solid rgba(255,255,255,0.1);
 
   box-shadow:
     -10px 0 40px rgba(0,0,0,0.4);
@@ -5108,10 +5129,10 @@ body.tema-claro .cal-nav span { color: #111827; }
 .drawer-box {
 
   background:
-    rgba(255,255,255,0.03);
+    rgba(255,255,255,0.07);
 
   border:
-    1px solid rgba(255,255,255,0.05);
+    1px solid rgba(255,255,255,0.12);
 
   border-radius: 14px;
 
@@ -5395,16 +5416,16 @@ body.tema-claro .cal-nav span { color: #111827; }
 
 #drawer_motivo_perda option {
 
-  background: #121629;
+  background: #1e293b;
 
-  color: white;
+  color: #e2e8f0;
 }
 
 #drawer_status option {
 
-  background: #121629;
+  background: #1e293b;
 
-  color: white;
+  color: #e2e8f0;
 }
 
 /* 🔥 TIMELINE */
@@ -5489,9 +5510,9 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   width: 220px;
 
-  background: #11182d;
+  background: #1a2235;
 
-  border: 1px solid #2f3b63;
+  border: 1px solid rgba(148,163,184,0.2);
 
   border-radius: 14px;
 
@@ -5500,7 +5521,8 @@ body.tema-claro .cal-nav span { color: #111827; }
   z-index: 999999;
 
   box-shadow:
-    0 0 20px rgba(0,0,0,0.5);
+    0 8px 32px rgba(0,0,0,0.6),
+    0 2px 8px rgba(0,0,0,0.4);
 
   display: inline-flex;
 
@@ -5517,11 +5539,11 @@ body.tema-claro .cal-nav span { color: #111827; }
 
 .menu-mover button {
 
-  background: #1b2440;
+  background: #253451;
 
   border: none;
 
-  color: white;
+  color: #e2e8f0;
 
   padding: 10px;
 
@@ -5731,15 +5753,10 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   position: relative;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(10,15,35,0.95),
-      rgba(5,10,25,0.98)
-    );
+  background: #131c2e;
 
   border:
-    1px solid rgba(255,255,255,0.06);
+    1px solid rgba(255,255,255,0.12);
 
   border-radius: 20px;
 
@@ -6182,11 +6199,11 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   border-radius: 10px;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(148,163,184,0.25);
 
-  background: #0b1024;
+  background: #1e293b;
 
-  color: white;
+  color: #e2e8f0;
 }
 
 .campanha-editar-modal .pagamento-modal-content {
@@ -6291,9 +6308,9 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   width: 260px;
 
-  background: #11182d;
+  background: #1a2235;
 
-  border: 1px solid #2f3b63;
+  border: 1px solid rgba(148,163,184,0.2);
 
   border-radius: 16px;
 
@@ -6365,11 +6382,11 @@ body.tema-claro .cal-nav span { color: #111827; }
 /* BOTÕES */
 .menu-score button {
 
-  background: #1b2440;
+  background: #253451;
 
   border: none;
 
-  color: white;
+  color: #e2e8f0;
 
   padding: 12px;
 
@@ -7216,11 +7233,11 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   border-radius: 8px;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(148,163,184,0.25);
 
-  background: #111827;
+  background: #1e293b;
 
-  color: #fff;
+  color: #e2e8f0;
 
   font-size: 12px;
 
@@ -7229,21 +7246,19 @@ body.tema-claro .cal-nav span { color: #111827; }
 
 body.tema-claro {
 
-  background:
-    radial-gradient(circle at 15% 10%, #ffffff, #f3f7fc 54%, #e7eef7);
+  background: #f1f5f9;
 
-  color: #162033;
+  color: #1e293b;
 }
 
 body.tema-claro::before {
 
-  opacity: 0.06;
+  opacity: 0;
 }
 
 body.tema-claro::after {
 
-  background:
-    radial-gradient(circle, rgba(37,99,235,0.1), transparent 70%);
+  opacity: 0;
 }
 
 body.tema-claro .stars {
@@ -7255,22 +7270,21 @@ body.tema-claro .login-box,
 body.tema-claro .legal-content,
 body.tema-claro .card {
 
-  background:
-    linear-gradient(145deg, rgba(255,255,255,0.98), rgba(246,249,253,0.98));
+  background: #ffffff;
 
-  border-color: #d4dfec;
+  border-color: #e2e8f0;
 
   box-shadow:
-    0 0 0 1px rgba(37,99,235,0.05),
-    0 18px 42px rgba(15,23,42,0.12);
+    0 1px 3px rgba(15,23,42,0.06),
+    0 4px 16px rgba(15,23,42,0.08);
 }
 
 body.tema-claro .card:hover,
 body.tema-claro .login-box:hover {
 
   box-shadow:
-    0 0 0 1px rgba(37,99,235,0.12),
-    0 20px 46px rgba(15,23,42,0.16);
+    0 1px 3px rgba(15,23,42,0.08),
+    0 8px 24px rgba(15,23,42,0.12);
 }
 
 body.tema-claro .painel-recolhivel-toggle {
@@ -7334,23 +7348,6 @@ body.tema-claro .lead-filter,
 body.tema-claro #filtro_status,
 body.tema-claro #drawer_status,
 body.tema-claro #drawer_motivo_perda,
-body.tema-claro .tema-seletor select {
-
-  background: #fff;
-
-  border-color: #c8d5e5;
-
-  color: #152238;
-}
-
-body.tema-claro input,
-body.tema-claro textarea,
-body.tema-claro select,
-body.tema-claro .lead-search,
-body.tema-claro .lead-filter,
-body.tema-claro #filtro_status,
-body.tema-claro #drawer_status,
-body.tema-claro #drawer_motivo_perda,
 body.tema-claro .tema-seletor select,
 body.tema-claro .cal-picker-btn,
 body.tema-claro .cal-time-group select,
@@ -7359,11 +7356,15 @@ body.tema-claro .admin-railway-billing input,
 body.tema-claro .admin-railway-billing select,
 body.tema-claro .admin-railway-billing textarea {
 
-  border-color: #9fb0c4 !important;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  box-shadow: none;
+}
 
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.94),
-    0 0 0 1px rgba(15,23,42,0.035);
+body.tema-claro input::placeholder,
+body.tema-claro textarea::placeholder {
+  color: #94a3b8;
 }
 
 body.tema-claro input:hover,
@@ -7382,7 +7383,7 @@ body.tema-claro .admin-railway-billing input:hover,
 body.tema-claro .admin-railway-billing select:hover,
 body.tema-claro .admin-railway-billing textarea:hover {
 
-  border-color: #6f83a0 !important;
+  border-color: #94a3b8;
 }
 
 body.tema-claro input:focus,
@@ -7401,17 +7402,9 @@ body.tema-claro .admin-railway-billing input:focus,
 body.tema-claro .admin-railway-billing select:focus,
 body.tema-claro .admin-railway-billing textarea:focus {
 
-  border-color: #2563eb !important;
-
-  box-shadow:
-    0 0 0 3px rgba(37,99,235,0.16),
-    inset 0 1px 0 rgba(255,255,255,0.94);
-}
-
-body.tema-claro input::placeholder,
-body.tema-claro textarea::placeholder {
-
-  color: #64748b;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.14);
+  outline: none;
 }
 
 body.tema-claro #drawer_status option,
@@ -7424,16 +7417,16 @@ body.tema-claro #drawer_motivo_perda option {
 
 body.tema-claro .tema-seletor {
 
-  background: rgba(255,255,255,0.9);
+  background: #ffffff;
 
-  border-color: #ccd8e7;
+  border-color: #e2e8f0;
 
   color: #334155;
 }
 
 body.tema-claro .credito-desenvolvedor-topbar {
-  background: rgba(255,255,255,0.9);
-  border-color: #ccd8e7;
+  background: #ffffff;
+  border-color: #e2e8f0;
   color: #64748b;
 }
 
@@ -7491,9 +7484,9 @@ body.tema-claro .drawer-box,
 body.tema-claro .performance-box,
 body.tema-claro .metrica {
 
-  background: rgba(255,255,255,0.82);
+  background: #ffffff;
 
-  border-color: #b8c7d9;
+  border-color: #e2e8f0;
 }
 
 /* score-item e metrica-explicacao sem fundo no tema claro (parecem texto, não botão) */
@@ -7592,14 +7585,13 @@ body.tema-claro .kpi-principal strong {
 body.tema-claro .campanha-card,
 body.tema-claro .dashboard-box {
 
-  background:
-    linear-gradient(145deg, rgba(255,255,255,0.98), rgba(239,245,252,0.98));
+  background: #ffffff;
 
-  border-color: #b6c5d8;
+  border-color: #e2e8f0;
 
   box-shadow:
-    0 0 0 1px rgba(15,23,42,0.035),
-    0 14px 30px rgba(15,23,42,0.13);
+    0 1px 3px rgba(15,23,42,0.06),
+    0 4px 16px rgba(15,23,42,0.08);
 }
 
 body.tema-claro .campanha-card.active-card {
@@ -7650,9 +7642,9 @@ body.tema-claro .tabela-admin tr:hover {
 body.tema-claro .lead-drawer-content,
 body.tema-claro .lead-sidebar {
 
-  background: #f7faff;
+  background: #ffffff;
 
-  border-left-color: #cbd8e8;
+  border-left-color: #e2e8f0;
 }
 
 body.tema-claro .lead-drawer-header {

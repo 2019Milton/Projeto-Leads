@@ -2544,25 +2544,25 @@ body.usuario-super-admin .admin-only-targeting {
   border: 1px solid rgba(37, 99, 235, 0.25);
 }
 
-/* Wrapper com scrollbar no TOPO do kanban */
-.kanban-scroll-outer {
+/* Scrollbar espelho no TOPO do kanban */
+.kanban-top-scrollbar {
   overflow-x: auto;
   overflow-y: hidden;
-  transform: rotateX(180deg);
-  -webkit-transform: rotateX(180deg);
-  padding-bottom: 2px;
+  height: 12px;
+  margin-bottom: 6px;
   width: 100%;
 }
-.kanban-scroll-outer .kanban-board {
-  transform: rotateX(180deg);
-  -webkit-transform: rotateX(180deg);
-  overflow-x: unset;
-  overflow-y: hidden;
+.kanban-top-scrollbar-inner {
+  height: 1px;
+  display: block;
 }
-.kanban-scroll-outer::-webkit-scrollbar { height: 8px; }
-.kanban-scroll-outer::-webkit-scrollbar-thumb {
+.kanban-top-scrollbar::-webkit-scrollbar { height: 8px; }
+.kanban-top-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(140,82,255,0.45);
   border-radius: 999px;
+}
+.kanban-scroll-outer {
+  width: 100%;
 }
 
 .leads-central-content {
@@ -10977,7 +10977,10 @@ body.tema-claro .logout {
 
 
       <div class="kanban-scroll-outer">
-      <div class="kanban-board">
+      <div id="kanban_top_scrollbar" class="kanban-top-scrollbar">
+        <div id="kanban_top_scrollbar_inner" class="kanban-top-scrollbar-inner"></div>
+      </div>
+      <div class="kanban-board" id="kanban_board_main">
 
         <!-- 🆕 NOVOS -->
         <div
@@ -13124,6 +13127,36 @@ async function init() {
   await carregarLeads();
 
   inicializarPaineisRecolhaveis();
+  inicializarKanbanTopScrollbar();
+}
+
+function inicializarKanbanTopScrollbar() {
+  const board = document.getElementById("kanban_board_main");
+  const topBar = document.getElementById("kanban_top_scrollbar");
+  const inner = document.getElementById("kanban_top_scrollbar_inner");
+  if (!board || !topBar || !inner) return;
+
+  function atualizarLargura() {
+    inner.style.width = board.scrollWidth + "px";
+  }
+
+  atualizarLargura();
+
+  let syncingTop = false, syncingBoard = false;
+  topBar.addEventListener("scroll", () => {
+    if (syncingBoard) return;
+    syncingTop = true;
+    board.scrollLeft = topBar.scrollLeft;
+    syncingTop = false;
+  });
+  board.addEventListener("scroll", () => {
+    if (syncingTop) return;
+    syncingBoard = true;
+    topBar.scrollLeft = board.scrollLeft;
+    syncingBoard = false;
+  });
+
+  new MutationObserver(atualizarLargura).observe(board, { childList: true, subtree: true });
 }
   
 // LOGOUT

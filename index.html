@@ -2535,6 +2535,36 @@ body.usuario-super-admin .admin-only-targeting {
 }
 
 /* 🔥 CONTEÚDO CENTRAL */
+/* Painel visual dos leads (toolbar + KPIs + kanban) */
+.leads-area-panel {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.70);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+}
+
+/* Wrapper com scrollbar no TOPO do kanban */
+.kanban-scroll-outer {
+  overflow-x: auto;
+  overflow-y: hidden;
+  transform: rotateX(180deg);
+  -webkit-transform: rotateX(180deg);
+  padding-bottom: 2px;
+  width: 100%;
+}
+.kanban-scroll-outer .kanban-board {
+  transform: rotateX(180deg);
+  -webkit-transform: rotateX(180deg);
+  overflow-x: unset;
+  overflow-y: hidden;
+}
+.kanban-scroll-outer::-webkit-scrollbar { height: 8px; }
+.kanban-scroll-outer::-webkit-scrollbar-thumb {
+  background: rgba(140,82,255,0.45);
+  border-radius: 999px;
+}
+
 .leads-central-content {
 
   flex: 1;
@@ -10811,6 +10841,9 @@ body.tema-claro .logout {
 
       </div>
 
+      <!-- LEADS ÁREA (toolbar + KPIs + kanban) -->
+      <div class="leads-area-panel">
+
       <!-- 🔥 TOPO CENTRAL LEADS -->
       <div class="leads-toolbar">
       
@@ -10943,8 +10976,9 @@ body.tema-claro .logout {
       </div>
 
 
+      <div class="kanban-scroll-outer">
       <div class="kanban-board">
-      
+
         <!-- 🆕 NOVOS -->
         <div
           class="kanban-column"
@@ -11042,10 +11076,13 @@ body.tema-claro .logout {
           </div>
         
           <div id="coluna_perdido"></div>
-        
+
         </div>
-      
-      </div>
+
+      </div><!-- /kanban-board -->
+      </div><!-- /kanban-scroll-outer -->
+
+      </div><!-- /leads-area-panel -->
 
     </div>
 

@@ -1841,6 +1841,43 @@ body.tema-claro .passo-meta-step-text p {
   box-shadow: none;
 }
 
+.campo-validacao-erro {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.25) !important;
+}
+
+.validacao-campanha-msg {
+  display: block;
+  margin: 8px 0 4px;
+  padding: 8px 10px;
+  border: 1px solid #d97706;
+  border-radius: 8px;
+  background: #422006;
+  color: #fde68a;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.validacao-campanha-pulso {
+  animation: validacaoCampanhaPulso 1s ease 2;
+}
+
+@keyframes validacaoCampanhaPulso {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-2px);
+  }
+}
+
+body.tema-claro .validacao-campanha-msg {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #9a3412;
+}
+
 .advanced-campaign summary {
 
   cursor: pointer;
@@ -19688,6 +19725,159 @@ function setPublishProgress(pct, label) {
   if (labelEl) labelEl.textContent = label || "";
 }
 
+function limparValidacaoCampanha() {
+  document
+    .querySelectorAll(".campo-validacao-erro, .validacao-campanha-pulso")
+    .forEach((el) => {
+      el.classList.remove("campo-validacao-erro");
+      el.classList.remove("validacao-campanha-pulso");
+    });
+
+  document
+    .querySelectorAll(".validacao-campanha-msg")
+    .forEach((el) => el.remove());
+}
+
+function abrirAreaDoCampoCampanha(campo) {
+  let atual = campo;
+
+  while (atual && atual !== document.body) {
+    if (atual.tagName === "DETAILS") {
+      atual.open = true;
+    }
+
+    if (atual.classList?.contains("painel-recolhido")) {
+      atual.classList.remove("painel-recolhido");
+      atual.dataset.recolhido = "0";
+
+      const btn = atual.querySelector(".painel-recolhivel-toggle");
+      if (btn) {
+        btn.textContent = "▾";
+        btn.title = "Recolher";
+        btn.setAttribute("aria-expanded", "true");
+      }
+    }
+
+    atual = atual.parentElement;
+  }
+}
+
+function conduzirParaCampoCampanha(alvo, mensagem) {
+  const campo =
+    typeof alvo === "string"
+      ? document.querySelector(alvo)
+      : alvo;
+
+  if (!campo) {
+    alert(mensagem);
+    return false;
+  }
+
+  limparValidacaoCampanha();
+  abrirAreaDoCampoCampanha(campo);
+
+  const marcador =
+    campo.closest(".campaign-setup-section") ||
+    campo.closest(".advanced-full") ||
+    campo.closest(".advanced-checks") ||
+    campo;
+
+  marcador.classList.add("campo-validacao-erro");
+  marcador.classList.add("validacao-campanha-pulso");
+
+  const aviso = document.createElement("span");
+  aviso.className = "validacao-campanha-msg";
+  aviso.textContent = mensagem;
+
+  if (campo.id === "btn-adicionar-imagem") {
+    campo.insertAdjacentElement("afterend", aviso);
+  } else if (
+    campo.closest(".advanced-checks") &&
+    campo.closest(".campaign-setup-section")
+  ) {
+    campo.closest(".campaign-setup-section").appendChild(aviso);
+  } else {
+    marcador.insertAdjacentElement("afterend", aviso);
+  }
+
+  if (!campo.matches("input, select, textarea, button")) {
+    campo.setAttribute("tabindex", "-1");
+  }
+
+  setTimeout(() => {
+    marcador.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+    campo.focus?.({
+      preventScroll: true
+    });
+  }, 80);
+
+  return false;
+}
+
+function validarPublicacaoCampanha({
+  campanha_nome,
+  page_id,
+  texto,
+  orcamento,
+  configuracoes_avancadas,
+  imagensArquivos
+}) {
+  const paginaSelect = document.getElementById("pagina_select");
+  const paginaInvalida =
+    !page_id ||
+    page_id === "Carregando páginas..." ||
+    paginaSelect?.selectedOptions?.[0]?.disabled;
+
+  if (!campanha_nome?.trim()) {
+    return conduzirParaCampoCampanha(
+      "#campanha_nome",
+      "Informe o nome da campanha para identificar esse anúncio."
+    );
+  }
+
+  if (paginaInvalida) {
+    return conduzirParaCampoCampanha(
+      "#pagina_select",
+      "Selecione a Página do Facebook que vai aparecer como anunciante."
+    );
+  }
+
+  if (!configuracoes_avancadas.plataformas.length) {
+    return conduzirParaCampoCampanha(
+      "#bloco_onde_anunciar",
+      "Escolha onde anunciar: Facebook, Instagram ou os dois."
+    );
+  }
+
+  if (!imagensArquivos.length) {
+    return conduzirParaCampoCampanha(
+      "#btn-adicionar-imagem",
+      "Adicione ao menos uma imagem para o anúncio."
+    );
+  }
+
+  if (!texto?.trim()) {
+    return conduzirParaCampoCampanha(
+      "#texto",
+      "Preencha o texto principal do anúncio."
+    );
+  }
+
+  if (!orcamento || Number(orcamento) < 5) {
+    return conduzirParaCampoCampanha(
+      "#orcamento",
+      "Informe um orçamento diário de pelo menos R$ 5,00."
+    );
+  }
+
+  limparValidacaoCampanha();
+  return true;
+}
+
 async function criarCampanhaCompleta() {
 
   try {
@@ -19723,13 +19913,6 @@ async function criarCampanhaCompleta() {
     const configuracoes_avancadas =
       coletarConfiguracoesAvancadas();
 
-    if (
-      !configuracoes_avancadas.plataformas.length
-    ) {
-      alert("Escolha Facebook, Instagram ou os dois para anunciar.");
-      return;
-    }
-
     // 🔥 COLETAR IMAGENS DO CARROSSEL (na ordem definida pelo usuário)
     const imagensArquivos = Array.from(
       document.querySelectorAll(".imagem-input")
@@ -19737,13 +19920,14 @@ async function criarCampanhaCompleta() {
       .map(input => input.files[0])
       .filter(Boolean);
 
-    if (imagensArquivos.length === 0) {
-      alert("Selecione ao menos uma imagem");
-      return;
-    }
-
-    if (!campanha_nome) {
-      alert("Digite o nome da campanha");
+    if (!validarPublicacaoCampanha({
+      campanha_nome,
+      page_id,
+      texto,
+      orcamento,
+      configuracoes_avancadas,
+      imagensArquivos
+    })) {
       return;
     }
 

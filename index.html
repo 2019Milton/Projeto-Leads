@@ -21984,15 +21984,25 @@ async function carregarCampanhas() {
       
     
       <div class="metricas-grid">
-    
+
         <div class="metrica">
           💰
           <span>
             R$ ${Number(c.gasto).toFixed(2)}
           </span>
-          <small>Gasto</small>
+          <small>Valor Usado</small>
         </div>
-    
+
+        ${c.daily_budget ? `
+        <div class="metrica">
+          🗓️
+          <span>
+            R$ ${Number(c.daily_budget / 100).toFixed(2)}
+          </span>
+          <small>Orçamento/dia</small>
+        </div>
+        ` : ""}
+
         <div class="metrica">
           🎯
           <span>
@@ -22000,7 +22010,7 @@ async function carregarCampanhas() {
           </span>
           <small>Leads</small>
         </div>
-    
+
         <div class="metrica">
           👁️
           <span>
@@ -22008,7 +22018,15 @@ async function carregarCampanhas() {
           </span>
           <small>Impressões</small>
         </div>
-    
+
+        <div class="metrica">
+          📡
+          <span>
+            ${c.alcance}
+          </span>
+          <small>Alcance</small>
+        </div>
+
         <div class="metrica">
           🖱️
           <span>
@@ -22016,7 +22034,7 @@ async function carregarCampanhas() {
           </span>
           <small>Cliques</small>
         </div>
-    
+
         <div class="metrica">
           📈
           <span>
@@ -22024,7 +22042,7 @@ async function carregarCampanhas() {
           </span>
           <small>CTR</small>
         </div>
-    
+
         <div class="metrica">
           💵
           <span>
@@ -22032,7 +22050,7 @@ async function carregarCampanhas() {
           </span>
           <small>CPC</small>
         </div>
-    
+
       </div>
     
       <div class="campanha-footer">

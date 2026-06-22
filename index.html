@@ -12529,9 +12529,21 @@ body.tema-claro .logout {
         
           </div>
         
+          <!-- WHATSAPP -->
+          <div>
+            <label style="display:block;margin-bottom:8px;color:#9ca3af;font-size:13px;">
+              WhatsApp (para lembretes automáticos)
+            </label>
+            <input
+              id="novo_usuario_whatsapp"
+              type="tel"
+              placeholder="(11) 99999-9999"
+            />
+          </div>
+
           <!-- TIPO -->
           <div>
-        
+
             <label
               style="
                 display:block;
@@ -12542,7 +12554,7 @@ body.tema-claro .logout {
             >
               Tipo de Usuário
             </label>
-        
+
             <select id="novo_usuario_tipo">
 
               <option value="admin_corretor">
@@ -24764,6 +24776,8 @@ async function criarUsuario() {
     )
   ).map(el => Number(el.value));
 
+  const whatsapp = document.getElementById("novo_usuario_whatsapp")?.value?.trim() || null;
+
   if (
     !nome ||
     !sobrenome ||
@@ -24795,7 +24809,8 @@ async function criarUsuario() {
         tipo,
         admin_id,
         plano,
-        nicho_ids
+        nicho_ids,
+        whatsapp
       })
     }
   );

@@ -10334,17 +10334,6 @@ body.tema-claro .logout {
           </div>
         </section>
   
-        <!-- 🎯 OBJETIVO -->
-        <label>Objetivo</label>
-  
-        <select id="objetivo_select">
-
-          <option value="OUTCOME_LEADS">
-            Geração de Leads
-          </option>
-
-        </select>
-  
         <!-- 🖼️ IMAGENS CARROSSEL -->
         <label>Imagens do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(carrossel — máx. 10)</span></label>
 
@@ -10591,7 +10580,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Posicionamentos Facebook <button type="button" class="info-icone" onclick="mostrarInfoCampo('Onde dentro do Facebook seu anúncio vai aparecer. Feed é o mais comum (mural de notícias). Stories aparecem no topo da tela. Marketplace é a seção de compras. Vídeos aparece durante vídeos do Facebook.', event)">i</button></label>
+              <label>Posicionamentos Facebook <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha onde o anúncio pode aparecer no Facebook. Feed: aparece no mural/notícias. Stories: aparece em tela cheia nos stories. Marketplace: aparece na área de compras e vendas. Vídeos: aparece em áreas de vídeo do Facebook. Se não marcar nenhum, a Meta pode escolher automaticamente conforme disponibilidade.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" class="adv-facebook-position" value="feed">
@@ -10613,7 +10602,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Posicionamentos Instagram <button type="button" class="info-icone" onclick="mostrarInfoCampo('Onde dentro do Instagram seu anúncio vai aparecer. Feed é o mural principal. Stories aparecem no topo. Reels é a seção de vídeos curtos. Explorar é onde as pessoas descobrem novos conteúdos.', event)">i</button></label>
+              <label>Posicionamentos Instagram <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha onde o anúncio pode aparecer no Instagram. Feed: aparece no mural principal. Stories: aparece em tela cheia entre stories. Reels: aparece entre vídeos curtos. Explorar: aparece na área em que pessoas descobrem novos conteúdos. Se não marcar nenhum, a Meta pode escolher automaticamente conforme disponibilidade.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" class="adv-instagram-position" value="stream">
@@ -10635,7 +10624,7 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Dispositivos <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha em qual tipo de aparelho seu anúncio vai aparecer: celular (Mobile) ou computador (Desktop). Se não marcar nenhum, a Meta exibe em ambos automaticamente.', event)">i</button></label>
+              <label>Dispositivos <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha em quais aparelhos o anúncio pode aparecer. Mobile: celulares e tablets, normalmente onde a maior parte dos leads chega. Desktop: computadores e notebooks, útil para públicos que pesquisam com mais calma. Se não marcar nenhum, a Meta exibe em ambos automaticamente.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
                   <input type="checkbox" id="adv_device_mobile">
@@ -15921,7 +15910,7 @@ function dadosCampanhaFormularioIA() {
     texto: document.getElementById("texto")?.value || "",
     titulo: document.getElementById("adv_titulo")?.value || "",
     descricao: document.getElementById("adv_descricao")?.value || "",
-    objetivo: document.getElementById("objetivo_select")?.value || "",
+    objetivo: "OUTCOME_LEADS",
     cta: document.getElementById("cta")?.value || "",
     orcamento: document.getElementById("orcamento")?.value || "",
     localidade: document.getElementById("adv_localidade_nome")?.value || "",
@@ -19977,7 +19966,7 @@ async function criarCampanhaCompleta() {
       document.getElementById("campanha_nome").value;
 
     const objetivo =
-      document.getElementById("objetivo_select").value;
+      "OUTCOME_LEADS";
 
     const page_id =
       document.getElementById("pagina_select").value;

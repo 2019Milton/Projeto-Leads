@@ -27015,7 +27015,7 @@ function mostrarInfoCampo(texto, event) {
 }
 
 function normalizarTexto(t = "") {
-  return String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  return String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function detectarNichoPorNome(nomeCampanha = "") {

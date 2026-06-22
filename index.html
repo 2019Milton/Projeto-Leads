@@ -21340,7 +21340,7 @@ async function carregarCampanhas() {
           campanhaEstaExcluida(c)
             ? ""
             : `
-        <label class="switch ${veiculacaoSubcategoria === "campanha_pausada" ? "switch-destaque" : ""}">
+        <label class="switch ${veiculacaoSubcategoria === "campanha_pausada" && campanhaEstaPausada(c) ? "switch-destaque" : ""}">
 
           <input
             type="checkbox"
@@ -21397,10 +21397,29 @@ async function carregarCampanhas() {
                     <strong>${escaparHtml(c.veiculacao_motivo || "A Meta não retornou um motivo específico.")}</strong>
 
                     ${
-                      veiculacaoSubcategoria === "campanha_pausada"
+                      veiculacaoSubcategoria === "campanha_pausada" && campanhaEstaPausada(c)
                         ? `
                           <div class="campanha-veiculacao-hint-toggle">
                             ↑ Use a chave acima para ativar esta campanha
+                          </div>
+                        `
+                        : veiculacaoSubcategoria === "campanha_pausada" && campanhaEstaAtiva(c)
+                        ? `
+                          <ol class="campanha-veiculacao-passos">
+                            <li>Clique em "▶️ Ativar na Meta" abaixo</li>
+                            <li>Localize a campanha e ative-a usando a chave ao lado do nome</li>
+                            <li>O status aqui será atualizado na próxima sincronização</li>
+                          </ol>
+                          <div class="campanha-veiculacao-acoes">
+                            <a
+                              class="campanha-veiculacao-acoes-link-primary"
+                              href="${escaparHtml(acaoUrl)}"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onclick="event.stopPropagation()"
+                            >
+                              ▶️ Ativar na Meta
+                            </a>
                           </div>
                         `
                         : acaoPassos.length

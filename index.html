@@ -10600,13 +10600,16 @@ body.tema-claro .logout {
             </div>
 
             <div class="advanced-full">
-              <label>Otimização de público <button type="button" class="info-icone" onclick="mostrarInfoCampo('Advantage+ Audience é um recurso da Meta que usa inteligência artificial para encontrar automaticamente as melhores pessoas para ver seu anúncio, expandindo além do público que você configurou.', event)">i</button></label>
+              <label>Otimização de público <button type="button" class="info-icone" onclick="mostrarInfoCampo('Público Advantage+ é uma automação da própria Meta. Prós: pode reduzir CPL, ampliar o alcance e evitar erros de segmentação. Cuidados: pode deixar o público mais amplo e reduzir controle manual sobre interesses e perfil. Recomendado deixar ligado para campanhas de leads.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
-                  <input type="checkbox" id="adv_audience_plus">
-                  Advantage+ Audience
+                  <input type="checkbox" id="adv_audience_plus" checked>
+                  Usar Público Advantage+ da Meta (recomendado)
                 </label>
               </div>
+              <small style="display:block;margin-top:6px;color:#94a3b8;font-size:12px;line-height:1.4;">
+                Ligado por padrão para ajudar a Meta a encontrar pessoas com maior chance de virar lead dentro do orçamento definido.
+              </small>
             </div>
 
           </div>
@@ -19255,7 +19258,12 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
   definirCheckbox("adv_device_desktop", dispositivos.includes("desktop"));
 
   definirCheckbox("adv_form_qualidade", cfg.formulario_qualidade);
-  definirCheckbox("adv_audience_plus", cfg.advantage_audience);
+  definirCheckbox(
+    "adv_audience_plus",
+    cfg.advantage_audience === undefined
+      ? true
+      : cfg.advantage_audience
+  );
 
   definirValorCampo("adv_localidade_nome", "");
 
@@ -21286,7 +21294,7 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Controle de custo", cfg.bid_strategy)}
       ${detalheItem("Valor de controle", cfg.bid_amount ? formatarMoeda(cfg.bid_amount) : "-")}
       ${detalheItem("Formulário de qualidade", cfg.formulario_qualidade ? "Ativo" : "Não usado")}
-      ${detalheItem("Advantage+ Audience", cfg.advantage_audience ? "Ativo" : "Não usado")}
+      ${detalheItem("Público Advantage+ Meta", (cfg.advantage_audience ?? true) ? "Ativo" : "Não usado")}
       ${detalheItem("Política de privacidade", cfg.privacidade_url, "full")}
       ${detalheItem("Perguntas qualificadoras", cfg.perguntas, "full")}
       ${detalheItem("Página de obrigado", cfg.obrigado_url, "full")}
@@ -26513,6 +26521,7 @@ if (!window._nichoFormState) window._nichoFormState = {};
 function _salvarEstadoFormNicho(slug) {
   if (!slug) return;
   const get = id => document.getElementById(id)?.value ?? "";
+  const checked = id => Boolean(document.getElementById(id)?.checked);
   const state = {
     campanha_nome:       get("campanha_nome"),
     texto:               get("texto"),
@@ -26522,6 +26531,7 @@ function _salvarEstadoFormNicho(slug) {
     ia_campanha_contexto:get("ia_campanha_contexto"),
     adv_interesse_busca: get("adv_interesse_busca"),
     orcamento:           get("orcamento"),
+    adv_audience_plus:   checked("adv_audience_plus"),
   };
   if (slug === "imoveis") {
     state.tipo_imovel = get("nicho_tipo_imovel");
@@ -26553,6 +26563,10 @@ function _restaurarEstadoFormNicho(slug) {
     const el = document.getElementById(id);
     if (el) el.value = val;
   };
+  const setChecked = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = Boolean(val);
+  };
   set("campanha_nome",        state.campanha_nome);
   set("texto",                state.texto);
   set("adv_titulo",           state.adv_titulo);
@@ -26561,6 +26575,7 @@ function _restaurarEstadoFormNicho(slug) {
   set("ia_campanha_contexto", state.ia_campanha_contexto);
   set("adv_interesse_busca",  state.adv_interesse_busca);
   set("orcamento",            state.orcamento);
+  setChecked("adv_audience_plus", state.adv_audience_plus);
   if (slug === "imoveis") {
     set("nicho_tipo_imovel", state.tipo_imovel);
     set("nicho_finalidade",  state.finalidade);

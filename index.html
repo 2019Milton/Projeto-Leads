@@ -6719,6 +6719,77 @@ body.tema-claro .info-tooltip-popup {
   color: #bfdbfe;
 }
 
+.campanha-veiculacao-passos {
+
+  margin: 7px 0 0;
+
+  padding-left: 16px;
+
+  font-size: 10px;
+
+  line-height: 1.6;
+
+  opacity: 0.92;
+}
+
+.campanha-veiculacao-passos li {
+
+  margin-bottom: 2px;
+}
+
+.campanha-veiculacao-hint-toggle {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 6px;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  color: #fde68a;
+}
+
+@keyframes pulso-toggle {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(250,204,21,0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(250,204,21,0.1); }
+}
+
+.switch-destaque .slider {
+  animation: pulso-toggle 1.6s ease-in-out infinite;
+}
+
+.campanha-veiculacao-acoes-link-primary {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  border: 1px solid rgba(96,165,250,0.55);
+
+  border-radius: 999px;
+
+  background: #10233f;
+
+  color: #bfdbfe;
+
+  cursor: pointer;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  padding: 5px 10px;
+
+  text-decoration: none;
+}
+
 .campanha-erro-pagamento {
 
   width: fit-content;
@@ -8437,10 +8508,13 @@ body.tema-claro .campanha-veiculacao-diagnostico {
 }
 
 body.tema-claro .campanha-veiculacao-acoes button,
-body.tema-claro .campanha-veiculacao-acoes a {
+body.tema-claro .campanha-veiculacao-acoes a,
+body.tema-claro .campanha-veiculacao-acoes-link-primary {
   background: #eff6ff;
   color: #1d4ed8;
 }
+body.tema-claro .campanha-veiculacao-passos { color: #374151; }
+body.tema-claro .campanha-veiculacao-hint-toggle { color: #92400e; }
 body.tema-claro .pagamento-badge {
   background: rgba(100,116,139,0.15);
   color: #475569;
@@ -15410,32 +15484,6 @@ function urlGerenciadorCampanhaMeta(campanha = {}) {
   return `https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=${encodeURIComponent(contaId)}`;
 }
 
-function abrirDiagnosticoVeiculacao(valorCodificado) {
-
-  let dados = {};
-
-  try {
-    dados =
-      JSON.parse(
-        decodeURIComponent(valorCodificado || "{}")
-      );
-  } catch {
-    dados = {};
-  }
-
-  const detalhes =
-    Array.isArray(dados.detalhes) && dados.detalhes.length
-      ? `\n\nDetalhes da Meta:\n- ${dados.detalhes.join("\n- ")}`
-      : "";
-
-  alert(
-    `Veiculação: ${dados.label || "Não informado"}\n\n` +
-    `Motivo: ${dados.motivo || "A Meta ainda não retornou um motivo específico."}\n\n` +
-    `Ação recomendada: ${dados.acao || "Confira a campanha no Gerenciador de Anúncios."}` +
-    detalhes
-  );
-}
-
 function escaparHtmlMeta(valor) {
 
   return String(valor ?? "")
@@ -21232,20 +21280,24 @@ async function carregarCampanhas() {
         .toLowerCase()
         .replace(/[^a-z0-9_-]/g, "");
 
-    const diagnosticoVeiculacaoSeguro =
-      encodeURIComponent(
-        JSON.stringify({
-          label: c.veiculacao_label || "",
-          motivo: c.veiculacao_motivo || "",
-          acao: c.veiculacao_acao || "",
-          detalhes: Array.isArray(c.veiculacao_detalhes)
-            ? c.veiculacao_detalhes
-            : []
-        })
-      );
+    const veiculacaoSubcategoria =
+      String(c.veiculacao_subcategoria || "");
 
-    const urlCampanhaMeta =
-      urlGerenciadorCampanhaMeta(c);
+    const acaoPassos =
+      Array.isArray(c.veiculacao_acao_passos)
+        ? c.veiculacao_acao_passos
+        : [];
+
+    const acaoUrl =
+      c.veiculacao_acao_url || urlGerenciadorCampanhaMeta(c);
+
+    const labelBotaoMeta = {
+      pagamento:    "💳 Ver cobrança na Meta",
+      reprovado:    "🔍 Ver anúncio na Meta",
+      politica:     "🔍 Ver anúncios na Meta",
+      adset_pausado:"▶️ Ver conjuntos na Meta",
+      em_analise:   "🔎 Ver status na Meta"
+    }[veiculacaoSubcategoria] || "↗ Abrir na Meta";
 
     div.innerHTML += `
 
@@ -21288,8 +21340,8 @@ async function carregarCampanhas() {
           campanhaEstaExcluida(c)
             ? ""
             : `
-        <label class="switch">
-    
+        <label class="switch ${veiculacaoSubcategoria === "campanha_pausada" ? "switch-destaque" : ""}">
+
           <input
             type="checkbox"
             ${campanhaEstaAtiva(c) ? "checked" : ""}
@@ -21300,9 +21352,9 @@ async function carregarCampanhas() {
               )
             "
           >
-    
+
           <span class="slider"></span>
-    
+
         </label>
             `
         }
@@ -21341,34 +21393,48 @@ async function carregarCampanhas() {
               veiculacaoTipo !== "ok"
                 ? `
                   <div class="campanha-veiculacao-diagnostico campanha-veiculacao-diagnostico-${veiculacaoTipo}">
-                    <strong>Motivo:</strong>
-                    ${escaparHtml(c.veiculacao_motivo || "A Meta nao retornou um motivo especifico para esta campanha.")}
+
+                    <strong>${escaparHtml(c.veiculacao_motivo || "A Meta não retornou um motivo específico.")}</strong>
+
                     ${
-                      c.veiculacao_acao
+                      veiculacaoSubcategoria === "campanha_pausada"
                         ? `
-                          <span>
-                            <strong>Ação:</strong>
-                            ${escaparHtml(c.veiculacao_acao)}
-                          </span>
+                          <div class="campanha-veiculacao-hint-toggle">
+                            ↑ Use a chave acima para ativar esta campanha
+                          </div>
                         `
-                        : ""
+                        : acaoPassos.length
+                        ? `
+                          <ol class="campanha-veiculacao-passos">
+                            ${acaoPassos.map(p => `<li>${escaparHtml(p)}</li>`).join("")}
+                          </ol>
+                          <div class="campanha-veiculacao-acoes">
+                            <a
+                              class="campanha-veiculacao-acoes-link-primary"
+                              href="${escaparHtml(acaoUrl)}"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onclick="event.stopPropagation()"
+                            >
+                              ${labelBotaoMeta}
+                            </a>
+                          </div>
+                        `
+                        : `
+                          <div class="campanha-veiculacao-acoes">
+                            <a
+                              class="campanha-veiculacao-acoes-link-primary"
+                              href="${escaparHtml(acaoUrl)}"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onclick="event.stopPropagation()"
+                            >
+                              ${labelBotaoMeta}
+                            </a>
+                          </div>
+                        `
                     }
-                    <div class="campanha-veiculacao-acoes">
-                      <button
-                        type="button"
-                        onclick="event.stopPropagation(); abrirDiagnosticoVeiculacao('${diagnosticoVeiculacaoSeguro}')"
-                      >
-                        Ver diagnóstico
-                      </button>
-                      <a
-                        href="${urlCampanhaMeta}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onclick="event.stopPropagation()"
-                      >
-                        Abrir na Meta
-                      </a>
-                    </div>
+
                   </div>
                 `
                 : ""

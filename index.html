@@ -1878,6 +1878,57 @@ body.tema-claro .validacao-campanha-msg {
   color: #9a3412;
 }
 
+.ia-campo-marcado {
+  position: relative;
+}
+
+.ia-campo-preenchido {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.20) !important;
+}
+
+.ia-campo-pendente {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 2px rgba(245,158,11,0.20) !important;
+}
+
+.ia-flag-campo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  margin: 5px 0 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.ia-flag-campo.preenchido {
+  background: rgba(34,197,94,0.15);
+  border: 1px solid rgba(34,197,94,0.35);
+  color: #86efac;
+}
+
+.ia-flag-campo.pendente {
+  background: rgba(245,158,11,0.14);
+  border: 1px solid rgba(245,158,11,0.35);
+  color: #fcd34d;
+}
+
+body.tema-claro .ia-flag-campo.preenchido {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+}
+
+body.tema-claro .ia-flag-campo.pendente {
+  background: #fef3c7;
+  border-color: #fbbf24;
+  color: #92400e;
+}
+
 .advanced-campaign summary {
 
   cursor: pointer;
@@ -16026,12 +16077,122 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
   return `<div class="ia-opcoes-grid">${cards}</div>`;
 }
 
+function limparMarcacoesCamposIA() {
+  document
+    .querySelectorAll(".ia-campo-preenchido, .ia-campo-pendente, .ia-campo-marcado")
+    .forEach((el) => {
+      el.classList.remove("ia-campo-preenchido");
+      el.classList.remove("ia-campo-pendente");
+      el.classList.remove("ia-campo-marcado");
+    });
+
+  document
+    .querySelectorAll(".ia-flag-campo")
+    .forEach((el) => el.remove());
+}
+
+function alvoFlagCampoIA(seletor) {
+  const el = document.querySelector(seletor);
+
+  if (!el) {
+    return null;
+  }
+
+  return {
+    el,
+    marcador:
+      el.closest(".campaign-setup-section") ||
+      el.closest(".advanced-full") ||
+      el.closest(".advanced-checks") ||
+      el
+  };
+}
+
+function marcarCampoIA(seletor, status, texto) {
+  const alvo = alvoFlagCampoIA(seletor);
+
+  if (!alvo) {
+    return;
+  }
+
+  alvo.marcador.classList.add("ia-campo-marcado");
+  alvo.marcador.classList.add(
+    status === "preenchido"
+      ? "ia-campo-preenchido"
+      : "ia-campo-pendente"
+  );
+
+  const flag = document.createElement("span");
+  flag.className = `ia-flag-campo ${status}`;
+  flag.textContent =
+    status === "preenchido"
+      ? `IA preencheu: ${texto}`
+      : `Preencher manualmente: ${texto}`;
+
+  alvo.marcador.insertAdjacentElement("afterend", flag);
+}
+
+function marcarCamposAposAplicarIA(camposPreenchidos = []) {
+  limparMarcacoesCamposIA();
+
+  const preenchidos = new Set(camposPreenchidos);
+
+  [
+    ["#campanha_nome", "nome da campanha"],
+    ["#texto", "texto do anúncio"],
+    ["#adv_titulo", "título do anúncio"],
+    ["#adv_descricao", "descrição curta"],
+    ["#cta", "botão do anúncio"],
+    ["#adv_perguntas", "perguntas qualificadoras"],
+    ["#adv_localidade_nome", "localidade"],
+    ["#adv_genero", "gênero"],
+    ["#adv_idade_min", "idade mínima"],
+    ["#adv_idade_max", "idade máxima"],
+    ["#adv_obrigado_titulo", "título do obrigado"],
+    ["#adv_obrigado_botao", "botão do obrigado"],
+    ["#adv_obrigado_texto", "mensagem de obrigado"],
+    ["#nicho_regiao", "região do nicho"],
+    ["#nicho_faixa_min", "faixa etária mínima"],
+    ["#nicho_faixa_max", "faixa etária máxima"]
+  ].forEach(([seletor, texto]) => {
+    if (preenchidos.has(seletor)) {
+      marcarCampoIA(seletor, "preenchido", texto);
+    }
+  });
+
+  [
+    ["#pagina_select", "Página Facebook"],
+    ["#btn-adicionar-imagem", "imagem do anúncio"],
+    ["#orcamento", "orçamento diário"],
+    ["#adv_categoria_especial", "categoria especial da Meta"],
+    ["#bloco_onde_anunciar", "Facebook/Instagram"],
+    ["#bloco_agendamento_custo", "datas e controle de custo"],
+    ["#bloco_segmentacao_adicional", "posicionamentos e dispositivos"]
+  ].forEach(([seletor, texto]) => {
+    if (!preenchidos.has(seletor)) {
+      marcarCampoIA(seletor, "pendente", texto);
+    }
+  });
+}
+
 function aplicarCampanhaIA(indice) {
   const s = sugestoesCampanhaIAAtual[indice ?? 0];
   if (!s) {
     alert("Gere uma sugestao com IA primeiro.");
     return;
   }
+
+  const camposPreenchidosIA = [];
+  const preencherCampoIA = (seletor, valor) => {
+    const el = document.querySelector(seletor);
+
+    if (!el || valor === undefined || valor === null || valor === "") {
+      return;
+    }
+
+    el.value = valor;
+    camposPreenchidosIA.push(seletor);
+  };
 
   (sugestoesCampanhaIAAtual || []).forEach((_, idx) => {
     const card = document.getElementById(`ia_opcao_card_${idx}`);
@@ -16047,70 +16208,55 @@ function aplicarCampanhaIA(indice) {
     s.titulo || s.nome_campanha || "";
 
   if (nomeCampanhaIA) {
-    const el = document.getElementById("campanha_nome");
-    if (el) el.value = nomeCampanhaIA;
+    preencherCampoIA("#campanha_nome", nomeCampanhaIA);
   }
   if (s.titulo) {
-    const el = document.getElementById("adv_titulo");
-    if (el) el.value = s.titulo;
+    preencherCampoIA("#adv_titulo", s.titulo);
   }
   if (s.texto) {
-    const el = document.getElementById("texto");
-    if (el) el.value = s.texto;
+    preencherCampoIA("#texto", s.texto);
   }
   if (s.descricao) {
-    const el = document.getElementById("adv_descricao");
-    if (el) el.value = s.descricao;
+    preencherCampoIA("#adv_descricao", s.descricao);
   }
   if (s.cta) {
-    const el = document.getElementById("cta");
-    if (el) el.value = s.cta;
+    preencherCampoIA("#cta", s.cta);
   }
   if (s.perguntas) {
-    const el = document.getElementById("adv_perguntas");
-    if (el) el.value = s.perguntas;
+    preencherCampoIA("#adv_perguntas", s.perguntas);
   }
   if (s.interesses) {
-    const el = document.getElementById("adv_interesse_busca");
-    if (el) el.value = s.interesses.split(",")[0]?.trim() || s.interesses;
+    preencherCampoIA(
+      "#adv_interesse_busca",
+      s.interesses.split(",")[0]?.trim() || s.interesses
+    );
   }
   if (s.localidade) {
-    const el = document.getElementById("adv_localidade_nome");
-    if (el) el.value = s.localidade;
-
-    const regiao = document.getElementById("nicho_regiao");
-    if (regiao) regiao.value = s.localidade;
+    preencherCampoIA("#adv_localidade_nome", s.localidade);
+    preencherCampoIA("#nicho_regiao", s.localidade);
   }
   if (s.genero !== undefined && s.genero !== null) {
-    const el = document.getElementById("adv_genero");
-    if (el) el.value = s.genero;
+    preencherCampoIA("#adv_genero", s.genero);
   }
   if (s.idade_min) {
-    const el = document.getElementById("adv_idade_min");
-    if (el) el.value = s.idade_min;
-
-    const faixaMin = document.getElementById("nicho_faixa_min");
-    if (faixaMin) faixaMin.value = s.idade_min;
+    preencherCampoIA("#adv_idade_min", s.idade_min);
+    preencherCampoIA("#nicho_faixa_min", s.idade_min);
   }
   if (s.idade_max) {
-    const el = document.getElementById("adv_idade_max");
-    if (el) el.value = s.idade_max;
-
-    const faixaMax = document.getElementById("nicho_faixa_max");
-    if (faixaMax) faixaMax.value = s.idade_max;
+    preencherCampoIA("#adv_idade_max", s.idade_max);
+    preencherCampoIA("#nicho_faixa_max", s.idade_max);
   }
   if (s.obrigado_titulo) {
-    const el = document.getElementById("adv_obrigado_titulo");
-    if (el) el.value = s.obrigado_titulo;
+    preencherCampoIA("#adv_obrigado_titulo", s.obrigado_titulo);
   }
   if (s.obrigado_botao) {
-    const el = document.getElementById("adv_obrigado_botao");
-    if (el) el.value = s.obrigado_botao;
+    preencherCampoIA("#adv_obrigado_botao", s.obrigado_botao);
   }
   if (s.obrigado_texto) {
-    const el = document.getElementById("adv_obrigado_texto");
-    if (el) el.value = s.obrigado_texto;
+    preencherCampoIA("#adv_obrigado_texto", s.obrigado_texto);
   }
+
+  marcarCamposAposAplicarIA(camposPreenchidosIA);
 }
 
 async function analisarCampanhaIA(campanha) {

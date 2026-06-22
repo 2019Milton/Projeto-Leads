@@ -6624,6 +6624,15 @@ body.tema-claro .info-tooltip-popup {
   transform: scale(1.08);
 }
 
+.campanha-acoes button.btn-definitivo {
+  width: auto !important;
+  min-width: 38px !important;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 /* BOTÕES */
 
 .btn-acao {
@@ -20983,6 +20992,17 @@ async function carregarCampanhas() {
                 >
                   ♻
                 </button>
+                <button
+                  class="btn-danger btn-definitivo"
+                  title="Excluir definitivamente"
+                  onclick="
+                    excluirCampanhaDefinitiva(
+                      ${Number(c.id)}
+                    )
+                  "
+                >
+                  🗑️ definitivo
+                </button>
               `
               : `
                 <button
@@ -21700,6 +21720,58 @@ async function restaurarCampanha(campaign_id) {
     console.error("ERRO RESTAURAR:", err);
 
     alert("Erro ao restaurar campanha");
+  }
+}
+
+async function excluirCampanhaDefinitiva(campanhaId) {
+
+  const confirmar = confirm(
+    "Excluir definitivamente esta campanha da plataforma?\n\nEsta ação remove o card e o histórico da campanha na plataforma e não pode ser desfeita. Os leads já capturados serão mantidos na Central de Leads."
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const confirmarFinal = confirm(
+    "Confirme novamente: deseja apagar definitivamente esta campanha da plataforma?"
+  );
+
+  if (!confirmarFinal) {
+    return;
+  }
+
+  try {
+
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `${API}/campanhas/${campanhaId}/definitiva`,
+      {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.error) {
+
+      alert(data.error);
+      return;
+    }
+
+    await carregarCampanhas();
+
+    alert("Campanha excluída definitivamente da plataforma.");
+
+  } catch (err) {
+
+    console.error("ERRO EXCLUIR DEFINITIVO:", err);
+
+    alert("Erro ao excluir campanha definitivamente");
   }
 }
 

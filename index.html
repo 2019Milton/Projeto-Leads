@@ -5562,8 +5562,17 @@ body.tema-claro .cal-nav span { color: #111827; }
 }
 
 .ia-opcao-card.ia-opcao-selecionada {
-  background: rgba(34,197,94,0.18);
-  border: 1px solid rgba(34,197,94,0.6);
+  background: rgba(20,83,45,0.72);
+  border: 1px solid rgba(34,197,94,0.95);
+  box-shadow:
+    inset 0 0 0 1px rgba(34,197,94,0.28),
+    0 0 22px rgba(34,197,94,0.22);
+}
+
+.ia-opcao-card.ia-opcao-selecionada .ia-opcao-numero,
+.ia-opcao-card.ia-opcao-selecionada .ia-opcao-titulo,
+.ia-opcao-card.ia-opcao-selecionada .ia-opcao-campo strong {
+  color: #bbf7d0;
 }
 
 .ia-opcao-numero {
@@ -10364,7 +10373,7 @@ body.tema-claro .logout {
         ></textarea>
   
         <!-- 🔘 CTA -->
-        <label>Botão do anúncio</label>
+        <label>Botão do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse é o texto do botão que aparece no anúncio da Meta. Não muda o tipo de conteúdo, só a chamada para ação. Saiba mais: convite mais leve para conhecer a oferta. Cadastre-se: melhor para formulário de leads. Solicitar agora: chamada mais direta para quem já está pronto para pedir contato ou proposta.', event)">i</button></label>
   
         <select id="cta">
           <option value="LEARN_MORE">
@@ -16034,9 +16043,12 @@ function aplicarCampanhaIA(indice) {
     }
   });
 
-  if (s.nome_campanha) {
+  const nomeCampanhaIA =
+    s.titulo || s.nome_campanha || "";
+
+  if (nomeCampanhaIA) {
     const el = document.getElementById("campanha_nome");
-    if (el) el.value = s.nome_campanha;
+    if (el) el.value = nomeCampanhaIA;
   }
   if (s.titulo) {
     const el = document.getElementById("adv_titulo");
@@ -16065,6 +16077,9 @@ function aplicarCampanhaIA(indice) {
   if (s.localidade) {
     const el = document.getElementById("adv_localidade_nome");
     if (el) el.value = s.localidade;
+
+    const regiao = document.getElementById("nicho_regiao");
+    if (regiao) regiao.value = s.localidade;
   }
   if (s.genero !== undefined && s.genero !== null) {
     const el = document.getElementById("adv_genero");
@@ -16073,10 +16088,16 @@ function aplicarCampanhaIA(indice) {
   if (s.idade_min) {
     const el = document.getElementById("adv_idade_min");
     if (el) el.value = s.idade_min;
+
+    const faixaMin = document.getElementById("nicho_faixa_min");
+    if (faixaMin) faixaMin.value = s.idade_min;
   }
   if (s.idade_max) {
     const el = document.getElementById("adv_idade_max");
     if (el) el.value = s.idade_max;
+
+    const faixaMax = document.getElementById("nicho_faixa_max");
+    if (faixaMax) faixaMax.value = s.idade_max;
   }
   if (s.obrigado_titulo) {
     const el = document.getElementById("adv_obrigado_titulo");

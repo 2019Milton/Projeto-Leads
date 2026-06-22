@@ -1904,6 +1904,36 @@ body.tema-claro .validacao-campanha-msg {
   grid-column: 1 / -1;
 }
 
+.advanced-subsection {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148,163,184,0.18);
+}
+
+.advanced-subsection:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.advanced-subsection h5 {
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.advanced-subsection p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .admin-only-targeting {
 
   display: none;
@@ -6266,29 +6296,36 @@ body.tema-claro .cal-nav span { color: #111827; }
 
 /* ── Tooltip de ajuda dos campos ── */
 .info-icone {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  width: 15px;
-  height: 15px;
+  width: 15px !important;
+  min-width: 15px !important;
+  max-width: 15px !important;
+  height: 15px !important;
+  min-height: 15px !important;
   border-radius: 50%;
-  background: rgba(100,116,139,0.35);
-  color: #94a3b8;
-  font-size: 9px;
+  background: rgba(100,116,139,0.35) !important;
+  color: #94a3b8 !important;
+  font-size: 9px !important;
   font-weight: 800;
   font-style: italic;
   cursor: pointer;
-  margin-left: 5px;
+  margin: 0 0 0 5px !important;
   vertical-align: middle;
-  border: none;
-  padding: 0;
-  line-height: 1;
+  border: none !important;
+  padding: 0 !important;
+  line-height: 1 !important;
   transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
+  box-shadow: none !important;
+  transform: none !important;
 }
 .info-icone:hover {
-  background: rgba(124,58,237,0.45);
-  color: #c4b5fd;
+  background: rgba(124,58,237,0.45) !important;
+  color: #c4b5fd !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 .info-tooltip-popup {
   position: fixed;
@@ -9204,6 +9241,18 @@ body.tema-claro .card-criar-campanha .detailed-targeting-panel {
   color: #102033 !important;
 }
 
+body.tema-claro .advanced-subsection {
+  border-top-color: rgba(37,99,235,0.18);
+}
+
+body.tema-claro .advanced-subsection h5 {
+  color: var(--nicho-card-title-light, #1d4ed8) !important;
+}
+
+body.tema-claro .advanced-subsection p {
+  color: #475569 !important;
+}
+
 body.tema-claro .ia-ouro-destaque,
 body.tema-claro .ia-opcao-card,
 body.tema-claro .ia-copy-box,
@@ -10624,6 +10673,11 @@ body.tema-claro .logout {
 
           <div class="advanced-grid">
 
+            <div class="advanced-subsection">
+              <h5>Criativo do anúncio</h5>
+              <p>Textos que aparecem no anúncio exibido pela Meta.</p>
+            </div>
+
             <div class="advanced-full">
               <label>Título do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('É o texto em destaque que as pessoas veem primeiro no seu anúncio. Deve ser curto, direto e chamar atenção para o que você está oferecendo.', event)">i</button></label>
               <input
@@ -10642,12 +10696,32 @@ body.tema-claro .logout {
               >
             </div>
 
+            <div class="advanced-subsection">
+              <h5>Formulário de leads</h5>
+              <p>Perguntas e filtro de qualidade aplicados antes do envio do contato.</p>
+            </div>
+
             <div class="advanced-full">
               <label>Perguntas qualificadoras <button type="button" class="info-icone" onclick="mostrarInfoCampo('Perguntas que o cliente responde antes de enviar os dados de contato. Ajudam a filtrar quem está mais interessado. Coloque uma pergunta por linha.', event)">i</button></label>
               <textarea
                 id="adv_perguntas"
                 placeholder="Uma pergunta por linha. Ex: Qual faixa de investimento?"
               ></textarea>
+            </div>
+
+            <div class="advanced-full">
+              <label>Filtro de qualidade do formulário <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse ajuste é diferente do Público Advantage+. Aqui a Meta tenta priorizar pessoas com maior chance de preencher o formulário corretamente. Pode gerar menos leads, mas tende a melhorar a qualidade dos contatos.', event)">i</button></label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" id="adv_form_qualidade">
+                  Priorizar leads com maior qualidade
+                </label>
+              </div>
+            </div>
+
+            <div class="advanced-subsection">
+              <h5>Tela de obrigado</h5>
+              <p>Mensagem exibida depois que o lead envia o formulário.</p>
             </div>
 
             <div>
@@ -10675,16 +10749,6 @@ body.tema-claro .logout {
                 id="adv_obrigado_texto"
                 placeholder="Recebemos seus dados. Em breve entraremos em contato."
               >
-            </div>
-
-            <div class="advanced-full">
-              <label>Otimização <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quando ativado, o Facebook prioriza mostrar o anúncio para pessoas com maior chance de preencher o formulário corretamente. Gera menos leads, mas com mais qualidade.', event)">i</button></label>
-              <div class="advanced-checks">
-                <label>
-                  <input type="checkbox" id="adv_form_qualidade">
-                  Otimizar formulário para qualidade
-                </label>
-              </div>
             </div>
 
           </div>

@@ -3555,6 +3555,232 @@ body.usuario-super-admin .admin-only-targeting {
   margin-top: 12px;
 }
 
+.lead-data-contato {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+}
+.lead-data-contato.agendado {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  color: #fbbf24;
+}
+.lead-data-contato.agendado:hover {
+  background: rgba(234, 179, 8, 0.22);
+}
+.lead-data-contato.vazio {
+  background: rgba(255,255,255,0.04);
+  border: 1px dashed rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.4);
+}
+.lead-data-contato.vazio:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+}
+.lead-data-contato-remover {
+  margin-left: auto;
+  opacity: 0.5;
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.lead-data-contato-remover:hover {
+  opacity: 1;
+  background: rgba(239,68,68,0.2);
+  color: #f87171;
+}
+
+/* Modal agendador */
+.agendador-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.agendador-box {
+  background: #1a2235;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 28px;
+  width: 320px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.agendador-box h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  color: #f1f5f9;
+}
+.agendador-box input[type="date"] {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: #f1f5f9;
+  font-size: 15px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+.agendador-box input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.7;
+}
+.agendador-btns {
+  display: flex;
+  gap: 8px;
+}
+.agendador-btns button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.agendador-btn-salvar {
+  background: #3b82f6;
+  color: #fff;
+}
+.agendador-btn-salvar:hover { background: #2563eb; }
+.agendador-btn-cancelar {
+  background: rgba(255,255,255,0.08);
+  color: #94a3b8;
+}
+.agendador-btn-cancelar:hover { background: rgba(255,255,255,0.13); }
+
+/* Sino de notificações */
+.notif-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  color: #94a3b8;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+.notif-btn:hover { background: rgba(255,255,255,0.08); color: #f1f5f9; }
+.notif-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 999px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+}
+
+/* Drawer de notificações */
+.notif-drawer {
+  position: fixed;
+  top: 0;
+  right: -380px;
+  width: 360px;
+  height: 100vh;
+  background: #131c2e;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  z-index: 8000;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.3s ease;
+  box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+}
+.notif-drawer.aberto { right: 0; }
+.notif-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.notif-drawer-header h3 { margin: 0; font-size: 16px; color: #f1f5f9; }
+.notif-drawer-fechar {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+.notif-drawer-fechar:hover { background: rgba(255,255,255,0.08); }
+.notif-drawer-acoes {
+  padding: 8px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.notif-ler-todas {
+  background: none;
+  border: none;
+  color: #60a5fa;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.notif-ler-todas:hover { text-decoration: underline; }
+.notif-lista {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.notif-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.notif-item:hover { background: rgba(255,255,255,0.08); }
+.notif-item.nao-lida {
+  border-color: rgba(59,130,246,0.4);
+  background: rgba(59,130,246,0.08);
+}
+.notif-item-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 4px;
+}
+.notif-item-msg {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+.notif-item-hora {
+  font-size: 11px;
+  color: #475569;
+  margin-top: 6px;
+}
+.notif-vazia {
+  text-align: center;
+  color: #475569;
+  font-size: 14px;
+  padding: 40px 0;
+}
+
 .lead-actions button {
 
   width: 34px !important;
@@ -10442,6 +10668,16 @@ body.tema-claro .logout {
       >
         👤 Perfil
       </button>
+
+      <button
+        id="btn-notificacoes"
+        class="notif-btn"
+        onclick="abrirNotificacoes()"
+        title="Notificações"
+      >
+        🔔
+        <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
+      </button>
   
       <div class="credito-desenvolvedor-topbar">
         <span>
@@ -13629,6 +13865,17 @@ async function init() {
       }
     } catch (_) {}
 
+    // carrega perfil completo (whatsapp, etc.)
+    try {
+      const resPerfil = await fetch(`${API}/usuarios/me`, {
+        headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+      });
+      if (resPerfil.ok) {
+        const perfil = await resPerfil.json();
+        if (usuarioLogado) usuarioLogado.whatsapp = perfil.whatsapp || null;
+      }
+    } catch (_) {}
+
   } catch (err) {
 
     console.error("Erro token:", err);
@@ -15333,6 +15580,18 @@ function criarLeadCard(lead) {
 
       ${renderizarRespostasLead(lead)}
 
+      <!-- DATA DE CONTATO -->
+      ${lead.data_contato ? `
+        <div class="lead-data-contato agendado" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '${lead.data_contato}')">
+          📅 Contato em: <strong>${formatarDataContato(lead.data_contato)}</strong>
+          <span class="lead-data-contato-remover" onclick="event.stopPropagation(); removerDataContato(${Number(lead.id)})" title="Remover data">✕</span>
+        </div>
+      ` : `
+        <div class="lead-data-contato vazio" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '')">
+          📅 Agendar contato
+        </div>
+      `}
+
       <!-- AÇÕES -->
       <div class="lead-actions">
 
@@ -15412,6 +15671,164 @@ function formatarData(data) {
 
   return criada.toLocaleDateString();
 }
+
+function formatarDataContato(dataISO) {
+  if (!dataISO) return "-";
+  const [ano, mes, dia] = String(dataISO).slice(0, 10).split("-");
+  const hoje = new Date();
+  const data = new Date(Number(ano), Number(mes) - 1, Number(dia));
+  const diffDias = Math.round((data - new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())) / 86400000);
+  if (diffDias === 0) return "Hoje!";
+  if (diffDias === 1) return "Amanhã";
+  if (diffDias < 0) return `${dia}/${mes} (atrasado)`;
+  return `${dia}/${mes}/${ano}`;
+}
+
+function abrirAgendadorContato(leadId, dataAtual) {
+  document.getElementById("agendador-overlay")?.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "agendador-overlay";
+  overlay.className = "agendador-overlay";
+  const hoje = new Date().toISOString().slice(0, 10);
+  overlay.innerHTML = `
+    <div class="agendador-box">
+      <h3>📅 Agendar contato</h3>
+      <input type="date" id="agendador-data" min="${hoje}" value="${dataAtual ? dataAtual.slice(0,10) : ""}">
+      <div class="agendador-btns">
+        <button class="agendador-btn-cancelar" onclick="document.getElementById('agendador-overlay').remove()">Cancelar</button>
+        <button class="agendador-btn-salvar" onclick="salvarDataContato(${leadId})">Salvar</button>
+      </div>
+    </div>
+  `;
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById("agendador-data")?.focus(), 50);
+}
+
+async function salvarDataContato(leadId) {
+  const data = document.getElementById("agendador-data")?.value;
+  if (!data) return;
+  try {
+    const res = await fetch(`${API}/leads/${leadId}/data-contato`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ data_contato: data })
+    });
+    if (!res.ok) throw new Error();
+    document.getElementById("agendador-overlay")?.remove();
+    await carregarLeads();
+  } catch {
+    alert("Erro ao salvar data de contato.");
+  }
+}
+
+async function removerDataContato(leadId) {
+  try {
+    await fetch(`${API}/leads/${leadId}/data-contato`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ data_contato: null })
+    });
+    await carregarLeads();
+  } catch {
+    alert("Erro ao remover data de contato.");
+  }
+}
+
+/* ===== NOTIFICAÇÕES ===== */
+let _notificacoes = [];
+
+async function carregarNotificacoes() {
+  try {
+    const res = await fetch(`${API}/notificacoes`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    _notificacoes = await res.json();
+    atualizarBadgeNotificacoes();
+  } catch {}
+}
+
+function atualizarBadgeNotificacoes() {
+  const naolidas = _notificacoes.filter(n => !n.lido).length;
+  const badge = document.getElementById("notif-badge");
+  if (!badge) return;
+  if (naolidas > 0) {
+    badge.textContent = naolidas > 99 ? "99+" : naolidas;
+    badge.style.display = "flex";
+  } else {
+    badge.style.display = "none";
+  }
+}
+
+function abrirNotificacoes() {
+  const drawer = document.getElementById("notif-drawer");
+  const backdrop = document.getElementById("notif-backdrop");
+  if (!drawer) return;
+  renderizarListaNotificacoes();
+  drawer.classList.add("aberto");
+  if (backdrop) backdrop.style.display = "block";
+}
+
+function fecharNotificacoes() {
+  const drawer = document.getElementById("notif-drawer");
+  const backdrop = document.getElementById("notif-backdrop");
+  if (drawer) drawer.classList.remove("aberto");
+  if (backdrop) backdrop.style.display = "none";
+}
+
+function renderizarListaNotificacoes() {
+  const lista = document.getElementById("notif-lista");
+  if (!lista) return;
+  if (!_notificacoes.length) {
+    lista.innerHTML = `<div class="notif-vazia">Nenhuma notificação ainda 🎉</div>`;
+    return;
+  }
+  lista.innerHTML = _notificacoes.map(n => `
+    <div class="notif-item ${n.lido ? "" : "nao-lida"}" onclick="clicarNotificacao(${n.id}, ${n.lead_id || "null"})">
+      <div class="notif-item-titulo">${escaparHtml(n.titulo)}</div>
+      <div class="notif-item-msg">${escaparHtml(n.mensagem)}</div>
+      <div class="notif-item-hora">${formatarData(n.criado_em)}</div>
+    </div>
+  `).join("");
+}
+
+async function clicarNotificacao(notifId, leadId) {
+  // Marca como lida
+  try {
+    await fetch(`${API}/notificacoes/${notifId}/lida`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const n = _notificacoes.find(x => x.id === notifId);
+    if (n) n.lido = true;
+    atualizarBadgeNotificacoes();
+    renderizarListaNotificacoes();
+  } catch {}
+  // Abre o lead se houver
+  if (leadId) {
+    fecharNotificacoes();
+    abrirLeadDrawerPorId(leadId);
+  }
+}
+
+async function lerTodasNotificacoes() {
+  try {
+    await fetch(`${API}/notificacoes/ler-todas`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    _notificacoes.forEach(n => n.lido = true);
+    atualizarBadgeNotificacoes();
+    renderizarListaNotificacoes();
+  } catch {}
+}
+
+// Carrega notificações ao iniciar e a cada 5 minutos
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(carregarNotificacoes, 2000);
+  setInterval(carregarNotificacoes, 5 * 60 * 1000);
+});
 
 function textoDetalhe(valor, fallback = "-") {
 
@@ -24405,34 +24822,66 @@ async function criarUsuario() {
   await carregarPainelAdmin();
 }
   
-async function abrirMenuPerfil() {
+function abrirMenuPerfil() {
+  const modal = document.getElementById("modal-perfil-usuario");
+  if (!modal) return;
+  // Preenche campos com dados atuais
+  const wpp = (usuarioLogado?.whatsapp || "");
+  const inputWpp = document.getElementById("perfil-whatsapp-input");
+  if (inputWpp) inputWpp.value = wpp ? formatarTelefoneExibicao(wpp) : "";
+  const emailEl = document.getElementById("perfil-email-display");
+  if (emailEl) emailEl.textContent = usuarioLogado?.email || "";
+  modal.style.display = "flex";
+}
 
-  const token =
-    localStorage.getItem("token");
+function fecharModalPerfil() {
+  const modal = document.getElementById("modal-perfil-usuario");
+  if (modal) modal.style.display = "none";
+}
 
+function formatarTelefoneExibicao(num) {
+  const n = String(num).replace(/\D/g, "");
+  if (n.length === 13) return `+${n.slice(0,2)} (${n.slice(2,4)}) ${n.slice(4,9)}-${n.slice(9)}`;
+  if (n.length === 11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+  return num;
+}
+
+async function salvarWhatsAppPerfil() {
+  const input = document.getElementById("perfil-whatsapp-input");
+  const btn   = document.getElementById("perfil-wpp-btn");
+  const msg   = document.getElementById("perfil-wpp-msg");
+  if (!input || !btn) return;
+  const valor = input.value.trim();
+  btn.disabled = true;
+  btn.textContent = "Salvando...";
   try {
-    const decoded =
-      atob(token);
+    const res = await fetch(`${API}/usuarios/me/whatsapp`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ whatsapp: valor })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    if (usuarioLogado) usuarioLogado.whatsapp = data.whatsapp;
+    if (msg) { msg.textContent = "WhatsApp salvo!"; msg.style.color = "#22c55e"; }
+    setTimeout(() => { if (msg) msg.textContent = ""; }, 3000);
+  } catch (e) {
+    if (msg) { msg.textContent = "Erro ao salvar"; msg.style.color = "#ef4444"; }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Salvar";
+  }
+}
 
-    const email =
-      decoded.split(":")[1];
-
-    if (!email) {
-      alert("Não foi possível identificar seu email");
-      return;
-    }
-
-    const confirmar =
-      confirm(
-        `Enviar link de troca de senha para ${email}?`
-      );
-
-    if (!confirmar) {
-      return;
-    }
-
+async function abrirMenuPerfilSenha() {
+  fecharModalPerfil();
+  const token = localStorage.getItem("token");
+  try {
+    const email = usuarioLogado?.email;
+    if (!email) { alert("Não foi possível identificar seu email"); return; }
+    const confirmar = confirm(`Enviar link de troca de senha para ${email}?`);
+    if (!confirmar) return;
     await solicitarResetSenha(email);
-
   } catch (err) {
     console.error("PERFIL:", err);
     alert("Erro ao solicitar troca de senha");
@@ -27512,6 +27961,53 @@ function coletarDadosNichoAtivo() {
   return dados;
 }
 </script>
+
+<!-- ===== MODAL PERFIL DO USUÁRIO ===== -->
+<div id="modal-perfil-usuario" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;align-items:center;justify-content:center;">
+  <div style="background:#1a2235;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:28px;width:360px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="margin:0;font-size:17px;color:#f1f5f9;">👤 Meu Perfil</h3>
+      <button onclick="fecharModalPerfil()" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:4px;border-radius:6px;">✕</button>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">Email</label>
+      <div id="perfil-email-display" style="font-size:14px;color:#94a3b8;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:8px;"></div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">WhatsApp para lembretes</label>
+      <div style="display:flex;gap:8px;">
+        <input id="perfil-whatsapp-input" type="tel" placeholder="(11) 99999-9999"
+          style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#f1f5f9;font-size:14px;">
+        <button id="perfil-wpp-btn" onclick="salvarWhatsAppPerfil()"
+          style="padding:10px 16px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;white-space:nowrap;">
+          Salvar
+        </button>
+      </div>
+      <div id="perfil-wpp-msg" style="font-size:12px;margin-top:6px;height:16px;"></div>
+    </div>
+    <p style="font-size:11px;color:#475569;margin:0 0 20px;">
+      Quando um lembrete de contato de lead disparar, você receberá uma mensagem neste número.
+    </p>
+    <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin-bottom:16px;">
+    <button onclick="abrirMenuPerfilSenha()"
+      style="width:100%;padding:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#94a3b8;cursor:pointer;font-size:14px;">
+      🔐 Trocar senha
+    </button>
+  </div>
+</div>
+
+<!-- ===== DRAWER DE NOTIFICAÇÕES ===== -->
+<div id="notif-drawer" class="notif-drawer">
+  <div class="notif-drawer-header">
+    <h3>🔔 Notificações</h3>
+    <button class="notif-drawer-fechar" onclick="fecharNotificacoes()">✕</button>
+  </div>
+  <div class="notif-drawer-acoes">
+    <button class="notif-ler-todas" onclick="lerTodasNotificacoes()">Marcar todas como lidas</button>
+  </div>
+  <div class="notif-lista" id="notif-lista"></div>
+</div>
+<div id="notif-backdrop" onclick="fecharNotificacoes()" style="display:none;position:fixed;inset:0;z-index:7999;"></div>
 
 </body>
 </html>

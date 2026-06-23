@@ -21463,7 +21463,11 @@ async function carregarStatusMeta() {
 
             <!-- 📊 STATUS META -->
             <div class="meta-conta-selector" style="margin-top:0;">
-              <b style="font-size:13px;display:block;margin-bottom:10px;">📊 Status Meta</b>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <b style="font-size:13px;">📊 Status Meta</b>
+                <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
+              </div>
+              <div class="meta-sec-body">
 
               <div class="meta-status-grid" style="margin-bottom:10px;">
                 <div class="meta-status-tile">
@@ -21471,7 +21475,7 @@ async function carregarStatusMeta() {
                   <small>${data.conectado ? "Conectada" : "Não conectada"}</small>
                 </div>
                 <div class="meta-status-tile">
-                  <span>${data.conta_anuncios?.ativa ? "🟢" : "🔴"} Conta Ads</span>
+                  <span>${data.conta_anuncios?.ativa ? "🟢" : "🔴"} Conta Ads / Conta de Anúncio</span>
                   <small>${escaparHtml(data.conta_anuncios?.nome || (data.conta_anuncios?.ativa ? "Conta ativa" : "Sem conta vinculada"))}</small>
                   <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
                     <a href="https://www.facebook.com/adsmanager/manage/accounts" target="_blank"
@@ -21481,6 +21485,7 @@ async function carregarStatusMeta() {
                       style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
                     >+ Criar conta →</a>
                   </div>
+                  <div style="margin-top:8px;">${seletorContaAnuncios}</div>
                 </div>
                 <div class="meta-status-tile">
                   <span>${data.paginas?.length > 0 ? "🟢" : "🔴"} Página</span>
@@ -21521,12 +21526,16 @@ async function carregarStatusMeta() {
                 >🔄 Atualizar status — clique após criar sua Página ou Conta de Anúncios</button>
               </div>
 
-              ${seletorContaAnuncios}
+              </div>
             </div>
 
             <!-- 💳 STATUS DE PAGAMENTO META -->
             <div class="meta-conta-selector" style="margin-top:10px;">
-              <b style="font-size:13px;display:block;margin-bottom:10px;">💳 Status de Pagamento Meta</b>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <b style="font-size:13px;">💳 Status de Pagamento Meta</b>
+                <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
+              </div>
+              <div class="meta-sec-body">
 
               <div class="pagamento-modos">
                 <div
@@ -21574,11 +21583,16 @@ async function carregarStatusMeta() {
 
               <hr>
               <h4>${data.pronto_para_anunciar ? "🚀 Pronto para anunciar" : "⚠️ Ajustes necessários"}</h4>
+              </div>
             </div>
 
             <!-- 📈 STATUS PLATAFORMA LEADS -->
             <div class="meta-conta-selector" style="margin-top:10px;">
-              <b style="font-size:13px;display:block;margin-bottom:10px;">📈 Status Plataforma Leads</b>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <b style="font-size:13px;">📈 Status Plataforma Leads</b>
+                <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
+              </div>
+              <div class="meta-sec-body">
               <p style="margin:0 0 6px;"><b>📢 Campanhas:</b><br>${data.metricas?.campanhas || 0}</p>
               <p style="margin:0 0 6px;"><b>🟢 Ativas:</b><br>${data.metricas?.campanhas_ativas || 0}</p>
               <p style="margin:0 0 6px;"><b>💰 Gasto hoje:</b><br>${gastoHoje}</p>
@@ -21594,6 +21608,7 @@ async function carregarStatusMeta() {
               <div id="sync_progress" class="sync-progress">
                 <div class="sync-progress-bar"><span></span></div>
                 <small>Sincronizando campanhas, gasto e leads diretamente com a Meta...</small>
+              </div>
               </div>
             </div>
 

@@ -27950,6 +27950,11 @@ function selecionarNichoTab(nicho, btnEl) {
   ["campanha_nome","texto","adv_titulo","adv_descricao","adv_perguntas",
    "ia_campanha_contexto","adv_interesse_busca","orcamento"].forEach(_limpar);
 
+  // limpa resultados de IA do nicho anterior para não vazar entre nichos
+  sugestoesCampanhaIAAtual = [];
+  const boxIA = document.getElementById("ia_campanha_criador_resultado");
+  if (boxIA) { boxIA.innerHTML = ""; boxIA.style.display = "none"; }
+
   // renderiza campos extras do nicho
   const container = document.getElementById("nicho_campos_extras");
   if (!container) return;

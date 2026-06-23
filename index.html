@@ -21549,6 +21549,13 @@ async function carregarStatusMeta() {
                 ${tosAviso}
               </div>
 
+              <div style="margin-bottom:10px;">
+                <button type="button" onclick="carregarStatusMeta()"
+                  style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);color:#a5b4fc;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;"
+                  onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"
+                >🔄 Atualizar status — clique após criar sua Página ou Conta de Anúncios</button>
+              </div>
+
               ${seletorContaAnuncios}
 
               ${!instagramConectado ? `

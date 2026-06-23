@@ -8924,6 +8924,20 @@ body.tema-claro .targeting-chip {
 }
 .chat-admin-janela-header:hover { background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(139,92,246,0.25)); }
 .chat-admin-janela.minimizada .chat-admin-body { display: none; }
+.chat-admin-janela.expandido { width: 520px; }
+.chat-admin-janela.expandido .chat-admin-msgs { min-height: 400px; max-height: 520px; }
+.chat-admin-expand-btn {
+  background: none;
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 5px;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1.4;
+  transition: color 0.15s, background 0.15s;
+}
+.chat-admin-expand-btn:hover { background: rgba(139,92,246,0.15); color: #c4b5fd; }
 .chat-admin-msgs {
   flex: 1;
   overflow-y: auto;
@@ -26043,6 +26057,7 @@ function abrirJanelaSuporte(nome, email, uid) {
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <span id="chat-admin-badge-${uid}" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px;"></span>
+        <button id="chat-admin-expand-btn-${uid}" class="chat-admin-expand-btn" onclick="event.stopPropagation();toggleExpandirJanela(${uid})" title="Expandir">⤢</button>
         <button onclick="event.stopPropagation();encerrarConversaJanela(${uid})" style="background:none;border:none;color:#f87171;font-size:11px;font-weight:600;cursor:pointer;padding:2px 6px;border:1px solid rgba(248,113,113,0.35);border-radius:5px;line-height:1.4;" title="Encerrar conversa">Encerrar</button>
         <button onclick="event.stopPropagation();fecharJanelaSuporte(${uid})" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1;padding:0 2px;" title="Fechar janela">✕</button>
       </div>
@@ -26050,6 +26065,8 @@ function abrirJanelaSuporte(nome, email, uid) {
     <div class="chat-admin-body">
       <div class="chat-admin-msgs" id="chat-admin-msgs-${uid}"></div>
       <div class="chat-admin-input-area">
+        <input type="file" id="chat-admin-anexo-input-${uid}" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf" style="display:none;" onchange="enviarAnexoJanela(${uid}, this.files[0])">
+        <button type="button" class="chat-anexo-btn" title="Enviar imagem ou arquivo" onclick="document.getElementById('chat-admin-anexo-input-${uid}').click()">📎</button>
         <input id="chat-admin-input-${uid}" type="text" placeholder="Responder como suporte..." style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:#e2e8f0;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')enviarMensagemJanela(${uid})">
         <button onclick="enviarMensagemJanela(${uid})" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:8px;color:#fff;padding:7px 13px;cursor:pointer;font-size:14px;flex-shrink:0;">➤</button>
       </div>
@@ -26120,7 +26137,8 @@ async function carregarMensagensJanela(uid, silencioso = false) {
     const novo = mensagens.map(m => {
       const isUsuario = m.remetente_tipo === "usuario";
       return `<div class="chat-msg ${isUsuario ? "usuario" : "suporte"}" style="max-width:85%;padding:8px 11px;border-radius:10px;font-size:13px;line-height:1.4;word-break:break-word;align-self:${isUsuario ? "flex-start" : "flex-end"};background:${isUsuario ? "rgba(99,102,241,0.18)" : "rgba(139,92,246,0.22)"};">
-        ${escHtml(m.conteudo)}
+        ${m.conteudo ? escHtml(m.conteudo) : ""}
+        ${renderAnexoChat(m)}
         <div style="font-size:10px;opacity:0.5;margin-top:3px;">${new Date(m.criado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</div>
       </div>`;
     }).join("");
@@ -26164,6 +26182,46 @@ async function enviarMensagemJanela(uid) {
     input.value = "";
     await carregarMensagensJanela(uid);
   } catch (e) { console.error("enviar janela:", e); }
+}
+
+function toggleExpandirJanela(uid) {
+  const j = _janelasSuporte.get(uid);
+  if (!j) return;
+  const expandido = j.el.classList.toggle("expandido");
+  const btn = document.getElementById(`chat-admin-expand-btn-${uid}`);
+  if (btn) btn.textContent = expandido ? "⤡" : "⤢";
+}
+
+async function enviarAnexoJanela(uid, arquivo) {
+  const token = localStorage.getItem("token");
+  const j = _janelasSuporte.get(uid);
+  const inputArquivo = document.getElementById(`chat-admin-anexo-input-${uid}`);
+  if (!arquivo || !token || !j) return;
+  if (!j.convAtivo) {
+    // força criação de conversa enviando mensagem vazia não — apenas avisa
+    alert("Envie uma mensagem primeiro para iniciar a conversa.");
+    if (inputArquivo) inputArquivo.value = "";
+    return;
+  }
+  if (arquivo.size > 8 * 1024 * 1024) {
+    alert("Arquivo muito grande (máximo 8MB)");
+    if (inputArquivo) inputArquivo.value = "";
+    return;
+  }
+  const formData = new FormData();
+  formData.append("arquivo", arquivo);
+  formData.append("conversa_id", j.convAtivo);
+  try {
+    const res = await fetch(`${API}/chat/anexo`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) { alert(data.error || "Erro ao enviar arquivo"); return; }
+    await carregarMensagensJanela(uid);
+  } catch (e) { console.error("anexo janela:", e); alert("Erro ao enviar arquivo"); }
+  finally { if (inputArquivo) inputArquivo.value = ""; }
 }
 
 function atualizarAcoesConversaSuporte(status) {

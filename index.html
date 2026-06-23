@@ -496,40 +496,33 @@ body.tema-claro .card h3 { color: #0f172a; }
 }
 
 .painel-recolhivel-toggle {
-  width:24px !important;
-  height:24px !important;
-  min-width:24px !important;
-  min-height:24px !important;
-  max-width:24px !important;
-  flex-shrink:0 !important;
   display:inline-flex !important;
   align-items:center !important;
   justify-content:center !important;
-  border:1px solid rgba(148,163,184,0.20) !important;
-  border-radius:6px !important;
-  background:rgba(8,14,30,0.85) !important;
+  flex-shrink:0 !important;
+  border:1px solid rgba(255,255,255,0.15) !important;
+  border-radius:5px !important;
+  background:transparent !important;
   color:#94a3b8 !important;
   cursor:pointer !important;
   font-size:11px !important;
   font-weight:normal !important;
   line-height:1 !important;
-  padding:0 !important;
+  padding:2px 8px !important;
   margin:0 !important;
-  margin-top:0 !important;
   box-sizing:border-box !important;
   box-shadow:none !important;
+  white-space:nowrap !important;
   transition:
     background .15s ease,
     border-color .15s ease,
-    color .15s ease,
-    transform .15s ease;
+    color .15s ease;
 }
 
 .painel-recolhivel-toggle:hover {
-  background:rgba(34,197,94,0.14) !important;
-  border-color:rgba(34,197,94,0.4) !important;
+  background:rgba(34,197,94,0.10) !important;
+  border-color:rgba(34,197,94,0.35) !important;
   color:#86efac !important;
-  transform:translateY(-1px);
 }
 
 .painel-recolhivel-conteudo {
@@ -4731,9 +4724,9 @@ body.usuario-super-admin .admin-only-targeting {
 }
 
 .perf-expand-btn {
-  background: none;
-  border: none;
-  color: #64748b;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #94a3b8;
   cursor: pointer;
   font-size: 11px;
   padding: 2px 6px;
@@ -4788,9 +4781,9 @@ body.tema-claro .perf-detalhe-inner {
 }
 body.tema-claro .perf-detalhe-table th { color: #64748b; border-bottom-color: rgba(0,0,0,0.08); }
 body.tema-claro .perf-detalhe-table td { color: #374151; border-bottom-color: rgba(0,0,0,0.05); }
-body.tema-claro .perf-expand-btn { color: #94a3b8; }
-body.tema-claro .perf-expand-btn:hover { color: #16a34a; }
-body.tema-claro .perf-expand-btn.aberto { color: #16a34a; }
+body.tema-claro .perf-expand-btn { color: #475569; border-color: rgba(71,85,105,0.35); }
+body.tema-claro .perf-expand-btn:hover { color: #15803d; background: rgba(22,163,74,0.08); border-color: #16a34a; }
+body.tema-claro .perf-expand-btn.aberto { color: #15803d; }
 
 /* ── Calendário picker ── */
 .cal-picker-btn {
@@ -8174,13 +8167,13 @@ body.tema-claro .login-box:hover {
 }
 
 body.tema-claro .painel-recolhivel-toggle {
-  background:rgba(226,232,240,0.85);
-  border-color:#cbd5e1;
+  background:transparent;
+  border-color:rgba(71,85,105,0.35);
   color:#475569;
 }
 
 body.tema-claro .painel-recolhivel-toggle:hover {
-  background:#ecfdf5;
+  background:rgba(22,163,74,0.08);
   border-color:#16a34a;
   color:#15803d;
 }
@@ -14193,7 +14186,7 @@ function aplicarEstadoPainelRecolhivel(painel, chave, recolhido) {
     );
 
   if (btn) {
-    btn.textContent = recolhido ? "▸" : "▾";
+    btn.textContent = recolhido ? "▶ Expandir" : "▼ Recolher";
     btn.title = recolhido ? "Expandir" : "Recolher";
     btn.setAttribute(
       "aria-expanded",
@@ -20969,7 +20962,7 @@ function abrirAreaDoCampoCampanha(campo) {
 
       const btn = atual.querySelector(".painel-recolhivel-toggle");
       if (btn) {
-        btn.textContent = "▾";
+        btn.textContent = "▼ Recolher";
         btn.title = "Recolher";
         btn.setAttribute("aria-expanded", "true");
       }

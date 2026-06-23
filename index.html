@@ -26111,7 +26111,8 @@ function abrirJanelaSuporte(id, nome, email) {
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <span id="chat-admin-badge-${id}" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px;"></span>
-        <button onclick="event.stopPropagation();fecharJanelaSuporte(${id})" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1;padding:0 2px;" title="Fechar">✕</button>
+        <button onclick="event.stopPropagation();encerrarConversaJanela(${id})" style="background:none;border:none;color:#f87171;font-size:11px;font-weight:600;cursor:pointer;padding:2px 6px;border:1px solid rgba(248,113,113,0.35);border-radius:5px;line-height:1.4;" title="Encerrar conversa">Encerrar</button>
+        <button onclick="event.stopPropagation();fecharJanelaSuporte(${id})" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1;padding:0 2px;" title="Fechar janela">✕</button>
       </div>
     </div>
     <div class="chat-admin-body">
@@ -26172,8 +26173,16 @@ async function carregarMensagensJanela(id, silencioso = false) {
     const badge = document.getElementById(`chat-admin-badge-${id}`);
     const naoLidas = mensagens.filter(m => m.remetente_tipo === "usuario" && !m.lida).length;
     if (badge) {
+      const eraVisivelAntes = badge.style.display !== "none";
       badge.style.display = naoLidas > 0 ? "inline-block" : "none";
       badge.textContent = naoLidas;
+      // auto-expand se janela estava minimizada e chegou nova mensagem
+      if (silencioso && naoLidas > 0 && !eraVisivelAntes) {
+        const j = _janelasSuporte.get(id);
+        if (j && j.el.classList.contains("minimizada")) {
+          j.el.classList.remove("minimizada");
+        }
+      }
     }
     const anterior = msgs.innerHTML;
     const novo = mensagens.map(m => {
@@ -26189,6 +26198,19 @@ async function carregarMensagensJanela(id, silencioso = false) {
     }
     if (!silencioso) marcarVisualizadoSuporte(id);
   } catch (e) { if (!silencioso) console.error("janela msgs:", e); }
+}
+
+async function encerrarConversaJanela(id) {
+  if (!confirm("Encerrar esta conversa?")) return;
+  const token = localStorage.getItem("token");
+  try {
+    await fetch(`${API}/chat/conversas/${id}/fechar`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    fecharJanelaSuporte(id);
+    carregarConversasSuporte();
+  } catch (e) { alert("Erro ao encerrar conversa"); }
 }
 
 async function enviarMensagemJanela(id) {

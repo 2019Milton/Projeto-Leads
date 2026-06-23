@@ -20586,6 +20586,37 @@ async function salvarEdicaoCampanha() {
   }
 }
 
+// ─── DUPLICAR CAMPANHA ───────────────────────────────────────────────────────
+
+async function duplicarCampanha(campanhaId, nomeAtual) {
+  const novoNome = prompt(
+    "Nome da nova campanha:",
+    `Cópia de ${nomeAtual}`
+  );
+  if (novoNome === null) return;
+
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${API}/campanhas/${campanhaId}/duplicar`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ nome: novoNome.trim() || `Cópia de ${nomeAtual}` })
+    });
+    const data = await res.json();
+    if (data.error) {
+      alert("Erro: " + data.error);
+      return;
+    }
+    await carregarCampanhas();
+  } catch (err) {
+    console.error("ERRO duplicarCampanha:", err);
+    alert("Erro ao duplicar campanha.");
+  }
+}
+
 // ─── CARROSSEL DE IMAGENS ────────────────────────────────────────────────────
 
 function atualizarPosicoes() {
@@ -22172,6 +22203,13 @@ async function carregarCampanhas() {
                   "
                 >
                   ✏️
+                </button>
+                <button
+                  class="btn-acao"
+                  title="Duplicar campanha"
+                  onclick="duplicarCampanha(${Number(c.id)}, '${(c.nome || '').replace(/'/g, "\\'")}')"
+                >
+                  📋
                 </button>
               `
           }
@@ -28184,7 +28222,7 @@ function coletarDadosNichoAtivo() {
 <script>
 // ─── PÚBLICOS PERSONALIZADOS ──────────────────────────────────────────────────
 
-let publicosPersonalizadosSelecionados = [];
+// publicosPersonalizadosSelecionados já declarada no script principal
 let lookalikeSelecionadoId = null;
 
 function abrirPainelPublicos() {

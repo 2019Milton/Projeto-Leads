@@ -8910,7 +8910,6 @@ body.tema-claro .targeting-chip {
   flex-direction: column;
   z-index: 5100;
   overflow: hidden;
-  transition: height 0.2s;
 }
 .chat-admin-janela-header {
   display: flex;
@@ -8921,23 +8920,16 @@ body.tema-claro .targeting-chip {
   cursor: pointer;
   user-select: none;
   flex-shrink: 0;
+  border-radius: 12px 12px 0 0;
 }
 .chat-admin-janela-header:hover { background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(139,92,246,0.25)); }
 .chat-admin-janela.minimizada .chat-admin-body { display: none; }
-.chat-admin-janela.expandido { width: 520px; }
-.chat-admin-janela.expandido .chat-admin-msgs { min-height: 400px; max-height: 520px; }
-.chat-admin-expand-btn {
-  background: none;
-  border: 1px solid rgba(139,92,246,0.3);
-  border-radius: 5px;
-  color: #94a3b8;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 2px 6px;
-  line-height: 1.4;
-  transition: color 0.15s, background 0.15s;
+.chat-admin-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
 }
-.chat-admin-expand-btn:hover { background: rgba(139,92,246,0.15); color: #c4b5fd; }
 .chat-admin-msgs {
   flex: 1;
   overflow-y: auto;
@@ -8945,8 +8937,7 @@ body.tema-claro .targeting-chip {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-height: 220px;
-  max-height: 300px;
+  min-height: 0;
 }
 .chat-admin-input-area {
   padding: 8px;
@@ -8954,6 +8945,39 @@ body.tema-claro .targeting-chip {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+}
+.chat-resize-grip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nw-resize;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(139,92,246,0.35);
+  font-size: 12px;
+  border-radius: 0 0 4px 0;
+}
+.chat-resize-grip:hover { color: rgba(139,92,246,0.8); }
+.chat-separador-dia {
+  text-align: center;
+  font-size: 11px;
+  color: #64748b;
+  margin: 6px 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  user-select: none;
+}
+.chat-separador-dia::before, .chat-separador-dia::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(100,116,139,0.25);
 }
 
 .chat-msgs-lista {
@@ -26028,14 +26052,14 @@ function abrirJanelaSuporte(nome, email, uid) {
   el.className = "chat-admin-janela";
   el.id = `chat-admin-janela-${uid}`;
   el.innerHTML = `
+    <div class="chat-resize-grip" onmousedown="event.stopPropagation();_iniciarResizeJanela(event,${uid})" title="Arrastar para redimensionar">⠿</div>
     <div class="chat-admin-janela-header" onclick="toggleMinimizarJanela(${uid})">
-      <div style="overflow:hidden;">
+      <div style="overflow:hidden;padding-left:14px;">
         <div style="font-size:13px;font-weight:700;color:#c4b5fd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(nome)}</div>
         <div style="font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(email)}</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <span id="chat-admin-badge-${uid}" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px;"></span>
-        <button id="chat-admin-expand-btn-${uid}" class="chat-admin-expand-btn" onclick="event.stopPropagation();toggleExpandirJanela(${uid})" title="Expandir">⤢</button>
         <button onclick="event.stopPropagation();encerrarConversaJanela(${uid})" style="background:none;border:none;color:#f87171;font-size:11px;font-weight:600;cursor:pointer;padding:2px 6px;border:1px solid rgba(248,113,113,0.35);border-radius:5px;line-height:1.4;" title="Encerrar conversa">Encerrar</button>
         <button onclick="event.stopPropagation();fecharJanelaSuporte(${uid})" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1;padding:0 2px;" title="Fechar janela">✕</button>
       </div>
@@ -26112,12 +26136,21 @@ async function carregarMensagensJanela(uid, silencioso = false) {
       }
     }
     const anterior = msgs.innerHTML;
+    let _ultimaData = null;
     const novo = mensagens.map(m => {
       const isUsuario = m.remetente_tipo === "usuario";
-      return `<div class="chat-msg ${isUsuario ? "usuario" : "suporte"}" style="max-width:85%;padding:8px 11px;border-radius:10px;font-size:13px;line-height:1.4;word-break:break-word;align-self:${isUsuario ? "flex-start" : "flex-end"};background:${isUsuario ? "rgba(99,102,241,0.18)" : "rgba(139,92,246,0.22)"};">
+      const dt = new Date(m.enviado_em);
+      const dataStr = dt.toLocaleDateString("pt-BR", {day:"2-digit", month:"2-digit", year:"numeric"});
+      let sep = "";
+      if (dataStr !== _ultimaData) {
+        _ultimaData = dataStr;
+        const dataLabel = dt.toLocaleDateString("pt-BR", {day:"2-digit", month:"2-digit"});
+        sep = `<div class="chat-separador-dia">${dataLabel}</div>`;
+      }
+      return sep + `<div class="chat-msg ${isUsuario ? "usuario" : "suporte"}" style="max-width:85%;padding:8px 11px;border-radius:10px;font-size:13px;line-height:1.4;word-break:break-word;align-self:${isUsuario ? "flex-start" : "flex-end"};background:${isUsuario ? "rgba(99,102,241,0.18)" : "rgba(139,92,246,0.22)"};">
         ${m.conteudo ? escHtml(m.conteudo) : ""}
         ${renderAnexoChat(m)}
-        <div style="font-size:10px;opacity:0.5;margin-top:3px;">${new Date(m.enviado_em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</div>
+        <div style="font-size:10px;opacity:0.5;margin-top:3px;">${dt.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div>
       </div>`;
     }).join("");
     if (novo !== anterior) {
@@ -26162,12 +26195,26 @@ async function enviarMensagemJanela(uid) {
   } catch (e) { console.error("enviar janela:", e); }
 }
 
-function toggleExpandirJanela(uid) {
+function _iniciarResizeJanela(e, uid) {
+  e.preventDefault();
   const j = _janelasSuporte.get(uid);
   if (!j) return;
-  const expandido = j.el.classList.toggle("expandido");
-  const btn = document.getElementById(`chat-admin-expand-btn-${uid}`);
-  if (btn) btn.textContent = expandido ? "⤡" : "⤢";
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const startW = j.el.offsetWidth;
+  const startH = j.el.offsetHeight;
+  function onMove(ev) {
+    const newW = Math.max(260, startW + (startX - ev.clientX));
+    const newH = Math.max(180, startH + (startY - ev.clientY));
+    j.el.style.width = newW + "px";
+    j.el.style.height = newH + "px";
+  }
+  function onUp() {
+    document.removeEventListener("mousemove", onMove);
+    document.removeEventListener("mouseup", onUp);
+  }
+  document.addEventListener("mousemove", onMove);
+  document.addEventListener("mouseup", onUp);
 }
 
 async function enviarAnexoJanela(uid, arquivo) {

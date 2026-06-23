@@ -15726,11 +15726,14 @@ async function salvarDataContato(leadId) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ data_contato: data })
     });
-    if (!res.ok) throw new Error();
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || errData.error || res.status);
+    }
     document.getElementById("agendador-overlay")?.remove();
     await carregarLeads();
-  } catch {
-    alert("Erro ao salvar data de contato.");
+  } catch (e) {
+    alert("Erro ao salvar data de contato: " + e.message);
   }
 }
 

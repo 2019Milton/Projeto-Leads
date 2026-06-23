@@ -21582,13 +21582,14 @@ async function carregarStatusMeta() {
                 </div>
               </div>
 
-              <p>${
-                data.conta_anuncios?.erro_pagamento
-                  ? `🔴 ${escaparHtml(data.conta_anuncios.erro_pagamento)}`
+              <div style="margin:8px 0;">
+                ${data.conta_anuncios?.erro_pagamento
+                  ? `<p style="margin:0 0 6px;color:#fca5a5;">🔴 ${escaparHtml(data.conta_anuncios.erro_pagamento)}</p>`
                   : data.conta_anuncios?.pagamento_habilitado || data.conta_anuncios?.possui_pagamento
-                  ? "🟢 Pagamento habilitado"
-                  : "🔴 Pagamento não identificado"
-              }</p>
+                  ? `<p style="margin:0;color:#4ade80;">🟢 Pagamento habilitado</p>`
+                  : `<p style="margin:0;color:#fca5a5;">🔴 Pagamento não identificado</p>`
+                }
+              </div>
 
               <button
                 type="button"
@@ -22005,11 +22006,21 @@ async function carregarCampanhas() {
 
       ${
         c.erro_pagamento
-          ? `
-            <div class="campanha-erro-pagamento">
-              💳 Erro no pagamento: ${escaparHtml(c.erro_pagamento)}
-            </div>
-          `
+          ? (() => {
+              const _contaIdBilling = String(c.conta_anuncios_id || "").replace(/^act_/, "");
+              const _billingUrl = _contaIdBilling
+                ? `https://business.facebook.com/billing_hub/payment_settings/?placement=ads_manager&asset_id=${_contaIdBilling}&payment_account_id_from_jsmodule=${_contaIdBilling}`
+                : "https://business.facebook.com/billing_hub/payment_settings/";
+              return `
+                <div class="campanha-erro-pagamento" style="display:flex;flex-direction:column;gap:6px;">
+                  <span>💳 ${escaparHtml(c.erro_pagamento)}</span>
+                  <a href="${_billingUrl}" target="_blank" rel="noopener"
+                    style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;align-self:flex-start;"
+                    onclick="event.stopPropagation()"
+                  >🔗 Resolver no Faturamento Meta →</a>
+                </div>
+              `;
+            })()
           : ""
       }
 

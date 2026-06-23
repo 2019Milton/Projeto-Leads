@@ -8896,6 +8896,52 @@ body.tema-claro .targeting-chip {
 }
 .chat-janela-fechar:hover { color: #e2e8f0; }
 
+/* Janelas flutuantes de suporte (admin/suporte) */
+.chat-admin-janela {
+  position: fixed;
+  bottom: 0;
+  width: 320px;
+  border-radius: 12px 12px 0 0;
+  background: rgba(10,15,35,0.98);
+  border: 1px solid rgba(139,92,246,0.35);
+  border-bottom: none;
+  box-shadow: 0 -4px 40px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  z-index: 5100;
+  overflow: hidden;
+  transition: height 0.2s;
+}
+.chat-admin-janela-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.18));
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+.chat-admin-janela-header:hover { background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(139,92,246,0.25)); }
+.chat-admin-janela.minimizada .chat-admin-body { display: none; }
+.chat-admin-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 220px;
+  max-height: 300px;
+}
+.chat-admin-input-area {
+  padding: 8px;
+  border-top: 1px solid rgba(139,92,246,0.15);
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .chat-msgs-lista {
   flex: 1;
   overflow-y: auto;
@@ -25981,7 +26027,7 @@ async function carregarConversasSuporte(silencioso = false) {
       const statusClass = c.status === "fechada" ? "fechada" : "";
       const selecionado = _suporteConvAtual === c.id ? "selecionado" : "";
       return `
-        <div class="suporte-conv-item ${selecionado}" onclick="selecionarConversaSuporte(${c.id})">
+        <div class="suporte-conv-item ${selecionado}" onclick="selecionarConversaSuporte(${c.id}, ${JSON.stringify(c.usuario_nome || c.usuario_email || 'Usuário')}, ${JSON.stringify(c.usuario_email || '')})">
           <div class="suporte-conv-info">
             <div class="suporte-conv-email">${escHtml(nome)}</div>
             <div class="suporte-conv-data">Atualizado: ${data_atualizado}</div>
@@ -25996,14 +26042,144 @@ async function carregarConversasSuporte(silencioso = false) {
   }
 }
 
-async function selecionarConversaSuporte(id) {
+async function selecionarConversaSuporte(id, nome, email) {
+  // Para super_admin e suporte: abre janela flutuante
+  if (usuarioLogado && (usuarioLogado.tipo === "super_admin" || usuarioLogado.tipo === "suporte" || usuarioLogado.tipo === "master")) {
+    abrirJanelaSuporte(id, nome || "Usuário", email || "");
+    return;
+  }
+  // Fallback: comportamento original no painel
   _suporteConvAtual = id;
-
   const area = document.getElementById("suporte_chat_area");
   if (area) area.style.display = "block";
-
   await carregarMensagensSuporte(id);
   await carregarConversasSuporte(true);
+}
+
+/* ===== JANELAS FLUTUANTES DE SUPORTE ===== */
+const _janelasSuporte = new Map();
+
+function _posicionarJanelas() {
+  let i = 0;
+  for (const [, j] of _janelasSuporte) {
+    j.el.style.right = `${24 + i * 336}px`;
+    i++;
+  }
+}
+
+function abrirJanelaSuporte(id, nome, email) {
+  if (_janelasSuporte.has(id)) {
+    const j = _janelasSuporte.get(id);
+    j.el.classList.remove("minimizada");
+    marcarVisualizadoSuporte(id);
+    return;
+  }
+  const el = document.createElement("div");
+  el.className = "chat-admin-janela";
+  el.id = `chat-admin-janela-${id}`;
+  el.innerHTML = `
+    <div class="chat-admin-janela-header" onclick="toggleMinimizarJanela(${id})">
+      <div style="overflow:hidden;">
+        <div style="font-size:13px;font-weight:700;color:#c4b5fd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(nome)}</div>
+        <div style="font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(email)}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <span id="chat-admin-badge-${id}" style="display:none;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px;"></span>
+        <button onclick="event.stopPropagation();fecharJanelaSuporte(${id})" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1;padding:0 2px;" title="Fechar">✕</button>
+      </div>
+    </div>
+    <div class="chat-admin-body">
+      <div class="chat-admin-msgs" id="chat-admin-msgs-${id}"></div>
+      <div class="chat-admin-input-area">
+        <input id="chat-admin-input-${id}" type="text" placeholder="Responder como suporte..." style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 10px;color:#e2e8f0;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')enviarMensagemJanela(${id})">
+        <button onclick="enviarMensagemJanela(${id})" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:8px;color:#fff;padding:7px 13px;cursor:pointer;font-size:14px;flex-shrink:0;">➤</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(el);
+  const pollFn = setInterval(() => carregarMensagensJanela(id, true), 4000);
+  _janelasSuporte.set(id, { el, nome, email, poll: pollFn });
+  _posicionarJanelas();
+  carregarMensagensJanela(id);
+  marcarVisualizadoSuporte(id);
+}
+
+function fecharJanelaSuporte(id) {
+  const j = _janelasSuporte.get(id);
+  if (!j) return;
+  clearInterval(j.poll);
+  j.el.remove();
+  _janelasSuporte.delete(id);
+  _posicionarJanelas();
+}
+
+function toggleMinimizarJanela(id) {
+  const j = _janelasSuporte.get(id);
+  if (!j) return;
+  j.el.classList.toggle("minimizada");
+  if (!j.el.classList.contains("minimizada")) {
+    marcarVisualizadoSuporte(id);
+    carregarMensagensJanela(id);
+  }
+}
+
+async function marcarVisualizadoSuporte(id) {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  await fetch(`${API}/chat/conversas/${id}/visualizar`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` }
+  }).catch(() => {});
+}
+
+async function carregarMensagensJanela(id, silencioso = false) {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/chat/conversas/${id}/mensagens`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const msgs = document.getElementById(`chat-admin-msgs-${id}`);
+    if (!msgs) return;
+    const mensagens = data.mensagens || [];
+    const badge = document.getElementById(`chat-admin-badge-${id}`);
+    const naoLidas = mensagens.filter(m => m.remetente_tipo === "usuario" && !m.lida).length;
+    if (badge) {
+      badge.style.display = naoLidas > 0 ? "inline-block" : "none";
+      badge.textContent = naoLidas;
+    }
+    const anterior = msgs.innerHTML;
+    const novo = mensagens.map(m => {
+      const isUsuario = m.remetente_tipo === "usuario";
+      return `<div class="chat-msg ${isUsuario ? "usuario" : "suporte"}" style="max-width:85%;padding:8px 11px;border-radius:10px;font-size:13px;line-height:1.4;word-break:break-word;align-self:${isUsuario ? "flex-start" : "flex-end"};background:${isUsuario ? "rgba(99,102,241,0.18)" : "rgba(139,92,246,0.22)"};">
+        ${escHtml(m.conteudo)}
+        <div style="font-size:10px;opacity:0.5;margin-top:3px;">${new Date(m.criado_em).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div>
+      </div>`;
+    }).join("");
+    if (novo !== anterior) {
+      msgs.innerHTML = novo;
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    if (!silencioso) marcarVisualizadoSuporte(id);
+  } catch (e) { if (!silencioso) console.error("janela msgs:", e); }
+}
+
+async function enviarMensagemJanela(id) {
+  const input = document.getElementById(`chat-admin-input-${id}`);
+  if (!input) return;
+  const conteudo = input.value.trim();
+  if (!conteudo) return;
+  const token = localStorage.getItem("token");
+  try {
+    await fetch(`${API}/chat/usuarios/${id}/mensagem`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ conteudo })
+    });
+    input.value = "";
+    await carregarMensagensJanela(id);
+  } catch (e) { console.error("enviar janela:", e); }
 }
 
 function atualizarAcoesConversaSuporte(status) {

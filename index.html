@@ -16479,7 +16479,8 @@ function renderizarBotaoWhatsAppIA(telefone, mensagem) {
       class="btn-reanalisar-ia"
       style="margin-top:10px;"
       data-telefone="${escaparHtml(telefone)}"
-      data-mensagem="${escaparHtml(mensagem)}"
+      data-mensagem="${encodeURIComponent(mensagem)}"
+      data-encoded="1"
       onclick="abrirWhatsAppDeBotao(this)"
     >
       Abrir WhatsApp com esta mensagem
@@ -23189,10 +23190,11 @@ function abrirWhatsApp(numero, mensagem = "") {
 }
 
 function abrirWhatsAppDeBotao(botao) {
-  abrirWhatsApp(
-    botao?.dataset?.telefone || "",
-    botao?.dataset?.mensagem || ""
-  );
+  const mensagemRaw = botao?.dataset?.mensagem || "";
+  const mensagem = botao?.dataset?.encoded
+    ? decodeURIComponent(mensagemRaw)
+    : mensagemRaw;
+  abrirWhatsApp(botao?.dataset?.telefone || "", mensagem);
 }
 
 function ligarTelefoneDeBotao(botao) {

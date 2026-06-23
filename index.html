@@ -26364,8 +26364,8 @@ async function enviarMensagemSuporteDireta() {
 
     await carregarConversasSuporte();
 
-    if (data.conversa_id) {
-      await selecionarConversaSuporte(data.conversa_id);
+    if (destino !== "todos") {
+      abrirChatUsuario(Number(destino));
     }
 
     alert(

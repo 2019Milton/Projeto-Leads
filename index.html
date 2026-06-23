@@ -25963,29 +25963,30 @@ async function carregarConversasSuporte(silencioso = false) {
       return;
     }
 
-    // armazena dados das conversas para acesso no click sem quebrar HTML
+    // Agrupa conversas por usuario_id — uma entrada por usuário
+    const _porUsuario = new Map();
     conversas.forEach(c => {
-      _suporteConvDados.set(c.id, {
-        nome: c.usuario_nome || c.usuario_email || "Usuário",
-        email: c.usuario_email || "",
-        usuarioId: c.usuario_id
-      });
+      const uid = c.usuario_id;
+      const nome = c.usuario_nome || c.usuario_email || "Usuário";
+      _suporteConvDados.set(uid, { nome, email: c.usuario_email || "", usuarioId: uid });
+      if (!_porUsuario.has(uid)) {
+        _porUsuario.set(uid, { usuarioId: uid, nome, email: c.usuario_email || "", atualizado_em: c.atualizado_em, nao_lidas: 0 });
+      }
+      const entry = _porUsuario.get(uid);
+      entry.nao_lidas += Number(c.nao_lidas || 0);
+      if (new Date(c.atualizado_em) > new Date(entry.atualizado_em)) entry.atualizado_em = c.atualizado_em;
     });
 
-    lista.innerHTML = conversas.map(c => {
-      const nome = c.usuario_nome ? `${c.usuario_nome} — ${c.usuario_email}` : c.usuario_email;
-      const data_atualizado = new Date(c.atualizado_em).toLocaleString("pt-BR", { day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit" });
-      const naoLidas = Number(c.nao_lidas || 0);
-      const statusClass = c.status === "fechada" ? "fechada" : "";
-      const selecionado = _suporteConvAtual === c.id ? "selecionado" : "";
+    lista.innerHTML = [..._porUsuario.values()].map(u => {
+      const nomeDisplay = u.nome !== u.email ? `${u.nome} — ${u.email}` : u.email;
+      const data_atualizado = new Date(u.atualizado_em).toLocaleString("pt-BR", { day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit" });
       return `
-        <div class="suporte-conv-item ${selecionado}" onclick="selecionarConversaSuporte(${c.id})">
+        <div class="suporte-conv-item" onclick="abrirChatUsuario(${u.usuarioId})">
           <div class="suporte-conv-info">
-            <div class="suporte-conv-email">${escHtml(nome)}</div>
+            <div class="suporte-conv-email">${escHtml(nomeDisplay)}</div>
             <div class="suporte-conv-data">Atualizado: ${data_atualizado}</div>
           </div>
-          ${naoLidas > 0 ? `<span class="suporte-conv-badge">${naoLidas}</span>` : ""}
-          <span class="suporte-conv-status ${statusClass}">${c.status}</span>
+          ${u.nao_lidas > 0 ? `<span class="suporte-conv-badge">${u.nao_lidas}</span>` : ""}
         </div>`;
     }).join("");
 
@@ -26008,9 +26009,13 @@ async function selecionarConversaSuporte(id) {
 }
 
 /* ===== JANELAS FLUTUANTES DE SUPORTE ===== */
-// _janelasSuporte é keyed por usuario_id para que todas as conversas
-// do mesmo usuário reutilizem a mesma janela flutuante.
+// Keyed por usuario_id — uma janela por usuário, com histórico unificado
 const _janelasSuporte = new Map();
+
+function abrirChatUsuario(uid) {
+  const d = _suporteConvDados.get(uid) || {};
+  abrirJanelaSuporte(d.nome || "Usuário", d.email || "", uid);
+}
 
 function _posicionarJanelas() {
   let i = 0;
@@ -26020,24 +26025,13 @@ function _posicionarJanelas() {
   }
 }
 
-function abrirJanelaSuporte(convId, nome, email, usuarioId) {
-  // usa usuarioId como chave; cai para convId se não vier (compatibilidade)
-  const uid = usuarioId || convId;
-
+function abrirJanelaSuporte(nome, email, uid) {
   if (_janelasSuporte.has(uid)) {
     const j = _janelasSuporte.get(uid);
     j.el.classList.remove("minimizada");
-    // atualiza para a conversa mais recente deste usuário
-    if (j.convId !== convId) {
-      j.convId = convId;
-      clearInterval(j.poll);
-      j.poll = setInterval(() => carregarMensagensJanela(uid, true), 4000);
-      carregarMensagensJanela(uid);
-    }
     marcarVisualizadoSuporte(uid);
     return;
   }
-
   const el = document.createElement("div");
   el.className = "chat-admin-janela";
   el.id = `chat-admin-janela-${uid}`;
@@ -26063,10 +26057,9 @@ function abrirJanelaSuporte(convId, nome, email, usuarioId) {
   `;
   document.body.appendChild(el);
   const pollFn = setInterval(() => carregarMensagensJanela(uid, true), 4000);
-  _janelasSuporte.set(uid, { el, nome, email, convId, poll: pollFn });
+  _janelasSuporte.set(uid, { el, nome, email, convAtivo: null, poll: pollFn });
   _posicionarJanelas();
   carregarMensagensJanela(uid);
-  marcarVisualizadoSuporte(uid);
 }
 
 function fecharJanelaSuporte(uid) {
@@ -26091,8 +26084,8 @@ function toggleMinimizarJanela(uid) {
 async function marcarVisualizadoSuporte(uid) {
   const token = localStorage.getItem("token");
   const j = _janelasSuporte.get(uid);
-  if (!token || !j) return;
-  await fetch(`${API}/chat/conversas/${j.convId}/visualizar`, {
+  if (!token || !j || !j.convAtivo) return;
+  await fetch(`${API}/chat/conversas/${j.convAtivo}/visualizar`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}` }
   }).catch(() => {});
@@ -26104,10 +26097,12 @@ async function carregarMensagensJanela(uid, silencioso = false) {
   const j = _janelasSuporte.get(uid);
   if (!j) return;
   try {
-    const res = await fetch(`${API}/chat/conversas/${j.convId}/mensagens`, {
+    const res = await fetch(`${API}/chat/usuarios/${uid}/todas-mensagens`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
+    // atualiza a conversa ativa para encerrar/visualizar
+    if (data.conv_ativa_id) j.convAtivo = data.conv_ativa_id;
     const msgs = document.getElementById(`chat-admin-msgs-${uid}`);
     if (!msgs) return;
     const mensagens = data.mensagens || [];
@@ -26142,8 +26137,9 @@ async function encerrarConversaJanela(uid) {
   const token = localStorage.getItem("token");
   const j = _janelasSuporte.get(uid);
   if (!j) return;
+  if (!j.convAtivo) { fecharJanelaSuporte(uid); carregarConversasSuporte(); return; }
   try {
-    await fetch(`${API}/chat/conversas/${j.convId}/fechar`, {
+    await fetch(`${API}/chat/conversas/${j.convAtivo}/fechar`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -26158,10 +26154,9 @@ async function enviarMensagemJanela(uid) {
   const conteudo = input.value.trim();
   if (!conteudo) return;
   const token = localStorage.getItem("token");
-  const j = _janelasSuporte.get(uid);
-  if (!j) return;
   try {
-    await fetch(`${API}/chat/usuarios/${j.convId}/mensagem`, {
+    // uid é o usuario_id — o backend cria/reabre conversa automaticamente
+    await fetch(`${API}/chat/usuarios/${uid}/mensagem`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ conteudo })

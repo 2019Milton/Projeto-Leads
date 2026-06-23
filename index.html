@@ -12632,6 +12632,10 @@ body.tema-claro .logout {
                 Suporte
               </option>
 
+              <option value="criador_campanha">
+                Criador de Campanha
+              </option>
+
             </select>
         
           </div>
@@ -12747,9 +12751,19 @@ body.tema-claro .logout {
       
           🧲 <b>Corretor</b>:
           acessa apenas seus próprios leads e campanhas.
-      
+
           <br>
-      
+
+          🎯 <b>Suporte</b>:
+          acessa o painel de suporte e conversa com usuários.
+
+          <br>
+
+          🚀 <b>Criador de Campanha</b>:
+          cria rascunhos de campanhas e os envia para corretores ativarem.
+
+          <br>
+
           🔐 Senha deve conter:
           letra maiúscula, minúscula, número e mínimo 8 caracteres.
 
@@ -13860,6 +13874,10 @@ async function init() {
               ? "Super Admin"
               : tipo === "admin_corretor"
               ? "Admin Corretor"
+              : tipo === "suporte"
+              ? "Suporte"
+              : tipo === "criador_campanha"
+              ? "Criador de Campanha"
               : "Corretor"
           }
         </div>

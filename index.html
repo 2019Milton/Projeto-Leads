@@ -21465,139 +21465,161 @@ async function carregarStatusMeta() {
         const seletorContaAnuncios =
           montarSeletorContaAnunciosMeta(data);
 
+        const tipoPagamentoAtivo = conta?.tipo_pagamento;
+        const pagamentoAutomaticoAtivo = tipoPagamentoAtivo === "automatico";
+        const pagamentoManualAtivo = tipoPagamentoAtivo === "manual_pre_pago";
+        const rawContaId = conta?.id || "";
+        const accountIdPagamento = rawContaId.replace("act_", "");
+        const billingUrl = accountIdPagamento
+          ? `https://business.facebook.com/billing_hub/payment_settings/?placement=ads_manager&asset_id=${accountIdPagamento}&payment_account_id_from_jsmodule=${accountIdPagamento}`
+          : "https://business.facebook.com/billing_hub/payment_settings/";
+
+        const tosAviso = (facebookConectado && data.paginas?.[0]?.id && !(data.tos_aceitas || []).includes(data.paginas[0].id))
+          ? `<div style="grid-column:1/-1;margin-top:6px;padding:8px 10px;background:#422006;border:1px solid #d97706;border-radius:6px;">
+              <span style="color:#fbbf24;font-size:12px;font-weight:600;">⚠️ Termos de Lead Ads</span><br>
+              <span style="color:#fde68a;font-size:12px;">Páginas novas precisam aceitar os Termos de Serviço de Geração de Cadastros do Facebook antes de criar anúncios de lead.</span><br>
+              <a href="https://www.facebook.com/ads/leadgen/tos?page_id=${data.paginas[0].id}" target="_blank"
+                style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
+                Aceitar Termos agora →
+              </a>
+              <button type="button" onclick="confirmarTosAceito('${data.paginas[0].id}')"
+                style="display:inline-block;margin-top:6px;margin-left:6px;padding:5px 12px;background:transparent;border:1px solid #d97706;color:#fde68a;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;">
+                Já aceitei
+              </button>
+            </div>`
+          : (!facebookConectado && data.usuario_meta?.id)
+          ? `<div style="grid-column:1/-1;margin-top:4px;font-size:11px;color:#f59e0b;">
+              ⚠️ Nenhuma Página do Facebook vinculada.
+              <a href="https://www.facebook.com/pages/create" target="_blank" style="color:#f59e0b;">Criar uma Página →</a>
+            </div>`
+          : "";
+
         metaInfo.innerHTML = `
 
           <div style="margin-top:15px;">
-        
-            <div style="
-              display:flex;
-              align-items:center;
-              gap:10px;
-              margin-bottom:15px;
-            ">
-        
+
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
               <img
                 src="${escaparHtml(data.usuario_meta?.picture?.data?.url || '')}"
-                style="
-                  width:50px;
-                  height:50px;
-                  border-radius:50%;
-                  border:2px solid #22c55e;
-                "
+                style="width:50px;height:50px;border-radius:50%;border:2px solid #22c55e;"
               >
-        
               <div>
                 <div style="font-weight:bold;">
                   ${escaparHtml(data.usuario_meta?.name || "Usuário Meta")}
                 </div>
-        
-                <div style="color:#22c55e;">
-                  🟢 Meta conectada
+                <div style="color:#22c55e;">🟢 Meta conectada</div>
+              </div>
+            </div>
+
+            <!-- 📊 STATUS META -->
+            <div class="meta-conta-selector" style="margin-top:0;">
+              <b style="font-size:13px;display:block;margin-bottom:10px;">📊 Status Meta</b>
+
+              <div class="meta-status-grid" style="margin-bottom:10px;">
+                <div class="meta-status-tile">
+                  <span>${data.conectado ? "🟢" : "🔴"} Meta</span>
+                  <small>${data.conectado ? "Conectada" : "Não conectada"}</small>
+                </div>
+                <div class="meta-status-tile">
+                  <span>${data.conta_anuncios?.ativa ? "🟢" : "🔴"} Conta Ads</span>
+                  <small>${data.conta_anuncios?.ativa ? "Conta ativa" : "Revise a conta"}</small>
+                </div>
+                <div class="meta-status-tile">
+                  <span>${data.paginas?.length > 0 ? "🟢" : "🔴"} Página</span>
+                  <small>${data.paginas?.length > 0 ? "Conectada" : "Não conectada"}</small>
+                </div>
+                <div class="meta-status-tile">
+                  <span>${data.instagram?.username ? "🟢" : "🔴"} Instagram</span>
+                  <small>${data.instagram?.username ? "Profissional vinculado" : "Opcional para anunciar"}</small>
+                </div>
+                ${tosAviso}
+              </div>
+
+              ${seletorContaAnuncios}
+
+              ${!instagramConectado ? `
+                <div style="margin-top:8px;">
+                  <button type="button" onclick="conectarInstagram()"
+                    style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid rgba(255,255,255,.25);border-radius:6px;font-size:12px;color:inherit;background:transparent;cursor:pointer;opacity:.85;transition:opacity .15s"
+                    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'"
+                  >📷 Conectar Instagram</button>
+                </div>
+              ` : ""}
+            </div>
+
+            <!-- 💳 STATUS DE PAGAMENTO META -->
+            <div class="meta-conta-selector" style="margin-top:10px;">
+              <b style="font-size:13px;display:block;margin-bottom:10px;">💳 Status de Pagamento Meta</b>
+
+              <div class="pagamento-modos">
+                <div
+                  class="pagamento-modo ${pagamentoAutomaticoAtivo ? "ativo" : ""}"
+                  title="Entenda a cobrança automática"
+                  onclick="abrirModalPagamento('automatico')"
+                >
+                  <strong>Cobrança automática</strong>
+                  <small>Cartão ou cobrança vinculada na conta Meta.</small>
+                  <span class="pagamento-badge">${pagamentoAutomaticoAtivo ? "Em vigor" : "Não detectada"}</span>
+                </div>
+                <div
+                  class="pagamento-modo ${pagamentoManualAtivo ? "ativo" : ""} ${data.conta_anuncios?.saldo_zerado ? "sem-saldo" : ""}"
+                  title="Entenda PIX, boleto e saldo"
+                  onclick="abrirModalPagamento('manual')"
+                >
+                  <strong>Manual / pré-pago</strong>
+                  <small>PIX, boleto ou saldo disponível na Meta.</small>
+                  <span class="pagamento-saldo">Saldo: ${formatarSaldoMeta(data.conta_anuncios)}</span>
+                  ${data.conta_anuncios?.saldo_observacao
+                    ? `<small class="pagamento-saldo-info">${escaparHtml(data.conta_anuncios.saldo_observacao)}</small>`
+                    : ""}
+                  <span class="pagamento-badge">${
+                    data.conta_anuncios?.saldo_zerado ? "Sem saldo"
+                    : pagamentoManualAtivo ? "Em vigor"
+                    : "Não detectado"
+                  }</span>
                 </div>
               </div>
-        
-            </div>
-        
-            <div class="conexao-status-box">
 
-              <div class="conexao-status-item">
-                <strong>Página do Facebook</strong>
-                <span class="${facebookConectado ? "status-ok" : ""}">
-                  ${facebookConectado ? "Conectado" : "Não conectado"}
-                </span>
-                <small>
-                  ${escaparHtml(data.paginas?.[0]?.name || "Nenhuma página vinculada")}
-                </small>
-                ${!facebookConectado && data.usuario_meta?.id ? `
-                <small style="color:#f59e0b;display:block;margin-top:4px;">
-                  ⚠️ A conta Meta conectada não gerencia nenhuma Página do Facebook.
-                  Crie uma Página em
-                  <a href="https://www.facebook.com/pages/create" target="_blank" style="color:#f59e0b;">facebook.com/pages/create</a>
-                  e reconecte.
-                </small>` : ""}
-                ${facebookConectado && data.paginas?.[0]?.id && !(data.tos_aceitas || []).includes(data.paginas[0].id) ? `
-                <div style="margin-top:8px;padding:8px 10px;background:#422006;border:1px solid #d97706;border-radius:6px;">
-                  <span style="color:#fbbf24;font-size:12px;font-weight:600;">⚠️ Termos de Lead Ads</span><br>
-                  <span style="color:#fde68a;font-size:12px;">Páginas novas precisam aceitar os Termos de Serviço de Geração de Cadastros do Facebook antes de criar anúncios de lead.</span><br>
-                  <a href="https://www.facebook.com/ads/leadgen/tos?page_id=${data.paginas[0].id}" target="_blank"
-                    style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
-                    Aceitar Termos agora →
-                  </a>
-                  <button type="button" onclick="confirmarTosAceito('${data.paginas[0].id}')"
-                    style="display:inline-block;margin-top:6px;margin-left:6px;padding:5px 12px;background:transparent;border:1px solid #d97706;color:#fde68a;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;">
-                    Já aceitei
-                  </button>
-                </div>` : ""}
-              </div>
+              <p>${
+                data.conta_anuncios?.erro_pagamento
+                  ? `🔴 ${escaparHtml(data.conta_anuncios.erro_pagamento)}`
+                  : data.conta_anuncios?.pagamento_habilitado || data.conta_anuncios?.possui_pagamento
+                  ? "🟢 Pagamento habilitado"
+                  : "🔴 Pagamento não identificado"
+              }</p>
 
-              <div class="conexao-status-item">
-                <strong>Conta do Instagram</strong>
-                <span class="${instagramConectado ? "status-ok" : ""}">
-                  ${instagramConectado ? "Conectado" : "Não conectado"}
-                </span>
-                <small>
-                  ${
-                    data.instagram?.username
-                      ? '@' + escaparHtml(data.instagram.username)
-                      : "Nenhuma conta profissional vinculada"
-                  }
-                </small>
-                ${!instagramConectado ? `
-                <button type="button" onclick="conectarInstagram()"
-                  style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;margin-top:6px;border:1px solid rgba(255,255,255,.25);border-radius:6px;font-size:12px;color:inherit;background:transparent;cursor:pointer;opacity:.85;transition:opacity .15s"
-                  onmouseover="this.style.opacity='1'"
-                  onmouseout="this.style.opacity='.85'"
-                >📷 Conectar Instagram</button>` : ""}
-              </div>
+              <button
+                type="button"
+                onclick="abrirGerenciarPagamentoMeta('${billingUrl}')"
+                style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;color:inherit;background:transparent;cursor:pointer;margin-top:4px;opacity:.85;transition:opacity .15s"
+                onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.85'"
+              >💳 Gerenciar formas de pagamento na Meta</button>
 
+              <hr>
+              <h4>${data.pronto_para_anunciar ? "🚀 Pronto para anunciar" : "⚠️ Ajustes necessários"}</h4>
             </div>
 
-            ${seletorContaAnuncios}
-
-            <div id="status_meta" class="meta-conta-selector" style="margin-top:10px;">
-              Carregando status...
-            </div>
-
+            <!-- 📈 STATUS PLATAFORMA LEADS -->
             <div class="meta-conta-selector" style="margin-top:10px;">
               <b style="font-size:13px;display:block;margin-bottom:10px;">📈 Status Plataforma Leads</b>
-
-              <p style="margin:0 0 6px;">
-                <b>📢 Campanhas:</b><br>
-                ${data.metricas?.campanhas || 0}
-              </p>
-
-              <p style="margin:0 0 6px;">
-                <b>🟢 Ativas:</b><br>
-                ${data.metricas?.campanhas_ativas || 0}
-              </p>
-
-              <p style="margin:0 0 6px;">
-                <b>💰 Gasto hoje:</b><br>
-                ${gastoHoje}
-              </p>
-
-              <p style="margin:0 0 10px;">
-                <b>🧲 Leads hoje:</b><br>
-                ${data.metricas?.leads_hoje || 0}
-              </p>
-
+              <p style="margin:0 0 6px;"><b>📢 Campanhas:</b><br>${data.metricas?.campanhas || 0}</p>
+              <p style="margin:0 0 6px;"><b>🟢 Ativas:</b><br>${data.metricas?.campanhas_ativas || 0}</p>
+              <p style="margin:0 0 6px;"><b>💰 Gasto hoje:</b><br>${gastoHoje}</p>
+              <p style="margin:0 0 10px;"><b>🧲 Leads hoje:</b><br>${data.metricas?.leads_hoje || 0}</p>
               <div class="sync-box">
                 <div>
-                  🕒 Último sync:
-                  <br>
-                  <span id="ultimo_sync_texto">Nunca sincronizado</span>
-                  <br>
+                  🕒 Último sync:<br>
+                  <span id="ultimo_sync_texto">Nunca sincronizado</span><br>
                   <small id="ultimo_sync_timer">-</small>
                 </div>
                 <button class="btn-sync-manual" onclick="sincronizarCampanhas()">🔄</button>
               </div>
-
               <div id="sync_progress" class="sync-progress">
                 <div class="sync-progress-bar"><span></span></div>
                 <small>Sincronizando campanhas, gasto e leads diretamente com a Meta...</small>
               </div>
             </div>
-        
+
           </div>
         `;
     
@@ -21613,148 +21635,6 @@ async function carregarStatusMeta() {
       }
     }
 
-    const div = document.getElementById("status_meta");
-    const tipoPagamentoAtivo =
-      data.conta_anuncios?.tipo_pagamento;
-    const pagamentoAutomaticoAtivo =
-      tipoPagamentoAtivo === "automatico";
-    const pagamentoManualAtivo =
-      tipoPagamentoAtivo === "manual_pre_pago";
-
-    div.innerHTML = `
-      <b style="font-size:13px;display:block;margin-bottom:10px;">📊 Status Meta</b>
-      <div class="meta-status-grid">
-
-        <div class="meta-status-tile">
-          <span>
-            ${data.conectado ? "🟢" : "🔴"}
-            Meta
-          </span>
-          <small>
-            ${data.conectado ? "Conectada" : "Não conectada"}
-          </small>
-        </div>
-
-        <div class="meta-status-tile">
-          <span>
-            ${data.conta_anuncios?.ativa ? "🟢" : "🔴"}
-            Conta Ads
-          </span>
-          <small>
-            ${data.conta_anuncios?.ativa ? "Conta ativa" : "Revise a conta"}
-          </small>
-        </div>
-
-        <div class="meta-status-tile">
-          <span>
-            ${data.paginas?.length > 0 ? "🟢" : "🔴"}
-            Página
-          </span>
-          <small>
-            ${data.paginas?.length > 0 ? "Conectada" : "Não conectada"}
-          </small>
-        </div>
-
-        <div class="meta-status-tile">
-          <span>
-            ${data.instagram?.username ? "🟢" : "🔴"}
-            Instagram
-          </span>
-          <small>
-            ${
-              data.instagram?.username
-                ? "Profissional vinculado"
-                : "Opcional para anunciar"
-            }
-          </small>
-        </div>
-
-      </div>
-
-      <h4>💳 Pagamento</h4>
-
-      <div class="pagamento-modos">
-
-        <div
-          class="pagamento-modo ${pagamentoAutomaticoAtivo ? "ativo" : ""}"
-          title="Entenda a cobrança automática"
-          onclick="abrirModalPagamento('automatico')"
-        >
-          <strong>Cobrança automática</strong>
-          <small>Cartão ou cobrança vinculada na conta Meta.</small>
-          <span class="pagamento-badge">
-            ${pagamentoAutomaticoAtivo ? "Em vigor" : "Não detectada"}
-          </span>
-        </div>
-
-        <div
-          class="pagamento-modo ${pagamentoManualAtivo ? "ativo" : ""} ${data.conta_anuncios?.saldo_zerado ? "sem-saldo" : ""}"
-          title="Entenda PIX, boleto e saldo"
-          onclick="abrirModalPagamento('manual')"
-        >
-          <strong>Manual / pré-pago</strong>
-          <small>PIX, boleto ou saldo disponível na Meta.</small>
-          <span class="pagamento-saldo">
-            Saldo: ${formatarSaldoMeta(data.conta_anuncios)}
-          </span>
-          ${
-            data.conta_anuncios?.saldo_observacao
-              ? `
-                <small class="pagamento-saldo-info">
-                  ${escaparHtml(data.conta_anuncios.saldo_observacao)}
-                </small>
-              `
-              : ""
-          }
-          <span class="pagamento-badge">
-            ${
-              data.conta_anuncios?.saldo_zerado
-                ? "Sem saldo"
-                : pagamentoManualAtivo
-                ? "Em vigor"
-                : "Não detectado"
-            }
-          </span>
-        </div>
-
-      </div>
-
-      <p>
-        ${
-          data.conta_anuncios?.erro_pagamento
-            ? `🔴 ${escaparHtml(data.conta_anuncios.erro_pagamento)}`
-            : data.conta_anuncios?.pagamento_habilitado ||
-              data.conta_anuncios?.possui_pagamento
-            ? "🟢 Pagamento habilitado"
-            : "🔴 Pagamento não identificado"
-        }
-      </p>
-
-      ${(() => {
-        const rawId = data.conta_anuncios?.id || "";
-        const accountId = rawId.replace("act_", "");
-        const billingUrl = accountId
-          ? `https://business.facebook.com/billing_hub/payment_settings/?placement=ads_manager&asset_id=${accountId}&payment_account_id_from_jsmodule=${accountId}`
-          : "https://business.facebook.com/billing_hub/payment_settings/";
-        return `<button
-          type="button"
-          onclick="abrirGerenciarPagamentoMeta('${billingUrl}')"
-          style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-size:13px;color:inherit;background:transparent;cursor:pointer;margin-top:4px;opacity:.85;transition:opacity .15s"
-          onmouseover="this.style.opacity='1'"
-          onmouseout="this.style.opacity='.85'"
-        >💳 Gerenciar formas de pagamento na Meta</button>`;
-      })()}
-
-      <hr>
-
-      <h4>
-        ${
-          data.pronto_para_anunciar
-            ? "🚀 Pronto para anunciar"
-            : "⚠️ Ajustes necessários"
-        }
-      </h4>
-    `;
 
     const ultimoSyncTexto =
       document.getElementById("ultimo_sync_texto");

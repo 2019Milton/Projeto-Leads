@@ -15724,7 +15724,7 @@ async function salvarDataContato(leadId) {
   try {
     const res = await fetch(`${API}/leads/${leadId}/data-contato`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({ data_contato: data })
     });
     if (!res.ok) {
@@ -15742,7 +15742,7 @@ async function removerDataContato(leadId) {
   try {
     await fetch(`${API}/leads/${leadId}/data-contato`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({ data_contato: null })
     });
     await carregarLeads();
@@ -15757,7 +15757,7 @@ let _notificacoes = [];
 async function carregarNotificacoes() {
   try {
     const res = await fetch(`${API}/notificacoes`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
     });
     if (!res.ok) return;
     _notificacoes = await res.json();
@@ -15814,7 +15814,7 @@ async function clicarNotificacao(notifId, leadId) {
   try {
     await fetch(`${API}/notificacoes/${notifId}/lida`, {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
     });
     const n = _notificacoes.find(x => x.id === notifId);
     if (n) n.lido = true;
@@ -15832,7 +15832,7 @@ async function lerTodasNotificacoes() {
   try {
     await fetch(`${API}/notificacoes/ler-todas`, {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
     });
     _notificacoes.forEach(n => n.lido = true);
     atualizarBadgeNotificacoes();
@@ -24894,7 +24894,7 @@ async function salvarWhatsAppPerfil() {
   try {
     const res = await fetch(`${API}/usuarios/me/whatsapp`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: JSON.stringify({ whatsapp: valor })
     });
     const data = await res.json();

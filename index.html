@@ -10999,6 +10999,34 @@ body.tema-claro .logout {
               </small>
             </div>
 
+            <!-- CBO -->
+            <div class="advanced-full">
+              <label>Otimização de orçamento da campanha (CBO) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Com CBO ativado, você define o orçamento total na campanha e a Meta distribui automaticamente entre os conjuntos de anúncios conforme a performance de cada um. Ideal quando você quer testar múltiplos públicos sem precisar gerenciar o budget de cada adset manualmente. Sem CBO, cada conjunto de anúncios recebe um orçamento fixo independente.', event)">i</button></label>
+              <div class="advanced-checks">
+                <label>
+                  <input type="checkbox" id="adv_cbo" checked>
+                  Ativar CBO — Meta distribui o orçamento automaticamente entre os conjuntos de anúncios
+                </label>
+              </div>
+              <small style="display:block;margin-top:6px;color:#94a3b8;font-size:12px;line-height:1.4;">
+                Ligado por padrão. O orçamento configurado acima será gerenciado pela campanha, e não por cada conjunto de anúncios individualmente.
+              </small>
+            </div>
+
+            <!-- JANELA DE ATRIBUIÇÃO -->
+            <div class="advanced-full">
+              <label>Janela de atribuição <button type="button" class="info-icone" onclick="mostrarInfoCampo('Define por quantos dias após uma ação a Meta considera que um lead veio do seu anúncio. Exemplo: com &quot;7 dias após clique&quot;, se alguém clicar no anúncio hoje e preencher o formulário em até 7 dias, isso é contado como conversão desse anúncio. Janelas menores são mais conservadoras e precisas para medir custo por lead real; janelas maiores capturam mais eventos mas podem inflar os números.', event)">i</button></label>
+              <select id="adv_attribution_spec" onchange="atualizarDescricaoAtribuicao()">
+                <option value="">Padrão da Meta</option>
+                <option value="1d_click">1 dia após clique</option>
+                <option value="7d_click">7 dias após clique</option>
+                <option value="28d_click">28 dias após clique</option>
+                <option value="1d_click_1d_view">1 dia clique + 1 dia visualização</option>
+                <option value="7d_click_1d_view">7 dias clique + 1 dia visualização (recomendado)</option>
+              </select>
+              <div id="adv_attribution_desc" class="adv-custo-desc"></div>
+            </div>
+
             <!-- DATA DE INÍCIO -->
             <div>
               <label>Data de início</label>
@@ -18570,6 +18598,24 @@ function atualizarDescricaoCusto() {
   }
 }
 
+function atualizarDescricaoAtribuicao() {
+  const sel = document.getElementById("adv_attribution_spec");
+  const desc = document.getElementById("adv_attribution_desc");
+  if (!sel || !desc) return;
+
+  const textos = {
+    "": "",
+    "1d_click": "Conta conversões de quem clicou no anúncio e converteu em até 1 dia. A janela mais conservadora — ideal para medir leads de resposta imediata.",
+    "7d_click": "Conta conversões de quem clicou no anúncio e converteu em até 7 dias. Bom equilíbrio entre precisão e captura de leads que demoram um pouco para decidir.",
+    "28d_click": "Janela longa: captura quem converteu em até 28 dias após o clique. Útil para produtos de decisão mais longa (imóveis de alto valor, por ex.), mas pode inflar o CPL reportado.",
+    "1d_click_1d_view": "Conta quem clicou em até 1 dia OU só viu o anúncio (sem clicar) e converteu em até 1 dia. Inclui conversões por visualização — mais leads contabilizados, mas parte pode não ter clicado.",
+    "7d_click_1d_view": "Janela padrão da indústria: 7 dias após clique ou 1 dia após visualização. Equilibra volume e atribuição razoável. Recomendado para maioria das campanhas de leads."
+  };
+
+  desc.textContent = textos[sel.value] || "";
+  desc.className = "adv-custo-desc" + (sel.value ? " visivel verde" : "");
+}
+
 /* ===== CALENDÁRIO MODAL ===== */
 let _calCampo = null;
 let _calAno = new Date().getFullYear();
@@ -20107,7 +20153,14 @@ function coletarConfiguracoesAvancadas() {
     advantage_audience:
       document.getElementById(
         "adv_audience_plus"
-      )?.checked || false
+      )?.checked || false,
+    cbo:
+      document.getElementById(
+        "adv_cbo"
+      )?.checked ?? true,
+    attribution_spec:
+      valorCampo("adv_attribution_spec"),
+    custom_audiences: publicosPersonalizadosSelecionados.map(p => p.id)
   };
 }
 
@@ -20285,6 +20338,12 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
       ? true
       : cfg.advantage_audience
   );
+  definirCheckbox(
+    "adv_cbo",
+    cfg.cbo === undefined ? true : cfg.cbo
+  );
+  definirValorCampo("adv_attribution_spec", cfg.attribution_spec || "");
+  atualizarDescricaoAtribuicao();
 
   definirValorCampo("adv_localidade_nome", "");
 

@@ -11168,6 +11168,21 @@ body.tema-claro .logout {
               </small>
             </div>
 
+            <!-- PÚBLICOS PERSONALIZADOS -->
+            <div class="advanced-full">
+              <label>Públicos personalizados e Lookalike <button type="button" class="info-icone" onclick="mostrarInfoCampo('Públicos personalizados usam a sua lista de leads (email e telefone) para segmentar pessoas que já te conhecem ou são parecidas com seus leads. Há dois tipos: (1) Público de leads — exibe o anúncio para quem já está na sua base, útil para remarketing ou reengajamento; (2) Lookalike (semelhante) — a Meta encontra novas pessoas com perfil parecido com seus leads existentes. Quanto menor o percentual (1–3%), mais similar ao seu público; quanto maior (5–10%), mais amplo e com mais alcance.', event)">i</button></label>
+              <div id="adv_publicos_lista" style="margin-bottom:8px;"></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn-secundario" onclick="abrirPainelPublicos()" id="btn_gerenciar_publicos">
+                  Gerenciar públicos
+                </button>
+              </div>
+              <div id="adv_publicos_selecionados_chips" class="geo-chips" style="margin-top:8px;"></div>
+              <small style="display:block;margin-top:6px;color:#94a3b8;font-size:12px;line-height:1.4;">
+                Necessário ter pelo menos 100 leads com email ou telefone cadastrados para criar um público personalizado.
+              </small>
+            </div>
+
           </div>
 
         </details>
@@ -11408,46 +11423,6 @@ body.tema-claro .logout {
               Prioriza os leads que merecem atencao hoje.
             </div>
           </div>
-        </div>
-        <!-- BLOCO 3: Métricas da Campanha -->
-        <div class="info-bloco metricas-legenda">
-
-          <h4>📊 Entenda as métricas da campanha</h4>
-
-          <div class="metricas-legenda-box">
-
-            <div class="metrica-explicacao">
-              <strong>💰 Gasto</strong>
-              <span>Valor de gasto retornado pela Meta para o periodo recente analisado.</span>
-            </div>
-
-            <div class="metrica-explicacao">
-              <strong>🎯 Leads</strong>
-              <span>Quantidade de contatos salvos na plataforma e vinculados a campanha.</span>
-            </div>
-
-            <div class="metrica-explicacao">
-              <strong>👁️ Impressões</strong>
-              <span>Quantidade de vezes que o anuncio apareceu no periodo retornado pela Meta.</span>
-            </div>
-
-            <div class="metrica-explicacao">
-              <strong>🖱️ Cliques</strong>
-              <span>Total de cliques recebidos no anuncio no periodo retornado pela Meta.</span>
-            </div>
-
-            <div class="metrica-explicacao">
-              <strong>📈 CTR</strong>
-              <span>Percentual de pessoas que clicaram apos ver o anuncio.</span>
-            </div>
-
-            <div class="metrica-explicacao">
-              <strong>💵 CPC</strong>
-              <span>Custo medio pago por clique conforme retorno da Meta.</span>
-            </div>
-
-          </div>
-
         </div>
 
       </div>
@@ -16835,7 +16810,9 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_produto", "produto"],
     ["#nicho_objetivo", "objetivo do suplemento"],
     ["#nicho_marca", "marca"],
-    ["#nicho_publico_alvo", "público-alvo"]
+    ["#nicho_publico_alvo", "público-alvo"],
+    ["#adv_cbo", "CBO (otimização de orçamento)"],
+    ["#adv_attribution_spec", "janela de atribuição"]
   ].forEach(([seletor, texto]) => {
     if (preenchidos.has(seletor)) {
       marcarCampoIA(seletor, "preenchido", texto);
@@ -17083,6 +17060,17 @@ function aplicarCampanhaIA(indice) {
   }
   if (s.obrigado_texto) {
     preencherCampoIA("#adv_obrigado_texto", s.obrigado_texto);
+  }
+
+  // CBO e Attribution Window sugeridos pela IA
+  const cboEl = document.getElementById("adv_cbo");
+  if (cboEl && s.cbo !== undefined && s.cbo !== null) {
+    cboEl.checked = Boolean(s.cbo);
+    camposPreenchidosIA.push("#adv_cbo");
+  }
+  if (s.attribution_spec) {
+    preencherSelectIA("#adv_attribution_spec", s.attribution_spec);
+    atualizarDescricaoAtribuicao();
   }
 
   marcarCamposAposAplicarIA(camposPreenchidosIA);
@@ -18916,6 +18904,7 @@ let buscaInteressesSequencia = 0;
 let buscaLocalidadeTimer = null;
 let buscaLocalidadeSequencia = 0;
 let localidadesSelecionadas = [];
+let publicosPersonalizadosSelecionados = [];
 let paginasMetaDisponiveis = [];
 let contasInstagramAnuncioDisponiveis = [];
 let instagramActorIdSelecionado = null;
@@ -20364,6 +20353,10 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
     }));
   renderizarLocalidadesChips();
 
+  // Restaura públicos personalizados selecionados
+  publicosPersonalizadosSelecionados = [];
+  atualizarChipsPublicos();
+
   definirValorCampo("adv_interesse_busca", "");
 
   const resultadosInteresses =
@@ -21080,7 +21073,9 @@ async function criarCampanhaCompleta() {
           nome: campanha_nome,
           objetivo,
           configuracoes_avancadas,
-          nicho_id: window._nichoAtivo?.id || null
+          nicho_id: window._nichoAtivo?.id || null,
+          cbo: configuracoes_avancadas.cbo ?? true,
+          daily_budget: configuracoes_avancadas.cbo ? (orcamento * 100) : undefined
         })
       }
     );
@@ -21148,7 +21143,8 @@ async function criarCampanhaCompleta() {
           campaign_id: campanha.id,
           page_id,
           form_id: form.id,
-          daily_budget: Number(orcamento) * 100,
+          // Com CBO ativo o orçamento fica na campanha; sem CBO fica no adset
+          daily_budget: configuracoes_avancadas.cbo ? undefined : Number(orcamento) * 100,
           configuracoes_avancadas
         })
       }
@@ -22051,7 +22047,7 @@ async function carregarCampanhas() {
     
       <div class="metricas-grid">
 
-        <div class="metrica">
+        <div class="metrica" title="Valor de gasto retornado pela Meta para o período recente analisado.">
           💰
           <span>
             R$ ${Number(c.gasto).toFixed(2)}
@@ -22060,7 +22056,7 @@ async function carregarCampanhas() {
         </div>
 
         ${c.daily_budget ? `
-        <div class="metrica">
+        <div class="metrica" title="Orçamento diário definido para esta campanha.">
           🗓️
           <span>
             R$ ${Number(c.daily_budget / 100).toFixed(2)}
@@ -22069,7 +22065,7 @@ async function carregarCampanhas() {
         </div>
         ` : ""}
 
-        <div class="metrica">
+        <div class="metrica" title="Quantidade de contatos salvos na plataforma e vinculados a esta campanha.">
           🎯
           <span>
             ${c.leads}
@@ -22077,7 +22073,7 @@ async function carregarCampanhas() {
           <small>Leads</small>
         </div>
 
-        <div class="metrica">
+        <div class="metrica" title="Quantidade de vezes que o anúncio apareceu no período retornado pela Meta.">
           👁️
           <span>
             ${c.impressoes}
@@ -22085,7 +22081,7 @@ async function carregarCampanhas() {
           <small>Impressões</small>
         </div>
 
-        <div class="metrica">
+        <div class="metrica" title="Número de pessoas únicas que viram o anúncio no período analisado.">
           📡
           <span>
             ${c.alcance}
@@ -22093,7 +22089,7 @@ async function carregarCampanhas() {
           <small>Alcance</small>
         </div>
 
-        <div class="metrica">
+        <div class="metrica" title="Total de cliques recebidos no anúncio no período retornado pela Meta.">
           🖱️
           <span>
             ${c.cliques}
@@ -22101,7 +22097,7 @@ async function carregarCampanhas() {
           <small>Cliques</small>
         </div>
 
-        <div class="metrica">
+        <div class="metrica" title="CTR (Click-Through Rate): percentual de pessoas que clicaram após ver o anúncio.">
           📈
           <span>
             ${Number(c.ctr).toFixed(2)}%
@@ -22109,7 +22105,7 @@ async function carregarCampanhas() {
           <small>CTR</small>
         </div>
 
-        <div class="metrica">
+        <div class="metrica" title="CPC (Custo por Clique): custo médio pago por cada clique no anúncio.">
           💵
           <span>
             R$ ${Number(c.cpc).toFixed(2)}
@@ -22496,6 +22492,9 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Valor de controle", cfg.bid_amount ? formatarMoeda(cfg.bid_amount) : "-")}
       ${detalheItem("Formulário de qualidade", cfg.formulario_qualidade ? "Ativo" : "Não usado")}
       ${detalheItem("Público Advantage+ Meta", (cfg.advantage_audience ?? true) ? "Ativo" : "Não usado")}
+      ${detalheItem("CBO (otimização de orçamento)", (cfg.cbo ?? true) ? "Ativo — Meta distribui automaticamente" : "Desativado — orçamento por conjunto")}
+      ${detalheItem("Janela de atribuição", cfg.attribution_spec || "Padrão da Meta")}
+      ${detalheItem("Públicos personalizados", cfg.custom_audiences?.length ? `${cfg.custom_audiences.length} público(s) selecionado(s)` : "Nenhum")}
       ${detalheItem("Política de privacidade", cfg.privacidade_url, "full")}
       ${detalheItem("Perguntas qualificadoras", cfg.perguntas, "full")}
       ${detalheItem("Página de obrigado", cfg.obrigado_url, "full")}
@@ -28107,6 +28106,251 @@ function coletarDadosNichoAtivo() {
   <div class="notif-lista" id="notif-lista"></div>
 </div>
 <div id="notif-backdrop" onclick="fecharNotificacoes()" style="display:none;position:fixed;inset:0;z-index:7999;"></div>
+
+<!-- ===== MODAL PÚBLICOS PERSONALIZADOS ===== -->
+<div
+  id="modal_publicos"
+  style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:10200;align-items:center;justify-content:center;"
+>
+  <div style="background:#1e293b;border-radius:16px;padding:28px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h3 style="margin:0;color:white;">Públicos Personalizados</h3>
+      <button onclick="fecharModalPublicos()" style="background:transparent;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Criar novo público -->
+    <div style="background:#0f172a;border-radius:10px;padding:16px;margin-bottom:16px;">
+      <strong style="color:#e2e8f0;font-size:13px;">Criar público a partir dos meus leads</strong>
+      <p style="color:#94a3b8;font-size:12px;margin:6px 0 12px;">A plataforma envia os emails e telefones dos seus leads (com hash SHA-256) para a Meta criar um público personalizado. Mínimo de 100 leads com contato.</p>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="publico_nome_input" placeholder="Nome do público (opcional)" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:white;font-size:13px;">
+        <button class="btn-primario" onclick="criarPublicoPersonalizado()" id="btn_criar_publico" style="white-space:nowrap;">
+          Criar público
+        </button>
+      </div>
+      <div id="msg_criar_publico" style="margin-top:8px;font-size:12px;color:#94a3b8;"></div>
+    </div>
+
+    <!-- Lista de públicos existentes -->
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <strong style="color:#e2e8f0;font-size:13px;">Públicos disponíveis na conta</strong>
+        <button onclick="carregarPublicosMeta()" style="background:transparent;border:1px solid #334155;color:#94a3b8;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">↺ Atualizar</button>
+      </div>
+      <div id="lista_publicos_meta" style="display:flex;flex-direction:column;gap:8px;">
+        <p style="color:#64748b;font-size:13px;">Carregando...</p>
+      </div>
+    </div>
+
+    <!-- Criar lookalike -->
+    <div id="bloco_lookalike" style="background:#0f172a;border-radius:10px;padding:16px;display:none;">
+      <strong style="color:#e2e8f0;font-size:13px;">Criar Lookalike</strong>
+      <p style="color:#94a3b8;font-size:12px;margin:6px 0 12px;">A Meta vai encontrar pessoas parecidas com o público selecionado. Quanto menor o percentual, mais parecido com seus leads originais.</p>
+      <p style="color:#fbbf24;font-size:12px;margin:0 0 10px;">Público base: <span id="lookalike_base_nome" style="color:white;"></span></p>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="lookalike_tamanho" style="padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:white;font-size:13px;">
+          <option value="1">1% — Muito parecido (menor alcance)</option>
+          <option value="2" selected>2% — Parecido (recomendado)</option>
+          <option value="3">3% — Similar</option>
+          <option value="5">5% — Amplo</option>
+          <option value="10">10% — Muito amplo (maior alcance)</option>
+        </select>
+        <button class="btn-primario" onclick="criarLookalike()" id="btn_criar_lookalike">
+          Criar Lookalike
+        </button>
+      </div>
+      <div id="msg_criar_lookalike" style="margin-top:8px;font-size:12px;color:#94a3b8;"></div>
+    </div>
+
+    <div style="margin-top:16px;text-align:right;">
+      <button onclick="fecharModalPublicos()" class="btn-secundario">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PÚBLICOS PERSONALIZADOS ──────────────────────────────────────────────────
+
+let publicosPersonalizadosSelecionados = [];
+let lookalikeSelecionadoId = null;
+
+function abrirPainelPublicos() {
+  const modal = document.getElementById("modal_publicos");
+  if (!modal) return;
+  modal.style.display = "flex";
+  carregarPublicosMeta();
+}
+
+function fecharModalPublicos() {
+  const modal = document.getElementById("modal_publicos");
+  if (modal) modal.style.display = "none";
+}
+
+async function carregarPublicosMeta() {
+  const container = document.getElementById("lista_publicos_meta");
+  if (!container) return;
+  container.innerHTML = '<p style="color:#64748b;font-size:13px;">Carregando...</p>';
+
+  try {
+    const token = localStorage.getItem("token");
+    const usuarioId = obterUsuarioIdSelecionado?.() || "";
+    const params = usuarioId ? `?usuario_id=${usuarioId}` : "";
+    const res = await fetch(`${API}/meta/publicos${params}`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      container.innerHTML = `<p style="color:#f87171;font-size:13px;">${escaparHtml(data.error || "Erro ao carregar públicos")}</p>`;
+      return;
+    }
+
+    const publicos = data.publicos || [];
+    if (!publicos.length) {
+      container.innerHTML = '<p style="color:#64748b;font-size:13px;">Nenhum público encontrado nesta conta.</p>';
+      return;
+    }
+
+    container.innerHTML = publicos.map(p => {
+      const selecionado = publicosPersonalizadosSelecionados.some(s => s.id === p.id);
+      const subtipo = p.subtype === "LOOKALIKE" ? "Lookalike" : p.subtype === "CUSTOM" ? "Personalizado" : p.subtype || "";
+      const alcance = p.approximate_count_lower_bound
+        ? `~${Number(p.approximate_count_lower_bound).toLocaleString("pt-BR")} pessoas`
+        : "Tamanho não disponível";
+      return `
+        <div style="background:#1e293b;border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid ${selecionado ? "#22c55e" : "#334155"};">
+          <div style="flex:1;min-width:0;">
+            <div style="color:white;font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escaparHtml(p.name)}</div>
+            <div style="color:#94a3b8;font-size:11px;margin-top:2px;">${subtipo} · ${alcance}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            ${p.subtype !== "LOOKALIKE" ? `<button onclick="iniciarLookalike('${p.id}', '${escaparHtml(p.name).replace(/'/g,"\\'")}' )" style="background:#1e40af;border:none;color:white;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;">+ Lookalike</button>` : ""}
+            <button onclick="togglePublicoSelecionado('${p.id}', '${escaparHtml(p.name).replace(/'/g,"\\'")}' )" style="background:${selecionado ? "#15803d" : "#334155"};border:none;color:white;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;" id="btn_publico_${p.id}">
+              ${selecionado ? "✓ Selecionado" : "Usar no adset"}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch (err) {
+    container.innerHTML = `<p style="color:#f87171;font-size:13px;">Erro ao carregar públicos.</p>`;
+  }
+}
+
+function togglePublicoSelecionado(id, nome) {
+  const idx = publicosPersonalizadosSelecionados.findIndex(p => p.id === id);
+  if (idx >= 0) {
+    publicosPersonalizadosSelecionados.splice(idx, 1);
+  } else {
+    publicosPersonalizadosSelecionados.push({ id, nome });
+  }
+  atualizarChipsPublicos();
+  carregarPublicosMeta();
+}
+
+function atualizarChipsPublicos() {
+  const chips = document.getElementById("adv_publicos_selecionados_chips");
+  if (!chips) return;
+  chips.innerHTML = publicosPersonalizadosSelecionados.map(p => `
+    <span class="geo-chip">
+      ${escaparHtml(p.nome)}
+      <button type="button" onclick="removerPublicoSelecionado('${p.id}')" aria-label="Remover">✕</button>
+    </span>
+  `).join("");
+}
+
+function removerPublicoSelecionado(id) {
+  publicosPersonalizadosSelecionados =
+    publicosPersonalizadosSelecionados.filter(p => p.id !== id);
+  atualizarChipsPublicos();
+}
+
+function iniciarLookalike(id, nome) {
+  lookalikeSelecionadoId = id;
+  const nomeEl = document.getElementById("lookalike_base_nome");
+  if (nomeEl) nomeEl.textContent = nome;
+  const bloco = document.getElementById("bloco_lookalike");
+  if (bloco) bloco.style.display = "block";
+  bloco.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+async function criarPublicoPersonalizado() {
+  const btn = document.getElementById("btn_criar_publico");
+  const msg = document.getElementById("msg_criar_publico");
+  const nome = document.getElementById("publico_nome_input")?.value?.trim() || "";
+
+  if (btn) { btn.disabled = true; btn.textContent = "Criando..."; }
+  if (msg) msg.textContent = "";
+
+  try {
+    const token = localStorage.getItem("token");
+    const usuarioId = obterUsuarioIdSelecionado?.() || "";
+    const res = await fetch(`${API}/meta/publico-personalizado`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ usuario_id: usuarioId || undefined, nome: nome || undefined })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (msg) { msg.style.color = "#f87171"; msg.textContent = data.error || "Erro ao criar público."; }
+      return;
+    }
+
+    if (msg) {
+      msg.style.color = "#4ade80";
+      msg.textContent = `Público criado com ${data.total_leads?.toLocaleString("pt-BR")} leads. A Meta pode levar até 24h para processar.`;
+    }
+    carregarPublicosMeta();
+  } catch (err) {
+    if (msg) { msg.style.color = "#f87171"; msg.textContent = "Erro de conexão."; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Criar público"; }
+  }
+}
+
+async function criarLookalike() {
+  if (!lookalikeSelecionadoId) return;
+  const btn = document.getElementById("btn_criar_lookalike");
+  const msg = document.getElementById("msg_criar_lookalike");
+  const tamanho = document.getElementById("lookalike_tamanho")?.value || "2";
+
+  if (btn) { btn.disabled = true; btn.textContent = "Criando..."; }
+  if (msg) msg.textContent = "";
+
+  try {
+    const token = localStorage.getItem("token");
+    const usuarioId = obterUsuarioIdSelecionado?.() || "";
+    const res = await fetch(`${API}/meta/lookalike`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id: usuarioId || undefined,
+        publico_origem_id: lookalikeSelecionadoId,
+        tamanho: Number(tamanho)
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (msg) { msg.style.color = "#f87171"; msg.textContent = data.error || "Erro ao criar Lookalike."; }
+      return;
+    }
+
+    if (msg) {
+      msg.style.color = "#4ade80";
+      msg.textContent = `Lookalike criado com sucesso! Pode levar até 6h para ficar disponível para uso.`;
+    }
+    lookalikeSelecionadoId = null;
+    document.getElementById("bloco_lookalike").style.display = "none";
+    carregarPublicosMeta();
+  } catch (err) {
+    if (msg) { msg.style.color = "#f87171"; msg.textContent = "Erro de conexão."; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Criar Lookalike"; }
+  }
+}
+</script>
 
 </body>
 </html>

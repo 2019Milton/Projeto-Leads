@@ -16015,25 +16015,67 @@ function montarSeletorContaAnunciosMeta(data) {
   const contas = data.contas_anuncios || [];
   const conta = data.conta_anuncios;
   const contaSelecionadaId = conta?.id || "";
+  const pagina = data.paginas?.[0];
+  const paginaConectada = Boolean(pagina?.id);
+  const contaAtiva = Boolean(conta?.id);
 
-  const botoes = `
-    <span style="display:inline-flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
-      <a href="https://www.facebook.com/adsmanager/manage/accounts" target="_blank"
-        style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(24,119,242,0.15);border:1px solid rgba(24,119,242,0.35);color:#60a5fa;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-      >Gerenciar contas →</a>
-      <a href="https://business.facebook.com/settings/ad-accounts" target="_blank"
-        style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-      >+ Criar nova conta →</a>
-      <button type="button" onclick="abrirPassoMetaAnuncios()"
-        style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
-      >📘 Ver tutorial</button>
-    </span>
+  const dot = (ok) =>
+    `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ok ? "#22c55e" : "#f59e0b"};flex-shrink:0;margin-right:5px;"></span>`;
+
+  const cardStyle = `padding:12px 13px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:9px;display:flex;flex-direction:column;gap:6px;`;
+  const labelStyle = `font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.07em;`;
+  const nameStyle = `font-size:13px;font-weight:600;display:flex;align-items:center;`;
+  const descStyle = `font-size:11px;color:#64748b;line-height:1.4;`;
+  const btnBase = `display:inline-flex;align-items:center;gap:3px;padding:4px 9px;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;border:1px solid;`;
+
+  const cardPagina = `
+    <div style="${cardStyle}">
+      <div style="${labelStyle}">📄 Página de Anúncio</div>
+      <div style="${nameStyle}">
+        ${dot(paginaConectada)}
+        ${escaparHtmlMeta(pagina?.name || "Sem página vinculada")}
+      </div>
+      <div style="${descStyle}">Aparece como marca nos seus anúncios no Facebook.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">
+        ${paginaConectada ? `
+          <a href="https://www.facebook.com/${escaparHtmlMeta(String(pagina.id))}" target="_blank"
+            style="${btnBase}background:rgba(24,119,242,0.15);border-color:rgba(24,119,242,0.35);color:#60a5fa;"
+          >Ver página →</a>
+        ` : `
+          <a href="https://www.facebook.com/pages/create" target="_blank"
+            style="${btnBase}background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.3);color:#fbbf24;"
+          >+ Criar página →</a>
+        `}
+      </div>
+    </div>
   `;
 
-  const avisoSemConta = contas.length === 0 ? `
-    <div style="margin-top:10px;padding:10px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;">
-      <span style="font-size:12px;color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta de anúncios encontrada</span><br>
-      <span style="font-size:12px;color:#fde68a;line-height:1.5;">Para criar campanhas é necessário ter uma conta de anúncios ativa na Meta.</span>
+  const cardConta = `
+    <div style="${cardStyle}">
+      <div style="${labelStyle}">📢 Conta de Anúncios</div>
+      <div style="${nameStyle}">
+        ${dot(contaAtiva)}
+        ${escaparHtmlMeta(conta?.nome || "Sem conta vinculada")}
+      </div>
+      <div style="${descStyle}">Onde campanhas e orçamentos são gerenciados.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">
+        <a href="https://www.facebook.com/adsmanager/manage/accounts" target="_blank"
+          style="${btnBase}background:rgba(24,119,242,0.15);border-color:rgba(24,119,242,0.35);color:#60a5fa;"
+        >Gerenciar →</a>
+        <a href="https://business.facebook.com/settings/ad-accounts" target="_blank"
+          style="${btnBase}background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.3);color:#4ade80;"
+        >+ Criar conta →</a>
+        <button type="button" onclick="abrirPassoMetaAnuncios()"
+          style="${btnBase}background:rgba(100,116,139,0.12);border-color:rgba(100,116,139,0.3);color:#94a3b8;cursor:pointer;"
+        >📘 Tutorial</button>
+      </div>
+    </div>
+  `;
+
+  const avisoSemConta = !contaAtiva ? `
+    <div style="padding:9px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;font-size:12px;">
+      <span style="color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta de anúncios encontrada.</span>
+      <span style="color:#fde68a;"> Para criar campanhas é necessário ter uma conta de anúncios ativa na Meta.</span>
     </div>
   ` : "";
 
@@ -16048,7 +16090,7 @@ function montarSeletorContaAnunciosMeta(data) {
       : "Troque a conta ativa quando a conexao Meta tiver mais de uma conta disponivel.";
 
     return `
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(59,130,246,0.15);">
+      <div style="padding-top:10px;border-top:1px solid rgba(59,130,246,0.15);">
         <label for="meta_conta_anuncios_select" style="display:block;margin-bottom:7px;font-weight:700;">
           Conta de anuncios usada pela plataforma
         </label>
@@ -16065,10 +16107,11 @@ function montarSeletorContaAnunciosMeta(data) {
   })() : "";
 
   return `
-    <div class="meta-conta-selector">
-      <b style="font-size:13px;">📢 Conta de anúncios:</b><br>
-      <span style="font-size:14px;">${escaparHtmlMeta(conta?.nome || "-")}</span>
-      ${botoes}
+    <div class="meta-conta-selector" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        ${cardPagina}
+        ${cardConta}
+      </div>
       ${avisoSemConta}
       ${seletor}
     </div>

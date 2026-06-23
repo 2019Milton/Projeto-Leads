@@ -25955,6 +25955,7 @@ async function verificarBadgeChat() {
 let _suporteConvAtual = null;
 let _suporteConvStatusAtual = null;
 let _suportePollInterval = null;
+const _suporteConvDados = new Map();
 
 function abrirPainelSuporte() {
   const painel = document.getElementById("painel_suporte_chat");
@@ -26038,6 +26039,14 @@ async function carregarConversasSuporte(silencioso = false) {
       return;
     }
 
+    // armazena dados das conversas para acesso no click sem quebrar HTML
+    conversas.forEach(c => {
+      _suporteConvDados.set(c.id, {
+        nome: c.usuario_nome || c.usuario_email || "Usuário",
+        email: c.usuario_email || ""
+      });
+    });
+
     lista.innerHTML = conversas.map(c => {
       const nome = c.usuario_nome ? `${c.usuario_nome} — ${c.usuario_email}` : c.usuario_email;
       const data_atualizado = new Date(c.atualizado_em).toLocaleString("pt-BR", { day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit" });
@@ -26045,7 +26054,7 @@ async function carregarConversasSuporte(silencioso = false) {
       const statusClass = c.status === "fechada" ? "fechada" : "";
       const selecionado = _suporteConvAtual === c.id ? "selecionado" : "";
       return `
-        <div class="suporte-conv-item ${selecionado}" onclick="selecionarConversaSuporte(${c.id}, ${JSON.stringify(c.usuario_nome || c.usuario_email || 'Usuário')}, ${JSON.stringify(c.usuario_email || '')})">
+        <div class="suporte-conv-item ${selecionado}" onclick="selecionarConversaSuporte(${c.id})">
           <div class="suporte-conv-info">
             <div class="suporte-conv-email">${escHtml(nome)}</div>
             <div class="suporte-conv-data">Atualizado: ${data_atualizado}</div>
@@ -26060,13 +26069,12 @@ async function carregarConversasSuporte(silencioso = false) {
   }
 }
 
-async function selecionarConversaSuporte(id, nome, email) {
-  // Para super_admin e suporte: abre janela flutuante
+async function selecionarConversaSuporte(id) {
   if (usuarioLogado && (usuarioLogado.tipo === "super_admin" || usuarioLogado.tipo === "suporte" || usuarioLogado.tipo === "master")) {
-    abrirJanelaSuporte(id, nome || "Usuário", email || "");
+    const d = _suporteConvDados.get(id) || {};
+    abrirJanelaSuporte(id, d.nome || "Usuário", d.email || "");
     return;
   }
-  // Fallback: comportamento original no painel
   _suporteConvAtual = id;
   const area = document.getElementById("suporte_chat_area");
   if (area) area.style.display = "block";

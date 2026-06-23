@@ -15595,12 +15595,13 @@ function criarLeadCard(lead) {
 
       <!-- DATA DE CONTATO -->
       ${lead.data_contato ? `
-        <div class="lead-data-contato agendado" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '${lead.data_contato}')">
+        <div class="lead-data-contato agendado" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '${lead.data_contato}', ${JSON.stringify(lead.observacao_agendamento || '')})">
           📅 Contato em: <strong>${formatarDataContato(lead.data_contato)}</strong>
+          ${lead.observacao_agendamento ? `<span style="display:block;font-size:11px;opacity:0.7;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lead.observacao_agendamento}</span>` : ''}
           <span class="lead-data-contato-remover" onclick="event.stopPropagation(); removerDataContato(${Number(lead.id)})" title="Remover data">✕</span>
         </div>
       ` : `
-        <div class="lead-data-contato vazio" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '')">
+        <div class="lead-data-contato vazio" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '', '')">
           📅 Agendar contato
         </div>
       `}
@@ -15697,7 +15698,7 @@ function formatarDataContato(dataISO) {
   return `${dia}/${mes}/${ano}`;
 }
 
-function abrirAgendadorContato(leadId, dataAtual) {
+function abrirAgendadorContato(leadId, dataAtual, obsAtual) {
   document.getElementById("agendador-overlay")?.remove();
   const overlay = document.createElement("div");
   overlay.id = "agendador-overlay";
@@ -15707,6 +15708,7 @@ function abrirAgendadorContato(leadId, dataAtual) {
     <div class="agendador-box">
       <h3>📅 Agendar contato</h3>
       <input type="date" id="agendador-data" min="${hoje}" value="${dataAtual ? dataAtual.slice(0,10) : ""}">
+      <textarea id="agendador-obs" placeholder="Mensagem do lembrete (opcional)..." style="margin-top:10px;width:100%;min-height:70px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;resize:vertical;">${obsAtual || ""}</textarea>
       <div class="agendador-btns">
         <button class="agendador-btn-cancelar" onclick="document.getElementById('agendador-overlay').remove()">Cancelar</button>
         <button class="agendador-btn-salvar" onclick="salvarDataContato(${leadId})">Salvar</button>
@@ -15721,11 +15723,12 @@ function abrirAgendadorContato(leadId, dataAtual) {
 async function salvarDataContato(leadId) {
   const data = document.getElementById("agendador-data")?.value;
   if (!data) return;
+  const obs = document.getElementById("agendador-obs")?.value || null;
   try {
     const res = await fetch(`${API}/leads/${leadId}/data-contato`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
-      body: JSON.stringify({ data_contato: data })
+      body: JSON.stringify({ data_contato: data, observacao_agendamento: obs })
     });
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));

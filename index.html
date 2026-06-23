@@ -21522,15 +21522,15 @@ async function carregarStatusMeta() {
                 </div>
                 <div class="meta-status-tile">
                   <span>${data.conta_anuncios?.ativa ? "🟢" : "🔴"} Conta Ads</span>
-                  <small>${data.conta_anuncios?.ativa ? "Conta ativa" : "Revise a conta"}</small>
+                  <small>${escaparHtml(data.conta_anuncios?.nome || (data.conta_anuncios?.ativa ? "Conta ativa" : "Revise a conta"))}</small>
                 </div>
                 <div class="meta-status-tile">
                   <span>${data.paginas?.length > 0 ? "🟢" : "🔴"} Página</span>
-                  <small>${data.paginas?.length > 0 ? "Conectada" : "Não conectada"}</small>
+                  <small>${escaparHtml(data.paginas?.[0]?.name || (data.paginas?.length > 0 ? "Conectada" : "Não conectada"))}</small>
                 </div>
                 <div class="meta-status-tile">
                   <span>${data.instagram?.username ? "🟢" : "🔴"} Instagram</span>
-                  <small>${data.instagram?.username ? "Profissional vinculado" : "Opcional para anunciar"}</small>
+                  <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) : "Opcional para anunciar"}</small>
                 </div>
                 ${tosAviso}
               </div>

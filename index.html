@@ -21954,7 +21954,7 @@ async function carregarCampanhas() {
             ${nichoCampanha ? `
               <span class="nicho-badge" style="${estiloNichoBadge(nichoCampanha)}">
                 <span class="nicho-dot" style="${estiloNichoDot()}"></span>
-                ${c.nicho_nome || nichoCampanha.nome || ""}
+                ${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}
               </span>
             ` : ""}
             <span class="badge meta">
@@ -28112,6 +28112,15 @@ function estiloNichoBadge(nicho = {}) {
   const cor = corSolidaNicho(nicho);
 
   return `background:${cor};color:#fff;border:1px solid ${cor};`;
+}
+
+function nomeExibirNicho(nicho = {}) {
+  if (nicho.nome) return nicho.nome;
+  const slug = slugNichoNormalizado(nicho);
+  if (slug.includes("saude") || slug.includes("saúde")) return "Planos de Saúde";
+  if (slug.includes("imove")) return "Imóveis";
+  if (slug.includes("suplement")) return "Suplementos";
+  return nicho.slug || "";
 }
 
 function estiloNichoDot() {

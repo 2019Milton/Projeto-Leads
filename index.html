@@ -21625,22 +21625,36 @@ async function carregarStatusMeta() {
                 <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
               </div>
               <div class="meta-sec-body">
-              <p style="margin:0 0 6px;"><b>📢 Campanhas:</b><br>${data.metricas?.campanhas || 0}</p>
-              <p style="margin:0 0 6px;"><b>🟢 Ativas:</b><br>${data.metricas?.campanhas_ativas || 0}</p>
-              <p style="margin:0 0 6px;"><b>💰 Gasto hoje:</b><br>${gastoHoje}</p>
-              <p style="margin:0 0 10px;"><b>🧲 Leads hoje:</b><br>${data.metricas?.leads_hoje || 0}</p>
-              <div class="sync-box">
-                <div>
-                  🕒 Último sync:<br>
-                  <span id="ultimo_sync_texto">Nunca sincronizado</span><br>
-                  <small id="ultimo_sync_timer">-</small>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+                  <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+                    <span style="font-size:22px;font-weight:800;color:#c4b5fd;display:block;">${data.metricas?.campanhas || 0}</span>
+                    <small style="margin-top:4px;font-size:11px;">📢 Campanhas</small>
+                  </div>
+                  <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+                    <span style="font-size:22px;font-weight:800;color:#4ade80;display:block;">${data.metricas?.campanhas_ativas || 0}</span>
+                    <small style="margin-top:4px;font-size:11px;">🟢 Ativas</small>
+                  </div>
+                  <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+                    <span style="font-size:16px;font-weight:800;color:#fbbf24;display:block;line-height:1.4;">${gastoHoje}</span>
+                    <small style="margin-top:4px;font-size:11px;">💰 Gasto hoje</small>
+                  </div>
+                  <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+                    <span style="font-size:22px;font-weight:800;color:#60a5fa;display:block;">${data.metricas?.leads_hoje || 0}</span>
+                    <small style="margin-top:4px;font-size:11px;">🧲 Leads hoje</small>
+                  </div>
                 </div>
-                <button class="btn-sync-manual" onclick="sincronizarCampanhas()">🔄</button>
-              </div>
-              <div id="sync_progress" class="sync-progress">
-                <div class="sync-progress-bar"><span></span></div>
-                <small>Sincronizando campanhas, gasto e leads diretamente com a Meta...</small>
-              </div>
+                <div class="sync-box" style="margin-top:0;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
+                  <div style="font-size:11px;color:#94a3b8;line-height:1.7;">
+                    🕒 <span style="color:#cbd5e1;">Último sync</span><br>
+                    <span id="ultimo_sync_texto" style="color:#e2e8f0;font-size:12px;">Nunca sincronizado</span>
+                    &nbsp;<small id="ultimo_sync_timer" style="color:#64748b;">-</small>
+                  </div>
+                  <button class="btn-sync-manual" onclick="sincronizarCampanhas()">🔄</button>
+                </div>
+                <div id="sync_progress" class="sync-progress">
+                  <div class="sync-progress-bar"><span></span></div>
+                  <small>Sincronizando campanhas, gasto e leads diretamente com a Meta...</small>
+                </div>
               </div>
             </div>
 

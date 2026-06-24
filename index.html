@@ -1858,8 +1858,15 @@ body.tema-claro .passo-meta-step-text p {
 }
 
 .campo-validacao-erro {
-  border-color: #f59e0b !important;
-  box-shadow: 0 0 0 3px rgba(245,158,11,0.25) !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.25) !important;
+}
+
+.campo-validacao-erro input,
+.campo-validacao-erro select,
+.campo-validacao-erro textarea {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.2) !important;
 }
 
 .validacao-campanha-msg {
@@ -21049,6 +21056,11 @@ function conduzirParaCampoCampanha(alvo, mensagem) {
   marcador.classList.add("campo-validacao-erro");
   marcador.classList.add("validacao-campanha-pulso");
 
+  if (campo !== marcador && campo.matches("input, select, textarea")) {
+    campo.style.borderColor = "#ef4444";
+    campo.style.boxShadow = "0 0 0 3px rgba(239,68,68,0.3)";
+  }
+
   const aviso = document.createElement("span");
   aviso.className = "validacao-campanha-msg";
   aviso.textContent = mensagem;
@@ -21098,10 +21110,26 @@ function mapearErroMetaParaCampo(mensagem) {
   return null;
 }
 
+function traduzirErroMeta(mensagem) {
+  const m = (mensagem || "").toLowerCase();
+  if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios")))
+    return "Para campanhas de Imóveis, o Meta não permite restrição de idade. Deixe Idade mínima em 18 e Idade máxima em 65, ou selecione 'HOUSING' em Categoria Especial nas configurações avançadas.";
+  if (m.includes("daily_budget") || m.includes("budget") || m.includes("mínimo") || m.includes("minimum amount"))
+    return "O orçamento diário está abaixo do mínimo exigido pelo Meta. Aumente o valor do orçamento.";
+  if (m.includes("page_id") || (m.includes("page") && m.includes("invalid")))
+    return "Página do Facebook inválida ou não encontrada. Verifique a Página Facebook selecionada.";
+  if (m.includes("image") || m.includes("imagem") || m.includes("hash"))
+    return "Imagem inválida ou não enviada. Adicione uma imagem ao anúncio.";
+  if (m.includes("special_ad_categor") || m.includes("housing"))
+    return "Esta campanha requer a Categoria Especial 'HOUSING' (Imóveis) nas configurações avançadas.";
+  return mensagem;
+}
+
 function mostrarErroPublicacao(mensagem) {
   const seletor = mapearErroMetaParaCampo(mensagem);
+  const mensagemFinal = traduzirErroMeta(mensagem);
   if (seletor && document.querySelector(seletor)) {
-    conduzirParaCampoCampanha(seletor, "❌ " + mensagem);
+    conduzirParaCampoCampanha(seletor, "❌ " + mensagemFinal);
     return;
   }
   const el = document.createElement("div");

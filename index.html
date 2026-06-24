@@ -15631,8 +15631,6 @@ function criarLeadCard(lead) {
       '
     >
 
-      ${nichoLeadTema ? `<div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#fff;padding:4px 12px 3px;border-bottom:1px solid ${nichoLeadTema.border};background:${nichoLeadTema.cor};margin:-12px -12px 8px -12px;opacity:0.85;">${nomeExibirNicho({ nome: lead.nicho_nome || nichoLead.nome, slug: lead.nicho_slug || nichoLead.slug, id: lead.nicho_id || nichoLead.id })}</div>` : ""}
-
       <div class="lead-prioridade ${classeScore}"></div>
 
       <!-- TOPO -->
@@ -15643,6 +15641,8 @@ function criarLeadCard(lead) {
         </div>
 
         <div class="lead-identidade">
+
+          ${nichoLeadTema ? `<div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#fff;display:inline-block;padding:2px 8px;border-radius:3px;margin-bottom:4px;background:${nichoLeadTema.cor};">${nomeExibirNicho({ nome: lead.nicho_nome || nichoLead.nome, slug: lead.nicho_slug || nichoLead.slug, id: lead.nicho_id || nichoLead.id })}</div>` : ""}
 
           <h4>${escaparHtml(lead.nome || "-")}</h4>
 
@@ -21957,11 +21957,11 @@ async function carregarCampanhas() {
       style="${nichoCampanhaTema ? `background: ${nichoCampanhaTema.bg}; border: 1px solid ${nichoCampanhaTema.border}; border-top: 4px solid ${nichoCampanhaTema.cor}; color: ${nichoCampanhaTema.text}; box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 0 18px ${nichoCampanhaTema.cor}40;` : ""}"
     >
 
-      ${nichoCampanha ? `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#fff;padding:5px 18px 4px;border-bottom:1px solid ${nichoCampanhaTema.border};background:${nichoCampanhaTema.cor};margin:-18px -18px 14px -18px;opacity:0.85;">${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}</div>` : ""}
-
       <div class="campanha-topo">
 
         <div class="campanha-header">
+
+          ${nichoCampanha ? `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#fff;display:inline-block;padding:3px 10px;border-radius:4px;margin-bottom:6px;background:${nichoCampanhaTema.cor};">${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}</div>` : ""}
 
           <h3 style="${nichoCampanhaTema ? `color:${nichoCampanhaTema.title};` : ""}">
             🚀 ${c.nome}

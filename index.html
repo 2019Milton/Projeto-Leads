@@ -20681,12 +20681,33 @@ async function salvarEdicaoCampanha() {
 
 // ─── DUPLICAR CAMPANHA ───────────────────────────────────────────────────────
 
-async function duplicarCampanha(campanhaId, nomeAtual) {
-  const novoNome = prompt(
-    "Nome da nova campanha:",
-    `Cópia de ${nomeAtual}`
-  );
-  if (novoNome === null) return;
+let _duplicarCampanhaId = null;
+let _duplicarCampanhaNome = null;
+
+function duplicarCampanha(campanhaId, nomeAtual) {
+  _duplicarCampanhaId = campanhaId;
+  _duplicarCampanhaNome = nomeAtual;
+  const input = document.getElementById("input_nome_duplicar");
+  if (input) input.value = `Cópia de ${nomeAtual}`;
+  const modal = document.getElementById("modal_duplicar_campanha");
+  if (modal) {
+    modal.style.display = "flex";
+    setTimeout(() => input && input.focus(), 50);
+  }
+}
+
+function fecharModalDuplicar() {
+  const modal = document.getElementById("modal_duplicar_campanha");
+  if (modal) modal.style.display = "none";
+  _duplicarCampanhaId = null;
+  _duplicarCampanhaNome = null;
+}
+
+async function confirmarDuplicarCampanha() {
+  const input = document.getElementById("input_nome_duplicar");
+  const novoNome = (input?.value || "").trim() || `Cópia de ${_duplicarCampanhaNome}`;
+  const campanhaId = _duplicarCampanhaId;
+  fecharModalDuplicar();
 
   const token = localStorage.getItem("token");
   try {
@@ -20696,17 +20717,17 @@ async function duplicarCampanha(campanhaId, nomeAtual) {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ nome: novoNome.trim() || `Cópia de ${nomeAtual}` })
+      body: JSON.stringify({ nome: novoNome })
     });
     const data = await res.json();
     if (data.error) {
-      alert("Erro: " + data.error);
+      alert("Erro ao duplicar: " + data.error);
       return;
     }
     await carregarCampanhas();
   } catch (err) {
     console.error("ERRO duplicarCampanha:", err);
-    alert("Erro ao duplicar campanha.");
+    alert("Erro ao duplicar campanha. Tente novamente.");
   }
 }
 
@@ -27389,6 +27410,34 @@ async function enviarFeedback() {
 
 </div>
 
+
+<!-- 📋 MODAL DUPLICAR CAMPANHA -->
+<div
+  id="modal_duplicar_campanha"
+  style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;"
+  onclick="if(event.target===this)fecharModalDuplicar()"
+>
+  <div style="background:#1e2535;border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:28px 28px 22px;width:420px;max-width:90vw;">
+    <h3 style="margin:0 0 6px;font-size:16px;color:#f1f5f9;">📋 Duplicar Campanha</h3>
+    <p style="margin:0 0 18px;font-size:13px;color:#94a3b8;">Escolha o nome para a cópia da campanha.</p>
+    <input
+      id="input_nome_duplicar"
+      type="text"
+      class="input"
+      placeholder="Nome da nova campanha"
+      style="width:100%;box-sizing:border-box;margin-bottom:18px;"
+      onkeydown="if(event.key==='Enter')confirmarDuplicarCampanha()"
+    >
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button type="button" onclick="fecharModalDuplicar()"
+        style="padding:8px 18px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:transparent;color:#94a3b8;font-size:13px;cursor:pointer;"
+      >Cancelar</button>
+      <button type="button" onclick="confirmarDuplicarCampanha()"
+        style="padding:8px 20px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-size:13px;font-weight:600;cursor:pointer;"
+      >📋 Duplicar</button>
+    </div>
+  </div>
+</div>
 
 <!-- PASSO A PASSO META -->
 <div

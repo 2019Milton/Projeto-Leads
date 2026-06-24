@@ -6517,10 +6517,15 @@ body.tema-claro .cal-nav span { color: #111827; }
   border: 0;
   border-radius: 0;
   padding: 0 0 0 10px;
-  margin: 0 0 -1px;
+  margin: 0;
   box-shadow: none;
   position: relative;
   z-index: 2;
+}
+#nicho_campanha_container .card-criar-campanha {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-top: 1px solid var(--nicho-card-border, #2563eb) !important;
 }
 .nicho-tabs-label {
   display: block;
@@ -28033,6 +28038,13 @@ function inicializarNichoTabs() {
   document.getElementById("nicho_campanha_tabs_wrap")?.remove();
   document.getElementById("nicho_campanha_tabs")?.remove();
 
+  // Desfaz container anterior (se houver) e restaura card ao parent original
+  const oldContainer = document.getElementById("nicho_campanha_container");
+  if (oldContainer) {
+    oldContainer.parentNode.insertBefore(card, oldContainer);
+    oldContainer.remove();
+  }
+
   const tabsWrap = document.createElement("div");
   tabsWrap.className = "nicho-tabs-wrap";
   tabsWrap.id = "nicho_campanha_tabs_wrap";
@@ -28060,7 +28072,14 @@ function inicializarNichoTabs() {
 
   tabsWrap.appendChild(tabsLabel);
   tabsWrap.appendChild(tabsEl);
-  card.parentNode.insertBefore(tabsWrap, card);
+
+  // Envolve tabs + card num container sem gap para ficarem colados
+  const container = document.createElement("div");
+  container.id = "nicho_campanha_container";
+  container.style.cssText = "display:flex;flex-direction:column;";
+  card.parentNode.insertBefore(container, card);
+  container.appendChild(tabsWrap);
+  container.appendChild(card);
 
   // container dos campos específicos por nicho
   document.getElementById("nicho_campos_extras")?.remove();

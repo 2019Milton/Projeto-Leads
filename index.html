@@ -15600,7 +15600,7 @@ function criarLeadCard(lead) {
 
   const nichoBorderStyle =
     nichoCorSolida
-      ? `border: 1px solid ${nichoCorSolida}99; background: linear-gradient(135deg, ${nichoCorSolida}38 0%, rgba(255,255,255,0.03) 60%);`
+      ? `border: 1px solid ${nichoCorSolida}; border-top: 4px solid ${nichoCorSolida}; background: linear-gradient(135deg, ${nichoCorSolida}28 0%, rgba(19,28,46,1) 68%); box-shadow: 0 4px 18px ${nichoCorSolida}40;`
       : "";
 
   return `
@@ -21898,7 +21898,7 @@ async function carregarCampanhas() {
         : "deleted-card"
       }
     "
-      style="${nichoCampanhaCor ? `border: 1px solid ${nichoCampanhaCor}bb; background: linear-gradient(145deg, ${nichoCampanhaCor}45 0%, #131c2e 52%); box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 15px ${nichoCampanhaCor}25;` : ""}"
+      style="${nichoCampanhaCor ? `border: 1px solid ${nichoCampanhaCor}; border-top: 4px solid ${nichoCampanhaCor}; background: linear-gradient(160deg, ${nichoCampanhaCor}28 0%, #131c2e 68%); box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 22px ${nichoCampanhaCor}50;` : ""}"
     >
 
       <div class="campanha-topo">
@@ -21913,7 +21913,7 @@ async function carregarCampanhas() {
             ${nichoCampanha ? `
               <span class="nicho-badge" style="${estiloNichoBadge(nichoCampanha)}">
                 <span class="nicho-dot" style="${estiloNichoDot()}"></span>
-                ${c.nicho_nome || ""}
+                ${c.nicho_nome || nichoCampanha.nome || ""}
               </span>
             ` : ""}
             <span class="badge meta">
@@ -27948,12 +27948,13 @@ function normalizarTexto(t = "") {
 function detectarNichoPorNome(nomeCampanha = "") {
   const nichos = usuarioLogado?.nichos || [];
   if (!nichos.length || !nomeCampanha) return null;
-  const nome = normalizarTexto(nomeCampanha);
+  // normaliza e substitui underscores por espaço para nomes como "Urgencia_Escassez_Imovel"
+  const nome = normalizarTexto(nomeCampanha).replace(/_/g, " ");
 
   const palavrasPorSlug = {
     saude:       ["saude", "plano", "convenio", "medico", "hospital", "clinica", "seguro saude"],
     suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
-    imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "venda imovel"]
+    imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"]
   };
 
   for (const nicho of nichos) {

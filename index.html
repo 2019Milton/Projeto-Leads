@@ -21080,6 +21080,41 @@ function conduzirParaCampoCampanha(alvo, mensagem) {
   return false;
 }
 
+function mapearErroMetaParaCampo(mensagem) {
+  const m = (mensagem || "").toLowerCase();
+  if (m.includes("daily_budget") || m.includes("budget") || m.includes("orçamento") || m.includes("mínimo") || m.includes("minimum amount")) return "#orcamento";
+  if (m.includes("page_id") || (m.includes("page") && (m.includes("not found") || m.includes("invalid") || m.includes("não encontrada")))) return "#pagina_select";
+  if (m.includes("special_ad_categor") || m.includes("special ad categor")) return "#adv_categoria_especial";
+  if ((m.includes("bid") || m.includes("lance")) && (m.includes("amount") || m.includes("cap") || m.includes("strategy"))) return "#adv_bid_strategy";
+  if (m.includes("attribution")) return "#adv_attribution_spec";
+  if (m.includes("image") || m.includes("imagem") || m.includes("creative") || m.includes("criativo") || m.includes("hash")) return "#btn-adicionar-imagem";
+  if (m.includes("message") || m.includes("primary text") || m.includes("ad text") || m.includes("corpo")) return "#texto";
+  if (m.includes("targeting") || m.includes("audience") || m.includes("segmentação") || m.includes("público")) return "#adv_pais";
+  if (m.includes("name") && m.includes("invalid")) return "#campanha_nome";
+  if (m.includes("perguntas") || m.includes("question") || m.includes("formulário") || m.includes("formulario") || m.includes("form")) return "#adv_perguntas";
+  return null;
+}
+
+function mostrarErroPublicacao(mensagem) {
+  const seletor = mapearErroMetaParaCampo(mensagem);
+  if (seletor && document.querySelector(seletor)) {
+    conduzirParaCampoCampanha(seletor, "❌ " + mensagem);
+    return;
+  }
+  const el = document.createElement("div");
+  el.textContent = "❌ " + mensagem;
+  Object.assign(el.style, {
+    position:"fixed", bottom:"24px", right:"24px",
+    background:"#7f1d1d", color:"#fca5a5",
+    padding:"14px 18px", borderRadius:"10px",
+    fontSize:"13px", lineHeight:"1.5",
+    zIndex:"99999", boxShadow:"0 4px 20px rgba(0,0,0,.4)",
+    maxWidth:"400px", wordBreak:"break-word"
+  });
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 9000);
+}
+
 function validarPublicacaoCampanha({
   campanha_nome,
   page_id,
@@ -21220,7 +21255,7 @@ async function criarCampanhaCompleta() {
 
       if (upload.error) {
         setPublishProgress(null);
-        alert(upload.error);
+        mostrarErroPublicacao(upload.error?.message || upload.error || "Erro ao enviar imagem");
         return;
       }
 
@@ -21258,24 +21293,12 @@ async function criarCampanhaCompleta() {
     
     if (campanha.error) {
       setPublishProgress(null);
-      const _msgCampanha =
+      mostrarErroPublicacao(
         campanha.detalhe?.error?.error_user_msg ||
         campanha.detalhe?.error?.message ||
-        campanha.error?.message ||
         campanha.error ||
-        "Erro ao criar campanha";
-      const _elCampanha = document.createElement("div");
-      _elCampanha.textContent = "❌ " + _msgCampanha;
-      Object.assign(_elCampanha.style, {
-        position:"fixed",bottom:"24px",right:"24px",
-        background:"#7f1d1d",color:"#fca5a5",
-        padding:"14px 18px",borderRadius:"10px",
-        fontSize:"13px",lineHeight:"1.5",
-        zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)",
-        maxWidth:"380px",wordBreak:"break-word"
-      });
-      document.body.appendChild(_elCampanha);
-      setTimeout(() => _elCampanha.remove(), 8000);
+        "Erro ao criar campanha"
+      );
       return;
     }
 
@@ -21304,11 +21327,7 @@ async function criarCampanhaCompleta() {
     
     if (form.error) {
       setPublishProgress(null);
-      alert(
-        form.error?.message ||
-        form.error ||
-        "Erro formulário"
-      );
+      mostrarErroPublicacao(form.error?.message || form.error || "Erro ao criar formulário de leads");
       return;
     }
 
@@ -21341,12 +21360,7 @@ async function criarCampanhaCompleta() {
     
     if (adset.error) {
       setPublishProgress(null);
-      alert(
-        adset.error?.error_user_msg ||
-        adset.error?.message ||
-        adset.error ||
-        "Erro adset"
-      );
+      mostrarErroPublicacao(adset.error?.error_user_msg || adset.error?.message || adset.error || "Erro ao criar conjunto de anúncios");
       return;
     }
 
@@ -21396,7 +21410,8 @@ async function criarCampanhaCompleta() {
 
       console.error(anuncio);
       setPublishProgress(null);
-      alert(
+      mostrarErroPublicacao(
+        anuncio.detalhe?.error_user_msg ||
         anuncio.detalhe?.message ||
         anuncio.error ||
         "Erro ao criar anúncio"
@@ -21412,26 +21427,24 @@ async function criarCampanhaCompleta() {
 
     setTimeout(() => {
       setPublishProgress(null);
-      alert("🚀 Campanha criada com sucesso");
+      const elOk = document.createElement("div");
+      elOk.textContent = "🚀 Campanha criada com sucesso!";
+      Object.assign(elOk.style, {
+        position:"fixed", bottom:"24px", right:"24px",
+        background:"#14532d", color:"#86efac",
+        padding:"14px 18px", borderRadius:"10px",
+        fontSize:"13px", fontWeight:"600",
+        zIndex:"99999", boxShadow:"0 4px 20px rgba(0,0,0,.4)"
+      });
+      document.body.appendChild(elOk);
+      setTimeout(() => elOk.remove(), 4000);
     }, 800);
 
   } catch (err) {
 
     console.error("ERRO publicarCampanha:", err);
     setPublishProgress(null);
-    const _msgCatch = err?.message || String(err) || "Erro desconhecido";
-    const _elCatch = document.createElement("div");
-    _elCatch.textContent = "❌ Erro ao criar campanha: " + _msgCatch;
-    Object.assign(_elCatch.style, {
-      position:"fixed",bottom:"24px",right:"24px",
-      background:"#7f1d1d",color:"#fca5a5",
-      padding:"14px 18px",borderRadius:"10px",
-      fontSize:"13px",lineHeight:"1.5",
-      zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)",
-      maxWidth:"380px",wordBreak:"break-word"
-    });
-    document.body.appendChild(_elCatch);
-    setTimeout(() => _elCatch.remove(), 8000);
+    mostrarErroPublicacao("Erro ao criar campanha: " + (err?.message || String(err) || "Erro desconhecido"));
   }
 }
 

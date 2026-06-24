@@ -15598,9 +15598,10 @@ function criarLeadCard(lead) {
   const nichoCorSolida =
     nichoLead ? corSolidaNicho(nichoLead) : "";
 
+  const nichoLeadTema = nichoLead ? temaVisualNicho(nichoLead) : null;
   const nichoBorderStyle =
-    nichoCorSolida
-      ? `border: 1px solid ${nichoCorSolida}; border-top: 4px solid ${nichoCorSolida}; background: linear-gradient(135deg, ${nichoCorSolida}28 0%, rgba(19,28,46,1) 68%); box-shadow: 0 4px 18px ${nichoCorSolida}40;`
+    nichoLeadTema
+      ? `background: ${nichoLeadTema.bg}; border: 1px solid ${nichoLeadTema.border}; border-top: 4px solid ${nichoLeadTema.cor}; color: ${nichoLeadTema.text}; box-shadow: 0 4px 18px ${nichoLeadTema.cor}40;`
       : "";
 
   return `
@@ -20719,15 +20720,27 @@ async function confirmarDuplicarCampanha() {
       },
       body: JSON.stringify({ nome: novoNome })
     });
-    const data = await res.json();
-    if (data.error) {
-      alert("Erro ao duplicar: " + data.error);
+    let data = {};
+    try { data = await res.json(); } catch(_) {}
+    console.log("DUPLICAR resultado:", res.status, data);
+    if (!res.ok || data.error) {
+      const msg = data.error || `Erro HTTP ${res.status}`;
+      const el = document.createElement("div");
+      el.textContent = "❌ " + msg;
+      Object.assign(el.style, {position:"fixed",bottom:"24px",right:"24px",background:"#7f1d1d",color:"#fca5a5",padding:"12px 18px",borderRadius:"10px",fontSize:"13px",zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)"});
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 5000);
       return;
     }
+    const ok = document.createElement("div");
+    ok.textContent = "✅ Campanha duplicada com sucesso!";
+    Object.assign(ok.style, {position:"fixed",bottom:"24px",right:"24px",background:"#14532d",color:"#86efac",padding:"12px 18px",borderRadius:"10px",fontSize:"13px",zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)"});
+    document.body.appendChild(ok);
+    setTimeout(() => ok.remove(), 3500);
     await carregarCampanhas();
   } catch (err) {
     console.error("ERRO duplicarCampanha:", err);
-    alert("Erro ao duplicar campanha. Tente novamente.");
+    alert("Erro ao duplicar campanha. Verifique o console.");
   }
 }
 
@@ -21858,6 +21871,8 @@ async function carregarCampanhas() {
           }
         : detectarNichoPorNome(c.nome);
 
+    const nichoCampanhaTema =
+      nichoCampanha ? temaVisualNicho(nichoCampanha) : null;
     const nichoCampanhaCor =
       nichoCampanha ? corSolidaNicho(nichoCampanha) : "";
 
@@ -21898,14 +21913,14 @@ async function carregarCampanhas() {
         : "deleted-card"
       }
     "
-      style="${nichoCampanhaCor ? `border: 1px solid ${nichoCampanhaCor}; border-top: 4px solid ${nichoCampanhaCor}; background: linear-gradient(160deg, ${nichoCampanhaCor}28 0%, #131c2e 68%); box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 22px ${nichoCampanhaCor}50;` : ""}"
+      style="${nichoCampanhaTema ? `background: ${nichoCampanhaTema.bg}; border: 1px solid ${nichoCampanhaTema.border}; border-top: 4px solid ${nichoCampanhaTema.cor}; color: ${nichoCampanhaTema.text}; box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 0 18px ${nichoCampanhaTema.cor}40;` : ""}"
     >
 
       <div class="campanha-topo">
 
         <div class="campanha-header">
 
-          <h3>
+          <h3 style="${nichoCampanhaTema ? `color:${nichoCampanhaTema.title};` : ""}">
             🚀 ${c.nome}
           </h3>
 

@@ -5759,8 +5759,9 @@ body.tema-claro .cal-nav span { color: #111827; }
 }
 
 .btn-reanalisar-ia.ia-btn-selecionado {
-  background: linear-gradient(135deg,#16a34a,#15803d);
-  border-color: rgba(34,197,94,0.55);
+  background: linear-gradient(135deg,#16a34a,#15803d) !important;
+  border-color: rgba(34,197,94,0.55) !important;
+  box-shadow: 0 0 14px rgba(34,197,94,0.30) !important;
 }
 
 .ia-gerada-em {
@@ -21257,11 +21258,24 @@ async function criarCampanhaCompleta() {
     
     if (campanha.error) {
       setPublishProgress(null);
-      alert(
+      const _msgCampanha =
+        campanha.detalhe?.error?.error_user_msg ||
+        campanha.detalhe?.error?.message ||
         campanha.error?.message ||
         campanha.error ||
-        "Erro campanha"
-      );
+        "Erro ao criar campanha";
+      const _elCampanha = document.createElement("div");
+      _elCampanha.textContent = "❌ " + _msgCampanha;
+      Object.assign(_elCampanha.style, {
+        position:"fixed",bottom:"24px",right:"24px",
+        background:"#7f1d1d",color:"#fca5a5",
+        padding:"14px 18px",borderRadius:"10px",
+        fontSize:"13px",lineHeight:"1.5",
+        zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)",
+        maxWidth:"380px",wordBreak:"break-word"
+      });
+      document.body.appendChild(_elCampanha);
+      setTimeout(() => _elCampanha.remove(), 8000);
       return;
     }
 
@@ -21403,9 +21417,21 @@ async function criarCampanhaCompleta() {
 
   } catch (err) {
 
-    console.error(err);
+    console.error("ERRO publicarCampanha:", err);
     setPublishProgress(null);
-    alert("Erro ao criar campanha");
+    const _msgCatch = err?.message || String(err) || "Erro desconhecido";
+    const _elCatch = document.createElement("div");
+    _elCatch.textContent = "❌ Erro ao criar campanha: " + _msgCatch;
+    Object.assign(_elCatch.style, {
+      position:"fixed",bottom:"24px",right:"24px",
+      background:"#7f1d1d",color:"#fca5a5",
+      padding:"14px 18px",borderRadius:"10px",
+      fontSize:"13px",lineHeight:"1.5",
+      zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)",
+      maxWidth:"380px",wordBreak:"break-word"
+    });
+    document.body.appendChild(_elCatch);
+    setTimeout(() => _elCatch.remove(), 8000);
   }
 }
 

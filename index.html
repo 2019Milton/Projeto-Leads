@@ -28137,6 +28137,10 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("saude") || slug.includes("saúde")) return "Planos de Saúde";
   if (slug.includes("imove")) return "Imóveis";
   if (slug.includes("suplement")) return "Suplementos";
+  const id = Number(nicho.id || nicho.nicho_id);
+  if (id === 1) return "Imóveis";
+  if (id === 2) return "Planos de Saúde";
+  if (id === 3) return "Suplementos";
   return nicho.slug || "";
 }
 

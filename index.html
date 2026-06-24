@@ -15631,6 +15631,8 @@ function criarLeadCard(lead) {
       '
     >
 
+      ${nichoLeadTema ? `<div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${nichoLeadTema.cor};padding:4px 10px 3px;border-bottom:1px solid ${nichoLeadTema.border}50;background:${nichoLeadTema.cor}18;margin-bottom:2px;">${nomeExibirNicho({ nome: lead.nicho_nome || nichoLead.nome, slug: lead.nicho_slug || nichoLead.slug, id: lead.nicho_id || nichoLead.id })}</div>` : ""}
+
       <div class="lead-prioridade ${classeScore}"></div>
 
       <!-- TOPO -->
@@ -21954,6 +21956,8 @@ async function carregarCampanhas() {
     "
       style="${nichoCampanhaTema ? `background: ${nichoCampanhaTema.bg}; border: 1px solid ${nichoCampanhaTema.border}; border-top: 4px solid ${nichoCampanhaTema.cor}; color: ${nichoCampanhaTema.text}; box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 0 18px ${nichoCampanhaTema.cor}40;` : ""}"
     >
+
+      ${nichoCampanha ? `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${nichoCampanhaTema.cor};padding:5px 12px 4px;border-bottom:1px solid ${nichoCampanhaTema.border}50;background:${nichoCampanhaTema.cor}18;margin-bottom:2px;">${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}</div>` : ""}
 
       <div class="campanha-topo">
 

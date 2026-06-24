@@ -21086,7 +21086,8 @@ function mapearErroMetaParaCampo(mensagem) {
   const m = (mensagem || "").toLowerCase();
   if (m.includes("daily_budget") || m.includes("budget") || m.includes("orçamento") || m.includes("mínimo") || m.includes("minimum amount")) return "#orcamento";
   if (m.includes("page_id") || (m.includes("page") && (m.includes("not found") || m.includes("invalid") || m.includes("não encontrada")))) return "#pagina_select";
-  if (m.includes("special_ad_categor") || m.includes("special ad categor")) return "#adv_categoria_especial";
+  if (m.includes("special_ad_categor") || m.includes("special ad categor") || m.includes("categoria especial") || m.includes("housing") || m.includes("credit") || m.includes("employment")) return "#adv_categoria_especial";
+  if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("minimum age") || m.includes("sugestão ao criar") || m.includes("sugest") && m.includes("conjunto de anúncios")) return "#adv_idade_min";
   if ((m.includes("bid") || m.includes("lance")) && (m.includes("amount") || m.includes("cap") || m.includes("strategy"))) return "#adv_bid_strategy";
   if (m.includes("attribution")) return "#adv_attribution_spec";
   if (m.includes("image") || m.includes("imagem") || m.includes("creative") || m.includes("criativo") || m.includes("hash")) return "#btn-adicionar-imagem";

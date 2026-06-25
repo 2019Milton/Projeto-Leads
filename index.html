@@ -5851,6 +5851,18 @@ body.tema-claro .cal-nav span { color: #111827; }
   margin-bottom: 12px;
 }
 
+.ia-resumo-topo > div:first-child {
+  flex: 1;
+}
+
+.ia-resumo-topo .painel-recolhivel-toggle {
+  margin-left: auto !important;
+}
+
+.painel-recolhido .ia-resumo-topo {
+  margin-bottom: 0;
+}
+
 .ia-resumo-topo h4 {
   margin: 0 0 4px;
 }
@@ -14755,7 +14767,7 @@ const PAINEIS_RECOLHIVEIS = [
   },
   {
     seletor: "#ia_resumo_diario_box",
-    cabecalho: "h4",
+    cabecalho: ".ia-resumo-topo",
     chave: "ia-resumo-diario"
   },
   {

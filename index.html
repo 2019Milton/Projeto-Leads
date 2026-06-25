@@ -22046,13 +22046,31 @@ async function carregarCampanhas() {
     JSON.stringify(campanhas, null, 2)
   );
 
+  // resolve nicho completo de uma campanha (busca nome/slug em usuarioLogado.nichos)
+  const resolverNichoCampanha = c => {
+    const catalogoNichos = usuarioLogado?.nichos || [];
+    let nicho = null;
+    if (c.nicho_id || c.nicho_slug || c.nicho_nome) {
+      nicho = { id: c.nicho_id, slug: c.nicho_slug, nome: c.nicho_nome };
+      // complementa com dados do catálogo quando nome/slug estão ausentes
+      if ((!nicho.nome || !nicho.slug) && nicho.id) {
+        const dosCatalogo = catalogoNichos.find(n => Number(n.id) === Number(nicho.id));
+        if (dosCatalogo) {
+          nicho.nome = nicho.nome || dosCatalogo.nome;
+          nicho.slug = nicho.slug || dosCatalogo.slug;
+        }
+      }
+    } else {
+      nicho = detectarNichoPorNome(c.nome);
+    }
+    return nicho;
+  };
+
   // detecta nichos únicos presentes nas campanhas carregadas
   const nichosNasCampanhas = [];
   const nichosVistos = new Set();
   campanhasAtuais.forEach(c => {
-    const nicho = c.nicho_id || c.nicho_slug || c.nicho_nome
-      ? { id: c.nicho_id, slug: c.nicho_slug, nome: c.nicho_nome }
-      : detectarNichoPorNome(c.nome);
+    const nicho = resolverNichoCampanha(c);
     if (!nicho) return;
     const chave = nicho.slug || nicho.nome || String(nicho.id);
     if (chave && !nichosVistos.has(chave)) {
@@ -22100,9 +22118,7 @@ async function carregarCampanhas() {
 
   if (filtroNicho) {
     campanhasFiltradas = campanhasFiltradas.filter(c => {
-      const nicho = c.nicho_id || c.nicho_slug || c.nicho_nome
-        ? { id: c.nicho_id, slug: c.nicho_slug, nome: c.nicho_nome }
-        : detectarNichoPorNome(c.nome);
+      const nicho = resolverNichoCampanha(c);
       if (!nicho) return false;
       const chave = nicho.slug || nicho.nome || String(nicho.id);
       return chave === filtroNicho;

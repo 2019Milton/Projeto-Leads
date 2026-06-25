@@ -2577,7 +2577,8 @@ body.usuario-super-admin .admin-only-targeting {
   margin-left: 0 !important;
 }
 
-#filtro_status {
+#filtro_status,
+#filtro_nicho {
 
   background: #111827;
   border: 1px solid #334155;
@@ -8266,6 +8267,7 @@ body.tema-claro .card textarea,
 body.tema-claro .lead-search,
 body.tema-claro .lead-filter,
 body.tema-claro #filtro_status,
+body.tema-claro #filtro_nicho,
 body.tema-claro #drawer_status,
 body.tema-claro #drawer_motivo_perda,
 body.tema-claro .tema-seletor select,
@@ -8293,6 +8295,7 @@ body.tema-claro select:hover,
 body.tema-claro .lead-search:hover,
 body.tema-claro .lead-filter:hover,
 body.tema-claro #filtro_status:hover,
+body.tema-claro #filtro_nicho:hover,
 body.tema-claro #drawer_status:hover,
 body.tema-claro #drawer_motivo_perda:hover,
 body.tema-claro .tema-seletor select:hover,
@@ -8313,6 +8316,7 @@ body.tema-claro select:focus,
 body.tema-claro .lead-search:focus,
 body.tema-claro .lead-filter:focus,
 body.tema-claro #filtro_status:focus,
+body.tema-claro #filtro_nicho:focus,
 body.tema-claro #drawer_status:focus,
 body.tema-claro #drawer_motivo_perda:focus,
 body.tema-claro .tema-seletor select:focus,
@@ -9657,6 +9661,7 @@ body:not(.tema-claro) .card textarea,
 body:not(.tema-claro) .lead-search,
 body:not(.tema-claro) .lead-filter,
 body:not(.tema-claro) #filtro_status,
+body:not(.tema-claro) #filtro_nicho,
 body:not(.tema-claro) #drawer_status,
 body:not(.tema-claro) #drawer_motivo_perda,
 body:not(.tema-claro) .tema-seletor select,
@@ -9865,6 +9870,7 @@ body.tema-claro .card textarea,
 body.tema-claro .lead-search,
 body.tema-claro .lead-filter,
 body.tema-claro #filtro_status,
+body.tema-claro #filtro_nicho,
 body.tema-claro #drawer_status,
 body.tema-claro #drawer_motivo_perda,
 body.tema-claro .tema-seletor select,
@@ -12110,6 +12116,14 @@ body.tema-claro .logout {
       <h3>📢 Minhas Campanhas</h3>
 
       <div class="campanhas-acoes">
+
+        <select
+          id="filtro_nicho"
+          onchange="carregarCampanhas()"
+          style="display:none;"
+        >
+          <option value="">Todos os nichos</option>
+        </select>
 
         <select
           id="filtro_status"
@@ -22008,18 +22022,67 @@ async function carregarCampanhas() {
     JSON.stringify(campanhas, null, 2)
   );
 
+  // detecta nichos únicos presentes nas campanhas carregadas
+  const nichosNasCampanhas = [];
+  const nichosVistos = new Set();
+  campanhasAtuais.forEach(c => {
+    const nicho = c.nicho_id || c.nicho_slug || c.nicho_nome
+      ? { id: c.nicho_id, slug: c.nicho_slug, nome: c.nicho_nome }
+      : detectarNichoPorNome(c.nome);
+    if (!nicho) return;
+    const chave = nicho.slug || nicho.nome || String(nicho.id);
+    if (chave && !nichosVistos.has(chave)) {
+      nichosVistos.add(chave);
+      nichosNasCampanhas.push(nicho);
+    }
+  });
+
+  const selectNicho = document.getElementById("filtro_nicho");
+  if (selectNicho) {
+    if (nichosNasCampanhas.length > 1) {
+      const valorAtual = selectNicho.value;
+      selectNicho.innerHTML = `<option value="">Todos os nichos</option>` +
+        nichosNasCampanhas.map(n => {
+          const val = n.slug || n.nome || String(n.id);
+          const label = n.nome || n.slug || val;
+          const sel = valorAtual === val ? " selected" : "";
+          return `<option value="${val}"${sel}>${label}</option>`;
+        }).join("");
+      selectNicho.style.display = "";
+    } else {
+      selectNicho.style.display = "none";
+      selectNicho.value = "";
+    }
+  }
+
   const filtro =
     document.getElementById("filtro_status")?.value;
-  
+
+  const filtroNicho =
+    selectNicho?.style.display !== "none"
+      ? (selectNicho?.value || "")
+      : "";
+
   let campanhasFiltradas = [...campanhasAtuais];
-  
+
   if (filtro) {
-  
+
     campanhasFiltradas = campanhasFiltradas.filter(c =>
       filtro === "ACTIVE"
         ? campanhaEstaAtiva(c)
         : String(c.status || "").toUpperCase() === filtro
     );
+  }
+
+  if (filtroNicho) {
+    campanhasFiltradas = campanhasFiltradas.filter(c => {
+      const nicho = c.nicho_id || c.nicho_slug || c.nicho_nome
+        ? { id: c.nicho_id, slug: c.nicho_slug, nome: c.nicho_nome }
+        : detectarNichoPorNome(c.nome);
+      if (!nicho) return false;
+      const chave = nicho.slug || nicho.nome || String(nicho.id);
+      return chave === filtroNicho;
+    });
   }
 
   const contador =

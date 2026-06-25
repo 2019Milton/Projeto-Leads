@@ -7380,18 +7380,13 @@ body.tema-claro .info-tooltip-popup {
 
   margin: 0 0 16px;
 
-  padding: 12px;
+  padding: 14px;
 
   border-radius: 14px;
 
-  background:
-    linear-gradient(
-      145deg,
-      rgba(37,99,235,0.12),
-      rgba(245,158,11,0.08)
-    );
+  background: #0f2f23;
 
-  border: 1px solid rgba(96,165,250,0.24);
+  border: 1px solid rgba(34,197,94,0.32);
 }
 
 .recuperacao-leads-topo {
@@ -7400,11 +7395,16 @@ body.tema-claro .info-tooltip-popup {
 
   align-items: center;
 
-  justify-content: space-between;
+  justify-content: flex-start;
 
   gap: 12px;
 
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.recuperacao-leads-topo > div:first-child {
+
+  flex: 1;
 }
 
 .recuperacao-leads-topo strong,
@@ -7417,7 +7417,7 @@ body.tema-claro .info-tooltip-popup {
 
   color: #fff;
 
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .recuperacao-leads-topo span {
@@ -7429,16 +7429,41 @@ body.tema-claro .info-tooltip-popup {
   font-size: 11px;
 }
 
-.recuperacao-leads-actions {
+.recuperacao-leads-titulo {
 
   display: flex;
 
-  flex-wrap: wrap;
+  align-items: center;
 
   gap: 8px;
 }
 
-.recuperacao-leads-actions button {
+.recuperacao-leads-badge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  border: 1px solid rgba(34,197,94,0.36);
+
+  border-radius: 999px;
+
+  background: #123f2d;
+
+  color: #86efac;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  padding: 4px 8px;
+
+  margin-top: 0 !important;
+
+  text-transform: uppercase;
+}
+
+.recuperacao-leads-limpar {
 
   width: auto !important;
 
@@ -7446,29 +7471,169 @@ body.tema-claro .info-tooltip-popup {
 
   margin: 0 !important;
 
-  padding: 8px 10px !important;
+  padding: 7px 10px !important;
 
-  border-radius: 10px !important;
+  border-radius: 999px !important;
 
-  background: rgba(15,23,42,0.72) !important;
+  background: #10233f !important;
 
-  border: 1px solid rgba(148,163,184,0.18) !important;
+  border: 1px solid rgba(96,165,250,0.34) !important;
 
-  color: #e5e7eb !important;
+  color: #bfdbfe !important;
 
   font-size: 11px !important;
 
+  font-weight: 800 !important;
+
   box-shadow: none !important;
+}
+
+.recuperacao-resumo {
+
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-bottom: 10px;
+}
+
+.recuperacao-resumo-item {
+
+  border: 1px solid rgba(148,163,184,0.18);
+
+  border-radius: 12px;
+
+  background: #101a2f;
+
+  padding: 9px 10px;
+}
+
+.recuperacao-resumo-item span,
+.recuperacao-card small {
+
+  display: block;
+
+  color: #94a3b8;
+
+  font-size: 10px;
+
+  line-height: 1.35;
+}
+
+.recuperacao-resumo-item strong {
+
+  display: block;
+
+  margin-top: 3px;
+
+  color: #fff;
+
+  font-size: 18px;
+}
+
+.recuperacao-leads-actions {
+
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+  gap: 8px;
+}
+
+.recuperacao-leads-actions button {
+
+  width: 100% !important;
+
+  min-width: 0 !important;
+
+  margin: 0 !important;
+
+  padding: 10px !important;
+
+  border-radius: 12px !important;
+
+  background: #111827 !important;
+
+  border: 1px solid rgba(148,163,184,0.22) !important;
+
+  color: #e5e7eb !important;
+
+  font-size: 12px !important;
+
+  box-shadow: none !important;
+
+  text-align: left !important;
 }
 
 .recuperacao-leads-actions button.ativo,
 .recuperacao-leads-actions button:hover {
 
-  border-color: rgba(245,158,11,0.48) !important;
+  border-color: rgba(34,197,94,0.62) !important;
 
-  color: #fde68a !important;
+  color: #bbf7d0 !important;
+
+  background: #123f2d !important;
 
   transform: translateY(-1px);
+}
+
+.recuperacao-card-topo {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 8px;
+
+  margin-bottom: 5px;
+}
+
+.recuperacao-card strong {
+
+  color: inherit;
+
+  font-size: 12px;
+}
+
+.recuperacao-card b {
+
+  display: inline-flex;
+
+  min-width: 24px;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 999px;
+
+  background: #2563eb;
+
+  color: #fff;
+
+  font-size: 11px;
+
+  padding: 3px 7px;
+}
+
+@media (max-width: 720px) {
+
+  .recuperacao-leads-topo {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .recuperacao-resumo {
+    grid-template-columns: 1fr;
+  }
+
+  .recuperacao-leads-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 .lead-recuperacao-badge {
@@ -8236,6 +8401,49 @@ body.tema-claro .painel-recolhivel-toggle:hover {
   background:rgba(22,163,74,0.08);
   border-color:#16a34a;
   color:#15803d;
+}
+
+body.tema-claro .recuperacao-leads-panel {
+  background: #e7f5ee;
+  border-color: #86efac;
+}
+
+body.tema-claro .recuperacao-leads-topo strong,
+body.tema-claro .recuperacao-card strong,
+body.tema-claro .recuperacao-resumo-item strong {
+  color: #0f172a;
+}
+
+body.tema-claro .recuperacao-leads-topo span,
+body.tema-claro .recuperacao-card small,
+body.tema-claro .recuperacao-resumo-item span {
+  color: #475569;
+}
+
+body.tema-claro .recuperacao-leads-badge {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+}
+
+body.tema-claro .recuperacao-resumo-item,
+body.tema-claro .recuperacao-leads-actions button {
+  background: #ffffff !important;
+  border-color: #b8c8d8 !important;
+  color: #1e293b !important;
+}
+
+body.tema-claro .recuperacao-leads-actions button.ativo,
+body.tema-claro .recuperacao-leads-actions button:hover {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+  color: #166534 !important;
+}
+
+body.tema-claro .recuperacao-leads-limpar {
+  background: #eff6ff !important;
+  border-color: #93c5fd !important;
+  color: #1d4ed8 !important;
 }
 
 body.tema-claro h1,
@@ -11819,10 +12027,41 @@ body.tema-claro .logout {
         <div class="recuperacao-leads-topo">
 
           <div>
-            <strong>Recuperacao de Perdidos</strong>
+            <div class="recuperacao-leads-titulo">
+              <strong>Recuperacao de Perdidos</strong>
+              <span class="recuperacao-leads-badge">Fila inteligente</span>
+            </div>
             <span>
-              Trabalhe primeiro os perdidos com maior chance de voltar para conversa.
+              Escolha um foco e a central mostra primeiro quem vale tentar recuperar agora.
             </span>
+          </div>
+
+          <button
+            type="button"
+            class="recuperacao-leads-limpar"
+            onclick="limparFiltroRecuperacaoLeads()"
+            title="Voltar para todos os leads do quadro"
+          >
+            Limpar foco
+          </button>
+
+        </div>
+
+        <div class="recuperacao-resumo">
+
+          <div class="recuperacao-resumo-item">
+            <span>Total perdidos</span>
+            <strong id="count_rec_total">0</strong>
+          </div>
+
+          <div class="recuperacao-resumo-item">
+            <span>Boa chance de retorno</span>
+            <strong id="count_rec_resumo_recuperaveis">0</strong>
+          </div>
+
+          <div class="recuperacao-resumo-item">
+            <span>Prioridade com IA</span>
+            <strong id="count_rec_resumo_ia">0</strong>
           </div>
 
         </div>
@@ -11830,45 +12069,69 @@ body.tema-claro .logout {
         <div class="recuperacao-leads-actions">
 
           <button
+            type="button"
             id="btn_recuperacao_recuperaveis"
+            class="recuperacao-card"
             onclick="filtrarRecuperacaoLeads('recuperaveis')"
           >
-            Recuperaveis
-            <span id="count_recuperaveis">0</span>
+            <span class="recuperacao-card-topo">
+              <strong>Recuperaveis</strong>
+              <b id="count_recuperaveis">0</b>
+            </span>
+            <small>Leads perdidos com sinais de que ainda podem voltar.</small>
           </button>
 
           <button
+            type="button"
             id="btn_recuperacao_nao_respondeu"
+            class="recuperacao-card"
             onclick="filtrarRecuperacaoLeads('nao_respondeu')"
           >
-            Nao respondeu
-            <span id="count_rec_nao_respondeu">0</span>
+            <span class="recuperacao-card-topo">
+              <strong>Nao respondeu</strong>
+              <b id="count_rec_nao_respondeu">0</b>
+            </span>
+            <small>Contatos que sumiram e podem receber uma nova abordagem.</small>
           </button>
 
           <button
+            type="button"
             id="btn_recuperacao_30dias"
+            class="recuperacao-card"
             onclick="filtrarRecuperacaoLeads('30dias')"
           >
-            30+ dias
-            <span id="count_rec_30dias">0</span>
+            <span class="recuperacao-card-topo">
+              <strong>30+ dias parado</strong>
+              <b id="count_rec_30dias">0</b>
+            </span>
+            <small>Leads antigos que merecem uma tentativa de reativacao.</small>
           </button>
 
           <button
+            type="button"
             id="btn_recuperacao_ia"
-            class="ia-filtro"
+            class="recuperacao-card ia-filtro"
             onclick="filtrarRecuperacaoLeads('ia')"
             title="Filtro do plano Ouro: usa IA para priorizar recuperacao"
           >
-            IA Ouro usa IA
-            <span id="count_rec_ia">0</span>
+            <span class="recuperacao-card-topo">
+              <strong>Prioridade IA Ouro</strong>
+              <b id="count_rec_ia">0</b>
+            </span>
+            <small>Usa IA para destacar quem tem melhor chance no momento.</small>
           </button>
 
           <button
-            class="ia-filtro"
+            type="button"
+            class="recuperacao-card ia-filtro"
             onclick="gerarReativacaoLoteIA()"
             title="IA Ouro: gera mensagens de reativacao para os leads perdidos filtrados"
           >
-            Reativacao em lote IA
+            <span class="recuperacao-card-topo">
+              <strong>Gerar mensagens IA</strong>
+              <b>IA</b>
+            </span>
+            <small>Cria textos de WhatsApp para os leads filtrados.</small>
           </button>
 
         </div>
@@ -14703,6 +14966,9 @@ function atualizarPainelRecuperacao() {
   preencher("count_rec_nao_respondeu", naoRespondeu.length);
   preencher("count_rec_30dias", antigos.length);
   preencher("count_rec_ia", ia.length);
+  preencher("count_rec_total", perdidos.length);
+  preencher("count_rec_resumo_recuperaveis", recuperaveis.length);
+  preencher("count_rec_resumo_ia", ia.length);
 
   [
     "recuperaveis",
@@ -14734,6 +15000,13 @@ function filtrarRecuperacaoLeads(tipo) {
   if (periodo) {
     periodo.value = "todos";
   }
+
+  aplicarFiltrosLeads();
+}
+
+function limparFiltroRecuperacaoLeads() {
+  filtroRecuperacao = null;
+  filtroKPI = null;
 
   aplicarFiltrosLeads();
 }

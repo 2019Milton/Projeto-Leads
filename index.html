@@ -10098,24 +10098,24 @@ body.tema-claro .logout {
 .modal-banner-ia-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.68);
-  backdrop-filter: blur(4px);
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(6px);
 }
 
 .modal-banner-ia-content {
   position: relative;
   z-index: 1;
-  width: min(520px, 96vw);
-  max-height: 88vh;
+  width: min(540px, 96vw);
+  max-height: 90vh;
   overflow-y: auto;
-  padding: 20px;
-  border-radius: 14px;
-  background: #070b1a;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 18px 48px rgba(0,0,0,0.52);
+  padding: 22px;
+  border-radius: 18px;
+  background: #080c1c;
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,92,255,0.08);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .banner-ia-header {
@@ -10123,7 +10123,7 @@ body.tema-claro .logout {
   justify-content: space-between;
   align-items: center;
 }
-.banner-ia-header h3 { margin: 0; font-size: 16px; }
+.banner-ia-header h3 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
 .banner-ia-header button {
   width: 32px !important;
   min-width: 32px !important;
@@ -10132,6 +10132,43 @@ body.tema-claro .logout {
   padding: 0 !important;
   border-radius: 9px !important;
 }
+
+.banner-ia-tabs {
+  display: flex;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+}
+.banner-ia-tab {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  transition: background 0.18s, color 0.18s;
+  font-family: inherit;
+}
+.banner-ia-tab.ativo {
+  background: linear-gradient(135deg, rgba(124,58,237,0.45), rgba(245,158,11,0.18));
+  color: #e2e8f0;
+}
+
+.banner-ia-info {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+.banner-ia-info strong { color: #cbd5e1; }
 
 .banner-ia-label {
   font-size: 11px;
@@ -10154,34 +10191,42 @@ body.tema-claro .logout {
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid rgba(255,255,255,0.08);
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, transform 0.12s;
   aspect-ratio: 1;
   background: rgba(255,255,255,0.05);
 }
-.banner-ia-imagem-item.selecionada { border-color: #7c5cff; }
+.banner-ia-imagem-item:hover { transform: scale(1.03); }
+.banner-ia-imagem-item.selecionada { border-color: #7c5cff; box-shadow: 0 0 0 3px rgba(124,92,255,0.25); }
 .banner-ia-imagem-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .banner-ia-imagem-check {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #7c5cff;
   color: #fff;
   font-size: 11px;
+  font-weight: 700;
   display: none;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 .banner-ia-imagem-item.selecionada .banner-ia-imagem-check { display: flex; }
 
-.banner-ia-sem-imagens { font-size: 12px; color: #64748b; padding: 4px 0; }
+.banner-ia-sem-imagens {
+  font-size: 12px;
+  color: #64748b;
+  padding: 10px 0 4px;
+  font-style: italic;
+}
 
 .banner-ia-textarea {
   width: 100%;
-  min-height: 80px;
+  min-height: 88px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
@@ -10191,37 +10236,111 @@ body.tema-claro .logout {
   resize: vertical;
   font-family: inherit;
   box-sizing: border-box;
+  line-height: 1.5;
 }
 .banner-ia-textarea:focus { outline: none; border-color: rgba(124,92,255,0.5); }
+
+.banner-ia-exemplos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.banner-ia-exemplo-pill {
+  font-size: 11px;
+  color: #94a3b8;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 20px;
+  padding: 4px 11px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.banner-ia-exemplo-pill:hover {
+  background: rgba(124,92,255,0.18);
+  color: #c4b5fd;
+  border-color: rgba(124,92,255,0.35);
+}
+
+.banner-ia-acoes { display: flex; gap: 10px; align-items: center; }
+
+.btn-gerar-banner-ia {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(124,58,237,0.6), rgba(245,158,11,0.3));
+  color: #fff7ed;
+  border: 1px solid rgba(245,158,11,0.5);
+  border-radius: 9px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(245,158,11,0.18);
+  transition: box-shadow .15s ease, transform .15s ease;
+  width: auto;
+}
+.btn-gerar-banner-ia:hover { box-shadow: 0 0 24px rgba(245,158,11,0.32); transform: translateY(-1px); }
+.btn-gerar-banner-ia:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+.banner-ia-loading {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.banner-ia-loading.ativo { display: flex; }
+.banner-ia-loading-shimmer {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(124,92,255,0.10) 40%,
+    rgba(245,158,11,0.07) 60%,
+    rgba(255,255,255,0.04) 100%);
+  background-size: 300% 100%;
+  animation: bannerShimmer 1.6s ease-in-out infinite;
+}
+.banner-ia-loading-texto {
+  font-size: 13px;
+  color: #a78bfa;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.banner-ia-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(124,92,255,0.3);
+  border-top-color: #7c5cff;
+  border-radius: 50%;
+  animation: bannerSpin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes bannerShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes bannerSpin {
+  to { transform: rotate(360deg); }
+}
 
 .banner-ia-preview-wrap {
   display: none;
   flex-direction: column;
   gap: 10px;
 }
-.banner-ia-preview-img { width: 100%; border-radius: 10px; display: block; }
+.banner-ia-preview-img { width: 100%; border-radius: 12px; display: block; box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
 
-.banner-ia-acoes { display: flex; gap: 10px; }
-
-.btn-gerar-banner-ia {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, rgba(124,58,237,0.55), rgba(245,158,11,0.28));
-  color: #fff7ed;
-  border: 1px solid rgba(245,158,11,0.55);
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(245,158,11,0.15);
-  transition: box-shadow .15s ease, transform .15s ease;
-  width: auto;
+.banner-ia-editar-aviso {
+  font-size: 11px;
+  color: #f59e0b;
   margin-top: 6px;
+  display: none;
 }
-.btn-gerar-banner-ia:hover { box-shadow: 0 0 18px rgba(245,158,11,0.30); transform: translateY(-1px); }
-.btn-gerar-banner-ia:disabled { opacity: 0.5; cursor: default; }
 
 </style>
 </head>
@@ -27627,7 +27746,7 @@ async function enviarFeedback() {
   </div>
 </div>
 
-<!-- ✨<!-- ✨ MODAL GERAR BANNER COM IA -->
+<!-- ✨ MODAL GERAR BANNER COM IA -->
 <div id="modal_banner_ia">
   <div class="modal-banner-ia-overlay" onclick="fecharModalGerarBanner()"></div>
   <div class="modal-banner-ia-content">
@@ -27637,34 +27756,105 @@ async function enviarFeedback() {
       <button onclick="fecharModalGerarBanner()">✕</button>
     </div>
 
-    <div>
-      <div class="banner-ia-label">Imagens de referência (opcional)</div>
-      <div id="banner_ia_imagens_grid" class="banner-ia-imagens-grid"></div>
-      <p class="banner-ia-sem-imagens" id="banner_ia_sem_imagens" style="display:none;">
-        Adicione imagens ao carrossel primeiro para usá-las como referência visual.
-      </p>
+    <!-- Tabs de modo -->
+    <div class="banner-ia-tabs">
+      <button class="banner-ia-tab ativo" id="banner_tab_gerar" onclick="selecionarModoBanner('gerar')">
+        🎨 Gerar imagem nova
+      </button>
+      <button class="banner-ia-tab" id="banner_tab_editar" onclick="selecionarModoBanner('editar')">
+        ✏️ Editar imagem existente
+      </button>
     </div>
 
-    <div>
-      <div class="banner-ia-label">Descreva o banner que você quer</div>
-      <textarea
-        id="banner_ia_prompt"
-        class="banner-ia-textarea"
-        placeholder="Ex: Banner profissional para apartamento de luxo, fundo claro, destaque a fachada do prédio, cores azul e dourado, texto 'Reserve sua unidade' em destaque, estilo moderno e sofisticado..."
-      ></textarea>
+    <!-- ── MODO GERAR NOVO ── -->
+    <div id="banner_modo_gerar">
+      <div class="banner-ia-info">
+        <strong>Como funciona:</strong> A IA cria uma imagem nova do zero com base na sua descrição.
+        Selecione fotos do carrossel abaixo para usar como referência de estilo — quanto mais imagens, mais contexto a IA tem.
+        Ou deixe sem nenhuma e descreva tudo no texto.
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="banner-ia-label">Imagens de referência (opcional — selecione quantas quiser)</div>
+        <div id="banner_ia_grid_gerar" class="banner-ia-imagens-grid"></div>
+        <p class="banner-ia-sem-imagens" id="banner_ia_vazio_gerar" style="display:none;">
+          Sem imagens no carrossel. Você pode gerar sem referência, apenas com o texto.
+        </p>
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="banner-ia-label">Descreva o banner que você quer</div>
+        <textarea
+          id="banner_ia_prompt_gerar"
+          class="banner-ia-textarea"
+          placeholder="Ex: Banner profissional para apartamento de alto padrão, fundo em tons de azul e dourado, texto 'Reserve sua unidade' em destaque, estilo moderno e sofisticado..."
+        ></textarea>
+        <div class="banner-ia-exemplos" id="banner_exemplos_gerar">
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Apartamento de luxo com piscina</span>
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Casa moderna, jardim e garagem</span>
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Plano de saúde familiar, tons verdes</span>
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Suplemento esportivo, energia, fundo escuro</span>
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Montagem com várias fotos do imóvel</span>
+        </div>
+      </div>
     </div>
 
-    <div id="banner_ia_feedback" style="font-size:12px;color:#f87171;display:none;"></div>
+    <!-- ── MODO EDITAR IMAGEM ── -->
+    <div id="banner_modo_editar" style="display:none;">
+      <div class="banner-ia-info">
+        <strong>Como funciona:</strong> Selecione <strong>uma imagem</strong> do carrossel como base.
+        A IA aplica as modificações que você descrever diretamente nessa imagem — adicionar texto, trocar o fundo, inserir elementos, etc.
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="banner-ia-label">Imagem base (clique para selecionar uma)</div>
+        <div id="banner_ia_grid_editar" class="banner-ia-imagens-grid"></div>
+        <p class="banner-ia-sem-imagens" id="banner_ia_vazio_editar" style="display:none;">
+          Adicione imagens ao carrossel primeiro para poder editá-las.
+        </p>
+        <div class="banner-ia-editar-aviso" id="banner_aviso_editar">
+          Apenas uma imagem pode ser selecionada por vez no modo edição.
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="banner-ia-label">O que você quer modificar?</div>
+        <textarea
+          id="banner_ia_prompt_editar"
+          class="banner-ia-textarea"
+          placeholder="Ex: Adicione o texto 'Últimas unidades' em vermelho no canto superior. Coloque um selo dourado com '10% OFF'. Troque o fundo para branco e adicione bordas elegantes..."
+        ></textarea>
+        <div class="banner-ia-exemplos">
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Adicione texto "Últimas unidades"</span>
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Coloque um logo no canto superior</span>
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Troque o fundo para branco</span>
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Adicione moldura elegante dourada</span>
+          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Insira selo vermelho "Oferta especial"</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="banner_ia_feedback" style="font-size:12px;color:#f87171;display:none;margin-top:2px;"></div>
 
     <div class="banner-ia-acoes">
       <button type="button" class="btn-gerar-banner-ia" id="btn_executar_gerar_banner" onclick="gerarBannerComIA()">
-        Gerar
+        ✨ Gerar
       </button>
       <button type="button" class="logout" onclick="fecharModalGerarBanner()" style="flex:0;width:auto;padding:8px 16px;font-size:13px;">
         Cancelar
       </button>
     </div>
 
+    <!-- Animação de loading -->
+    <div id="banner_ia_loading" class="banner-ia-loading">
+      <div class="banner-ia-loading-shimmer"></div>
+      <div class="banner-ia-loading-texto">
+        <div class="banner-ia-spinner"></div>
+        A IA está criando seu banner...
+      </div>
+    </div>
+
+    <!-- Preview do resultado -->
     <div id="banner_ia_preview_wrap" class="banner-ia-preview-wrap">
       <div class="banner-ia-label">Banner gerado</div>
       <img id="banner_ia_preview_img" class="banner-ia-preview-img" src="" alt="Banner gerado">
@@ -27726,21 +27916,24 @@ document.addEventListener("keydown", (event) => {
 // ─── MODAL GERAR BANNER COM IA ────────────────────────────────────────────────
 
 let _bannerGeradoBase64 = null;
+let _modoBanner = "gerar";
 
-function abrirModalGerarBanner() {
-  const modal = document.getElementById("modal_banner_ia");
-  if (!modal) return;
+function selecionarModoBanner(modo) {
+  _modoBanner = modo;
+  document.getElementById("banner_tab_gerar").classList.toggle("ativo", modo === "gerar");
+  document.getElementById("banner_tab_editar").classList.toggle("ativo", modo === "editar");
+  document.getElementById("banner_modo_gerar").style.display = modo === "gerar" ? "" : "none";
+  document.getElementById("banner_modo_editar").style.display = modo === "editar" ? "" : "none";
+  document.getElementById("banner_ia_feedback").style.display = "none";
+  document.getElementById("banner_ia_preview_wrap").style.display = "none";
+  document.getElementById("banner_ia_loading").classList.remove("ativo");
+}
 
-  _bannerGeradoBase64 = null;
-
-  const grid = document.getElementById("banner_ia_imagens_grid");
-  const semImagens = document.getElementById("banner_ia_sem_imagens");
-  const previewWrap = document.getElementById("banner_ia_preview_wrap");
-  const feedback = document.getElementById("banner_ia_feedback");
-
+function _preencherGridBanner(gridId, vazioId, modoEditar) {
+  const grid = document.getElementById(gridId);
+  const vazio = document.getElementById(vazioId);
+  if (!grid) return;
   grid.innerHTML = "";
-  if (previewWrap) previewWrap.style.display = "none";
-  if (feedback) { feedback.style.display = "none"; feedback.textContent = ""; }
 
   const container = document.getElementById("imagens-container");
   const itens = container ? Array.from(container.children) : [];
@@ -27750,31 +27943,64 @@ function abrirModalGerarBanner() {
   });
 
   if (comImagem.length === 0) {
-    semImagens.style.display = "block";
+    if (vazio) vazio.style.display = "block";
     grid.style.display = "none";
-  } else {
-    semImagens.style.display = "none";
-    grid.style.display = "grid";
-    comImagem.forEach((item, i) => {
-      const img = item.querySelector(".imagem-thumb");
-      const div = document.createElement("div");
-      div.className = "banner-ia-imagem-item";
-      div.dataset.src = img.src;
-
-      const imgEl = document.createElement("img");
-      imgEl.src = img.src;
-      imgEl.alt = `Imagem ${i + 1}`;
-
-      const check = document.createElement("span");
-      check.className = "banner-ia-imagem-check";
-      check.textContent = "✓";
-
-      div.appendChild(imgEl);
-      div.appendChild(check);
-      div.addEventListener("click", () => div.classList.toggle("selecionada"));
-      grid.appendChild(div);
-    });
+    return;
   }
+  if (vazio) vazio.style.display = "none";
+  grid.style.display = "grid";
+
+  comImagem.forEach((item, i) => {
+    const img = item.querySelector(".imagem-thumb");
+    const div = document.createElement("div");
+    div.className = "banner-ia-imagem-item";
+    div.dataset.src = img.src;
+
+    const imgEl = document.createElement("img");
+    imgEl.src = img.src;
+    imgEl.alt = `Imagem ${i + 1}`;
+
+    const check = document.createElement("span");
+    check.className = "banner-ia-imagem-check";
+    check.textContent = "✓";
+
+    div.appendChild(imgEl);
+    div.appendChild(check);
+
+    div.addEventListener("click", () => {
+      if (modoEditar) {
+        const jaSelecionada = div.classList.contains("selecionada");
+        grid.querySelectorAll(".banner-ia-imagem-item").forEach(d => d.classList.remove("selecionada"));
+        if (!jaSelecionada) div.classList.add("selecionada");
+        const aviso = document.getElementById("banner_aviso_editar");
+        if (aviso) aviso.style.display = "none";
+      } else {
+        div.classList.toggle("selecionada");
+      }
+    });
+
+    grid.appendChild(div);
+  });
+}
+
+function abrirModalGerarBanner() {
+  const modal = document.getElementById("modal_banner_ia");
+  if (!modal) return;
+
+  _bannerGeradoBase64 = null;
+  _modoBanner = "gerar";
+
+  document.getElementById("banner_tab_gerar").classList.add("ativo");
+  document.getElementById("banner_tab_editar").classList.remove("ativo");
+  document.getElementById("banner_modo_gerar").style.display = "";
+  document.getElementById("banner_modo_editar").style.display = "none";
+  document.getElementById("banner_ia_preview_wrap").style.display = "none";
+  document.getElementById("banner_ia_loading").classList.remove("ativo");
+  const feedback = document.getElementById("banner_ia_feedback");
+  if (feedback) { feedback.style.display = "none"; feedback.textContent = ""; }
+
+  _preencherGridBanner("banner_ia_grid_gerar", "banner_ia_vazio_gerar", false);
+  _preencherGridBanner("banner_ia_grid_editar", "banner_ia_vazio_editar", true);
 
   modal.classList.add("active");
 }
@@ -27784,11 +28010,39 @@ function fecharModalGerarBanner() {
   if (modal) modal.classList.remove("active");
 }
 
+function usarExemploBanner(modo, pill) {
+  const id = modo === "gerar" ? "banner_ia_prompt_gerar" : "banner_ia_prompt_editar";
+  const textarea = document.getElementById(id);
+  if (textarea) textarea.value = pill.textContent.trim();
+}
+
+async function _imagensParaBase64(divs) {
+  const resultados = await Promise.all(divs.map(async div => {
+    const src = div.dataset.src;
+    if (!src) return null;
+    try {
+      const resp = await fetch(src);
+      const blob = await resp.blob();
+      return await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ data: reader.result.split(",")[1], tipo: blob.type || "image/png" });
+        reader.readAsDataURL(blob);
+      });
+    } catch { return null; }
+  }));
+  return resultados.filter(Boolean);
+}
+
 async function gerarBannerComIA() {
-  const prompt = (document.getElementById("banner_ia_prompt")?.value || "").trim();
+  const isEditar = _modoBanner === "editar";
+  const promptId = isEditar ? "banner_ia_prompt_editar" : "banner_ia_prompt_gerar";
+  const gridId   = isEditar ? "banner_ia_grid_editar"   : "banner_ia_grid_gerar";
+
+  const prompt = (document.getElementById(promptId)?.value || "").trim();
   const feedback = document.getElementById("banner_ia_feedback");
   const btn = document.getElementById("btn_executar_gerar_banner");
   const previewWrap = document.getElementById("banner_ia_preview_wrap");
+  const loading = document.getElementById("banner_ia_loading");
 
   if (!prompt) {
     if (feedback) { feedback.textContent = "Descreva o banner antes de gerar."; feedback.style.display = "block"; }
@@ -27800,42 +28054,27 @@ async function gerarBannerComIA() {
   if (!token) return;
   const usuario_id = atob(token).split(":")[0];
 
-  // Converter imagens selecionadas para base64
-  const grid = document.getElementById("banner_ia_imagens_grid");
+  const grid = document.getElementById(gridId);
   const selecionadas = grid ? Array.from(grid.querySelectorAll(".banner-ia-imagem-item.selecionada")) : [];
 
-  let imagensBase64 = [];
-  if (selecionadas.length > 0) {
-    const resultados = await Promise.all(selecionadas.map(async div => {
-      const src = div.dataset.src;
-      if (!src) return null;
-      try {
-        const resp = await fetch(src);
-        const blob = await resp.blob();
-        return await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const b64 = reader.result.split(",")[1];
-            resolve({ data: b64, tipo: blob.type || "image/png" });
-          };
-          reader.readAsDataURL(blob);
-        });
-      } catch { return null; }
-    }));
-    imagensBase64 = resultados.filter(Boolean);
+  if (isEditar && selecionadas.length === 0) {
+    const aviso = document.getElementById("banner_aviso_editar");
+    if (aviso) { aviso.textContent = "Selecione uma imagem base para editar."; aviso.style.display = "block"; }
+    if (feedback) { feedback.textContent = "Selecione uma imagem para editar."; feedback.style.display = "block"; }
+    return;
   }
+
+  const imagensBase64 = await _imagensParaBase64(selecionadas);
 
   if (btn) { btn.disabled = true; btn.textContent = "Gerando..."; }
   if (previewWrap) previewWrap.style.display = "none";
+  if (loading) loading.classList.add("ativo");
 
   try {
     const res = await fetch(`${API}/ia/gerar-banner`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ usuario_id, prompt, imagens_base64: imagensBase64 })
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ usuario_id, prompt, imagens_base64: imagensBase64, modo: _modoBanner })
     });
 
     const data = await res.json();
@@ -27860,7 +28099,8 @@ async function gerarBannerComIA() {
     console.error("GERAR BANNER:", err);
     if (feedback) { feedback.textContent = "Erro de conexão ao gerar banner."; feedback.style.display = "block"; }
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Gerar"; }
+    if (btn) { btn.disabled = false; btn.textContent = "✨ Gerar"; }
+    if (loading) loading.classList.remove("ativo");
   }
 }
 

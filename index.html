@@ -10984,204 +10984,208 @@ body.tema-claro .logout {
           ></div>
         </div>
   
-        <!-- 📝 NOME -->
-        <label>Nome da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Um nome para você identificar sua campanha dentro da plataforma. Use algo que faça sentido para você, como o produto anunciado ou o público-alvo.', event)">i</button></label>
-  
-        <input
-          type="text"
-          id="campanha_nome"
-          placeholder="Ex: Casas Alto Padrão"
-        >
-  
-        <!-- 📘 PÁGINA -->
-        <label>Página Facebook <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione qual página do Facebook vai aparecer como anunciante. É a página que seus clientes vão ver quando o anúncio aparecer para eles.', event)">i</button></label>
-  
-        <select id="pagina_select" onchange="atualizarTosHint()">
-          <option>Carregando páginas...</option>
-        </select>
+        <!-- ═══ SEÇÃO 1: CONFIGURAÇÃO DA CAMPANHA ═══ -->
+        <details class="advanced-campaign" open>
+          <summary>📋 Configuração da campanha</summary>
 
-        <div id="tos_lead_ads_hint" style="display:none;margin-top:6px;margin-bottom:4px;padding:8px 10px;background:#422006;border:1px solid #d97706;border-radius:6px;">
-          <span style="color:#fbbf24;font-size:12px;font-weight:600;">⚠️ Termos de Lead Ads obrigatórios</span><br>
-          <span style="color:#fde68a;font-size:12px;">Sua Página precisa aceitar os Termos de Serviço de Geração de Cadastros do Facebook. Faça isso antes de publicar.</span><br>
-          <a id="tos_lead_ads_link" href="#" target="_blank"
-            style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
-            Aceitar Termos agora →
-          </a>
-          <button type="button" onclick="confirmarTosAceito(document.getElementById('pagina_select').value)"
-            style="display:inline-block;margin-top:6px;margin-left:6px;padding:5px 12px;background:transparent;border:1px solid #d97706;color:#fde68a;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;">
-            Já aceitei
-          </button>
-        </div>
-
-        <section class="campaign-setup-section" id="bloco_onde_anunciar">
-          <h4>Onde anunciar <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha se o anúncio vai aparecer no Facebook, no Instagram ou nos dois ao mesmo tempo. Quanto mais canais, mais pessoas podem ver.', event)">i</button></h4>
-          <p>
-            Escolha os canais disponiveis para a Pagina selecionada.
-          </p>
-
-          <div class="advanced-checks">
-            <label>
-              <input
-                type="checkbox"
-                id="adv_platform_facebook"
-                checked
-              >
-              Facebook
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                id="adv_platform_instagram"
-              >
-              Instagram
-            </label>
-          </div>
-
-          <div
-            id="instagram_pagina_feedback"
-            class="channel-picker-status alerta"
-          >
-            Selecione uma Pagina para verificar o Instagram vinculado.
-          </div>
-        </section>
-  
-        <!-- 🖼️ IMAGENS CARROSSEL -->
-        <label>Imagens do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(carrossel — máx. 10)</span></label>
-
-        <div id="imagens-container" class="imagens-lista"></div>
-
-        <input type="file" id="input-multiplas-imagens" accept="image/*" multiple style="display:none">
-
-        <button
-          type="button"
-          id="btn-adicionar-imagem"
-          class="btn-adicionar-imagem"
-        >+ Adicionar imagens</button>
-
-        <button
-          type="button"
-          class="btn-gerar-banner-ia"
-          onclick="abrirModalGerarBanner()"
-        >✨ Gerar Banner com IA</button>
-
-        <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
-  
-        <!-- ✍️ TEXTO -->
-        <label>Texto do anúncio</label>
-  
-        <textarea
-          id="texto"
-          placeholder="Digite o texto do anúncio..."
-        ></textarea>
-  
-        <!-- 🔘 CTA -->
-        <label>Botão do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse é o texto do botão que aparece no anúncio da Meta. Não muda o tipo de conteúdo, só a chamada para ação. Saiba mais: convite mais leve para conhecer a oferta. Cadastre-se: melhor para formulário de leads. Solicitar agora: chamada mais direta para quem já está pronto para pedir contato ou proposta.', event)">i</button></label>
-  
-        <select id="cta">
-          <option value="LEARN_MORE">
-            Saiba mais
-          </option>
-  
-          <option value="SIGN_UP">
-            Cadastre-se
-          </option>
-  
-          <option value="APPLY_NOW">
-            Solicitar agora
-          </option>
-        </select>
-  
-        <!-- 💰 ORÇAMENTO -->
-        <div id="bloco_orcamento">
-          <label>Orçamento diário (R$) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quanto você quer gastar por dia com esse anúncio. O Facebook vai usar esse valor para mostrar o anúncio para o máximo de pessoas possível dentro do orçamento.', event)">i</button></label>
-
-          <input
-            type="number"
-            id="orcamento"
-            value="20"
-            min="5"
-          >
-        </div>
-
-        <section class="campaign-setup-section" id="bloco_publico">
-          <h4>Público</h4>
-          <p>
-            Defina o público principal da campanha de forma simples.
-          </p>
-
-          <div class="campaign-setup-grid">
-            <div>
-              <label>País do público <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o país onde as pessoas que verão o anúncio estão. Para o Brasil, deixe BR.', event)">i</button></label>
+          <div class="advanced-grid">
+            <div class="advanced-full">
+              <label>Nome da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Um nome para você identificar sua campanha dentro da plataforma. Use algo que faça sentido para você, como o produto anunciado ou o público-alvo.', event)">i</button></label>
               <input
                 type="text"
-                id="adv_pais"
-                maxlength="2"
-                value="BR"
-                placeholder="BR"
+                id="campanha_nome"
+                placeholder="Ex: Casas Alto Padrão"
               >
             </div>
 
-            <div>
-              <label>Gênero <button type="button" class="info-icone" onclick="mostrarInfoCampo('Filtre o público por gênero. Se seu produto é para todo mundo, deixe em Todos.', event)">i</button></label>
-              <select id="adv_genero">
-                <option value="">Todos</option>
-                <option value="1">Homens</option>
-                <option value="2">Mulheres</option>
+            <div class="advanced-full">
+              <label>Página Facebook <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione qual página do Facebook vai aparecer como anunciante. É a página que seus clientes vão ver quando o anúncio aparecer para eles.', event)">i</button></label>
+              <select id="pagina_select" onchange="atualizarTosHint()">
+                <option>Carregando páginas...</option>
               </select>
-            </div>
-
-            <div>
-              <label>Idade mínima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade mínima das pessoas que vão ver o anúncio. O Facebook não permite anunciar para menores de 18 anos.', event)">i</button></label>
-              <input
-                type="number"
-                id="adv_idade_min"
-                min="18"
-                max="65"
-                placeholder="18"
-              >
-            </div>
-
-            <div>
-              <label>Idade máxima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade máxima das pessoas que vão ver o anúncio. Deixe em 65 se não quiser limitar a faixa etária superior.', event)">i</button></label>
-              <input
-                type="number"
-                id="adv_idade_max"
-                min="18"
-                max="65"
-                placeholder="65"
-              >
+              <div id="tos_lead_ads_hint" style="display:none;margin-top:6px;margin-bottom:4px;padding:8px 10px;background:#422006;border:1px solid #d97706;border-radius:6px;">
+                <span style="color:#fbbf24;font-size:12px;font-weight:600;">⚠️ Termos de Lead Ads obrigatórios</span><br>
+                <span style="color:#fde68a;font-size:12px;">Sua Página precisa aceitar os Termos de Serviço de Geração de Cadastros do Facebook. Faça isso antes de publicar.</span><br>
+                <a id="tos_lead_ads_link" href="#" target="_blank"
+                  style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
+                  Aceitar Termos agora →
+                </a>
+                <button type="button" onclick="confirmarTosAceito(document.getElementById('pagina_select').value)"
+                  style="display:inline-block;margin-top:6px;margin-left:6px;padding:5px 12px;background:transparent;border:1px solid #d97706;color:#fde68a;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;">
+                  Já aceitei
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="detailed-targeting-panel admin-only-targeting">
-            <strong>Direcionamento detalhado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Digite palavras que descrevem o interesse do seu público ideal. O Facebook vai mostrar o anúncio para pessoas que curtem essas páginas ou assuntos. Ex: &quot;imóveis, financiamento&quot;.', event)">i</button></strong>
+          <section class="campaign-setup-section" id="bloco_onde_anunciar">
+            <h4>Onde anunciar <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha se o anúncio vai aparecer no Facebook, no Instagram ou nos dois ao mesmo tempo. Quanto mais canais, mais pessoas podem ver.', event)">i</button></h4>
             <p>
-              Procure interesses que descrevem o perfil do público. Eles serão enviados à Meta junto com o público do conjunto de anúncios.
+              Escolha os canais disponiveis para a Pagina selecionada.
             </p>
 
-            <div class="detailed-targeting-search">
-              <input
-                type="search"
-                id="adv_interesse_busca"
-                placeholder="Ex: imóveis, financiamento, decoração"
-                oninput="agendarBuscaInteressesDetalhados()"
-                onkeydown="buscarInteressesComEnter(event)"
-              >
-              <button
-                type="button"
-                onclick="buscarInteressesDetalhados()"
-              >
-                Procurar
-              </button>
+            <div class="advanced-checks">
+              <label>
+                <input
+                  type="checkbox"
+                  id="adv_platform_facebook"
+                  checked
+                >
+                Facebook
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  id="adv_platform_instagram"
+                >
+                Instagram
+              </label>
             </div>
 
-            <div id="adv_interesses_selecionados" class="targeting-selected"></div>
-            <div id="adv_interesses_resultados" class="targeting-results"></div>
-            <div id="adv_interesses_feedback" class="targeting-empty">
-              Busque e selecione um ou mais interesses.
+            <div
+              id="instagram_pagina_feedback"
+              class="channel-picker-status alerta"
+            >
+              Selecione uma Pagina para verificar o Instagram vinculado.
+            </div>
+          </section>
+        </details>
+
+        <!-- ═══ SEÇÃO 2: CONTEÚDO DO ANÚNCIO ═══ -->
+        <details class="advanced-campaign" open>
+          <summary>🖼️ Conteúdo do anúncio</summary>
+
+          <div class="advanced-grid">
+            <div class="advanced-full">
+              <label>Imagens do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(carrossel — máx. 10)</span></label>
+              <div id="imagens-container" class="imagens-lista"></div>
+              <input type="file" id="input-multiplas-imagens" accept="image/*" multiple style="display:none">
+              <button
+                type="button"
+                id="btn-adicionar-imagem"
+                class="btn-adicionar-imagem"
+              >+ Adicionar imagens</button>
+              <button
+                type="button"
+                class="btn-gerar-banner-ia"
+                onclick="abrirModalGerarBanner()"
+              >✨ Gerar Banner com IA</button>
+              <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
+            </div>
+
+            <div class="advanced-full">
+              <label>Texto do anúncio</label>
+              <textarea
+                id="texto"
+                placeholder="Digite o texto do anúncio..."
+              ></textarea>
+            </div>
+
+            <div class="advanced-full">
+              <label>Botão do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse é o texto do botão que aparece no anúncio da Meta. Não muda o tipo de conteúdo, só a chamada para ação. Saiba mais: convite mais leve para conhecer a oferta. Cadastre-se: melhor para formulário de leads. Solicitar agora: chamada mais direta para quem já está pronto para pedir contato ou proposta.', event)">i</button></label>
+              <select id="cta">
+                <option value="LEARN_MORE">Saiba mais</option>
+                <option value="SIGN_UP">Cadastre-se</option>
+                <option value="APPLY_NOW">Solicitar agora</option>
+              </select>
             </div>
           </div>
-        </section>
+        </details>
+
+        <!-- ═══ SEÇÃO 3: PÚBLICO E ORÇAMENTO ═══ -->
+        <details class="advanced-campaign" open>
+          <summary>👥 Público e orçamento</summary>
+
+          <div id="bloco_orcamento" style="margin-top:12px;">
+            <label>Orçamento diário (R$) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quanto você quer gastar por dia com esse anúncio. O Facebook vai usar esse valor para mostrar o anúncio para o máximo de pessoas possível dentro do orçamento.', event)">i</button></label>
+            <input
+              type="number"
+              id="orcamento"
+              value="20"
+              min="5"
+            >
+          </div>
+
+          <section class="campaign-setup-section" id="bloco_publico">
+            <h4>Público</h4>
+            <p>
+              Defina o público principal da campanha de forma simples.
+            </p>
+
+            <div class="campaign-setup-grid">
+              <div>
+                <label>País do público <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o país onde as pessoas que verão o anúncio estão. Para o Brasil, deixe BR.', event)">i</button></label>
+                <input
+                  type="text"
+                  id="adv_pais"
+                  maxlength="2"
+                  value="BR"
+                  placeholder="BR"
+                >
+              </div>
+
+              <div>
+                <label>Gênero <button type="button" class="info-icone" onclick="mostrarInfoCampo('Filtre o público por gênero. Se seu produto é para todo mundo, deixe em Todos.', event)">i</button></label>
+                <select id="adv_genero">
+                  <option value="">Todos</option>
+                  <option value="1">Homens</option>
+                  <option value="2">Mulheres</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Idade mínima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade mínima das pessoas que vão ver o anúncio. O Facebook não permite anunciar para menores de 18 anos.', event)">i</button></label>
+                <input
+                  type="number"
+                  id="adv_idade_min"
+                  min="18"
+                  max="65"
+                  placeholder="18"
+                >
+              </div>
+
+              <div>
+                <label>Idade máxima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade máxima das pessoas que vão ver o anúncio. Deixe em 65 se não quiser limitar a faixa etária superior.', event)">i</button></label>
+                <input
+                  type="number"
+                  id="adv_idade_max"
+                  min="18"
+                  max="65"
+                  placeholder="65"
+                >
+              </div>
+            </div>
+
+            <div class="detailed-targeting-panel admin-only-targeting">
+              <strong>Direcionamento detalhado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Digite palavras que descrevem o interesse do seu público ideal. O Facebook vai mostrar o anúncio para pessoas que curtem essas páginas ou assuntos. Ex: &quot;imóveis, financiamento&quot;.', event)">i</button></strong>
+              <p>
+                Procure interesses que descrevem o perfil do público. Eles serão enviados à Meta junto com o público do conjunto de anúncios.
+              </p>
+
+              <div class="detailed-targeting-search">
+                <input
+                  type="search"
+                  id="adv_interesse_busca"
+                  placeholder="Ex: imóveis, financiamento, decoração"
+                  oninput="agendarBuscaInteressesDetalhados()"
+                  onkeydown="buscarInteressesComEnter(event)"
+                >
+                <button
+                  type="button"
+                  onclick="buscarInteressesDetalhados()"
+                >
+                  Procurar
+                </button>
+              </div>
+
+              <div id="adv_interesses_selecionados" class="targeting-selected"></div>
+              <div id="adv_interesses_resultados" class="targeting-results"></div>
+              <div id="adv_interesses_feedback" class="targeting-empty">
+                Busque e selecione um ou mais interesses.
+              </div>
+            </div>
+          </section>
+        </details>
 
         <details class="advanced-campaign" id="bloco_agendamento_custo" open>
           <summary>

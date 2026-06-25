@@ -27797,8 +27797,8 @@ async function gerarBannerComIA() {
   if (feedback) { feedback.style.display = "none"; feedback.textContent = ""; }
 
   const token = localStorage.getItem("token");
-  const usuario_id = localStorage.getItem("usuario_id");
-  if (!token || !usuario_id) return;
+  if (!token) return;
+  const usuario_id = atob(token).split(":")[0];
 
   // Converter imagens selecionadas para base64
   const grid = document.getElementById("banner_ia_imagens_grid");

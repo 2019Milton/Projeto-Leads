@@ -22223,12 +22223,17 @@ async function criarCampanhaCompleta() {
     
     if (campanha.error) {
       setPublishProgress(null);
-      mostrarErroPublicacao(
+      const msgCampanha =
         campanha.detalhe?.error?.error_user_msg ||
         campanha.detalhe?.error?.message ||
         campanha.error ||
-        "Erro ao criar campanha"
-      );
+        "Erro ao criar campanha";
+      const msgOriginal =
+        campanha.detalhe?.error?.message &&
+        campanha.detalhe?.error?.message !== msgCampanha
+          ? ` [Meta: ${campanha.detalhe.error.message}]`
+          : "";
+      mostrarErroPublicacao(msgCampanha + msgOriginal);
       return;
     }
 
@@ -22290,7 +22295,9 @@ async function criarCampanhaCompleta() {
     
     if (adset.error) {
       setPublishProgress(null);
-      mostrarErroPublicacao(adset.error?.error_user_msg || adset.error?.message || adset.error || "Erro ao criar conjunto de anúncios");
+      const msgAdset = adset.detalhe?.error?.error_user_msg || adset.detalhe?.error?.message || adset.error?.error_user_msg || adset.error?.message || adset.error || "Erro ao criar conjunto de anúncios";
+      const msgOrigAdset = adset.detalhe?.error?.message && adset.detalhe?.error?.message !== msgAdset ? ` [Meta: ${adset.detalhe.error.message}]` : "";
+      mostrarErroPublicacao(msgAdset + msgOrigAdset);
       return;
     }
 

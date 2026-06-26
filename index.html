@@ -10367,6 +10367,114 @@ body.tema-claro .logout {
   color: #b91c1c !important;
 }
 
+/* Refinamento final exclusivo do tema Clean claro */
+body.tema-claro {
+  background: #eef5f1 !important;
+  color: #0f172a !important;
+}
+
+body.tema-claro .topbar {
+  background: #e8f1f7 !important;
+  border-bottom: 1px solid #b9cbd8 !important;
+}
+
+body.tema-claro .performance-meta-panel,
+body.tema-claro .meta-card,
+body.tema-claro .leads-central-card,
+body.tema-claro .campanhas-card {
+  background: #edf8f1 !important;
+  border-color: #16a34a !important;
+  box-shadow:
+    0 1px 2px rgba(15,23,42,0.06),
+    0 10px 24px rgba(15,23,42,0.08) !important;
+}
+
+body.tema-claro .performance-meta-panel h3,
+body.tema-claro .meta-card h3,
+body.tema-claro .leads-central-card h3,
+body.tema-claro .campanhas-card h3,
+body.tema-claro .performance-meta-head h3 {
+  color: #14532d !important;
+}
+
+body.tema-claro .leads-area-panel {
+  background: #eff6ff !important;
+  border: 1px solid #9ab5d1 !important;
+}
+
+body.tema-claro .leads-toolbar {
+  background: #dcebf8 !important;
+  border: 1px solid #a9bfd6 !important;
+}
+
+body.tema-claro .kpi-card,
+body.tema-claro .kanban-column,
+body.tema-claro .lead-card,
+body.tema-claro .metrica,
+body.tema-claro .performance-box,
+body.tema-claro .dashboard-box {
+  background: #ffffff !important;
+  border-color: #b8c8d8 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 14px rgba(15,23,42,0.08) !important;
+}
+
+body.tema-claro .kanban-header {
+  color: #0f172a !important;
+  border-bottom-color: #d6e2ed !important;
+}
+
+body.tema-claro .lead-card {
+  border-left-color: #2563eb !important;
+}
+
+body.tema-claro .campanha-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #b8c8d8 !important;
+  box-shadow: 0 8px 22px rgba(15,23,42,0.10) !important;
+  backdrop-filter: none !important;
+}
+
+body.tema-claro .campanha-card h3,
+body.tema-claro .campanha-card p,
+body.tema-claro .campanha-card small,
+body.tema-claro .campanha-data {
+  color: #0f172a !important;
+}
+
+body.tema-claro .campanha-card .metrica,
+body.tema-claro .campanha-card .campanha-veiculacao-diagnostico {
+  background: #f8fafc !important;
+  border-color: #cbd8e8 !important;
+  color: #1e293b !important;
+}
+
+body.tema-claro .performance-meta-card,
+body.tema-claro .performance-meta-insight {
+  background: #ffffff !important;
+  border-color: #b8c8d8 !important;
+}
+
+body.tema-claro .performance-meta-table th {
+  background: #dcebf8 !important;
+  color: #1e3a5f !important;
+}
+
+body.tema-claro .performance-meta-table td {
+  color: #1e293b !important;
+}
+
+body.tema-claro .recuperacao-leads-panel {
+  background: #e6f6ee !important;
+  border-color: #22c55e !important;
+}
+
+body.tema-claro .ia-resumo-panel {
+  background: #f3efff !important;
+  border-color: #7c3aed !important;
+}
+
 @media (max-width: 1180px) {
 
   .topbar {
@@ -13811,6 +13919,24 @@ function alterarTemaPlataforma(tema) {
   );
 
   aplicarTemaPlataforma(tema);
+
+  setTimeout(() => {
+    if (
+      typeof carregarCampanhas === "function" &&
+      localStorage.getItem("token") &&
+      document.getElementById("campanhas_lista")
+    ) {
+      carregarCampanhas();
+    }
+
+    if (
+      typeof renderizarLeads === "function" &&
+      typeof todosLeads !== "undefined" &&
+      Array.isArray(todosLeads)
+    ) {
+      renderizarLeads();
+    }
+  }, 0);
 }
 
 aplicarTemaPlataforma(
@@ -22739,6 +22865,28 @@ async function carregarCampanhas() {
       nichoCampanha ? temaVisualNicho(nichoCampanha) : null;
     const nichoCampanhaCor =
       nichoCampanha ? corSolidaNicho(nichoCampanha) : "";
+    const temaClaroAtivo =
+      document.body.classList.contains("tema-claro");
+    const nichoCampanhaCardBg =
+      temaClaroAtivo
+        ? nichoCampanhaTema?.bgLight
+        : nichoCampanhaTema?.bg;
+    const nichoCampanhaCardBorder =
+      temaClaroAtivo
+        ? nichoCampanhaTema?.borderLight
+        : nichoCampanhaTema?.border;
+    const nichoCampanhaCardText =
+      temaClaroAtivo
+        ? nichoCampanhaTema?.textLight
+        : nichoCampanhaTema?.text;
+    const nichoCampanhaCardTitle =
+      temaClaroAtivo
+        ? nichoCampanhaTema?.titleLight
+        : nichoCampanhaTema?.title;
+    const sombraCampanhaCard =
+      temaClaroAtivo
+        ? "0 8px 22px rgba(15,23,42,0.12)"
+        : `0 8px 28px rgba(0,0,0,0.45), 0 0 18px ${nichoCampanhaTema?.cor || "#2563eb"}40`;
 
     const veiculacaoTipo =
       String(c.veiculacao_tipo || "desconhecido")
@@ -22777,7 +22925,7 @@ async function carregarCampanhas() {
         : "deleted-card"
       }
     "
-      style="${nichoCampanhaTema ? `background: ${nichoCampanhaTema.bg}; border: 1px solid ${nichoCampanhaTema.border}; border-top: 4px solid ${nichoCampanhaTema.cor}; color: ${nichoCampanhaTema.text}; box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 0 18px ${nichoCampanhaTema.cor}40;` : ""}"
+      style="${nichoCampanhaTema ? `background: ${nichoCampanhaCardBg}; border: 1px solid ${nichoCampanhaCardBorder}; border-top: 4px solid ${nichoCampanhaTema.cor}; color: ${nichoCampanhaCardText}; box-shadow: ${sombraCampanhaCard};` : ""}"
     >
 
       <div class="campanha-topo">
@@ -22786,7 +22934,7 @@ async function carregarCampanhas() {
 
           ${nichoCampanha ? `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#fff;display:inline-block;padding:3px 10px;border-radius:4px;margin-bottom:6px;background:${nichoCampanhaTema.cor};">${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}</div>` : ""}
 
-          <h3 style="${nichoCampanhaTema ? `color:${nichoCampanhaTema.title};` : ""}">
+          <h3 style="${nichoCampanhaTema ? `color:${nichoCampanhaCardTitle};` : ""}">
             🚀 ${c.nome}
           </h3>
 

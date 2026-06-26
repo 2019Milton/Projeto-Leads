@@ -10378,6 +10378,16 @@ body.tema-claro .topbar {
   border-bottom: 1px solid #b9cbd8 !important;
 }
 
+body.tema-claro .topbar-brand-title,
+body.tema-claro .login-brand-title {
+  color: #0f172a !important;
+}
+
+body.tema-claro .topbar-brand-subtitle,
+body.tema-claro .login-brand-subtitle {
+  color: #4f46e5 !important;
+}
+
 body.tema-claro .performance-meta-panel,
 body.tema-claro .meta-card,
 body.tema-claro .leads-central-card,
@@ -10539,6 +10549,29 @@ body.tema-claro .ia-resumo-panel {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  margin-bottom: 18px;
+}
+
+.login-brand-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+
+.login-brand-title {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.login-brand-subtitle {
+  color: #8aa4ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  margin-top: 7px;
+  text-transform: uppercase;
 }
 
 .rocket-icon,
@@ -11024,7 +11057,13 @@ body.tema-claro .ia-resumo-panel {
 <!-- LOGIN -->
 <div class="container" id="loginBox">
   <div class="login-box" id="loginFormBox">
-    <h2><img class="rocket-icon" src="rocket-logo.png" alt="Foguete"> Plataforma de Leads</h2>
+    <h2>
+      <img class="rocket-icon" src="rocket-logo.png" alt="Foguete">
+      <span class="login-brand-copy">
+        <span class="login-brand-title">Plataforma de Leads</span>
+        <span class="login-brand-subtitle">Gestão Inteligente de Clientes</span>
+      </span>
+    </h2>
     <input id="email" placeholder="Email">
     <input id="senha" type="password" placeholder="Senha">
     <button class="btn" onclick="login()">Entrar</button>
@@ -11159,10 +11198,10 @@ body.tema-claro .ia-resumo-panel {
     <h2 class="topbar-brand">
       <img class="topbar-rocket-logo" src="rocket-logo.png" alt="Foguete">
       <span class="topbar-brand-copy">
-        <span class="topbar-brand-title">Central de Leads</span>
-        <span class="topbar-brand-subtitle">PLATAFORMA DE LEADS</span>
+        <span class="topbar-brand-title">Plataforma de Leads</span>
+        <span class="topbar-brand-subtitle">GESTÃO INTELIGENTE DE CLIENTES</span>
       </span>
-      <svg class="topbar-hero" viewBox="0 0 390 66" overflow="visible" xmlns="http://www.w3.org/2000/svg" aria-label="Central de Leads">
+      <svg class="topbar-hero" viewBox="0 0 390 66" overflow="visible" xmlns="http://www.w3.org/2000/svg" aria-label="Plataforma de Leads - Gestão Inteligente de Clientes">
         <defs>
           <linearGradient id="th-body" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%"   stop-color="#0d1a57"/>
@@ -11328,8 +11367,8 @@ body.tema-claro .ia-resumo-panel {
         </g>
 
         <!-- Nome da plataforma -->
-        <text x="122" y="33" fill="white" font-size="23" font-weight="700" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="-0.3">Central de Leads</text>
-        <text x="123" y="51" fill="#7c4dff" font-size="10.5" font-weight="600" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="1.5" opacity="0.85">PLATAFORMA DE LEADS</text>
+        <text x="122" y="33" fill="white" font-size="23" font-weight="700" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="-0.3">Plataforma de Leads</text>
+        <text x="123" y="51" fill="#7c4dff" font-size="10.5" font-weight="600" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" letter-spacing="1.5" opacity="0.85">GESTÃO INTELIGENTE DE CLIENTES</text>
       </svg>
     </h2>
   

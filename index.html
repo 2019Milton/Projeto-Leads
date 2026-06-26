@@ -16917,7 +16917,7 @@ function renderizarDetalhesIALead(analise) {
   return `
     <div class="lead-ia-detalhes">
       <span class="ia-uso-chip ${analise.origem === "openai" ? "openai" : ""}">
-        ${analise.origem === "openai" ? "OpenAI ativa" : "IA interna"}
+        ${labelOrigemSugestaoIA(analise.origem).replace("Gerado com ", "")}
       </span>
       <h4>IA Ouro do Lead</h4>
       <div class="ia-uso-alerta">
@@ -16925,7 +16925,9 @@ function renderizarDetalhesIALead(analise) {
         ${
           analise.origem === "openai"
             ? "Esta analise foi gerada pela API da OpenAI."
-            : "Sem retorno da OpenAI, a plataforma usou a IA interna como fallback."
+            : analise.origem === "anthropic"
+            ? "Esta analise foi gerada pela API da Anthropic/Claude."
+            : "Sem retorno da IA externa, a plataforma usou o fallback interno."
         }
       </div>
       <p>${escaparHtml(analise.explicacao || "")}</p>
@@ -17180,6 +17182,21 @@ function primeiraMensagemSugestaoIA(sugestao) {
     .find(item => String(item || "").trim()) || "";
 }
 
+function labelOrigemSugestaoIA(origem) {
+  const valor =
+    String(origem || "").toLowerCase();
+
+  if (valor === "openai") {
+    return "Gerado com OpenAI";
+  }
+
+  if (valor === "anthropic") {
+    return "Gerado com Anthropic/Claude";
+  }
+
+  return "Gerado com fallback interno";
+}
+
 function renderizarSugestaoIA(sugestao, opcoes = {}) {
   if (!sugestao) {
     return "IA nao retornou sugestao.";
@@ -17221,7 +17238,7 @@ function renderizarSugestaoIA(sugestao, opcoes = {}) {
         : ""
     }
     <span class="ia-gerada-em">
-      ${sugestao.origem === "openai" ? "Gerado com OpenAI" : "Gerado com IA interna"}
+      ${labelOrigemSugestaoIA(sugestao.origem)}
       em ${new Date().toLocaleString("pt-BR")}
     </span>
   `;

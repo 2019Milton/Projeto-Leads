@@ -22036,10 +22036,7 @@ function traduzirErroMeta(mensagem) {
   if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios")))
     return "Para campanhas de Imóveis, o Meta não permite restrição de idade. Deixe Idade mínima em 18 e Idade máxima em 65, ou selecione 'HOUSING' em Categoria Especial nas configurações avançadas.";
   if (m.includes("daily_budget") || m.includes("budget") || m.includes("mínimo") || m.includes("minimum amount")) {
-    const centavosMatch = mensagem.match(/minimum[^0-9]*(\d{3,})/i) || mensagem.match(/orçamento[^0-9]*(\d{3,})/i);
-    const centavos = centavosMatch ? Number(centavosMatch[1]) : null;
-    const valorStr = centavos ? ` O mínimo para esta conta é R$ ${(centavos / 100).toFixed(2).replace(".", ",")}/dia.` : " Tente um valor acima de R$ 20,00 para evitar rejeição.";
-    return "O orçamento diário está abaixo do mínimo exigido pelo Meta." + valorStr;
+    return `Erro de orçamento Meta: "${mensagem}"`;
   }
   if (m.includes("page_id") || (m.includes("page") && m.includes("invalid")))
     return "Página do Facebook inválida ou não encontrada. Verifique a Página Facebook selecionada.";

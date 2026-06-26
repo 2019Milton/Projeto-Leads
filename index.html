@@ -11660,7 +11660,8 @@ body.tema-claro .ia-resumo-panel {
               type="number"
               id="orcamento"
               value="20"
-              min="5"
+              min="6.5"
+              oninput="limparValidacaoCampanha()"
             >
           </div>
 
@@ -22011,8 +22012,11 @@ function traduzirErroMeta(mensagem) {
   const m = (mensagem || "").toLowerCase();
   if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios")))
     return "Para campanhas de Imóveis, o Meta não permite restrição de idade. Deixe Idade mínima em 18 e Idade máxima em 65, ou selecione 'HOUSING' em Categoria Especial nas configurações avançadas.";
-  if (m.includes("daily_budget") || m.includes("budget") || m.includes("mínimo") || m.includes("minimum amount"))
-    return "O orçamento diário está abaixo do mínimo exigido pelo Meta. Aumente o valor do orçamento.";
+  if (m.includes("daily_budget") || m.includes("budget") || m.includes("mínimo") || m.includes("minimum amount")) {
+    const valorMatch = mensagem.match(/[\$R\$]?\s*(\d[\d.,]+)/);
+    const valorOriginal = valorMatch ? ` (mínimo informado pela Meta: ${valorMatch[0].trim()})` : " O mínimo exigido pela Meta no Brasil é aproximadamente R$ 6,50/dia.";
+    return "O orçamento diário está abaixo do mínimo exigido pelo Meta." + valorOriginal;
+  }
   if (m.includes("page_id") || (m.includes("page") && m.includes("invalid")))
     return "Página do Facebook inválida ou não encontrada. Verifique a Página Facebook selecionada.";
   if (m.includes("image") || m.includes("imagem") || m.includes("hash"))
@@ -22092,10 +22096,10 @@ function validarPublicacaoCampanha({
     );
   }
 
-  if (!orcamento || Number(orcamento) < 5) {
+  if (!orcamento || Number(orcamento) < 6.5) {
     return conduzirParaCampoCampanha(
       "#orcamento",
-      "Informe um orçamento diário de pelo menos R$ 5,00."
+      "Informe um orçamento diário de pelo menos R$ 6,50 (mínimo exigido pela Meta no Brasil)."
     );
   }
 

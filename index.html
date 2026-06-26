@@ -11661,8 +11661,9 @@ body.tema-claro .ia-resumo-panel {
               id="orcamento"
               value="20"
               min="15"
-              oninput="limparValidacaoCampanha()"
+              oninput="limparValidacaoCampanha(); validarOrcamentoRealtime(this)"
             >
+            <div id="orcamento_aviso_rt" style="display:none;margin-top:6px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;"></div>
           </div>
 
           <section class="campaign-setup-section" id="bloco_publico">
@@ -21889,6 +21890,31 @@ function setPublishProgress(pct, label) {
   if (bar) bar.style.width = pct + "%";
   if (pctEl) pctEl.textContent = pct + "%";
   if (labelEl) labelEl.textContent = label || "";
+}
+
+function validarOrcamentoRealtime(input) {
+  const val = Number(input.value);
+  const aviso = document.getElementById("orcamento_aviso_rt");
+  if (!aviso) return;
+  if (!input.value || isNaN(val) || val <= 0) {
+    aviso.style.display = "none";
+    return;
+  }
+  if (val < 15) {
+    aviso.style.display = "block";
+    aviso.style.background = "rgba(239,68,68,0.15)";
+    aviso.style.border = "1px solid rgba(239,68,68,0.4)";
+    aviso.style.color = "#fca5a5";
+    aviso.textContent = `⚠️ R$ ${val.toFixed(2).replace(".",",")} está abaixo do mínimo. Use pelo menos R$ 15,00.`;
+  } else if (val < 30) {
+    aviso.style.display = "block";
+    aviso.style.background = "rgba(245,158,11,0.12)";
+    aviso.style.border = "1px solid rgba(245,158,11,0.35)";
+    aviso.style.color = "#fcd34d";
+    aviso.textContent = `💡 R$ ${val.toFixed(2).replace(".",",")} pode ser rejeitado pela Meta em algumas contas. Recomendado: R$ 30,00+.`;
+  } else {
+    aviso.style.display = "none";
+  }
 }
 
 function limparValidacaoCampanha() {

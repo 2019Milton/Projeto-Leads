@@ -13558,6 +13558,11 @@ body.tema-claro .ia-resumo-panel {
               <span class="nicho-dot" style="background:#EA580C;"></span>
               Suplementos
             </label>
+            <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
+              <input type="checkbox" name="novo_usuario_nicho" value="4">
+              <span class="nicho-dot" style="background:#7C3AED;"></span>
+              Plataforma / SaaS
+            </label>
           </div>
         </div>
       
@@ -29059,6 +29064,11 @@ function adicionarBannerGeradoAoCarrossel() {
         <span class="nicho-dot" style="background:#EA580C;"></span>
         Corretor de Suplementos
       </label>
+      <label class="nicho-checkbox-label">
+        <input type="checkbox" name="modal_nicho" value="4">
+        <span class="nicho-dot" style="background:#7C3AED;"></span>
+        Plataforma / SaaS
+      </label>
     </div>
 
     <div style="display:flex;gap:10px;margin-top:24px;">
@@ -29163,7 +29173,8 @@ function detectarNichoPorNome(nomeCampanha = "") {
   const palavrasPorSlug = {
     saude:       ["saude", "plano", "convenio", "medico", "hospital", "clinica", "seguro saude"],
     suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
-    imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"]
+    imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
+    saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"]
   };
 
   for (const nicho of nichos) {
@@ -29194,6 +29205,10 @@ function corSolidaNicho(nicho = {}) {
 
   if (slug.includes("suplement") || id === 3) {
     return "#C2410C";
+  }
+
+  if (slug.includes("saas") || id === 4) {
+    return "#7C3AED";
   }
 
   return nicho.cor || nicho.nicho_cor || "#2563EB";
@@ -29235,6 +29250,23 @@ function temaVisualNicho(nicho = {}) {
       textLight: "#4a2108",
       titleLight: "#9a3412",
       inputBorderLight: "#ea580c"
+    };
+  }
+
+  if (slug.includes("saas") || id === 4) {
+    return {
+      cor,
+      bg: "#1a0a2e",
+      border: "#7c3aed",
+      text: "#ede9fe",
+      title: "#ddd6fe",
+      inputBg: "#250f42",
+      inputBorder: "#8b5cf6",
+      bgLight: "#f3f0ff",
+      borderLight: "#7c3aed",
+      textLight: "#2e1065",
+      titleLight: "#5b21b6",
+      inputBorderLight: "#7c3aed"
     };
   }
 
@@ -29288,10 +29320,12 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("saude") || slug.includes("saúde")) return "Planos de Saúde";
   if (slug.includes("imove")) return "Imóveis";
   if (slug.includes("suplement")) return "Suplementos";
+  if (slug.includes("saas")) return "Plataforma / SaaS";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";
   if (id === 3) return "Suplementos";
+  if (id === 4) return "Plataforma / SaaS";
   return nicho.slug || "";
 }
 
@@ -29386,6 +29420,14 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Qual seu objetivo principal?",
     interesse: "Ex: musculação, whey protein, academia"
   };
+  if (slug === "saas") return {
+    ia:        "Opcional: descreva o produto, publico-alvo ou diferencial (ex: plataforma de gestao de leads com IA para corretores e vendedores que anunciam no Facebook e Instagram)",
+    nome:      "Ex: Central de Leads — IA para Corretores",
+    titulo:    "Ex: Gestao de Leads com Inteligência Artificial",
+    descricao: "Ex: Conecte com a Meta, organize leads e venda mais",
+    perguntas: "Uma pergunta por linha. Ex: Voce ja anuncia no Facebook ou Instagram?",
+    interesse: "Ex: marketing digital, CRM, Facebook Ads, gestao de leads"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -29432,6 +29474,9 @@ function _salvarEstadoFormNicho(slug) {
     state.objetivo     = get("nicho_objetivo");
     state.marca        = get("nicho_marca");
     state.publico_alvo = get("nicho_publico_alvo");
+  } else if (slug === "saas") {
+    state.tipo_produto = get("nicho_tipo_produto");
+    state.publico_alvo = get("nicho_publico_alvo_saas");
   }
   window._nichoFormState[slug] = state;
 }
@@ -29475,6 +29520,9 @@ function _restaurarEstadoFormNicho(slug) {
     set("nicho_objetivo",     state.objetivo);
     set("nicho_marca",        state.marca);
     set("nicho_publico_alvo", state.publico_alvo);
+  } else if (slug === "saas") {
+    set("nicho_tipo_produto",      state.tipo_produto);
+    set("nicho_publico_alvo_saas", state.publico_alvo);
   }
 }
 
@@ -29645,6 +29693,33 @@ function selecionarNichoTab(nicho, btnEl) {
         </div>
       </div>
     `;
+  } else if (nicho.slug === "saas") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de produto ${_i('O que você está anunciando: uma plataforma SaaS, aplicativo, sistema de gestão, consultoria digital ou curso/mentoria.')}</label>
+          <select id="nicho_tipo_produto" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="saas">Plataforma SaaS</option>
+            <option value="app">Aplicativo</option>
+            <option value="sistema">Sistema de Gestão</option>
+            <option value="consultoria">Consultoria Digital</option>
+            <option value="curso">Curso / Mentoria</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Para quem é o produto: autônomos, pequenas empresas, médias empresas, freelancers ou agências de marketing.')}</label>
+          <select id="nicho_publico_alvo_saas" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="autonomos">Autônomos / Profissionais Liberais</option>
+            <option value="pequenas_empresas">Pequenas Empresas</option>
+            <option value="medias_empresas">Médias Empresas</option>
+            <option value="freelancers">Freelancers</option>
+            <option value="agencias">Agências de Marketing</option>
+          </select>
+        </div>
+      </div>
+    `;
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
@@ -29676,6 +29751,9 @@ function coletarDadosNichoAtivo() {
     dados.objetivo     = document.getElementById("nicho_objetivo")?.value     || null;
     dados.marca        = document.getElementById("nicho_marca")?.value        || null;
     dados.publico_alvo = document.getElementById("nicho_publico_alvo")?.value || null;
+  } else if (nicho.slug === "saas") {
+    dados.tipo_produto = document.getElementById("nicho_tipo_produto")?.value      || null;
+    dados.publico_alvo = document.getElementById("nicho_publico_alvo_saas")?.value || null;
   }
 
   return dados;

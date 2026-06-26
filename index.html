@@ -13542,27 +13542,8 @@ body.tema-claro .ia-resumo-panel {
           <label style="display:block;margin-bottom:10px;color:#9ca3af;font-size:13px;">
             Tipo de Corretor
           </label>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
-              <input type="checkbox" name="novo_usuario_nicho" value="1">
-              <span class="nicho-dot" style="background:#2563EB;"></span>
-              Corretor de Imóveis
-            </label>
-            <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
-              <input type="checkbox" name="novo_usuario_nicho" value="2">
-              <span class="nicho-dot" style="background:#DC2626;"></span>
-              Planos de Saúde
-            </label>
-            <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
-              <input type="checkbox" name="novo_usuario_nicho" value="3">
-              <span class="nicho-dot" style="background:#EA580C;"></span>
-              Suplementos
-            </label>
-            <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
-              <input type="checkbox" name="novo_usuario_nicho" value="4">
-              <span class="nicho-dot" style="background:#7C3AED;"></span>
-              Plataforma / SaaS
-            </label>
+          <div id="novo_usuario_nichos_container" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <!-- preenchido dinamicamente por carregarNichosCheckboxes() -->
           </div>
         </div>
       
@@ -24812,9 +24793,30 @@ async function verificarPainelParceiro() {
 }
 
 
+async function carregarNichosCheckboxes() {
+  const container = document.getElementById("novo_usuario_nichos_container");
+  if (!container) return;
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/nichos`, { headers: { "Authorization": "Bearer " + token } });
+    const nichos = await res.json();
+    container.innerHTML = nichos.map(n => `
+      <label class="nicho-checkbox-label" style="flex:1;min-width:160px;">
+        <input type="checkbox" name="novo_usuario_nicho" value="${n.id}">
+        <span class="nicho-dot" style="background:${n.cor};"></span>
+        ${n.nome}
+      </label>
+    `).join("");
+  } catch(e) {
+    container.innerHTML = '<p style="color:#ef4444;font-size:13px;">Erro ao carregar nichos.</p>';
+  }
+}
+
 async function carregarPainelAdmin() {
 
   try {
+
+    carregarNichosCheckboxes();
 
     const token =
       localStorage.getItem("token");
@@ -29049,26 +29051,7 @@ function adicionarBannerGeradoAoCarrossel() {
     </p>
 
     <div class="nicho-checkboxes" id="modal_nichos_checkboxes">
-      <label class="nicho-checkbox-label">
-        <input type="checkbox" name="modal_nicho" value="1">
-        <span class="nicho-dot" style="background:#2563EB;"></span>
-        Corretor de Imóveis
-      </label>
-      <label class="nicho-checkbox-label">
-        <input type="checkbox" name="modal_nicho" value="2">
-        <span class="nicho-dot" style="background:#DC2626;"></span>
-        Corretor de Planos de Saúde
-      </label>
-      <label class="nicho-checkbox-label">
-        <input type="checkbox" name="modal_nicho" value="3">
-        <span class="nicho-dot" style="background:#EA580C;"></span>
-        Corretor de Suplementos
-      </label>
-      <label class="nicho-checkbox-label">
-        <input type="checkbox" name="modal_nicho" value="4">
-        <span class="nicho-dot" style="background:#7C3AED;"></span>
-        Plataforma / SaaS
-      </label>
+      <!-- preenchido dinamicamente por abrirModalNichosUsuario() -->
     </div>
 
     <div style="display:flex;gap:10px;margin-top:24px;">
@@ -29092,19 +29075,32 @@ function adicionarBannerGeradoAoCarrossel() {
 <script>
 let _modalNichosUsuarioId = null;
 
-function abrirModalNichosUsuario(userId) {
+async function abrirModalNichosUsuario(userId) {
   _modalNichosUsuarioId = userId;
   const u = (window._adminUsuariosCache || {})[userId] || {};
   const nichos = u.nichos || [];
   const idsAtivos = nichos.map(n => Number(n.id));
 
-  document.querySelectorAll("input[name='modal_nicho']").forEach(cb => {
-    cb.checked = idsAtivos.includes(Number(cb.value));
-  });
-
   document.getElementById("modal_nichos_usuario_email").innerText = u.email || "";
 
+  const container = document.getElementById("modal_nichos_checkboxes");
+  container.innerHTML = '<p style="color:#9ca3af;font-size:13px;">Carregando...</p>';
   document.getElementById("modal_nichos_usuario").style.display = "flex";
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/nichos`, { headers: { "Authorization": "Bearer " + token } });
+    const todosNichos = await res.json();
+    container.innerHTML = todosNichos.map(n => `
+      <label class="nicho-checkbox-label">
+        <input type="checkbox" name="modal_nicho" value="${n.id}" ${idsAtivos.includes(n.id) ? "checked" : ""}>
+        <span class="nicho-dot" style="background:${n.cor};"></span>
+        ${n.nome}
+      </label>
+    `).join("");
+  } catch(e) {
+    container.innerHTML = '<p style="color:#ef4444;">Erro ao carregar nichos.</p>';
+  }
 }
 
 async function salvarNichosUsuario() {

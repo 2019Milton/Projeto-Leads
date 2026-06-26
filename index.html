@@ -12787,12 +12787,18 @@ body.tema-claro .logout {
               Data da proxima fatura
               <input id="railway_proxima_fatura_data" type="date">
             </label>
+            <label>
+              Limite de alerta (US$)
+              <input id="railway_limite_alerta_usd" type="number" step="0.01" min="0" placeholder="5.00" title="Voce sera notificado no sino quando o custo estimado de RAM ultrapassar este valor">
+            </label>
           </div>
 
           <textarea
             id="railway_billing_observacoes"
             placeholder="Observacoes sobre creditos, impostos, cambio, cobranca antecipada ou diferenca da fatura."
           ></textarea>
+
+          <div id="railway_alerta_custo" style="display:none;margin:8px 0;padding:10px 14px;border-radius:8px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;font-size:13px;"></div>
 
           <div class="admin-railway-billing-footer">
             <div id="railway_previsao_pagamento">
@@ -25594,10 +25600,29 @@ function preencherRailwayBillingAdmin(billing, custoRamMesUsd = 0) {
     billing.observacoes || ""
   );
 
+  preencherValor(
+    "railway_limite_alerta_usd",
+    billing.limite_alerta_usd !== undefined && billing.limite_alerta_usd !== null
+      ? billing.limite_alerta_usd
+      : "5.00"
+  );
+
   atualizarPrevisaoRailwayBilling(
     billing,
     custoRamMesUsd
   );
+
+  // Indicador visual de custo vs limite
+  const limiteUsd = Number(billing.limite_alerta_usd || 5);
+  const alertaEl = document.getElementById("railway_alerta_custo");
+  if (alertaEl) {
+    if (custoRamMesUsd > limiteUsd) {
+      alertaEl.style.display = "block";
+      alertaEl.innerText = `⚠️ Custo estimado de RAM (US$ ${custoRamMesUsd.toFixed(2)}/mês) está acima do limite configurado (US$ ${limiteUsd.toFixed(2)}). Voce ja foi ou sera notificado no sino.`;
+    } else {
+      alertaEl.style.display = "none";
+    }
+  }
 }
 
 function normalizarDataInput(valor) {
@@ -25729,7 +25754,8 @@ async function salvarRailwayBillingAdmin() {
     ultimo_pagamento_data: document.getElementById("railway_ultimo_pagamento_data")?.value,
     proxima_fatura_base: document.getElementById("railway_proxima_fatura_base")?.value,
     proxima_fatura_data: document.getElementById("railway_proxima_fatura_data")?.value,
-    observacoes: document.getElementById("railway_billing_observacoes")?.value
+    observacoes: document.getElementById("railway_billing_observacoes")?.value,
+    limite_alerta_usd: document.getElementById("railway_limite_alerta_usd")?.value
   };
 
   const res = await fetch(

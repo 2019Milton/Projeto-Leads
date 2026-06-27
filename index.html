@@ -22924,15 +22924,21 @@ async function carregarCampanhas() {
       c.criada_por_email ||
       "Admin Corretor";
 
-    const nichoCampanha =
-      c.nicho_id || c.nicho_slug || c.nicho_nome || c.nicho_cor
-        ? {
-            id: c.nicho_id,
-            slug: c.nicho_slug,
-            nome: c.nicho_nome,
-            cor: c.nicho_cor
+    const nichoCampanha = (() => {
+      if (c.nicho_id || c.nicho_slug || c.nicho_nome || c.nicho_cor) {
+        const base = { id: c.nicho_id, slug: c.nicho_slug, nome: c.nicho_nome, cor: c.nicho_cor };
+        if ((!base.slug || !base.nome) && base.id) {
+          const fromCatalog = (usuarioLogado?.nichos || []).find(n => Number(n.id) === Number(base.id));
+          if (fromCatalog) {
+            base.slug = base.slug || fromCatalog.slug;
+            base.nome = base.nome || fromCatalog.nome;
+            base.cor  = base.cor  || fromCatalog.cor;
           }
-        : detectarNichoPorNome(c.nome);
+        }
+        return base;
+      }
+      return detectarNichoPorNome(c.nome);
+    })();
 
     const nichoCampanhaTema =
       nichoCampanha ? temaVisualNicho(nichoCampanha) : null;

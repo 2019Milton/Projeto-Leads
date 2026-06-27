@@ -26860,6 +26860,46 @@ const params =
 const resetTokenUrl =
   params.get("reset_token");
 
+// Definidas aqui pois são usadas logo no init() e precisam estar disponíveis
+// antes dos blocos <script> posteriores carregarem (evita ReferenceError em cache)
+function slugNichoNormalizado(nicho = {}) {
+  return String(nicho.slug || nicho.nicho_slug || nicho.nome || nicho.nicho_nome || "")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+function corSolidaNicho(nicho = {}) {
+  const slug = slugNichoNormalizado(nicho);
+  const id = Number(nicho.id || nicho.nicho_id);
+  if (slug.includes("imove") || id === 1) return "#2563EB";
+  if (slug.includes("saude") || slug.includes("convenio") || id === 2) return "#DC2626";
+  if (slug.includes("suplement") || id === 3) return "#C2410C";
+  if (slug.includes("saas") || slug.includes("plataforma") || id === 4) return "#7C3AED";
+  return nicho.cor || nicho.nicho_cor || "#2563EB";
+}
+function estiloNichoBadge(nicho = {}) {
+  const cor = corSolidaNicho(nicho);
+  return `background:${cor};color:#fff;border:1px solid ${cor};`;
+}
+function estiloNichoDot() {
+  return "background:#fff;width:6px;height:6px;box-shadow:0 0 0 1px rgba(255,255,255,0.45);";
+}
+function nomeExibirNicho(nicho = {}) {
+  if (nicho.nome) {
+    if (/^plataforma$/i.test(nicho.nome.trim())) return "Plataforma / SaaS";
+    return nicho.nome;
+  }
+  const slug = slugNichoNormalizado(nicho);
+  if (slug.includes("saude") || slug.includes("saúde")) return "Planos de Saúde";
+  if (slug.includes("imove")) return "Imóveis";
+  if (slug.includes("suplement")) return "Suplementos";
+  if (slug.includes("saas") || slug.includes("plataforma")) return "Plataforma / SaaS";
+  const id = Number(nicho.id || nicho.nicho_id);
+  if (id === 1) return "Imóveis";
+  if (id === 2) return "Planos de Saúde";
+  if (id === 3) return "Suplementos";
+  if (id === 4) return "Plataforma / SaaS";
+  return nicho.slug || "";
+}
+
 if (renderizarPaginaLegal()) {
   // página pública renderizada
 } else if (resetTokenUrl) {

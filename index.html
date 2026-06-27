@@ -14819,7 +14819,10 @@ async function init() {
       });
       if (resPerfil.ok) {
         const perfil = await resPerfil.json();
-        if (usuarioLogado) usuarioLogado.whatsapp = perfil.whatsapp || null;
+        if (usuarioLogado) {
+          usuarioLogado.whatsapp = perfil.whatsapp || null;
+          usuarioLogado.notif_whatsapp_lead = perfil.notif_whatsapp_lead !== false;
+        }
       }
     } catch (_) {}
 
@@ -26175,13 +26178,27 @@ async function criarUsuario() {
 function abrirMenuPerfil() {
   const modal = document.getElementById("modal-perfil-usuario");
   if (!modal) return;
-  // Preenche campos com dados atuais
   const wpp = (usuarioLogado?.whatsapp || "");
   const inputWpp = document.getElementById("perfil-whatsapp-input");
   if (inputWpp) inputWpp.value = wpp ? formatarTelefoneExibicao(wpp) : "";
   const emailEl = document.getElementById("perfil-email-display");
   if (emailEl) emailEl.textContent = usuarioLogado?.email || "";
+  const toggle = document.getElementById("perfil-notif-lead-toggle");
+  if (toggle) toggle.checked = usuarioLogado?.notif_whatsapp_lead !== false;
   modal.style.display = "flex";
+}
+
+async function salvarNotifWhatsappLead(ativo) {
+  try {
+    await fetch(`${API}/usuarios/me/notif-whatsapp-lead`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
+      body: JSON.stringify({ ativo })
+    });
+    if (usuarioLogado) usuarioLogado.notif_whatsapp_lead = ativo;
+  } catch (e) {
+    console.error("Erro ao salvar preferência WhatsApp:", e);
+  }
 }
 
 function fecharModalPerfil() {
@@ -29825,6 +29842,16 @@ function coletarDadosNichoAtivo() {
         </button>
       </div>
       <div id="perfil-wpp-msg" style="font-size:12px;margin-top:6px;height:16px;"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
+      <div>
+        <div style="font-size:13px;color:#f1f5f9;font-weight:600;">📲 Notificar novo lead</div>
+        <div style="font-size:11px;color:#64748b;margin-top:2px;">Receber WhatsApp quando chegar um lead</div>
+      </div>
+      <label class="switch" style="flex-shrink:0;">
+        <input type="checkbox" id="perfil-notif-lead-toggle" onchange="salvarNotifWhatsappLead(this.checked)">
+        <span class="slider"></span>
+      </label>
     </div>
     <p style="font-size:11px;color:#475569;margin:0 0 20px;">
       Quando um lembrete de contato de lead disparar, você receberá uma mensagem neste número.

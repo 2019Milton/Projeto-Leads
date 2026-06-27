@@ -16039,9 +16039,7 @@ function exportarLeadsCSV() {
     return;
   }
 
-  const nomeConta =
-    document.querySelector("#meta_info p")?.innerText?.replace("Página:", "").trim() || "Leads";
-
+  const nomeUsuario = usuarioLogado?.nome || usuarioLogado?.email?.split("@")[0] || "Leads";
   const exportadoEm = new Date().toLocaleString("pt-BR");
 
   const labelStatus = s => ({
@@ -16053,10 +16051,10 @@ function exportarLeadsCSV() {
 
   const labelOrigem = o => ({ meta: "Meta Ads", manual: "Manual", whatsapp: "WhatsApp", site: "Site" }[o] || o || "");
 
-  const sTitulo  = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 15 }, fill: { fgColor: { rgb: "0d1117" } }, alignment: { horizontal: "center", vertical: "center" } };
-  const sHeader  = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10 }, fill: { fgColor: { rgb: "1e293b" } }, alignment: { horizontal: "center" } };
-  const sSection = { font: { bold: true, color: { rgb: "60a5fa" }, sz: 11 }, fill: { fgColor: { rgb: "0f172a" } } };
-  const sLabel   = { font: { bold: true, color: { rgb: "94a3b8" }, sz: 10 }, fill: { fgColor: { rgb: "1e293b" } } };
+  const sTitulo  = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 15 }, fill: { fgColor: { rgb: "7c3aed" } }, alignment: { horizontal: "center", vertical: "center" } };
+  const sHeader  = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10 }, fill: { fgColor: { rgb: "1e40af" } }, alignment: { horizontal: "center" } };
+  const sSection = { font: { bold: true, color: { rgb: "c4b5fd" }, sz: 11 }, fill: { fgColor: { rgb: "1e1b4b" } } };
+  const sLabel   = { font: { bold: true, color: { rgb: "a5b4fc" }, sz: 10 }, fill: { fgColor: { rgb: "1e1b4b" } } };
 
   function aplicarEstilo(ws, intervalo, estilo) {
     const range = XLSX.utils.decode_range(intervalo);
@@ -16116,7 +16114,7 @@ function exportarLeadsCSV() {
   });
 
   const wsLeads = XLSX.utils.aoa_to_sheet([
-    [`Central de Leads — ${nomeConta}`],
+    [`🚀 Central de Leads — ${nomeUsuario}`],
     [`Total: ${leadsFiltradosAtuais.length} leads exportados`, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", `Exportado: ${exportadoEm}`],
     [],
     COLS,
@@ -16161,7 +16159,7 @@ function exportarLeadsCSV() {
   const porOrigem   = contarPor("origem");
 
   const linhasResumo = [
-    [`Central de Leads — ${nomeConta} — Resumo`],
+    [`🚀 Central de Leads — ${nomeUsuario} — Resumo`],
     [`Exportado em: ${exportadoEm}`],
     [],
     ["TOTAIS GERAIS"],
@@ -16210,7 +16208,7 @@ function exportarLeadsCSV() {
   XLSX.utils.book_append_sheet(workbook, wsLeads,  "Leads");
   XLSX.utils.book_append_sheet(workbook, wsResumo, "Resumo");
 
-  XLSX.writeFile(workbook, `Central-Leads-${nomeConta}-${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(workbook, `Central-Leads-${nomeUsuario}-${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 
@@ -19257,11 +19255,11 @@ async function exportarPerformanceMetaXLSX() {
       : `${Math.abs(economiaPercentual).toFixed(1)}% acima da média recente`;
 
   // Estilos compartilhados
-  const sTitulo = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 15 }, fill: { fgColor: { rgb: "0d1117" } }, alignment: { horizontal: "center", vertical: "center" } };
-  const sSectionHeader = { font: { bold: true, color: { rgb: "60a5fa" }, sz: 11 }, fill: { fgColor: { rgb: "0f172a" } }, alignment: { horizontal: "left" } };
-  const sLabel  = { font: { bold: true, color: { rgb: "94a3b8" }, sz: 10 }, fill: { fgColor: { rgb: "1e293b" } } };
-  const sValor  = { font: { color: { rgb: "FFFFFF" }, sz: 11 }, fill: { fgColor: { rgb: "1e293b" } } };
-  const sHeader = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10 }, fill: { fgColor: { rgb: "1e293b" } }, alignment: { horizontal: "center" } };
+  const sTitulo = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 15 }, fill: { fgColor: { rgb: "7c3aed" } }, alignment: { horizontal: "center", vertical: "center" } };
+  const sSectionHeader = { font: { bold: true, color: { rgb: "c4b5fd" }, sz: 11 }, fill: { fgColor: { rgb: "1e1b4b" } }, alignment: { horizontal: "left" } };
+  const sLabel  = { font: { bold: true, color: { rgb: "a5b4fc" }, sz: 10 }, fill: { fgColor: { rgb: "1e1b4b" } } };
+  const sValor  = { font: { color: { rgb: "FFFFFF" }, sz: 11 }, fill: { fgColor: { rgb: "1e1b4b" } } };
+  const sHeader = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10 }, fill: { fgColor: { rgb: "1e40af" } }, alignment: { horizontal: "center" } };
 
   function aplicarEstilo(ws, intervalo, estilo) {
     const range = XLSX.utils.decode_range(intervalo);
@@ -19276,7 +19274,7 @@ async function exportarPerformanceMetaXLSX() {
 
   // ─── ABA 1: RESUMO ────────────────────────────────────────────────────────
   const wsResumo = XLSX.utils.aoa_to_sheet([
-    [`Performance Meta — ${tituloPeriodo}`],                                           // A1
+    [`🚀 Performance Meta — ${tituloPeriodo}`],                                           // A1
     [""],
     ["Exportado em", exportadoEm, "", "Conta de Anúncios", conta.nome || "-"],         // A3
     ["Período",      periodoTexto,"", "Moeda",             conta.moeda || "BRL"],      // A4

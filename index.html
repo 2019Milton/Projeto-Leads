@@ -19362,204 +19362,184 @@ function renderizarPainelPerformanceMeta(data) {
   );
 }
 
-function exportarPerformanceMetaXLSX() {
+async function exportarPerformanceMetaXLSX() {
+  const data = performanceMetaUltimoRelatorio;
+  if (!data) { alert("Carregue a performance Meta antes de exportar."); return; }
+  if (typeof XLSX === "undefined") { alert("Módulo de exportação indisponível no momento."); return; }
 
-  const data =
-    performanceMetaUltimoRelatorio;
+  const periodo    = data.periodo || performanceMetaPeriodoAtual || "semanal";
+  const agrupamento = data.agrupamento || "diario";
+  const resumo     = data.resumo || {};
+  const hoje       = resumo.hoje || {};
+  const conta      = data.conta_anuncios || {};
+  const registros  = obterRegistrosPerformance(data).slice().reverse();
+  const insights   = calcularInsightsPerformanceMeta(data);
 
-  if (!data) {
-    alert("Carregue a performance Meta antes de exportar.");
-    return;
-  }
+  if (!registros.length) { alert("Nenhum dado de performance para exportar."); return; }
 
-  if (typeof XLSX === "undefined") {
-    alert("Modulo de exportacao indisponivel no momento.");
-    return;
-  }
+  const tituloPeriodo = tituloPeriodoPerformance(periodo);
+  const periodoTexto  = `${data.periodo_inicio || "-"} a ${data.periodo_fim || "-"}`;
+  const exportadoEm   = new Date().toLocaleString("pt-BR");
 
-  const periodo =
-    data.periodo || performanceMetaPeriodoAtual || "semanal";
+  const economiaPercentual = resumo.economia_percentual;
+  const tendenciaTexto =
+    economiaPercentual === null || economiaPercentual === undefined
+      ? "Histórico insuficiente para comparar"
+      : economiaPercentual >= 0
+      ? `${economiaPercentual.toFixed(1)}% melhor que a média recente`
+      : `${Math.abs(economiaPercentual).toFixed(1)}% acima da média recente`;
 
-  const agrupamento =
-    data.agrupamento || "diario";
+  // Estilos compartilhados
+  const sTitulo = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 15 }, fill: { fgColor: { rgb: "0d1117" } }, alignment: { horizontal: "center", vertical: "center" } };
+  const sSectionHeader = { font: { bold: true, color: { rgb: "60a5fa" }, sz: 11 }, fill: { fgColor: { rgb: "0f172a" } }, alignment: { horizontal: "left" } };
+  const sLabel  = { font: { bold: true, color: { rgb: "94a3b8" }, sz: 10 }, fill: { fgColor: { rgb: "1e293b" } } };
+  const sValor  = { font: { color: { rgb: "FFFFFF" }, sz: 11 }, fill: { fgColor: { rgb: "1e293b" } } };
+  const sHeader = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10 }, fill: { fgColor: { rgb: "1e293b" } }, alignment: { horizontal: "center" } };
 
-  const resumo =
-    data.resumo || {};
-
-  const registros =
-    obterRegistrosPerformance(data)
-      .slice()
-      .reverse();
-
-  const dados =
-    registros.map(registro => ({
-      [agrupamento === "mensal" ? "Mes" : "Dia"]:
-        textoRegistroPerformance(registro, agrupamento),
-      Gasto:
-        Number(registro.gasto || 0),
-      Leads:
-        Number(registro.leads || 0),
-      CPL:
-        valorPerformanceValido(registro.custo_por_lead)
-          ? Number(registro.custo_por_lead)
-          : "",
-      Cliques:
-        Number(registro.cliques || 0),
-      Impressoes:
-        Number(registro.impressoes || 0),
-      Alcance:
-        Number(registro.alcance || 0)
-    }));
-
-  if (!dados.length) {
-    alert("Nenhum dado de performance para exportar.");
-    return;
-  }
-
-  const worksheet =
-    XLSX.utils.json_to_sheet([]);
-
-  const titulo =
-    `Performance Meta - ${tituloPeriodoPerformance(periodo)}`;
-
-  XLSX.utils.sheet_add_aoa(
-    worksheet,
-    [[titulo]],
-    {
-      origin: "A1"
-    }
-  );
-
-  XLSX.utils.sheet_add_aoa(
-    worksheet,
-    [[
-      `Exportado em: ${
-        new Date().toLocaleString("pt-BR")
-      }`
-    ]],
-    {
-      origin: "F3"
-    }
-  );
-
-  XLSX.utils.sheet_add_aoa(
-    worksheet,
-    [[
-      "Periodo",
-      `${data.periodo_inicio || "-"} a ${data.periodo_fim || "-"}`,
-      "Gasto total",
-      Number(resumo.gasto_total || 0),
-      "Leads",
-      Number(resumo.leads_total || 0),
-      "CPL medio",
-      valorPerformanceValido(resumo.custo_por_lead_medio)
-        ? Number(resumo.custo_por_lead_medio)
-        : ""
-    ]],
-    {
-      origin: "A4"
-    }
-  );
-
-  XLSX.utils.sheet_add_json(
-    worksheet,
-    dados,
-    {
-      origin: "A6"
-    }
-  );
-
-  worksheet["!cols"] = [
-    { wch: 16 },
-    { wch: 14 },
-    { wch: 10 },
-    { wch: 14 },
-    { wch: 10 },
-    { wch: 14 },
-    { wch: 14 },
-    { wch: 14 }
-  ];
-
-  worksheet["!autofilter"] = {
-    ref: "A6:G6"
-  };
-
-  worksheet["!freeze"] = {
-    xSplit: 0,
-    ySplit: 6
-  };
-
-  worksheet["!merges"] = [
-    XLSX.utils.decode_range("A1:H2"),
-    XLSX.utils.decode_range("F3:H3")
-  ];
-
-  const estiloTitulo = {
-    font: {
-      bold: true,
-      color: { rgb: "FFFFFF" },
-      sz: 16,
-      name: "Segoe UI"
-    },
-    fill: {
-      fgColor: { rgb: "000000" }
-    },
-    alignment: {
-      horizontal: "center",
-      vertical: "center"
-    }
-  };
-
-  const estiloHeader = {
-    font: {
-      bold: true,
-      color: { rgb: "FFFFFF" },
-      sz: 12,
-      name: "Segoe UI"
-    },
-    fill: {
-      fgColor: { rgb: "000000" }
-    },
-    alignment: {
-      horizontal: "center",
-      vertical: "center"
-    }
-  };
-
-  for (let row = 1; row <= 6; row++) {
-    ["A","B","C","D","E","F","G","H"].forEach(col => {
-      const cell = `${col}${row}`;
-      if (!worksheet[cell]) {
-        worksheet[cell] = {
-          t: "s",
-          v: ""
-        };
+  function aplicarEstilo(ws, intervalo, estilo) {
+    const range = XLSX.utils.decode_range(intervalo);
+    for (let R = range.s.r; R <= range.e.r; R++) {
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[addr]) ws[addr] = { t: "s", v: "" };
+        ws[addr].s = estilo;
       }
-      worksheet[cell].s = estiloHeader;
-    });
+    }
   }
 
-  worksheet["A1"].s =
-    estiloTitulo;
+  // ─── ABA 1: RESUMO ────────────────────────────────────────────────────────
+  const wsResumo = XLSX.utils.aoa_to_sheet([
+    [`Performance Meta — ${tituloPeriodo}`],                                           // A1
+    [""],
+    ["Exportado em", exportadoEm, "", "Conta de Anúncios", conta.nome || "-"],         // A3
+    ["Período",      periodoTexto,"", "Moeda",             conta.moeda || "BRL"],      // A4
+    [""],
+    ["RESUMO GERAL"],                                                                   // A6
+    ["Gasto Total (período)",    Number(resumo.gasto_total || 0),          "", "Leads no Período",   Number(resumo.leads_total || 0)],
+    ["CPL Médio (período)",      valorPerformanceValido(resumo.custo_por_lead_medio) ? Number(resumo.custo_por_lead_medio) : "-", "", "CPL Hoje",  hoje.custo_por_lead != null ? Number(hoje.custo_por_lead) : "-"],
+    ["Gasto Hoje",               Number(hoje.gasto || 0),                  "", "Leads Hoje",         Number(hoje.leads || 0)],
+    ["CPL Médio Dias Anteriores",valorPerformanceValido(resumo.media_cpl_anterior) ? Number(resumo.media_cpl_anterior) : "-", "", "Tendência vs Média", tendenciaTexto],
+    [""],
+    ["INSIGHTS DO PERÍODO"],                                                            // A12
+    ["Melhor CPL",
+      insights.melhorCpl ? textoRegistroPerformance(insights.melhorCpl, agrupamento) : "Sem dados",
+      insights.melhorCpl ? Number(insights.melhorCpl.custo_por_lead) : "-"],
+    ["Pior CPL (Atenção)",
+      insights.piorCpl ? textoRegistroPerformance(insights.piorCpl, agrupamento) : "Sem dados",
+      insights.piorCpl ? Number(insights.piorCpl.custo_por_lead) : "-"],
+    ["Taxa Lead / Clique (%)",
+      valorPerformanceValido(insights.taxaLeadClique) ? Number(insights.taxaLeadClique.toFixed(2)) : "-"],
+  ]);
 
-  const workbook =
-    XLSX.utils.book_new();
+  wsResumo["!cols"] = [{ wch: 28 }, { wch: 22 }, { wch: 4 }, { wch: 22 }, { wch: 30 }];
+  wsResumo["!merges"] = [XLSX.utils.decode_range("A1:E1")];
+  wsResumo["A1"].s = sTitulo;
+  aplicarEstilo(wsResumo, "A6:E6", sSectionHeader);
+  aplicarEstilo(wsResumo, "A12:E12", sSectionHeader);
+  ["A3","A4","A7","A8","A9","A10","A13","A14","A15"].forEach(c => { if (wsResumo[c]) wsResumo[c].s = sLabel; });
+  ["D3","D4","D7","D8","D9","D10"].forEach(c => { if (wsResumo[c]) wsResumo[c].s = sLabel; });
 
-  XLSX.utils.book_append_sheet(
-    workbook,
-    worksheet,
-    "Performance Meta"
-  );
+  // ─── ABA 2: PERFORMANCE DIÁRIA ────────────────────────────────────────────
+  const labelDia = agrupamento === "mensal" ? "Mês" : "Dia";
+  const headersDia = [labelDia,"Gasto (R$)","Leads (Meta)","Leads (Plataforma)","CPL (R$)","Cliques","Impressões","Alcance","CTR (%)","Taxa Lead/Clique (%)"];
 
-  const nomeArquivo =
-    `Performance-Meta-${periodo}-${
-      new Date().toISOString().slice(0, 10)
-    }.xlsx`;
+  const dadosDia = registros.map(r => {
+    const gasto      = Number(r.gasto || 0);
+    const leads      = Number(r.leads || 0);
+    const cliques    = Number(r.cliques || 0);
+    const impressoes = Number(r.impressoes || 0);
+    const ctr        = impressoes > 0 ? Number((cliques / impressoes * 100).toFixed(2)) : "";
+    const taxaLC     = cliques > 0    ? Number((leads / cliques * 100).toFixed(2)) : "";
+    return [
+      textoRegistroPerformance(r, agrupamento),
+      gasto,
+      leads,
+      Number(r.leads_plataforma || 0),
+      valorPerformanceValido(r.custo_por_lead) ? Number(r.custo_por_lead) : "",
+      cliques,
+      impressoes,
+      Number(r.alcance || 0),
+      ctr,
+      taxaLC
+    ];
+  });
 
-  XLSX.writeFile(
-    workbook,
-    nomeArquivo
-  );
+  const wsDia = XLSX.utils.aoa_to_sheet([
+    [`Performance Meta — ${tituloPeriodo} — Por ${labelDia}`],
+    [periodoTexto, "", "", "", "", "", "", "", "", `Exportado: ${exportadoEm}`],
+    [],
+    headersDia,
+    ...dadosDia
+  ]);
+  wsDia["!cols"] = [{ wch: 14 },{ wch: 13 },{ wch: 14 },{ wch: 18 },{ wch: 12 },{ wch: 10 },{ wch: 13 },{ wch: 12 },{ wch: 10 },{ wch: 22 }];
+  wsDia["!merges"] = [XLSX.utils.decode_range("A1:J1"), XLSX.utils.decode_range("A2:I2")];
+  wsDia["!autofilter"] = { ref: "A4:J4" };
+  wsDia["!freeze"] = { xSplit: 0, ySplit: 4 };
+  aplicarEstilo(wsDia, "A1:J1", sTitulo);
+  aplicarEstilo(wsDia, "A4:J4", sHeader);
+
+  // ─── ABA 3: POR CAMPANHA (busca async) ────────────────────────────────────
+  let wsCampanha = null;
+  if (agrupamento === "diario") {
+    const diasComDados = registros.filter(r => Number(r.gasto || 0) > 0 || Number(r.leads || 0) > 0);
+    const linhasCampanha = [];
+    const token = localStorage.getItem("token");
+
+    for (const dia of diasComDados) {
+      try {
+        const res  = await fetch(`${API}/meta/performance-diaria/${dia.data}/campanhas`, { headers: { "Authorization": "Bearer " + token } });
+        const json = await res.json();
+        if (!json.error && Array.isArray(json.campanhas)) {
+          for (const camp of json.campanhas) {
+            const gasto      = Number(camp.gasto || 0);
+            const leads      = Number(camp.leads || 0);
+            const cliques    = Number(camp.cliques || 0);
+            const impressoes = Number(camp.impressoes || 0);
+            const ctr        = impressoes > 0 ? Number((cliques / impressoes * 100).toFixed(2)) : "";
+            const taxaLC     = cliques > 0    ? Number((leads / cliques * 100).toFixed(2)) : "";
+            linhasCampanha.push([
+              dia.data,
+              camp.nome || "—",
+              gasto,
+              leads,
+              camp.custo_por_lead != null ? Number(camp.custo_por_lead) : "",
+              cliques,
+              impressoes,
+              ctr,
+              taxaLC
+            ]);
+          }
+        }
+      } catch {}
+    }
+
+    if (linhasCampanha.length > 0) {
+      const headersCamp = ["Data","Campanha","Gasto (R$)","Leads","CPL (R$)","Cliques","Impressões","CTR (%)","Taxa Lead/Clique (%)"];
+      wsCampanha = XLSX.utils.aoa_to_sheet([
+        [`Performance Meta — ${tituloPeriodo} — Por Campanha`],
+        [periodoTexto, "", "", "", "", "", "", "", `Exportado: ${exportadoEm}`],
+        [],
+        headersCamp,
+        ...linhasCampanha
+      ]);
+      wsCampanha["!cols"] = [{ wch: 12 },{ wch: 42 },{ wch: 13 },{ wch: 8 },{ wch: 12 },{ wch: 10 },{ wch: 13 },{ wch: 10 },{ wch: 22 }];
+      wsCampanha["!merges"] = [XLSX.utils.decode_range("A1:I1"), XLSX.utils.decode_range("A2:H2")];
+      wsCampanha["!autofilter"] = { ref: "A4:I4" };
+      wsCampanha["!freeze"] = { xSplit: 0, ySplit: 4 };
+      aplicarEstilo(wsCampanha, "A1:I1", sTitulo);
+      aplicarEstilo(wsCampanha, "A4:I4", sHeader);
+    }
+  }
+
+  // ─── MONTAR WORKBOOK ──────────────────────────────────────────────────────
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, wsResumo, "Resumo");
+  XLSX.utils.book_append_sheet(workbook, wsDia,    "Performance Diária");
+  if (wsCampanha) {
+    XLSX.utils.book_append_sheet(workbook, wsCampanha, "Por Campanha");
+  }
+
+  XLSX.writeFile(workbook, `Performance-Meta-${periodo}-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 /* ===== CONTROLE DE CUSTO — descrição dinâmica ===== */

@@ -16030,323 +16030,187 @@ function renderizarLeadsFiltrados(leads) {
 
 
 function exportarLeadsCSV() {
-
   if (!leadsFiltradosAtuais.length) {
-
-    alert(
-      "Nenhum lead para exportar."
-    );
-
+    alert("Nenhum lead para exportar.");
+    return;
+  }
+  if (typeof XLSX === "undefined") {
+    alert("Módulo de exportação indisponível.");
     return;
   }
 
   const nomeConta =
+    document.querySelector("#meta_info p")?.innerText?.replace("Página:", "").trim() || "Leads";
 
-    document
-      .querySelector(
-        "#meta_info p"
-      )
-      ?.innerText
-  
-      .replace("Página:", "")
-      .trim()
-  
-    ||
-  
-    "Conta Meta";
+  const exportadoEm = new Date().toLocaleString("pt-BR");
 
+  const labelStatus = s => ({
+    novo: "Novo", primeiro_contato: "Primeiro Contato",
+    em_conversa: "Em Conversa", fechado: "Fechado", perdido: "Perdido"
+  }[s] || s || "Novo");
 
-  const dados =
-  
-    leadsFiltradosAtuais.map(lead => ({
-  
-      Nome:
-        lead.nome || "",
-  
-      Telefone:
-        lead.telefone || "",
-  
-      Email:
-        lead.email || "",
-  
-      Status:
-        lead.status || "",
-  
-      Score:
-        lead.score || "",
-  
-      Campanha:
-        lead.campanha || "",
-  
-      Origem:
-        lead.origem || "",
-  
-      Observacao:
-        lead.observacao || "",
+  const labelScore = s => ({ quente: "Quente", morno: "Morno", frio: "Frio" }[s] || s || "");
 
-      Qualificacao:
-        Array.isArray(
-          lead.respostas_qualificacao
-        )
-          ? lead.respostas_qualificacao
-              .map(item =>
-                `${item.pergunta}: ${item.resposta}`
-              )
-              .join(" | ")
-          : "",
-  
-      Data:
-        formatarDataExcel(
-          lead.criado_em
-        )
-    }));
-  
-  
-  const worksheet =
-  
-    XLSX.utils.json_to_sheet(
-      []
-    );
-  
-  
-  // 🔥 título
-  XLSX.utils.sheet_add_aoa(
-    worksheet,
-    [[
-      `Central Leads - ${nomeConta}`
-    ]],
-    {
-      origin: "A1"
-    }
-  );
-  
-  
-  // 🔥 data exportação
-  XLSX.utils.sheet_add_aoa(
-    worksheet,
-    [[
-      `Exportado em: ${
-        new Date()
-          .toLocaleString("pt-BR")
-      }`
-    ]],
-    {
-      origin: "G3"
-    }
-  );
-  
-  
-  // 🔥 tabela começa na linha 4
-  XLSX.utils.sheet_add_json(
-    worksheet,
-    dados,
-    {
-      origin: "A5"
-    }
-  );
-  
-  
-  // 🔥 largura colunas
-  worksheet["!cols"] = [
-  
-    { wch: 25 },
-    { wch: 18 },
-    { wch: 30 },
-    { wch: 18 },
-    { wch: 15 },
-    { wch: 28 },
-    { wch: 20 },
-    { wch: 40 },
-    { wch: 45 },
-    { wch: 22 }
-  ];
-  
-  
-  // 🔥 autofilter
-  worksheet["!autofilter"] = {
-  
-    ref: "A5:J5"
-  };
-  
-  
-  // 🔥 congelar topo
-  worksheet["!freeze"] = {
-  
-    xSplit: 0,
-    ySplit: 5
-  };
+  const labelOrigem = o => ({ meta: "Meta Ads", manual: "Manual", whatsapp: "WhatsApp", site: "Site" }[o] || o || "");
 
-  // 🔥 merge células
-  worksheet["!merges"] = [
+  const sTitulo  = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 15 }, fill: { fgColor: { rgb: "0d1117" } }, alignment: { horizontal: "center", vertical: "center" } };
+  const sHeader  = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10 }, fill: { fgColor: { rgb: "1e293b" } }, alignment: { horizontal: "center" } };
+  const sSection = { font: { bold: true, color: { rgb: "60a5fa" }, sz: 11 }, fill: { fgColor: { rgb: "0f172a" } } };
+  const sLabel   = { font: { bold: true, color: { rgb: "94a3b8" }, sz: 10 }, fill: { fgColor: { rgb: "1e293b" } } };
 
-    XLSX.utils.decode_range("A1:J2"),
-  
-    XLSX.utils.decode_range("G3:J3")
-  ];
-    
-  
-  // 🔥 estilo premium
-  const estiloPremium = {
-  
-    font: {
-  
-      bold: true,
-  
-      color: {
-        rgb: "FFFFFF"
-      },
-  
-      sz: 16,
-  
-      name: "Segoe UI"
-    },
-  
-    fill: {
-  
-      fgColor: {
-        rgb: "000000"
+  function aplicarEstilo(ws, intervalo, estilo) {
+    const range = XLSX.utils.decode_range(intervalo);
+    for (let R = range.s.r; R <= range.e.r; R++) {
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[addr]) ws[addr] = { t: "s", v: "" };
+        ws[addr].s = estilo;
       }
-    },
-  
-    alignment: {
-  
-      horizontal: "center",
-  
-      vertical: "center"
     }
-  };
-  
-  
-  // 🔥 estilo subtítulo
-  const estiloSubtitulo = {
-  
-    font: {
-  
-      bold: true,
-  
-      color: {
-        rgb: "FFFFFF"
-      },
-  
-      sz: 12,
-  
-      name: "Segoe UI"
-    },
-  
-    fill: {
-  
-      fgColor: {
-        rgb: "000000"
-      }
-    },
-  
-    alignment: {
-
-      horizontal: "right",
-    
-      vertical: "center"
-    }
-  };
-  
-  
-  // 🔥 pinta A1:I4 inteiro
-  for (let row = 1; row <= 5; row++) {
-  
-    const cols =
-  
-      ["A","B","C","D","E","F","G","H","I","J"];
-  
-    cols.forEach(col => {
-  
-      const cell = `${col}${row}`;
-  
-      if (!worksheet[cell]) {
-  
-        worksheet[cell] = {
-          t: "s",
-          v: ""
-        };
-      }
-  
-      worksheet[cell].s =
-        estiloSubtitulo;
-    });
   }
-  
-  
-  // 🔥 aplica estilos principais
-  worksheet["A1"].s =
-    estiloPremium;
-  
-  worksheet["A3"].s =
-    estiloSubtitulo;
 
-  // 🔥 estilo preto
-  const estiloHeader = {
-  
-    font: {
-      bold: true,
-      color: { rgb: "FFFFFF" },
-      sz: 12
-    },
-  
-    fill: {
-      fgColor: {
-        rgb: "000000"
-      }
-    },
-  
-    alignment: {
+  // ─── ABA 1: LEADS ─────────────────────────────────────────────────────────
+  const COLS = [
+    "Nome","Telefone","Email","Nicho",
+    "Status","Score","Pontos","Score Manual",
+    "Campanha","Origem","Motivo de Perda",
+    "Agendamento","Obs. Agendamento",
+    "Prioridade IA","Próxima Ação IA",
+    "Qualificação","Observação","Data de Cadastro"
+  ];
+  const NUM_COLS = COLS.length;
+  const LAST_COL = String.fromCharCode(64 + NUM_COLS); // A=1, R=18
 
-      horizontal: "center",
-    
-      vertical: "center"
-    }
+  const linhasLeads = leadsFiltradosAtuais.map(lead => {
+    const qualificacao = Array.isArray(lead.respostas_qualificacao)
+      ? lead.respostas_qualificacao.map(q => `${q.pergunta}: ${q.resposta}`).join(" | ")
+      : "";
+    const agendamento = lead.data_contato
+      ? new Date(lead.data_contato).toLocaleString("pt-BR")
+      : "";
+    const prioridadeIA = lead.ia_leads?.prioridade
+      ? ({ alta: "Alta", media: "Média", baixa: "Baixa" }[lead.ia_leads.prioridade] || lead.ia_leads.prioridade)
+      : "";
+    const proximaAcaoIA = lead.ia_leads?.proxima_acao || "";
+
+    return [
+      lead.nome || "",
+      lead.telefone || "",
+      lead.email || "",
+      lead.nicho_nome || nomeExibirNicho({ id: lead.nicho_id, slug: lead.nicho_slug }) || "",
+      labelStatus(lead.status),
+      labelScore(lead.score),
+      Number(lead.score_pontos || 0),
+      lead.score_manual ? labelScore(lead.score_manual) : "",
+      lead.campanha || "",
+      labelOrigem(lead.origem),
+      lead.motivo_perda || "",
+      agendamento,
+      lead.observacao_agendamento || "",
+      prioridadeIA,
+      proximaAcaoIA,
+      qualificacao,
+      lead.observacao || "",
+      formatarDataExcel(lead.criado_em)
+    ];
+  });
+
+  const wsLeads = XLSX.utils.aoa_to_sheet([
+    [`Central de Leads — ${nomeConta}`],
+    [`Total: ${leadsFiltradosAtuais.length} leads exportados`, "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", `Exportado: ${exportadoEm}`],
+    [],
+    COLS,
+    ...linhasLeads
+  ]);
+
+  wsLeads["!cols"] = [
+    { wch: 26 },{ wch: 16 },{ wch: 28 },{ wch: 18 },
+    { wch: 16 },{ wch: 10 },{ wch: 8 }, { wch: 14 },
+    { wch: 30 },{ wch: 12 },{ wch: 18 },
+    { wch: 18 },{ wch: 22 },
+    { wch: 14 },{ wch: 40 },
+    { wch: 50 },{ wch: 35 },{ wch: 20 }
+  ];
+  wsLeads["!merges"] = [
+    XLSX.utils.decode_range(`A1:${LAST_COL}1`),
+    XLSX.utils.decode_range(`A2:Q2`)
+  ];
+  wsLeads["!autofilter"] = { ref: `A4:${LAST_COL}4` };
+  wsLeads["!freeze"] = { xSplit: 0, ySplit: 4 };
+  aplicarEstilo(wsLeads, `A1:${LAST_COL}1`, sTitulo);
+  aplicarEstilo(wsLeads, `A4:${LAST_COL}4`, sHeader);
+
+  // ─── ABA 2: RESUMO ────────────────────────────────────────────────────────
+  const contarPor = (campo) => {
+    const mapa = {};
+    leadsFiltradosAtuais.forEach(l => {
+      const chave = l[campo] || "—";
+      mapa[chave] = (mapa[chave] || 0) + 1;
+    });
+    return Object.entries(mapa).sort((a, b) => b[1] - a[1]);
   };
-  
-  
-  // 🔥 linhas 1 e 2
-  ["A1","A2"].forEach(cell => {
-  
-    if (worksheet[cell]) {
-  
-      worksheet[cell].s =
-        estiloHeader;
-    }
-  });
-  
-  
-  // 🔥 cabeçalhos linha 4
-  const headers =
-  
-    ["A5","B5","C5","D5","E5","F5","G5","H5","I5","J5"];
-  
-  headers.forEach(cell => {
-  
-    if (worksheet[cell]) {
-  
-      worksheet[cell].s =
-        estiloHeader;
-    }
-  });
-  
-  
-  const workbook =
-  
-    XLSX.utils.book_new();
-  
-  
-  XLSX.utils.book_append_sheet(
-    workbook,
-    worksheet,
-    nomeConta.substring(0, 31)
-  );
 
-  // 🔥 exporta
-  XLSX.writeFile(
-    workbook,
-    `${nomeConta}.xlsx`
-  );
+  const porStatus   = contarPor("status");
+  const porScore    = contarPor("score");
+  const porNicho    = leadsFiltradosAtuais.reduce((acc, l) => {
+    const nome = l.nicho_nome || nomeExibirNicho({ id: l.nicho_id, slug: l.nicho_slug }) || "Sem nicho";
+    acc[nome] = (acc[nome] || 0) + 1; return acc;
+  }, {});
+  const porNichoArr = Object.entries(porNicho).sort((a, b) => b[1] - a[1]);
+  const porCampanha = contarPor("campanha");
+  const porOrigem   = contarPor("origem");
+
+  const linhasResumo = [
+    [`Central de Leads — ${nomeConta} — Resumo`],
+    [`Exportado em: ${exportadoEm}`],
+    [],
+    ["TOTAIS GERAIS"],
+    ["Total de Leads", leadsFiltradosAtuais.length],
+    ["Com Email", leadsFiltradosAtuais.filter(l => l.email).length],
+    ["Com Telefone", leadsFiltradosAtuais.filter(l => l.telefone).length],
+    ["Com Agendamento", leadsFiltradosAtuais.filter(l => l.data_contato).length],
+    ["Leads Quentes", leadsFiltradosAtuais.filter(l => l.score === "quente").length],
+    [],
+    ["POR STATUS"],
+    ...porStatus.map(([s, n]) => [labelStatus(s), n]),
+    [],
+    ["POR SCORE"],
+    ...porScore.map(([s, n]) => [labelScore(s), n]),
+    [],
+    ["POR NICHO"],
+    ...porNichoArr.map(([s, n]) => [s, n]),
+    [],
+    ["POR CAMPANHA"],
+    ...porCampanha.map(([s, n]) => [s || "—", n]),
+    [],
+    ["POR ORIGEM"],
+    ...porOrigem.map(([s, n]) => [labelOrigem(s) || s || "—", n]),
+  ];
+
+  const wsResumo = XLSX.utils.aoa_to_sheet(linhasResumo);
+  wsResumo["!cols"] = [{ wch: 30 }, { wch: 14 }];
+  wsResumo["!merges"] = [XLSX.utils.decode_range("A1:B1"), XLSX.utils.decode_range("A2:B2")];
+  aplicarEstilo(wsResumo, "A1:B1", sTitulo);
+
+  // Aplica estilo de seção nas linhas de cabeçalho do resumo
+  ["TOTAIS GERAIS","POR STATUS","POR SCORE","POR NICHO","POR CAMPANHA","POR ORIGEM"].forEach(secao => {
+    linhasResumo.forEach((row, i) => {
+      if (row[0] === secao) {
+        const addr = `A${i + 1}`;
+        if (wsResumo[addr]) wsResumo[addr].s = sSection;
+        const addrB = `B${i + 1}`;
+        if (!wsResumo[addrB]) wsResumo[addrB] = { t: "s", v: "" };
+        wsResumo[addrB].s = sSection;
+      }
+    });
+  });
+
+  // ─── WORKBOOK ─────────────────────────────────────────────────────────────
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, wsLeads,  "Leads");
+  XLSX.utils.book_append_sheet(workbook, wsResumo, "Resumo");
+
+  XLSX.writeFile(workbook, `Central-Leads-${nomeConta}-${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 

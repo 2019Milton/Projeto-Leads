@@ -29251,7 +29251,7 @@ function corSolidaNicho(nicho = {}) {
     return "#C2410C";
   }
 
-  if (slug.includes("saas") || id === 4) {
+  if (slug.includes("saas") || slug.includes("plataforma") || id === 4) {
     return "#7C3AED";
   }
 
@@ -29297,7 +29297,7 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
-  if (slug.includes("saas") || id === 4) {
+  if (slug.includes("saas") || slug.includes("plataforma") || id === 4) {
     return {
       cor,
       bg: "#1a0a2e",
@@ -29359,12 +29359,15 @@ function estiloNichoBadge(nicho = {}) {
 }
 
 function nomeExibirNicho(nicho = {}) {
-  if (nicho.nome) return nicho.nome;
+  if (nicho.nome) {
+    if (nicho.nome.trim() === "Plataforma") return "Plataforma / SaaS";
+    return nicho.nome;
+  }
   const slug = slugNichoNormalizado(nicho);
   if (slug.includes("saude") || slug.includes("saúde")) return "Planos de Saúde";
   if (slug.includes("imove")) return "Imóveis";
   if (slug.includes("suplement")) return "Suplementos";
-  if (slug.includes("saas")) return "Plataforma / SaaS";
+  if (slug.includes("saas") || slug.includes("plataforma")) return "Plataforma / SaaS";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";

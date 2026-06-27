@@ -23254,13 +23254,23 @@ async function carregarCampanhas() {
     
       <div class="metricas-grid">
 
-        <div class="metrica" title="Valor de gasto retornado pela Meta para o período recente analisado.">
+        <div class="metrica" title="Gasto total desta campanha nos últimos 30 dias.">
           💰
           <span>
             R$ ${Number(c.gasto).toFixed(2)}
           </span>
-          <small>Valor Usado</small>
+          <small>Usado (30d)</small>
         </div>
+
+        ${c.gasto_hoje > 0 ? `
+        <div class="metrica" title="Gasto desta campanha hoje.">
+          📅
+          <span>
+            R$ ${Number(c.gasto_hoje).toFixed(2)}
+          </span>
+          <small>Gasto hoje</small>
+        </div>
+        ` : ""}
 
         ${c.daily_budget ? `
         <div class="metrica" title="Orçamento diário definido para esta campanha.">

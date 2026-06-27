@@ -23262,11 +23262,11 @@ async function carregarCampanhas() {
           <small>Usado (30d)</small>
         </div>
 
-        ${c.gasto_hoje > 0 ? `
+        ${c.meta_disponivel ? `
         <div class="metrica" title="Gasto desta campanha hoje.">
           📅
           <span>
-            R$ ${Number(c.gasto_hoje).toFixed(2)}
+            R$ ${Number(c.gasto_hoje || 0).toFixed(2)}
           </span>
           <small>Gasto hoje</small>
         </div>

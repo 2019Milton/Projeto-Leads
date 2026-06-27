@@ -29370,7 +29370,7 @@ function estiloNichoBadge(nicho = {}) {
 
 function nomeExibirNicho(nicho = {}) {
   if (nicho.nome) {
-    if (nicho.nome.trim() === "Plataforma") return "Plataforma / SaaS";
+    if (/^plataforma$/i.test(nicho.nome.trim())) return "Plataforma / SaaS";
     return nicho.nome;
   }
   const slug = slugNichoNormalizado(nicho);

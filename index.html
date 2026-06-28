@@ -18624,7 +18624,25 @@ async function salvarLeadDrawer() {
   // 🔥 RECARREGA
   carregarLeads();
 }
-  
+
+async function excluirLeadDrawer() {
+  if (!leadAtual) return;
+  if (!confirm(`Tem certeza que deseja excluir o lead "${leadAtual.nome}"? Esta ação não pode ser desfeita.`)) return;
+
+  const res = await fetch(`${API}/leads/${leadAtual.id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    fecharLeadDrawer();
+    carregarLeads();
+  } else {
+    alert("Erro ao excluir lead: " + (data.error || "tente novamente"));
+  }
+}
+
 
 // SIMULAÇÕES
 function conectarMeta() {
@@ -28093,14 +28111,23 @@ async function enviarFeedback() {
 
       <!-- AÇÕES -->
       <div class="drawer-actions">
-      
+
         <button
           class="btn-salvar-lead"
           onclick="salvarLeadDrawer()"
         >
           💾 Salvar Lead
         </button>
-      
+
+        <button
+          onclick="excluirLeadDrawer()"
+          style="background:transparent;border:1px solid rgba(239,68,68,0.4);color:#f87171;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+          onmouseover="this.style.background='rgba(239,68,68,0.15)'"
+          onmouseout="this.style.background='transparent'"
+        >
+          🗑️ Excluir Lead
+        </button>
+
       </div>
 
     </div>

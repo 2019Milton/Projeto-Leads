@@ -595,7 +595,7 @@ button {
 .app-topbar-slim .logout { font-size: 12px; padding: 4px 12px; }
 .app-topbar-spacer { flex: 1; }
 
-/* No modo sidebar os botões expandir/recolher não fazem sentido */
+/* No modo sidebar os botões expandir/recolher genéricos não fazem sentido */
 #app.sidebar-ativa .painel-recolhivel-toggle { display: none !important; }
 
 /* card-meta expandido dentro do hub — separador visual, sem card dentro de card */
@@ -8527,20 +8527,78 @@ body.tema-claro .info-tooltip-popup {
   border: 1px solid var(--nicho-card-border, #2563eb) !important;
   border-top: 5px solid var(--nicho-card-accent, #2563eb) !important;
   color: var(--nicho-card-text, #eff6ff) !important;
-  transition: background .25s, border-color .25s, border-top-color .25s, color .25s;
+  position: relative;
+  overflow: visible;
+  transition: background .25s, border-color .25s, border-top-color .25s, color .25s, padding .18s, min-height .18s;
 }
 
 .card-criar-campanha h3 {
   color: var(--nicho-card-title, #dbeafe) !important;
 }
+.card-criar-campanha .criar-campanha-cabecalho {
+  min-height: 30px;
+  margin: 0 0 8px;
+}
+
+.card-criar-campanha.recolhido {
+  min-height: 12px;
+  padding: 0 !important;
+  background: transparent !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  border-top-color: var(--nicho-card-accent, #2563eb) !important;
+  box-shadow: none !important;
+  z-index: 2;
+}
+
+#app.sidebar-ativa .card-criar-campanha.secao-visivel.recolhido {
+  flex: 0 0 auto !important;
+  min-height: 12px !important;
+  height: 12px !important;
+}
+
+body:not(.tema-claro) .card-criar-campanha.recolhido,
+body.tema-claro .card-criar-campanha.recolhido {
+  background: transparent !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+}
+
+body.tema-claro .card-criar-campanha.recolhido {
+  border-top-color: var(--nicho-card-border-light, #2563eb) !important;
+}
+
+.card-criar-campanha.recolhido:hover {
+  transform: none;
+}
+
 .card-criar-campanha.recolhido > *:not(h3) { display: none !important; }
+
+.card-criar-campanha.recolhido .criar-campanha-cabecalho {
+  min-height: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.card-criar-campanha.recolhido .criar-campanha-titulo {
+  display: none;
+}
+
 .btn-recolher-card {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.15);
   color: rgba(255,255,255,0.55);
   border-radius: 7px;
-  width: 30px;
+  width: 30px !important;
+  min-width: 0 !important;
   height: 30px;
+  margin-top: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
   cursor: pointer;
   font-size: 12px;
   display: flex;
@@ -8550,6 +8608,18 @@ body.tema-claro .info-tooltip-popup {
   transition: background .18s, color .18s;
   line-height: 1;
 }
+
+.card-criar-campanha.recolhido .btn-recolher-card {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 34px !important;
+  height: 22px;
+  border-radius: 999px;
+  z-index: 3;
+}
+
 .btn-recolher-card:hover {
   background: rgba(255,255,255,0.14);
   color: #fff;
@@ -12186,9 +12256,17 @@ body.tema-claro .ia-resumo-panel {
 
       <div class="card card-criar-campanha" id="card-criar-campanha">
 
-        <h3 style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span>📢 Criar Campanha</span>
-          <button id="btn-recolher-campanha" onclick="toggleCriarCampanha()" class="btn-recolher-card" title="Recolher">▲</button>
+        <h3 class="criar-campanha-cabecalho" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span class="criar-campanha-titulo">📢 Criar Campanha</span>
+          <button
+            type="button"
+            id="btn-recolher-campanha"
+            onclick="toggleCriarCampanha()"
+            class="btn-recolher-card"
+            title="Recolher Criar Campanha"
+            aria-label="Recolher Criar Campanha"
+            aria-expanded="true"
+          >▲</button>
         </h3>
 
         <div
@@ -15788,6 +15866,7 @@ async function init() {
   await carregarLeads();
 
   inicializarPaineisRecolhaveis();
+  inicializarEstadoCriarCampanha();
   inicializarKanbanTopScrollbar();
 }
 
@@ -15861,11 +15940,6 @@ const PAINEIS_RECOLHIVEIS = [
     seletor: ".meta-card",
     cabecalho: "h3",
     chave: "conectar-meta"
-  },
-  {
-    seletor: ".card-criar-campanha",
-    cabecalho: "h3",
-    chave: "criar-campanha"
   },
   {
     seletor: "#ia_criador_campanha_box",
@@ -18444,11 +18518,63 @@ function dadosCampanhaFormularioIA() {
   };
 }
 
-function toggleCriarCampanha() {
+const CHAVE_CRIAR_CAMPANHA_RECOLHIDA = "criar_campanha_recolhida";
+
+function aplicarEstadoCriarCampanha(recolhido, salvar = true) {
   const card = document.getElementById("card-criar-campanha");
   const btn = document.getElementById("btn-recolher-campanha");
-  const recolhido = card.classList.toggle("recolhido");
-  if (btn) btn.textContent = recolhido ? "▼" : "▲";
+
+  if (!card) return;
+
+  card.classList.toggle("recolhido", recolhido);
+
+  if (btn) {
+    btn.textContent = recolhido ? "▼" : "▲";
+    btn.title = recolhido
+      ? "Expandir Criar Campanha"
+      : "Recolher Criar Campanha";
+    btn.setAttribute(
+      "aria-label",
+      recolhido
+        ? "Expandir Criar Campanha"
+        : "Recolher Criar Campanha"
+    );
+    btn.setAttribute(
+      "aria-expanded",
+      recolhido ? "false" : "true"
+    );
+  }
+
+  if (salvar) {
+    try {
+      localStorage.setItem(
+        CHAVE_CRIAR_CAMPANHA_RECOLHIDA,
+        recolhido ? "1" : "0"
+      );
+    } catch (_) {}
+  }
+}
+
+function toggleCriarCampanha() {
+  const card = document.getElementById("card-criar-campanha");
+  if (!card) return;
+
+  aplicarEstadoCriarCampanha(
+    !card.classList.contains("recolhido")
+  );
+}
+
+function inicializarEstadoCriarCampanha() {
+  let recolhido = false;
+
+  try {
+    recolhido =
+      localStorage.getItem(
+        CHAVE_CRIAR_CAMPANHA_RECOLHIDA
+      ) === "1";
+  } catch (_) {}
+
+  aplicarEstadoCriarCampanha(recolhido, false);
 }
 
 async function gerarCampanhaComIA() {
@@ -22747,6 +22873,13 @@ function abrirAreaDoCampoCampanha(campo) {
   while (atual && atual !== document.body) {
     if (atual.tagName === "DETAILS") {
       atual.open = true;
+    }
+
+    if (
+      atual.id === "card-criar-campanha" &&
+      atual.classList?.contains("recolhido")
+    ) {
+      aplicarEstadoCriarCampanha(false);
     }
 
     if (atual.classList?.contains("painel-recolhido")) {

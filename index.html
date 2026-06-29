@@ -597,6 +597,9 @@ button {
 
 /* No modo sidebar os botões expandir/recolher não fazem sentido */
 #app.sidebar-ativa .painel-recolhivel-toggle { display: none !important; }
+
+/* card-meta é legado — os dados Meta agora ficam no hub; esconder sem remover o DOM */
+#app.sidebar-ativa #card-meta { display: none !important; }
 #app.sidebar-ativa .painel-recolhido > .painel-recolhivel-conteudo {
   max-height: none !important;
   opacity: 1 !important;

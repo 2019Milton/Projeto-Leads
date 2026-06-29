@@ -8496,7 +8496,7 @@ body.tema-claro .info-tooltip-popup {
 .hub-conexoes-card > .integ-desc { font-size: 13px; color: #64748b; margin: 0 0 16px; }
 #hub_conexoes_grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 .integ-card {
@@ -14080,15 +14080,10 @@ body.tema-claro .ia-resumo-panel {
           <div class="suporte-painel-titulo">
             Enviar mensagem como suporte_plataforma_leads
           </div>
-
           <div class="suporte-broadcast-grid">
-            <select
-              id="suporte_usuario_select"
-              class="suporte-select"
-            >
+            <select id="suporte_usuario_select" class="suporte-select">
               <option value="todos">Todos os usuários</option>
             </select>
-
             <input
               type="text"
               id="suporte_broadcast_input"
@@ -14096,70 +14091,80 @@ body.tema-claro .ia-resumo-panel {
               placeholder="Mensagem para todos ou para o usuário selecionado..."
               onkeydown="if(event.key==='Enter')enviarMensagemSuporteDireta()"
             >
-
-            <button
-              class="suporte-acao-btn"
-              onclick="enviarMensagemSuporteDireta()"
-            >
-              Enviar
-            </button>
+            <button class="suporte-acao-btn" onclick="enviarMensagemSuporteDireta()">Enviar</button>
           </div>
         </div>
 
-        <div class="suporte-painel-titulo">
-          📋 Conversas
-          <span id="suporte_badge_count" style="background:#ef4444;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:700;display:none;">0</span>
+        <div class="suporte-stats-row" id="suporte_stats_row" style="display:none;">
+          <div class="suporte-stat-chip suporte-stat-abertas" id="suporte_stat_abertas">0 abertas</div>
+          <div class="suporte-stat-chip suporte-stat-nao-lidas" id="suporte_stat_nao_lidas" style="display:none;">0 não lidas</div>
         </div>
 
-        <div id="suporte_conv_lista" class="suporte-conv-lista">
-          <div class="suporte-vazio">Carregando conversas...</div>
-        </div>
+        <div class="suporte-layout">
 
-        <div id="suporte_chat_area" class="suporte-chat-area" style="display:none;">
-          <div class="suporte-chat-header">
-            <span id="suporte_chat_titulo">Conversa</span>
-            <div style="display:flex;gap:8px;">
-              <button
-                id="suporte_reabrir_btn"
-                class="suporte-fechar-btn suporte-reabrir-btn"
-                style="display:none;"
-                onclick="reabrirConversaSuporte()"
-              >
-                Reabrir conversa
-              </button>
-              <button
-                id="suporte_fechar_btn"
-                class="suporte-fechar-btn"
-                onclick="fecharConversaSuporte()"
-              >
-                Encerrar conversa
-              </button>
+          <div class="suporte-sidebar">
+            <div class="suporte-painel-titulo" style="margin-bottom:0;">
+              📋 Conversas
+              <span id="suporte_badge_count" style="background:#ef4444;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:700;display:none;">0</span>
+            </div>
+            <input
+              type="search"
+              id="suporte_busca"
+              class="suporte-busca"
+              placeholder="Buscar por nome ou e-mail..."
+              oninput="buscarConversasSuporte()"
+            >
+            <div class="suporte-filtros-wrap">
+              <button class="suporte-filtro-btn ativo" id="filtro_todas" onclick="filtrarSuporte('todas')">Todas</button>
+              <button class="suporte-filtro-btn" id="filtro_abertas" onclick="filtrarSuporte('abertas')">Abertas</button>
+              <button class="suporte-filtro-btn" id="filtro_fechadas" onclick="filtrarSuporte('fechadas')">Fechadas</button>
+            </div>
+            <div id="suporte_conv_lista" class="suporte-conv-lista">
+              <div class="suporte-vazio">Carregando conversas...</div>
             </div>
           </div>
-          <div id="suporte_chat_msgs" class="suporte-chat-msgs"></div>
-          <div class="suporte-input-area">
-            <input
-              type="file"
-              id="suporte_anexo_input"
-              accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-              style="display:none;"
-              onchange="enviarAnexoSuporte(this.files[0])"
-            >
-            <button
-              type="button"
-              class="chat-anexo-btn"
-              title="Enviar print, imagem ou arquivo"
-              onclick="document.getElementById('suporte_anexo_input').click()"
-            >📎</button>
-            <input
-              type="text"
-              id="suporte_input"
-              class="suporte-input"
-              placeholder="Responder..."
-              onkeydown="if(event.key==='Enter')responderSuporte()"
-            >
-            <button class="suporte-enviar-btn" onclick="responderSuporte()">Enviar</button>
+
+          <div class="suporte-main">
+            <div id="suporte_chat_placeholder" class="suporte-chat-placeholder">
+              <div style="font-size:38px;line-height:1;">💬</div>
+              <div style="font-size:15px;font-weight:600;color:#475569;margin-top:4px;">Selecione uma conversa</div>
+              <div style="font-size:13px;color:#334155;max-width:260px;text-align:center;line-height:1.6;">Escolha um usuário na lista para visualizar e responder mensagens.</div>
+            </div>
+            <div id="suporte_chat_area" class="suporte-chat-area" style="display:none;">
+              <div class="suporte-chat-header">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                  <div class="suporte-avatar-sm" id="suporte_chat_avatar">?</div>
+                  <span id="suporte_chat_titulo">Conversa</span>
+                </div>
+                <div style="display:flex;gap:6px;flex-shrink:0;">
+                  <button
+                    id="suporte_reabrir_btn"
+                    class="suporte-fechar-btn suporte-reabrir-btn"
+                    style="display:none;"
+                    onclick="reabrirConversaSuporte()"
+                  >Reabrir</button>
+                  <button
+                    id="suporte_fechar_btn"
+                    class="suporte-fechar-btn"
+                    onclick="fecharConversaSuporte()"
+                  >Encerrar</button>
+                  <button
+                    class="suporte-popout-btn"
+                    title="Abrir em janela flutuante"
+                    onclick="abrirEmJanela()"
+                  >⬝ Pop-out</button>
+                </div>
+              </div>
+              <div id="suporte_chat_msgs" class="suporte-chat-msgs" style="max-height:calc(100vh - 480px);min-height:240px;"></div>
+              <div class="suporte-input-area">
+                <input type="file" id="suporte_anexo_input" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf" style="display:none;" onchange="enviarAnexoSuporte(this.files[0])">
+                <button type="button" class="chat-anexo-btn" title="Enviar print, imagem ou arquivo" onclick="document.getElementById('suporte_anexo_input').click()">📎</button>
+                <input type="text" id="suporte_input" class="suporte-input" placeholder="Responder como suporte..." onkeydown="if(event.key==='Enter')responderSuporte()">
+                <button class="suporte-enviar-btn" onclick="responderSuporte()">Enviar</button>
+              </div>
+            </div>
           </div>
+
         </div>
 
       </div>
@@ -22831,12 +22836,14 @@ function kpiCard(icone, label, valor, cor) {
 // =============================================
 
 const HUB_PLATAFORMAS = [
-  { id: "meta",       nome: "Meta Ads",   icone: "🟦", disponivelConectar: true  },
-  { id: "google",     nome: "Google Ads", icone: "🔴", disponivelConectar: false },
-  { id: "tiktok",     nome: "TikTok Ads", icone: "🎵", disponivelConectar: false },
-  { id: "linkedin",   nome: "LinkedIn",   icone: "💼", disponivelConectar: false },
-  { id: "kwai",       nome: "Kwai Ads",   icone: "🎬", disponivelConectar: false },
-  { id: "formulario", nome: "Leads Diretos", icone: "🚀", disponivelConectar: false },
+  { id: "meta",      nome: "Meta Ads",      icone: "🟦", disponivelConectar: true  },
+  { id: "google",    nome: "Google Ads",    icone: "🔴", disponivelConectar: false },
+  { id: "tiktok",    nome: "TikTok Ads",    icone: "🎵", disponivelConectar: false },
+  { id: "linkedin",  nome: "LinkedIn Ads",  icone: "💼", disponivelConectar: false },
+  { id: "kwai",      nome: "Kwai Ads",      icone: "🎬", disponivelConectar: false },
+  { id: "pinterest", nome: "Pinterest Ads", icone: "📌", disponivelConectar: false },
+  { id: "snapchat",  nome: "Snapchat Ads",  icone: "👻", disponivelConectar: false },
+  { id: "microsoft", nome: "Microsoft Ads", icone: "🪟", disponivelConectar: false },
 ];
 
 async function carregarHub() {

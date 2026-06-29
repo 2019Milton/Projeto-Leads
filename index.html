@@ -8253,6 +8253,56 @@ body.tema-claro .info-tooltip-popup {
   color: var(--nicho-card-title, #dbeafe) !important;
 }
 
+/* 🔌 HUB DE CONEXÕES */
+.hub-conexoes-card { border: 1px solid #334155 !important; }
+.hub-conexoes-card h3 { color: #94a3b8; margin-bottom: 14px; }
+.hub-conexoes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.hub-plataforma-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, transform .15s;
+}
+.hub-plataforma-card:hover { border-color: #475569; transform: translateY(-2px); }
+.hub-plataforma-card.conectado { border-color: #166534; background: #052e16; }
+.hub-plataforma-card.erro { border-color: #991b1b; background: #2d0505; }
+.hub-plataforma-icone { font-size: 26px; margin-bottom: 6px; }
+.hub-plataforma-nome { font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+.hub-plataforma-card.conectado .hub-plataforma-nome { color: #86efac; }
+.hub-plataforma-status {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  display: inline-block;
+  background: #1e293b;
+  color: #64748b;
+}
+.hub-plataforma-card.conectado .hub-plataforma-status { background: #14532d; color: #4ade80; }
+.hub-plataforma-card.erro .hub-plataforma-status { background: #7f1d1d; color: #fca5a5; }
+.hub-plataforma-btn {
+  margin-top: 8px;
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background .15s;
+}
+.hub-plataforma-btn:hover { background: #1e293b; }
+.hub-plataforma-card.conectado .hub-plataforma-btn { border-color: #166534; color: #86efac; }
+.hub-plataforma-card.conectado .hub-plataforma-btn:hover { background: #14532d; }
+.hub-plataforma-em-breve { opacity: .45; cursor: default; }
+.hub-plataforma-em-breve:hover { transform: none; border-color: #1e293b; }
+
 /* 🟢 CONECTAR META — verde */
 .meta-card {
   background: #06251a !important;
@@ -11491,6 +11541,14 @@ body.tema-claro .ia-resumo-panel {
 
     <div class="coluna-esquerda">
   
+      <!-- 🔌 HUB DE CONEXÕES -->
+      <div class="card hub-conexoes-card">
+        <h3>🔌 Integrações</h3>
+        <div id="hub_conexoes_grid" class="hub-conexoes-grid">
+          <div style="color:#64748b;font-size:13px;">Carregando...</div>
+        </div>
+      </div>
+
       <!-- 🔗 META -->
       <div class="card meta-card">
   
@@ -14842,6 +14900,8 @@ async function init() {
 
     console.error("Erro token:", err);
   }
+
+  await carregarHub();
 
   await carregarStatusMeta();
 
@@ -18670,6 +18730,7 @@ function conectarMeta() {
     clearInterval(pollInterval);
     window.removeEventListener("message", msgHandler);
     await carregarStatusMeta();
+    await carregarHub();
   }
 
   function msgHandler(event) {
@@ -22279,6 +22340,88 @@ async function criarCampanhaCompleta() {
     console.error("ERRO publicarCampanha:", err);
     setPublishProgress(null);
     mostrarErroPublicacao("Erro ao criar campanha: " + (err?.message || String(err) || "Erro desconhecido"));
+  }
+}
+
+// =============================================
+//   🔌 HUB DE CONEXÕES
+// =============================================
+
+const HUB_PLATAFORMAS = [
+  { id: "meta",       nome: "Meta Ads",   icone: "🟦", disponivelConectar: true  },
+  { id: "google",     nome: "Google Ads", icone: "🔴", disponivelConectar: false },
+  { id: "tiktok",     nome: "TikTok Ads", icone: "🎵", disponivelConectar: false },
+  { id: "linkedin",   nome: "LinkedIn",   icone: "💼", disponivelConectar: false },
+  { id: "kwai",       nome: "Kwai Ads",   icone: "🎬", disponivelConectar: false },
+  { id: "formulario", nome: "Formulário", icone: "📋", disponivelConectar: false },
+];
+
+async function carregarHub() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/conexoes`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const { conexoes } = await res.json();
+    const mapa = Object.fromEntries(conexoes.map(c => [c.plataforma, c]));
+    const grid = document.getElementById("hub_conexoes_grid");
+    if (!grid) return;
+    grid.innerHTML = HUB_PLATAFORMAS.map(p => {
+      const conn = mapa[p.id];
+      const conectado = conn?.status === "conectado";
+      const emBreve = !p.disponivelConectar && p.id !== "formulario";
+      const sempre = p.id === "formulario";
+      const classeCard = `hub-plataforma-card${conectado ? " conectado" : ""}${emBreve ? " hub-plataforma-em-breve" : ""}`;
+      const statusLabel = sempre ? "Sempre ativo" : conectado ? "Conectado" : emBreve ? "Em breve" : "Desconectado";
+      let btnHtml = "";
+      if (sempre) {
+        btnHtml = `<button class="hub-plataforma-btn" disabled>Ativo</button>`;
+      } else if (emBreve) {
+        btnHtml = `<button class="hub-plataforma-btn" disabled>Em breve</button>`;
+      } else if (conectado) {
+        btnHtml = `<button class="hub-plataforma-btn" onclick="desconectarPlataforma('${p.id}')">Desconectar</button>`;
+      } else {
+        btnHtml = `<button class="hub-plataforma-btn" onclick="conectarPlataforma('${p.id}')">Conectar</button>`;
+      }
+      return `<div class="${classeCard}">
+        <div class="hub-plataforma-icone">${p.icone}</div>
+        <div class="hub-plataforma-nome">${p.nome}</div>
+        <span class="hub-plataforma-status">${statusLabel}</span>
+        <br>${btnHtml}
+      </div>`;
+    }).join("");
+  } catch (e) {
+    console.error("Erro ao carregar hub:", e);
+  }
+}
+
+function conectarPlataforma(plataforma) {
+  if (plataforma === "meta") {
+    conectarMeta();
+  } else {
+    alert(`Integração com ${plataforma} chegando em breve!`);
+  }
+}
+
+async function desconectarPlataforma(plataforma) {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  if (!confirm(`Deseja desconectar ${plataforma}?`)) return;
+  try {
+    const res = await fetch(`${API}/conexoes/${plataforma}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      await carregarHub();
+      if (plataforma === "meta") await carregarStatusMeta();
+    } else {
+      alert("Erro ao desconectar.");
+    }
+  } catch (e) {
+    alert("Erro ao desconectar.");
   }
 }
 

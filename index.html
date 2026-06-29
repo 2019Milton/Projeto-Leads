@@ -12169,6 +12169,536 @@ body.tema-claro .ia-resumo-panel {
   display: none;
 }
 
+/* =========================================
+   TEMA CLARO REVISADO
+========================================= */
+body.tema-claro {
+  --claro-bg: #eef4f9;
+  --claro-surface: #ffffff;
+  --claro-surface-soft: #f6f9fc;
+  --claro-surface-blue: #eef6ff;
+  --claro-border: #c6d4e3;
+  --claro-border-strong: #9fb5cc;
+  --claro-text: #0f172a;
+  --claro-muted: #475569;
+  --claro-subtle: #64748b;
+  --claro-primary: #2563eb;
+  --claro-primary-soft: #dbeafe;
+  --claro-success: #15803d;
+  --claro-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  background:
+    linear-gradient(180deg, #f8fbff 0%, var(--claro-bg) 100%) !important;
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro #app.sidebar-ativa,
+body.tema-claro #app-content,
+body.tema-claro #app-content-area {
+  background:
+    linear-gradient(180deg, #f8fbff 0%, var(--claro-bg) 100%) !important;
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro #sidebar-nav {
+  background: #e6f0f8 !important;
+  border-right-color: #b6c7da !important;
+  box-shadow: 4px 0 18px rgba(15, 23, 42, 0.05);
+}
+
+body.tema-claro .sidebar-topo,
+body.tema-claro .sidebar-rodape,
+body.tema-claro .sidebar-separador {
+  border-color: #c3d2e2 !important;
+  background: transparent !important;
+}
+
+body.tema-claro .sidebar-titulo,
+body.tema-claro .sidebar-perfil-nome {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .sidebar-subtitulo {
+  color: #3347d6 !important;
+}
+
+body.tema-claro .sidebar-item {
+  color: #1e293b !important;
+}
+
+body.tema-claro .sidebar-item:hover {
+  background: #d7e7f6 !important;
+  color: #0f172a !important;
+}
+
+body.tema-claro .sidebar-item.ativa {
+  background: #bfdbfe !important;
+  color: #0b4ea2 !important;
+  box-shadow: inset 3px 0 0 #2563eb;
+}
+
+body.tema-claro .sidebar-item.ativa .sidebar-icone {
+  color: #1d4ed8 !important;
+}
+
+body.tema-claro .sidebar-toggle-btn {
+  background: #f8fbff !important;
+  border-color: #b7c8da !important;
+  color: #24415f !important;
+}
+
+body.tema-claro .sidebar-toggle-btn:hover {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+}
+
+body.tema-claro .app-topbar-slim {
+  background: #f8fbff !important;
+  border-bottom-color: #c4d3e4 !important;
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro #sidebar-secao-titulo {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .secao-app {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .card,
+body.tema-claro .dashboard-box,
+body.tema-claro .kpi-card,
+body.tema-claro .kanban-column,
+body.tema-claro .lead-card,
+body.tema-claro .campanha-card,
+body.tema-claro .drawer-box,
+body.tema-claro .info-box,
+body.tema-claro .historico-item,
+body.tema-claro .metrica,
+body.tema-claro .performance-box,
+body.tema-claro .conexao-status-item,
+body.tema-claro .campaign-setup-section,
+body.tema-claro .advanced-campaign,
+body.tema-claro .detailed-targeting-panel,
+body.tema-claro .targeting-option,
+body.tema-claro .meta-status-tile,
+body.tema-claro .pagamento-modo,
+body.tema-claro .suporte-page-card,
+body.tema-claro .cfg-card {
+  background: var(--claro-surface) !important;
+  border-color: var(--claro-border) !important;
+  color: var(--claro-text) !important;
+  box-shadow: var(--claro-shadow) !important;
+}
+
+body.tema-claro h1,
+body.tema-claro h2,
+body.tema-claro h3,
+body.tema-claro h4,
+body.tema-claro .card label,
+body.tema-claro .dashboard-box div,
+body.tema-claro .kpi-card span,
+body.tema-claro .detalhe-item strong,
+body.tema-claro .metrica strong,
+body.tema-claro .cfg-card-header,
+body.tema-claro .cfg-toggle-label {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro p,
+body.tema-claro small,
+body.tema-claro .lead-meta,
+body.tema-claro .lead-time,
+body.tema-claro .campanha-data,
+body.tema-claro .dashboard-box h3,
+body.tema-claro .cfg-toggle-desc,
+body.tema-claro .cfg-value-static {
+  color: var(--claro-muted) !important;
+}
+
+body.tema-claro input,
+body.tema-claro textarea,
+body.tema-claro select,
+body.tema-claro .card input,
+body.tema-claro .card select,
+body.tema-claro .card textarea,
+body.tema-claro .lead-search,
+body.tema-claro .lead-filter,
+body.tema-claro .suporte-input,
+body.tema-claro .suporte-select,
+body.tema-claro .suporte-busca,
+body.tema-claro .chat-input,
+body.tema-claro .feedback-select,
+body.tema-claro .feedback-textarea,
+body.tema-claro .cfg-input,
+body.tema-claro .ia-campanha-contexto {
+  background: #ffffff !important;
+  border-color: var(--claro-border-strong) !important;
+  color: var(--claro-text) !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+}
+
+body.tema-claro input::placeholder,
+body.tema-claro textarea::placeholder,
+body.tema-claro .suporte-busca::placeholder,
+body.tema-claro .chat-input::placeholder {
+  color: #6b7f96 !important;
+  opacity: 1;
+}
+
+body.tema-claro input:focus,
+body.tema-claro textarea:focus,
+body.tema-claro select:focus,
+body.tema-claro .suporte-busca:focus,
+body.tema-claro .chat-input:focus,
+body.tema-claro .cfg-input:focus {
+  border-color: var(--claro-primary) !important;
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.16),
+    inset 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  outline: none !important;
+}
+
+body.tema-claro .hub-conexoes-card,
+body.tema-claro #card-hub-conexoes {
+  background: var(--claro-surface) !important;
+  border-color: var(--claro-border) !important;
+}
+
+body.tema-claro .hub-conexoes-card > h3,
+body.tema-claro .hub-conexoes-card > .integ-desc {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .integ-card {
+  background: #ffffff !important;
+  border-color: #cbd8e6 !important;
+  color: var(--claro-text) !important;
+  opacity: 1 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+}
+
+body.tema-claro .integ-card:hover {
+  border-color: #8fb0d0 !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+}
+
+body.tema-claro .integ-card.em-breve {
+  background: #f3f7fb !important;
+  border-color: #d0dce8 !important;
+}
+
+body.tema-claro .integ-card.conectado,
+body.tema-claro .integ-card.formulario-ativo {
+  background: #edf8f1 !important;
+  border-color: #22c55e !important;
+}
+
+body.tema-claro .integ-card-nome,
+body.tema-claro .integ-detalhe-valor {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .integ-card-desc,
+body.tema-claro .integ-card-status.desconectado,
+body.tema-claro .integ-detalhe-label {
+  color: var(--claro-muted) !important;
+}
+
+body.tema-claro .integ-card-status.conectado,
+body.tema-claro .integ-card-status.sempre {
+  color: var(--claro-success) !important;
+}
+
+body.tema-claro .integ-card-conta,
+body.tema-claro .integ-card-detalhes {
+  background: var(--claro-surface-soft) !important;
+  border-color: #d9e4ef !important;
+  color: var(--claro-muted) !important;
+}
+
+body.tema-claro .integ-card-acoes button {
+  background: #ffffff !important;
+  border-color: #b7c8da !important;
+  color: #24415f !important;
+}
+
+body.tema-claro .integ-card-acoes button:hover {
+  background: var(--claro-primary-soft) !important;
+  border-color: #93b8ef !important;
+  color: #1d4ed8 !important;
+}
+
+body.tema-claro .integ-card-acoes button:disabled {
+  background: #e8eef5 !important;
+  border-color: #d2deea !important;
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+body.tema-claro .desemp-tab {
+  background: #ffffff !important;
+  border-color: var(--claro-border) !important;
+  color: #334155 !important;
+}
+
+body.tema-claro .desemp-tab.ativa {
+  background: var(--claro-primary-soft) !important;
+  border-color: #60a5fa !important;
+  color: #1d4ed8 !important;
+}
+
+body.tema-claro .desemp-tab:disabled {
+  background: #edf2f7 !important;
+  border-color: #d2deea !important;
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+.dashboard-kpi-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dashboard-kpi-icon {
+  font-size: 22px;
+}
+
+.dashboard-kpi-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--kpi-cor, #60a5fa);
+}
+
+.dashboard-kpi-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+body.tema-claro .dashboard-kpi-card {
+  background: #ffffff !important;
+  border-color: var(--claro-border) !important;
+  box-shadow: var(--claro-shadow);
+}
+
+body.tema-claro .dashboard-kpi-label {
+  color: var(--claro-muted) !important;
+}
+
+body.tema-claro .dashboard-action-btn {
+  background: #ffffff !important;
+  border-color: #b8c8d8 !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+body.tema-claro .dashboard-action-btn:hover {
+  background: #eff6ff !important;
+  border-color: #60a5fa !important;
+}
+
+body.tema-claro #painel_admin > div > .card,
+body.tema-claro #painel_admin .card {
+  background: #fffafe !important;
+  border-color: #f3b5bd !important;
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro #painel_admin .card h2 {
+  color: #7f1d1d !important;
+}
+
+body.tema-claro .admin-secao,
+body.tema-claro .admin-secao-a,
+body.tema-claro .admin-secao-b {
+  background: #ffffff !important;
+  border-color: #cbd8e6 !important;
+  color: var(--claro-text) !important;
+  box-shadow: var(--claro-shadow);
+}
+
+body.tema-claro .admin-secao > h3:first-child,
+body.tema-claro .admin-secao-colapsavel > h3:first-child {
+  color: var(--claro-text) !important;
+  border-bottom-color: #cbd8e6 !important;
+}
+
+body.tema-claro .admin-secao-colapsavel.fechada > h3:first-child {
+  color: #1e293b !important;
+}
+
+body.tema-claro .admin-sec-chevron {
+  color: #64748b !important;
+}
+
+body.tema-claro .admin-nav-card {
+  background: #ffffff !important;
+  border-color: #cbd8e6 !important;
+  color: var(--claro-text) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+body.tema-claro .admin-nav-card:hover,
+body.tema-claro .admin-nav-card.ativo {
+  background: #eff6ff !important;
+  border-color: #7da9e8 !important;
+}
+
+body.tema-claro .admin-nav-card-titulo,
+body.tema-claro .admin-kpi-table td {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .admin-nav-card-resumo,
+body.tema-claro .admin-kpi-link {
+  color: var(--claro-muted) !important;
+}
+
+.suporte-admin-card {
+  background: linear-gradient(145deg, rgba(99,102,241,0.15), rgba(139,92,246,0.06)) !important;
+  border: 1px solid rgba(139,92,246,0.25) !important;
+}
+
+.suporte-admin-card h2 {
+  color: #c4b5fd;
+}
+
+.suporte-admin-desc {
+  color: #94a3b8;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+body.tema-claro .suporte-admin-card {
+  background: #f8fbff !important;
+  border-color: #b8c8d8 !important;
+}
+
+body.tema-claro .suporte-admin-card h2 {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .suporte-admin-desc {
+  color: var(--claro-muted) !important;
+}
+
+.suporte-layout {
+  display: grid;
+  grid-template-columns: minmax(330px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.suporte-sidebar {
+  width: auto;
+  min-width: 0;
+}
+
+.suporte-main {
+  min-width: 0;
+}
+
+.suporte-filtros-wrap {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.suporte-filtro-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin-top: 0 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suporte-broadcast-grid {
+  grid-template-columns: minmax(220px, 300px) minmax(280px, 1fr) minmax(118px, 140px);
+}
+
+.suporte-acao-btn,
+.suporte-enviar-btn {
+  min-height: 38px;
+  margin-top: 0 !important;
+}
+
+body.tema-claro .suporte-broadcast-box,
+body.tema-claro .suporte-chat-placeholder,
+body.tema-claro .suporte-chat-area {
+  background: #ffffff !important;
+  border-color: #c4d3e4 !important;
+  color: var(--claro-text) !important;
+  box-shadow: var(--claro-shadow);
+}
+
+body.tema-claro .suporte-conv-item {
+  background: #f8fbff !important;
+  border-color: #c4d3e4 !important;
+}
+
+body.tema-claro .suporte-conv-item:hover,
+body.tema-claro .suporte-conv-item.selecionado {
+  background: #eff6ff !important;
+  border-color: #7da9e8 !important;
+}
+
+body.tema-claro .suporte-conv-email,
+body.tema-claro .suporte-chat-header span {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .suporte-conv-preview,
+body.tema-claro .suporte-conv-data,
+body.tema-claro .suporte-vazio {
+  color: var(--claro-muted) !important;
+}
+
+body.tema-claro .suporte-filtro-btn {
+  background: #ffffff !important;
+  border-color: #b8c8d8 !important;
+  color: #334155 !important;
+}
+
+body.tema-claro .suporte-filtro-btn.ativo {
+  background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+  border-color: #6366f1 !important;
+  color: #ffffff !important;
+}
+
+body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+}
+
+@media (max-width: 1180px) {
+  .suporte-broadcast-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .suporte-acao-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 980px) {
+  .suporte-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .suporte-chat-placeholder {
+    min-height: 280px;
+  }
+}
+
 </style>
 </head>
 
@@ -15210,9 +15740,9 @@ body.tema-claro .ia-resumo-panel {
     id="painel_suporte_chat"
     style="display:none;"
   >
-    <div class="card" style="background:linear-gradient(145deg,rgba(99,102,241,0.15),rgba(139,92,246,0.06))!important;border:1px solid rgba(139,92,246,0.25)!important;">
-      <h2 style="color:#c4b5fd;">💬 Painel de Suporte</h2>
-      <p style="color:#94a3b8;margin-top:6px;font-size:13px;">Conversas dos usuários da plataforma, abertas ou fechadas.</p>
+    <div class="card suporte-admin-card">
+      <h2>💬 Painel de Suporte</h2>
+      <p class="suporte-admin-desc">Conversas dos usuários da plataforma, abertas ou fechadas.</p>
 
       <div class="suporte-painel">
 
@@ -24026,17 +24556,17 @@ async function carregarDashboard() {
       <div style="color:#64748b;font-size:13px;">Carregando KPIs...</div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
-      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="navegarPara('leads')">
+      <button class="btn dashboard-action-btn" style="text-align:left;padding:14px 16px;" onclick="navegarPara('leads')">
         <span style="font-size:18px;">📥</span><br>
         <span style="font-size:13px;font-weight:600;">Central de Leads</span><br>
         <span style="font-size:11px;color:#64748b;">Ver e gerenciar leads</span>
       </button>
-      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="navegarPara('campanhas')">
+      <button class="btn dashboard-action-btn" style="text-align:left;padding:14px 16px;" onclick="navegarPara('campanhas')">
         <span style="font-size:18px;">📢</span><br>
         <span style="font-size:13px;font-weight:600;">Campanhas</span><br>
         <span style="font-size:11px;color:#64748b;">Criar e acompanhar</span>
       </button>
-      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="navegarPara('integracoes')">
+      <button class="btn dashboard-action-btn" style="text-align:left;padding:14px 16px;" onclick="navegarPara('integracoes')">
         <span style="font-size:18px;">🔌</span><br>
         <span style="font-size:13px;font-weight:600;">Integrações</span><br>
         <span style="font-size:11px;color:#64748b;">Conectar plataformas</span>
@@ -24071,10 +24601,10 @@ async function carregarDashboard() {
 
 function kpiCard(icone, label, valor, cor) {
   return `
-    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;">
-      <span style="font-size:22px;">${icone}</span>
-      <span style="font-size:22px;font-weight:800;color:${cor};">${valor}</span>
-      <span style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;">${label}</span>
+    <div class="dashboard-kpi-card" style="--kpi-cor:${cor};">
+      <span class="dashboard-kpi-icon">${icone}</span>
+      <span class="dashboard-kpi-value">${valor}</span>
+      <span class="dashboard-kpi-label">${label}</span>
     </div>
   `;
 }

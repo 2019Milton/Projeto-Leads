@@ -100,9 +100,12 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .login-box {
+  position: relative;
+  z-index: 2;
   background: rgba(15, 23, 42, 0.85);
   padding: 40px;
   border-radius: 15px;
@@ -122,6 +125,212 @@ body::after {
 
 .login-box:hover {
   transform: translateY(-3px);
+}
+
+.login-space-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.login-space-scene::before,
+.login-space-scene::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(0.2px);
+  animation: loginPlanetDrift 6s ease-out forwards;
+}
+
+.login-space-scene::before {
+  width: 148px;
+  height: 148px;
+  left: 14%;
+  top: 20%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55), transparent 16%),
+    radial-gradient(circle at 62% 72%, rgba(15,23,42,0.28), transparent 28%),
+    linear-gradient(135deg, #10b981, #2563eb 64%, #1e1b4b);
+  box-shadow: 0 0 44px rgba(37,99,235,0.16);
+}
+
+.login-space-scene::after {
+  width: 92px;
+  height: 92px;
+  right: 18%;
+  bottom: 24%;
+  background:
+    radial-gradient(circle at 36% 30%, rgba(255,255,255,0.62), transparent 15%),
+    linear-gradient(145deg, #f59e0b, #dc2626 58%, #581c87);
+  box-shadow: 0 0 36px rgba(245,158,11,0.14);
+  animation-delay: .35s;
+}
+
+.login-planet {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  opacity: 0;
+  animation: loginPlanetDrift 6s ease-out forwards;
+}
+
+.login-planet-ring {
+  width: 118px;
+  height: 118px;
+  right: 10%;
+  top: 16%;
+  background:
+    radial-gradient(circle at 38% 32%, rgba(255,255,255,0.6), transparent 13%),
+    linear-gradient(145deg, #8b5cf6, #1d4ed8 58%, #0f172a);
+  box-shadow: 0 0 40px rgba(139,92,246,0.16);
+  animation-delay: .2s;
+}
+
+.login-planet-ring::after {
+  content: "";
+  position: absolute;
+  left: -24px;
+  top: 48px;
+  width: 166px;
+  height: 26px;
+  border: 2px solid rgba(191,219,254,0.42);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.login-planet-small {
+  width: 54px;
+  height: 54px;
+  left: 24%;
+  bottom: 18%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.62), transparent 16%),
+    linear-gradient(145deg, #38bdf8, #1d4ed8 58%, #111827);
+  box-shadow: 0 0 30px rgba(56,189,248,0.14);
+  animation-delay: .55s;
+}
+
+.login-rocket-trail {
+  position: absolute;
+  left: -18%;
+  top: 69%;
+  width: 280px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(96,165,250,0.12), rgba(251,146,60,0.7), transparent);
+  opacity: 0;
+  transform: rotate(-18deg);
+  filter: blur(.3px);
+  animation: loginRocketTrail 5.7s ease-in-out forwards;
+}
+
+.login-scene-rocket {
+  position: absolute;
+  left: -90px;
+  bottom: 10%;
+  width: 62px;
+  height: 78px;
+  object-fit: contain;
+  opacity: 0;
+  filter: drop-shadow(0 0 12px rgba(59,130,246,0.55)) drop-shadow(0 0 14px rgba(251,146,60,0.36));
+  transform: translate3d(0,0,0) rotate(42deg);
+  animation: loginRocketFlyby 5.7s cubic-bezier(.18,.72,.18,1) forwards;
+}
+
+@keyframes loginRocketFlyby {
+  0% {
+    opacity: 0;
+    transform: translate3d(0,0,0) rotate(42deg) scale(.75);
+  }
+  12% { opacity: 1; }
+  62% {
+    opacity: 1;
+    transform: translate3d(70vw,-44vh,0) rotate(42deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(116vw,-72vh,0) rotate(42deg) scale(.92);
+  }
+}
+
+@keyframes loginRocketTrail {
+  0%, 8% { opacity: 0; transform: translate3d(0,0,0) rotate(-18deg) scaleX(.35); }
+  18%, 58% { opacity: .72; }
+  100% { opacity: 0; transform: translate3d(104vw,-66vh,0) rotate(-18deg) scaleX(1); }
+}
+
+@keyframes loginPlanetDrift {
+  0% { opacity: 0; transform: translate3d(0,18px,0) scale(.96); }
+  18% { opacity: .82; }
+  100% { opacity: .7; transform: translate3d(0,-8px,0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stars,
+  .login-space-scene::before,
+  .login-space-scene::after,
+  .login-planet,
+  .login-rocket-trail,
+  .login-scene-rocket {
+    animation: none !important;
+  }
+
+  .login-space-scene::before,
+  .login-space-scene::after,
+  .login-planet {
+    opacity: .45;
+  }
+
+  .login-rocket-trail,
+  .login-scene-rocket {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .login-space-scene::before {
+    width: 96px;
+    height: 96px;
+    left: 6%;
+    top: 14%;
+  }
+
+  .login-space-scene::after {
+    width: 66px;
+    height: 66px;
+    right: 8%;
+    bottom: 18%;
+  }
+
+  .login-planet-ring {
+    width: 78px;
+    height: 78px;
+    right: 8%;
+    top: 18%;
+  }
+
+  .login-planet-ring::after {
+    left: -16px;
+    top: 31px;
+    width: 110px;
+    height: 18px;
+  }
+
+  .login-planet-small {
+    width: 38px;
+    height: 38px;
+    left: 12%;
+  }
+
+  .login-scene-rocket {
+    width: 48px;
+    height: 60px;
+  }
 }
 
 .empresa-publica-login {
@@ -455,6 +664,14 @@ button {
   flex-shrink: 0;
   line-height: 1;
 }
+.sidebar-rocket-logo {
+  width: 30px;
+  height: 38px;
+  display: block;
+  object-fit: contain;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 0 8px rgba(14,165,233,0.38)) drop-shadow(0 0 8px rgba(124,77,255,0.3));
+}
 .sidebar-titulo {
   font-size: 13px;
   font-weight: 700;
@@ -465,6 +682,15 @@ button {
   transition: opacity .18s;
 }
 #sidebar-nav.recolhida .sidebar-titulo { opacity: 0; width: 0; }
+#sidebar-nav.recolhida .sidebar-topo {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+#sidebar-nav.recolhida .sidebar-rocket-logo {
+  width: 28px;
+  height: 36px;
+}
 
 .sidebar-menu {
   flex: 1;
@@ -11807,6 +12033,12 @@ body.tema-claro .ia-resumo-panel {
 
 <!-- LOGIN -->
 <div class="container" id="loginBox">
+  <div class="login-space-scene" aria-hidden="true">
+    <span class="login-planet login-planet-ring"></span>
+    <span class="login-planet login-planet-small"></span>
+    <span class="login-rocket-trail"></span>
+    <img class="login-scene-rocket" src="rocket-logo.png" alt="">
+  </div>
   <div class="login-box" id="loginFormBox">
     <h2>
       <img class="rocket-icon" src="rocket-logo.png" alt="Foguete">
@@ -15574,7 +15806,7 @@ function montarSidebar() {
 
   sidebar.innerHTML = `
     <div class="sidebar-topo">
-      <span class="sidebar-logo">🚀</span>
+      <img class="sidebar-rocket-logo" src="rocket-logo.png" alt="">
       <span class="sidebar-titulo">Plataforma de Leads</span>
     </div>
     <div class="sidebar-menu">${itensMenu}</div>

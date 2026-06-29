@@ -16121,7 +16121,6 @@ const SIDEBAR_SECOES = {
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
   suporte:        { ids: ["suporte-page-wrap"],                                icone: "💬", label: "Suporte" },
   informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Informações" },
-  configuracoes:  { ids: ["card-configuracoes"],                              icone: "⚙️", label: "Configurações" },
   admin:          { ids: ["painel_admin"],                                    icone: "🛡️", label: "Admin", condicional: true },
   "suporte-chat": { ids: ["painel_suporte_chat"],                             icone: "🎧", label: "Painel Suporte", condicional: true },
   parceiro:       { ids: ["painel_parceiro"],                                 icone: "🤝", label: "Parceiro", condicional: true },
@@ -16221,26 +16220,32 @@ function montarSidebar() {
 }
 
 function navegarPara(secao) {
-  if (!SIDEBAR_SECOES[secao]) return;
+  if (!SIDEBAR_SECOES[secao] && secao !== "configuracoes") return;
   secaoAtiva = secao;
 
   // Atualizar título do topbar
   const titulo = document.getElementById("sidebar-secao-titulo");
-  if (titulo) titulo.textContent = SIDEBAR_SECOES[secao].label;
+  if (titulo) titulo.textContent = secao === "configuracoes" ? "Configurações" : SIDEBAR_SECOES[secao].label;
 
-  // Ocultar todos os cards gerenciados
+  // Ocultar todos os cards gerenciados + card-configuracoes
   Object.values(SIDEBAR_SECOES).forEach(s => {
     s.ids.forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.style.display = "none"; el.classList.remove("secao-visivel"); }
     });
   });
+  const cfgCard = document.getElementById("card-configuracoes");
+  if (cfgCard) { cfgCard.style.display = "none"; cfgCard.classList.remove("secao-visivel"); }
 
   // Mostrar cards da seção ativa
-  SIDEBAR_SECOES[secao].ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.style.display = ""; el.classList.add("secao-visivel"); }
-  });
+  if (secao === "configuracoes") {
+    if (cfgCard) { cfgCard.style.display = ""; cfgCard.classList.add("secao-visivel"); }
+  } else {
+    SIDEBAR_SECOES[secao].ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.display = ""; el.classList.add("secao-visivel"); }
+    });
+  }
 
   // Destacar item ativo no menu
   document.querySelectorAll(".sidebar-item[data-secao]").forEach(btn => {

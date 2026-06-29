@@ -10970,6 +10970,121 @@ body.tema-claro .suporte-page-card--feedback { border-color: rgba(180,83,9,0.28)
 body.tema-claro .suporte-page-hdr { color: #4338ca; }
 body.tema-claro .suporte-page-hdr--feedback { color: #92400e; }
 
+/* =========================================
+   ⚙️ CONFIGURAÇÕES PAGE
+========================================= */
+.cfg-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+.cfg-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 4px;
+}
+.cfg-card {
+  background: rgba(15,23,42,0.70);
+  border: 1px solid rgba(99,102,241,0.18);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.cfg-card-header {
+  padding: 13px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c4b5fd;
+  background: linear-gradient(145deg, rgba(99,102,241,0.18), rgba(139,92,246,0.06));
+  border-bottom: 1px solid rgba(99,102,241,0.14);
+}
+.cfg-field {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.cfg-field:last-child { border-bottom: none; }
+.cfg-label {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  display: block;
+  margin-bottom: 6px;
+}
+.cfg-value-static {
+  font-size: 14px;
+  color: #94a3b8;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+}
+.cfg-input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color: #f1f5f9;
+  font-size: 14px;
+  outline: none;
+}
+.cfg-input:focus { border-color: rgba(99,102,241,0.5); }
+.cfg-btn-save {
+  padding: 10px 18px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cfg-btn-danger {
+  padding: 10px 18px;
+  background: rgba(239,68,68,0.12);
+  color: #f87171;
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  width: 100%;
+}
+.cfg-btn-danger:hover { background: rgba(239,68,68,0.2); }
+.cfg-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+}
+.cfg-toggle-label {
+  font-size: 13px;
+  color: #f1f5f9;
+  font-weight: 600;
+}
+.cfg-toggle-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+.cfg-msg {
+  font-size: 12px;
+  margin-top: 6px;
+  min-height: 16px;
+}
+body.tema-claro .cfg-section-title { color: #0f172a; }
+body.tema-claro .cfg-card {
+  background: rgba(248,250,252,0.96);
+  border-color: rgba(79,70,229,0.18);
+}
+body.tema-claro .cfg-card-header { color: #4338ca; }
+body.tema-claro .cfg-value-static { background: rgba(0,0,0,0.04); color: #475569; }
+body.tema-claro .cfg-input { background: #fff; color: #0f172a; border-color: rgba(0,0,0,0.18); }
+body.tema-claro .cfg-toggle-label { color: #0f172a; }
+
 /* Light theme — chat */
 body.tema-claro .chat-widget-btn {
   background: linear-gradient(145deg, rgba(99,102,241,0.09), rgba(139,92,246,0.04));
@@ -13217,6 +13332,75 @@ body.tema-claro .ia-resumo-panel {
           <div style="height:6px;background:#1e293b;border-radius:99px;overflow:hidden;">
             <div id="publicar_progresso_bar" style="height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:99px;transition:width 0.4s ease;"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- ⚙️ CONFIGURAÇÕES -->
+      <div id="card-configuracoes" style="display:none;">
+        <div class="cfg-page">
+
+          <div class="cfg-section-title">⚙️ Configurações</div>
+
+          <!-- Perfil -->
+          <div class="cfg-card">
+            <div class="cfg-card-header">👤 Meu Perfil</div>
+            <div class="cfg-field">
+              <label class="cfg-label">Email</label>
+              <div id="cfg-email" class="cfg-value-static"></div>
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">Nome</label>
+              <div id="cfg-nome" class="cfg-value-static"></div>
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">WhatsApp para lembretes</label>
+              <div style="display:flex;gap:8px;">
+                <input id="cfg-whatsapp" type="tel" placeholder="(11) 99999-9999" class="cfg-input">
+                <button id="cfg-wpp-btn" onclick="salvarWhatsAppPerfil('cfg-whatsapp','cfg-wpp-btn','cfg-wpp-msg')" class="cfg-btn-save">Salvar</button>
+              </div>
+              <div id="cfg-wpp-msg" class="cfg-msg"></div>
+            </div>
+          </div>
+
+          <!-- Notificações -->
+          <div class="cfg-card">
+            <div class="cfg-card-header">🔔 Notificações</div>
+            <div class="cfg-toggle-row">
+              <div>
+                <div class="cfg-toggle-label">📲 Notificar novo lead por WhatsApp</div>
+                <div class="cfg-toggle-desc">Receba uma mensagem quando um lead chegar</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-notif-lead" onchange="salvarNotifWhatsappLead(this.checked); document.getElementById('perfil-notif-lead-toggle').checked = this.checked;">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Aparência -->
+          <div class="cfg-card">
+            <div class="cfg-card-header">🎨 Aparência</div>
+            <div class="cfg-toggle-row">
+              <div>
+                <div class="cfg-toggle-label">Tema claro</div>
+                <div class="cfg-toggle-desc">Alterna entre o visual escuro e claro</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="cfg-tema-toggle" onchange="alterarTemaPlataforma(this.checked ? 'claro' : 'atual')">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Segurança -->
+          <div class="cfg-card">
+            <div class="cfg-card-header">🔐 Segurança</div>
+            <div class="cfg-field">
+              <div class="cfg-toggle-desc" style="margin-bottom:12px;">Enviaremos um link de redefinição para o seu e-mail cadastrado.</div>
+              <button onclick="abrirMenuPerfilSenha()" class="cfg-btn-danger">🔐 Trocar senha</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -15888,6 +16072,7 @@ const SIDEBAR_SECOES = {
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
   suporte:        { ids: ["suporte-page-wrap"],                                icone: "💬", label: "Suporte" },
   informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Informações" },
+  configuracoes:  { ids: ["card-configuracoes"],                              icone: "⚙️", label: "Configurações" },
   admin:          { ids: ["painel_admin"],                                    icone: "🛡️", label: "Admin", condicional: true },
   "suporte-chat": { ids: ["painel_suporte_chat"],                             icone: "🎧", label: "Painel Suporte", condicional: true },
   parceiro:       { ids: ["painel_parceiro"],                                 icone: "🤝", label: "Parceiro", condicional: true },
@@ -15970,7 +16155,7 @@ function montarSidebar() {
         <span class="sidebar-icone">👤</span>
         <span class="sidebar-perfil-nome" id="sidebar-nome-usuario"></span>
       </div>
-      <button class="sidebar-item" onclick="abrirMenuPerfil()" data-tooltip="Configurações">
+      <button class="sidebar-item" onclick="navegarPara('configuracoes')" data-tooltip="Configurações" id="sidebar-item-configuracoes" data-secao="configuracoes">
         <span class="sidebar-icone">⚙️</span><span class="sidebar-label">Configurações</span>
       </button>
       <button class="sidebar-item" onclick="logout()" data-tooltip="Sair">
@@ -16015,6 +16200,9 @@ function navegarPara(secao) {
 
   // Ao navegar para Dashboard, recarregar performance
   if (secao === "dashboard" || secao === "desempenho") carregarPerformanceMeta();
+
+  // Ao navegar para Configurações, preencher dados do usuário
+  if (secao === "configuracoes") _preencherPaginaConfiguracoes();
 
   // Ao navegar para Suporte, carregar/pausar chat inline
   if (secao === "suporte") {
@@ -18944,6 +19132,23 @@ function aplicarEstadoCriarCampanha(recolhido, salvar = true) {
       );
     } catch (_) {}
   }
+}
+
+function _preencherPaginaConfiguracoes() {
+  const u = usuarioLogado;
+  if (!u) return;
+  const el = (id) => document.getElementById(id);
+  if (el("cfg-email")) el("cfg-email").textContent = u.email || "";
+  if (el("cfg-nome"))  el("cfg-nome").textContent  = u.nomeCompleto || u.email?.split("@")[0] || "";
+  if (el("cfg-whatsapp")) {
+    const wpp = u.whatsapp || "";
+    el("cfg-whatsapp").value = wpp ? formatarTelefoneExibicao(wpp) : "";
+    // sync com o campo oculto do modal antigo
+    const mi = document.getElementById("perfil-whatsapp-input");
+    if (mi) mi.value = el("cfg-whatsapp").value;
+  }
+  if (el("cfg-notif-lead")) el("cfg-notif-lead").checked = u.notif_whatsapp_lead !== false;
+  if (el("cfg-tema-toggle")) el("cfg-tema-toggle").checked = document.body.classList.contains("tema-claro");
 }
 
 function toggleCriarCampanha() {
@@ -27945,14 +28150,14 @@ function formatarTelefoneExibicao(num) {
   return num;
 }
 
-async function salvarWhatsAppPerfil() {
-  const input = document.getElementById("perfil-whatsapp-input");
-  const btn   = document.getElementById("perfil-wpp-btn");
-  const msg   = document.getElementById("perfil-wpp-msg");
-  if (!input || !btn) return;
+async function salvarWhatsAppPerfil(inputId, btnId, msgId) {
+  // Suporta chamada do modal antigo (sem args) ou da página de config
+  const input = document.getElementById(inputId || "perfil-whatsapp-input");
+  const btn   = document.getElementById(btnId   || "perfil-wpp-btn");
+  const msg   = document.getElementById(msgId   || "perfil-wpp-msg");
+  if (!input) return;
   const valor = input.value.trim();
-  btn.disabled = true;
-  btn.textContent = "Salvando...";
+  if (btn) { btn.disabled = true; btn.textContent = "Salvando..."; }
   try {
     const res = await fetch(`${API}/usuarios/me/whatsapp`, {
       method: "PATCH",
@@ -27962,13 +28167,17 @@ async function salvarWhatsAppPerfil() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     if (usuarioLogado) usuarioLogado.whatsapp = data.whatsapp;
+    // sincronizar os dois campos
+    ["perfil-whatsapp-input", "cfg-whatsapp"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el !== input) el.value = input.value;
+    });
     if (msg) { msg.textContent = "WhatsApp salvo!"; msg.style.color = "#22c55e"; }
     setTimeout(() => { if (msg) msg.textContent = ""; }, 3000);
   } catch (e) {
     if (msg) { msg.textContent = "Erro ao salvar"; msg.style.color = "#ef4444"; }
   } finally {
-    btn.disabled = false;
-    btn.textContent = "Salvar";
+    if (btn) { btn.disabled = false; btn.textContent = "Salvar"; }
   }
 }
 

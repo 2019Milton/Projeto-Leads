@@ -8487,55 +8487,57 @@ body.tema-claro .info-tooltip-popup {
   color: var(--nicho-card-title, #dbeafe) !important;
 }
 
-/* 🔌 HUB DE CONEXÕES */
-.hub-conexoes-card { border: 1px solid #334155 !important; }
-.hub-conexoes-card h3 { color: #94a3b8; margin-bottom: 14px; }
-.hub-conexoes-grid {
+/* 🔌 INTEGRAÇÕES — CARDS DE PLATAFORMA */
+.hub-conexoes-card { border: 1px solid #1e293b !important; }
+.hub-conexoes-card > h3 { color: #e2e8f0; margin-bottom: 4px; }
+.hub-conexoes-card > .integ-desc { font-size: 13px; color: #64748b; margin: 0 0 16px; }
+#hub_conexoes_grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
 }
-.hub-plataforma-card {
-  background: #0f172a;
+.integ-card {
+  background: #0c1628;
   border: 1px solid #1e293b;
   border-radius: 10px;
-  padding: 14px 10px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .2s, transform .15s;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .2s;
 }
-.hub-plataforma-card:hover { border-color: #475569; transform: translateY(-2px); }
-.hub-plataforma-card.conectado { border-color: #166534; background: #052e16; }
-.hub-plataforma-card.erro { border-color: #991b1b; background: #2d0505; }
-.hub-plataforma-icone { font-size: 26px; margin-bottom: 6px; }
-.hub-plataforma-nome { font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
-.hub-plataforma-card.conectado .hub-plataforma-nome { color: #86efac; }
-.hub-plataforma-status {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  display: inline-block;
-  background: #1e293b;
-  color: #64748b;
+.integ-card:hover { border-color: #334155; }
+.integ-card.conectado { border-color: #166534; background: #021a0e; }
+.integ-card.formulario-ativo { border-color: #1e3a5f; background: #020d1f; }
+.integ-card.em-breve { opacity: .55; }
+.integ-card-topo { display: flex; align-items: center; gap: 10px; }
+.integ-card-icone { font-size: 24px; flex-shrink: 0; }
+.integ-card-titulo { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.integ-card-nome { font-size: 13px; font-weight: 700; color: #cbd5e1; }
+.integ-card-status { font-size: 11px; display: flex; align-items: center; gap: 4px; }
+.integ-card-status.conectado  { color: #4ade80; }
+.integ-card-status.desconectado { color: #64748b; }
+.integ-card-status.sempre { color: #60a5fa; }
+.integ-card-conta { font-size: 11px; color: #94a3b8; padding: 5px 8px; background: #0f172a; border-radius: 6px; }
+.integ-card-acoes { display: flex; gap: 6px; flex-wrap: wrap; }
+.integ-card-acoes button {
+  font-size: 11px; padding: 5px 12px; border-radius: 6px;
+  border: 1px solid #334155; background: transparent; color: #94a3b8;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
 }
-.hub-plataforma-card.conectado .hub-plataforma-status { background: #14532d; color: #4ade80; }
-.hub-plataforma-card.erro .hub-plataforma-status { background: #7f1d1d; color: #fca5a5; }
-.hub-plataforma-btn {
-  margin-top: 8px;
-  font-size: 10px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #334155;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  transition: background .15s;
+.integ-card-acoes button:hover { background: #1e293b; color: #cbd5e1; }
+.integ-card-acoes button.btn-conectar { border-color: #3b82f6; color: #60a5fa; }
+.integ-card-acoes button.btn-conectar:hover { background: #1e3a5f; }
+.integ-card-acoes button.btn-desconectar { border-color: #7f1d1d; color: #fca5a5; }
+.integ-card-acoes button.btn-desconectar:hover { background: #2d0505; }
+.integ-card-acoes button:disabled { opacity: .35; cursor: default; pointer-events: none; }
+.integ-card-detalhes {
+  border-top: 1px solid #1e293b; padding-top: 10px; margin-top: 2px;
+  font-size: 12px; color: #94a3b8; display: flex; flex-direction: column; gap: 7px;
 }
-.hub-plataforma-btn:hover { background: #1e293b; }
-.hub-plataforma-card.conectado .hub-plataforma-btn { border-color: #166534; color: #86efac; }
-.hub-plataforma-card.conectado .hub-plataforma-btn:hover { background: #14532d; }
-.hub-plataforma-em-breve { opacity: .45; cursor: default; }
-.hub-plataforma-em-breve:hover { transform: none; border-color: #1e293b; }
+.integ-detalhe-linha { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.integ-detalhe-label { color: #64748b; flex-shrink: 0; }
+.integ-detalhe-valor { color: #cbd5e1; font-weight: 600; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
 
 /* 🟢 CONECTAR META — verde */
 .meta-card {
@@ -11785,7 +11787,8 @@ body.tema-claro .ia-resumo-panel {
       <!-- 🔌 HUB DE CONEXÕES -->
       <div class="card hub-conexoes-card" id="card-hub-conexoes">
         <h3>🔌 Integrações</h3>
-        <div id="hub_conexoes_grid" class="hub-conexoes-grid">
+        <p class="integ-desc">Gerencie as conexões com plataformas de anúncio e captação de leads.</p>
+        <div id="hub_conexoes_grid">
           <div style="color:#64748b;font-size:13px;">Carregando...</div>
         </div>
       </div>
@@ -14963,7 +14966,7 @@ async function login() {
 
 const SIDEBAR_SECOES = {
   dashboard:      { ids: ["card-dashboard"],                                  icone: "📊", label: "Dashboard" },
-  integracoes:    { ids: ["card-hub-conexoes", "card-meta"],                  icone: "🔌", label: "Integrações" },
+  integracoes:    { ids: ["card-hub-conexoes"],                               icone: "🔌", label: "Integrações" },
   campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],           icone: "📢", label: "Campanhas" },
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
   desempenho:     { ids: ["painel_performance_meta"],                         icone: "📈", label: "Desempenho" },
@@ -22834,41 +22837,101 @@ const HUB_PLATAFORMAS = [
 async function carregarHub() {
   const token = localStorage.getItem("token");
   if (!token) return;
+  const grid = document.getElementById("hub_conexoes_grid");
+  if (!grid) return;
+
+  let mapa = {};
   try {
-    const res = await fetch(`${API}/conexoes`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) return;
-    const { conexoes } = await res.json();
-    const mapa = Object.fromEntries(conexoes.map(c => [c.plataforma, c]));
-    const grid = document.getElementById("hub_conexoes_grid");
-    if (!grid) return;
-    grid.innerHTML = HUB_PLATAFORMAS.map(p => {
-      const conn = mapa[p.id];
-      const conectado = conn?.status === "conectado";
-      const emBreve = !p.disponivelConectar && p.id !== "formulario";
-      const sempre = p.id === "formulario";
-      const classeCard = `hub-plataforma-card${conectado ? " conectado" : ""}${emBreve ? " hub-plataforma-em-breve" : ""}`;
-      const statusLabel = sempre ? "Sempre ativo" : conectado ? "Conectado" : emBreve ? "Em breve" : "Desconectado";
-      let btnHtml = "";
-      if (sempre) {
-        btnHtml = `<button class="hub-plataforma-btn" disabled>Ativo</button>`;
-      } else if (emBreve) {
-        btnHtml = `<button class="hub-plataforma-btn" disabled>Em breve</button>`;
-      } else if (conectado) {
-        btnHtml = `<button class="hub-plataforma-btn" onclick="desconectarPlataforma('${p.id}')">Desconectar</button>`;
-      } else {
-        btnHtml = `<button class="hub-plataforma-btn" onclick="conectarPlataforma('${p.id}')">Conectar</button>`;
-      }
-      return `<div class="${classeCard}">
-        <div class="hub-plataforma-icone">${p.icone}</div>
-        <div class="hub-plataforma-nome">${p.nome}</div>
-        <span class="hub-plataforma-status">${statusLabel}</span>
-        <br>${btnHtml}
-      </div>`;
-    }).join("");
-  } catch (e) {
-    console.error("Erro ao carregar hub:", e);
+    const res = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) {
+      const data = await res.json();
+      (data?.conexoes || data || []).forEach(c => { if (c?.plataforma) mapa[c.plataforma] = c; });
+    }
+  } catch (_) {}
+
+  grid.innerHTML = HUB_PLATAFORMAS.map(p => renderIntegCard(p, mapa[p.id])).join("");
+}
+
+function renderIntegCard(p, conn) {
+  const conectado = conn?.status === "conectado";
+  const sempre    = p.id === "formulario";
+  const emBreve   = !p.disponivelConectar && !sempre;
+  const nomeConta = conn?.dados_conta?.nome || conn?.dados_conta?.name || "";
+
+  let statusHtml, acoesHtml;
+  if (sempre) {
+    statusHtml = `<span class="integ-card-status sempre">● Sempre ativo</span>`;
+    acoesHtml  = `<button class="btn-conectar" onclick="navegarPara('leads')">Ver Leads →</button>`;
+  } else if (emBreve) {
+    statusHtml = `<span class="integ-card-status desconectado">○ Em breve</span>`;
+    acoesHtml  = `<button disabled>Em breve</button>`;
+  } else if (conectado) {
+    statusHtml = `<span class="integ-card-status conectado">● Conectado</span>`;
+    acoesHtml  = `
+      <button class="btn-desconectar" onclick="desconectarPlataforma('${p.id}')">Desconectar</button>
+      <button class="btn-conectar"    onclick="conectarPlataforma('${p.id}')">Reconectar</button>
+      <button id="btn-det-${p.id}"   onclick="toggleIntegDetalhes('${p.id}')">Ver detalhes ▾</button>
+    `;
+  } else {
+    statusHtml = `<span class="integ-card-status desconectado">○ Desconectado</span>`;
+    acoesHtml  = `<button class="btn-conectar" onclick="conectarPlataforma('${p.id}')">Conectar</button>`;
+  }
+
+  const contaHtml = (conectado && nomeConta)
+    ? `<div class="integ-card-conta">📎 ${escaparHtml(nomeConta)}</div>` : "";
+
+  const detalhesHtml = (p.id === "meta")
+    ? `<div class="integ-card-detalhes" id="integ-detalhes-${p.id}" style="display:none;"></div>` : "";
+
+  const cls = `integ-card${conectado ? " conectado" : ""}${sempre ? " formulario-ativo" : ""}${emBreve ? " em-breve" : ""}`;
+
+  return `
+    <div class="${cls}" id="integ-card-${p.id}">
+      <div class="integ-card-topo">
+        <span class="integ-card-icone">${p.icone}</span>
+        <div class="integ-card-titulo">
+          <span class="integ-card-nome">${p.nome}</span>
+          ${statusHtml}
+        </div>
+      </div>
+      ${contaHtml}
+      <div class="integ-card-acoes">${acoesHtml}</div>
+      ${detalhesHtml}
+    </div>`;
+}
+
+function toggleIntegDetalhes(plataforma) {
+  const el  = document.getElementById(`integ-detalhes-${plataforma}`);
+  const btn = document.getElementById(`btn-det-${plataforma}`);
+  if (!el) return;
+  const abrindo = el.style.display === "none";
+  el.style.display = abrindo ? "" : "none";
+  if (btn) btn.textContent = abrindo ? "Ocultar ▴" : "Ver detalhes ▾";
+  if (abrindo && el.innerHTML === "" && plataforma === "meta") carregarDetalhesMetaHub();
+}
+
+async function carregarDetalhesMetaHub() {
+  const el = document.getElementById("integ-detalhes-meta");
+  if (!el) return;
+  const token = localStorage.getItem("token");
+  el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando...</span>`;
+  try {
+    const res = await fetch(`${API}/meta/status`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) { el.innerHTML = `<span style="color:#f87171;">Erro ao carregar detalhes.</span>`; return; }
+    const d = await res.json();
+    const linhas = [
+      ["Página",           d.pagina?.nome || "—"],
+      ["Pixel",            d.pixel?.nome  ? `${d.pixel.nome} (${d.pixel.id})` : d.pixel?.id || "—"],
+      ["Conta de Anúncios", d.conta_anuncios?.nome || "—"],
+      ["Status da Conta",  d.conta_anuncios?.ativa ? "🟢 Ativa" : d.conta_anuncios?.pendencia_pagamento ? "🟡 Pendência" : "🔴 Inativa"],
+    ];
+    el.innerHTML = linhas.map(([label, valor]) => `
+      <div class="integ-detalhe-linha">
+        <span class="integ-detalhe-label">${label}</span>
+        <span class="integ-detalhe-valor" title="${escaparHtml(String(valor))}">${escaparHtml(String(valor))}</span>
+      </div>`).join("");
+  } catch (_) {
+    el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar detalhes.</span>`;
   }
 }
 

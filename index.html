@@ -606,6 +606,23 @@ button {
 }
 .hub-conexoes-card #card-meta > .btn { margin-bottom: 12px; }
 
+/* Seção ativa preenche toda a altura disponível */
+#app.sidebar-ativa .secao-visivel {
+  flex: 1;
+  min-height: calc(100vh - 56px);
+}
+
+/* Hub de integrações: grid estira as duas linhas de cards igualmente */
+#app.sidebar-ativa #card-hub-conexoes.secao-visivel {
+  display: flex;
+  flex-direction: column;
+}
+#app.sidebar-ativa #card-hub-conexoes.secao-visivel #hub_conexoes_grid {
+  flex: 1;
+  grid-auto-rows: 1fr;
+  align-content: stretch;
+}
+
 /* Tabs de plataforma na seção Desempenho */
 #card-desempenho { width: 100%; }
 .desemp-tabs {
@@ -15399,14 +15416,14 @@ function navegarPara(secao) {
   Object.values(SIDEBAR_SECOES).forEach(s => {
     s.ids.forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.style.display = "none";
+      if (el) { el.style.display = "none"; el.classList.remove("secao-visivel"); }
     });
   });
 
   // Mostrar cards da seção ativa
   SIDEBAR_SECOES[secao].ids.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = "";
+    if (el) { el.style.display = ""; el.classList.add("secao-visivel"); }
   });
 
   // Destacar item ativo no menu

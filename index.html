@@ -1018,6 +1018,33 @@ button {
   color: #64748b; font-size: 13px; background: #0c1628;
   border: 1px solid #1e293b; border-radius: 10px;
 }
+.campanha-plat-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.plat-sel-btn {
+  padding: 8px 6px; font-size: 11px; font-weight: 600;
+  border-radius: 7px; border: 1px solid #334155;
+  background: transparent; color: #64748b;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+  text-align: center;
+}
+.plat-sel-btn.ativa { border-color: #3b82f6; background: #1e3a5f; color: #93c5fd; }
+.plat-sel-btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+/* dashboard: breakdown de plataformas */
+.plat-breakdown { margin-top: 20px; }
+.plat-breakdown-title { font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 10px; }
+.plat-breakdown-rows { display: flex; flex-direction: column; gap: 6px; }
+.plat-breakdown-row {
+  display: flex; align-items: center; gap: 10px;
+  background: #0f1f3a; border: 1px solid #1e293b;
+  border-radius: 8px; padding: 8px 12px;
+}
+.plat-breakdown-bar-wrap { flex: 1; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; }
+.plat-breakdown-bar { height: 100%; border-radius: 3px; background: #3b82f6; transition: width .4s; }
+.plat-breakdown-count { font-size: 12px; font-weight: 700; color: #e2e8f0; min-width: 28px; text-align: right; }
 #app.sidebar-ativa .painel-recolhido > .painel-recolhivel-conteudo {
   max-height: none !important;
   opacity: 1 !important;
@@ -7310,6 +7337,26 @@ body.tema-claro .cal-nav span { color: #111827; }
   border: 1px solid #1d4ed8;
   box-shadow: 0 4px 14px rgba(0,0,0,0.22);
 }
+.plat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  border: 1px solid transparent;
+}
+.plat-badge.meta      { background: rgba(59,130,246,.15); border-color: rgba(59,130,246,.4); color: #60a5fa; }
+.plat-badge.google    { background: rgba(234,67,53,.15);  border-color: rgba(234,67,53,.4);  color: #f87171; }
+.plat-badge.tiktok    { background: rgba(0,0,0,.25);       border-color: rgba(255,255,255,.15); color: #e2e8f0; }
+.plat-badge.linkedin  { background: rgba(10,102,194,.15); border-color: rgba(10,102,194,.4); color: #93c5fd; }
+.plat-badge.kwai      { background: rgba(251,146,60,.15); border-color: rgba(251,146,60,.4);  color: #fb923c; }
+.plat-badge.pinterest { background: rgba(230,0,35,.15);   border-color: rgba(230,0,35,.4);   color: #fca5a5; }
+.plat-badge.snapchat  { background: rgba(255,252,0,.12);  border-color: rgba(255,252,0,.35); color: #fde68a; }
+.plat-badge.microsoft { background: rgba(0,164,239,.15);  border-color: rgba(0,164,239,.4);  color: #7dd3fc; }
+.plat-badge.formulario{ background: rgba(168,85,247,.15); border-color: rgba(168,85,247,.4); color: #c4b5fd; }
 .nicho-stripe {
   width: 4px;
   border-radius: 4px 0 0 4px;
@@ -13395,6 +13442,25 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           <summary>📋 Configuração da campanha</summary>
 
           <div class="advanced-grid">
+
+            <div class="advanced-full">
+              <label>Plataforma de anúncio</label>
+              <div class="campanha-plat-selector" id="campanha_plat_selector">
+                <button type="button" class="plat-sel-btn ativa" data-plat="meta"
+                  onclick="selecionarPlataformaCampanha('meta')">
+                  🟦 Meta Ads
+                </button>
+                <button type="button" class="plat-sel-btn" disabled title="Em breve">🔴 Google Ads</button>
+                <button type="button" class="plat-sel-btn" disabled title="Em breve">🎵 TikTok Ads</button>
+                <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
+                <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
+                <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
+                <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
+                <button type="button" class="plat-sel-btn" disabled title="Em breve">🪟 Microsoft Ads</button>
+              </div>
+              <input type="hidden" id="campanha_plataforma" value="meta">
+            </div>
+
             <div class="advanced-full">
               <label>Nome da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Um nome para você identificar sua campanha dentro da plataforma. Use algo que faça sentido para você, como o produto anunciado ou o público-alvo.', event)">i</button></label>
               <input
@@ -18583,6 +18649,8 @@ function criarLeadCard(lead) {
 
         <div class="lead-meta">
 
+          ${platBadge(lead.plataforma)}
+
           <span>
             📢 ${escaparHtml(lead.origem || "-")}
           </span>
@@ -19764,6 +19832,13 @@ function toggleCriarCampanha() {
   aplicarEstadoCriarCampanha(
     !card.classList.contains("recolhido")
   );
+}
+
+function selecionarPlataformaCampanha(plat) {
+  document.getElementById("campanha_plataforma").value = plat;
+  document.querySelectorAll(".plat-sel-btn[data-plat]").forEach(b => {
+    b.classList.toggle("ativa", b.dataset.plat === plat);
+  });
 }
 
 function inicializarEstadoCriarCampanha() {
@@ -24598,24 +24673,57 @@ async function carregarDashboard() {
 
   // Buscar KPIs reais
   try {
-    const [resLeads, resCamp] = await Promise.all([
-      fetch(`${API}/leads?limite=1`, { headers: { Authorization: "Bearer " + token } }),
-      fetch(`${API}/campanhas`, { headers: { Authorization: "Bearer " + token } }),
+    const [resLeads, resCamp, resConexoes, resPlats] = await Promise.all([
+      fetch(`${API}/leads?limite=1`,         { headers: { Authorization: "Bearer " + token } }),
+      fetch(`${API}/campanhas`,              { headers: { Authorization: "Bearer " + token } }),
+      fetch(`${API}/conexoes`,               { headers: { Authorization: "Bearer " + token } }),
+      fetch(`${API}/leads/stats/plataformas`,{ headers: { Authorization: "Bearer " + token } }),
     ]);
 
-    const leadsData = resLeads.ok ? await resLeads.json() : null;
-    const campData  = resCamp.ok  ? await resCamp.json()  : null;
+    const leadsData   = resLeads.ok    ? await resLeads.json()   : null;
+    const campData    = resCamp.ok     ? await resCamp.json()    : null;
+    const conexData   = resConexoes.ok ? await resConexoes.json(): [];
+    const platsData   = resPlats.ok    ? await resPlats.json()   : [];
 
-    const totalLeads    = leadsData?.total ?? leadsData?.leads?.length ?? "—";
-    const totalCamp     = Array.isArray(campData) ? campData.length : campData?.campanhas?.length ?? "—";
-    const campAtivas    = Array.isArray(campData) ? campData.filter(c => c.ativo !== false).length
+    const totalLeads  = leadsData?.total ?? leadsData?.leads?.length ?? "—";
+    const totalCamp   = Array.isArray(campData) ? campData.length : campData?.campanhas?.length ?? "—";
+    const campAtivas  = Array.isArray(campData)
+                        ? campData.filter(c => c.ativo !== false).length
                         : campData?.campanhas?.filter(c => c.ativo !== false).length ?? "—";
+    const platConect  = Array.isArray(conexData)
+                        ? conexData.filter(x => x.status === "conectado" && x.plataforma !== "formulario").length
+                        : 0;
 
     document.getElementById("dashboard-kpis").innerHTML = `
-      ${kpiCard("📥", "Total de Leads", totalLeads, "#60a5fa")}
+      ${kpiCard("📥", "Total de Leads",   totalLeads, "#60a5fa")}
       ${kpiCard("📢", "Campanhas Ativas", campAtivas === "—" ? "—" : campAtivas + (totalCamp !== "—" ? " / " + totalCamp : ""), "#34d399")}
-      ${kpiCard("🔌", "Plataformas", "Meta", "#a78bfa")}
+      ${kpiCard("🔌", "Plataformas ativas", platConect || "—", "#a78bfa")}
     `;
+
+    // Breakdown por plataforma
+    if (Array.isArray(platsData) && platsData.length) {
+      const max = Math.max(...platsData.map(p => p.total));
+      const platBarCor = { meta:"#3b82f6", google:"#ef4444", tiktok:"#e2e8f0", linkedin:"#2563eb", kwai:"#f97316", pinterest:"#dc2626", snapchat:"#eab308", microsoft:"#0ea5e9", formulario:"#a855f7" };
+      const rows = platsData.map(p => {
+        const pct  = max ? Math.round((p.total / max) * 100) : 0;
+        const cor  = platBarCor[p.plataforma] || "#3b82f6";
+        const meta = PLATAFORMA_META[p.plataforma] || { nome: p.plataforma, icone: "📣" };
+        return `
+          <div class="plat-breakdown-row">
+            <span style="font-size:14px;">${meta.icone}</span>
+            <span style="font-size:12px;color:#94a3b8;min-width:96px;">${meta.nome}</span>
+            <div class="plat-breakdown-bar-wrap"><div class="plat-breakdown-bar" style="width:${pct}%;background:${cor};"></div></div>
+            <span class="plat-breakdown-count">${p.total}</span>
+          </div>`;
+      }).join("");
+      el.insertAdjacentHTML("beforeend", `
+        <div class="plat-breakdown">
+          <div class="plat-breakdown-title">📊 Leads por plataforma</div>
+          <div class="plat-breakdown-rows">${rows}</div>
+        </div>
+      `);
+    }
+
   } catch (_) {
     document.getElementById("dashboard-kpis").innerHTML = `<div style="color:#64748b;font-size:12px;">Não foi possível carregar KPIs.</div>`;
   }
@@ -24629,6 +24737,33 @@ function kpiCard(icone, label, valor, cor) {
       <span class="dashboard-kpi-label">${label}</span>
     </div>
   `;
+}
+
+// =============================================
+//   🏷️ HELPERS DE PLATAFORMA (badge, nome, ícone)
+// =============================================
+
+const PLATAFORMA_META = {
+  meta:       { nome: "Meta Ads",      icone: "🟦" },
+  google:     { nome: "Google Ads",    icone: "🔴" },
+  tiktok:     { nome: "TikTok Ads",   icone: "🎵" },
+  linkedin:   { nome: "LinkedIn Ads",  icone: "💼" },
+  kwai:       { nome: "Kwai Ads",      icone: "🎬" },
+  pinterest:  { nome: "Pinterest Ads", icone: "📌" },
+  snapchat:   { nome: "Snapchat Ads",  icone: "👻" },
+  microsoft:  { nome: "Microsoft Ads", icone: "🪟" },
+  formulario: { nome: "Formulário",    icone: "🚀" },
+};
+
+function platBadge(plataforma) {
+  const id = (plataforma || "meta").toLowerCase();
+  const p  = PLATAFORMA_META[id] || { nome: id, icone: "📣" };
+  return `<span class="plat-badge ${id}">${p.icone} ${p.nome}</span>`;
+}
+
+function platNome(plataforma) {
+  const id = (plataforma || "meta").toLowerCase();
+  return (PLATAFORMA_META[id] || { nome: id }).nome;
 }
 
 // =============================================
@@ -25408,9 +25543,8 @@ async function carregarCampanhas() {
                 ${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}
               </span>
             ` : ""}
-            <span class="badge meta">
-              ${c.origem}
-            </span>
+            ${platBadge(c.plataforma || c.origem)}
+            <span class="badge meta" style="display:none;">${c.origem}</span>
           </div>
 
         </div>

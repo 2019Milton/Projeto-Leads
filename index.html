@@ -11775,6 +11775,13 @@ body.tema-claro .ia-resumo-panel {
 
     <div class="coluna-esquerda">
   
+      <!-- 📊 DASHBOARD -->
+      <div class="card" id="card-dashboard" style="display:none;">
+        <div id="dashboard-conteudo">
+          <div style="color:#64748b;font-size:13px;padding:8px 0;">Carregando...</div>
+        </div>
+      </div>
+
       <!-- 🔌 HUB DE CONEXÕES -->
       <div class="card hub-conexoes-card" id="card-hub-conexoes">
         <h3>🔌 Integrações</h3>
@@ -14955,9 +14962,10 @@ async function login() {
 // =============================================
 
 const SIDEBAR_SECOES = {
-  leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
-  campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],           icone: "📢", label: "Campanhas" },
+  dashboard:      { ids: ["card-dashboard"],                                  icone: "📊", label: "Dashboard" },
   integracoes:    { ids: ["card-hub-conexoes", "card-meta"],                  icone: "🔌", label: "Integrações" },
+  campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],           icone: "📢", label: "Campanhas" },
+  leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
   desempenho:     { ids: ["painel_performance_meta"],                         icone: "📈", label: "Desempenho" },
   suporte:        { ids: ["card-suporte", "card-feedback"],                   icone: "💬", label: "Suporte" },
   informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Informações" },
@@ -14966,7 +14974,7 @@ const SIDEBAR_SECOES = {
   parceiro:       { ids: ["painel_parceiro"],                                 icone: "🤝", label: "Parceiro", condicional: true },
 };
 
-let secaoAtiva = "leads";
+let secaoAtiva = "dashboard";
 
 function montarSidebar() {
   const app = document.getElementById("app");
@@ -15040,8 +15048,8 @@ function montarSidebar() {
         <span class="sidebar-icone">👤</span>
         <span class="sidebar-perfil-nome" id="sidebar-nome-usuario"></span>
       </div>
-      <button class="sidebar-item" onclick="abrirMenuPerfil()" data-tooltip="Perfil">
-        <span class="sidebar-icone">⚙️</span><span class="sidebar-label">Perfil</span>
+      <button class="sidebar-item" onclick="abrirMenuPerfil()" data-tooltip="Configurações">
+        <span class="sidebar-icone">⚙️</span><span class="sidebar-label">Configurações</span>
       </button>
       <button class="sidebar-item" onclick="logout()" data-tooltip="Sair">
         <span class="sidebar-icone">↩️</span><span class="sidebar-label">Sair</span>
@@ -15053,7 +15061,7 @@ function montarSidebar() {
   app.appendChild(contentArea);
 
   // Mostrar seção inicial
-  navegarPara("leads");
+  navegarPara("dashboard");
 }
 
 function navegarPara(secao) {
@@ -15282,6 +15290,8 @@ async function init() {
 
     console.error("Erro token:", err);
   }
+
+  await carregarDashboard();
 
   await carregarHub();
 
@@ -22723,6 +22733,89 @@ async function criarCampanhaCompleta() {
     setPublishProgress(null);
     mostrarErroPublicacao("Erro ao criar campanha: " + (err?.message || String(err) || "Erro desconhecido"));
   }
+}
+
+// =============================================
+//   📊 DASHBOARD
+// =============================================
+
+async function carregarDashboard() {
+  const el = document.getElementById("dashboard-conteudo");
+  if (!el) return;
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  const nomeUsuario = usuarioLogado?.nomeCompleto || usuarioLogado?.email?.split("@")[0] || "";
+  const hora = new Date().getHours();
+  const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+
+  el.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <p style="font-size:20px;font-weight:700;color:#e2e8f0;margin:0 0 4px;">
+        ${saudacao}${nomeUsuario ? ", " + nomeUsuario.split(" ")[0] : ""}! 👋
+      </p>
+      <p style="font-size:13px;color:#64748b;margin:0;">Aqui está um resumo rápido da sua plataforma.</p>
+    </div>
+    <div id="dashboard-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
+      <div style="color:#64748b;font-size:13px;">Carregando KPIs...</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="navegarPara('leads')">
+        <span style="font-size:18px;">📥</span><br>
+        <span style="font-size:13px;font-weight:600;">Central de Leads</span><br>
+        <span style="font-size:11px;color:#64748b;">Ver e gerenciar leads</span>
+      </button>
+      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="navegarPara('campanhas')">
+        <span style="font-size:18px;">📢</span><br>
+        <span style="font-size:13px;font-weight:600;">Campanhas</span><br>
+        <span style="font-size:11px;color:#64748b;">Criar e acompanhar</span>
+      </button>
+      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="navegarPara('integracoes')">
+        <span style="font-size:18px;">🔌</span><br>
+        <span style="font-size:13px;font-weight:600;">Integrações</span><br>
+        <span style="font-size:11px;color:#64748b;">Conectar plataformas</span>
+      </button>
+      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="navegarPara('desempenho')">
+        <span style="font-size:18px;">📈</span><br>
+        <span style="font-size:13px;font-weight:600;">Desempenho</span><br>
+        <span style="font-size:11px;color:#64748b;">Ver métricas e gastos</span>
+      </button>
+    </div>
+  `;
+
+  // Buscar KPIs reais
+  try {
+    const [resLeads, resCamp] = await Promise.all([
+      fetch(`${API}/leads?limite=1`, { headers: { Authorization: "Bearer " + token } }),
+      fetch(`${API}/campanhas`, { headers: { Authorization: "Bearer " + token } }),
+    ]);
+
+    const leadsData = resLeads.ok ? await resLeads.json() : null;
+    const campData  = resCamp.ok  ? await resCamp.json()  : null;
+
+    const totalLeads    = leadsData?.total ?? leadsData?.leads?.length ?? "—";
+    const totalCamp     = Array.isArray(campData) ? campData.length : campData?.campanhas?.length ?? "—";
+    const campAtivas    = Array.isArray(campData) ? campData.filter(c => c.ativo !== false).length
+                        : campData?.campanhas?.filter(c => c.ativo !== false).length ?? "—";
+
+    document.getElementById("dashboard-kpis").innerHTML = `
+      ${kpiCard("📥", "Total de Leads", totalLeads, "#60a5fa")}
+      ${kpiCard("📢", "Campanhas Ativas", campAtivas === "—" ? "—" : campAtivas + (totalCamp !== "—" ? " / " + totalCamp : ""), "#34d399")}
+      ${kpiCard("🔌", "Plataformas", "Meta", "#a78bfa")}
+    `;
+  } catch (_) {
+    document.getElementById("dashboard-kpis").innerHTML = `<div style="color:#64748b;font-size:12px;">Não foi possível carregar KPIs.</div>`;
+  }
+}
+
+function kpiCard(icone, label, valor, cor) {
+  return `
+    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;">
+      <span style="font-size:22px;">${icone}</span>
+      <span style="font-size:22px;font-weight:800;color:${cor};">${valor}</span>
+      <span style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;">${label}</span>
+    </div>
+  `;
 }
 
 // =============================================

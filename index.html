@@ -8612,6 +8612,71 @@ body.tema-claro .info-tooltip-popup {
   border: 1px solid rgba(124, 58, 237, 0.32);
 }
 
+/* KPI section compacta */
+#admin-secao-kpis .dashboard-grid { gap: 12px; margin-top: 14px; }
+#admin-secao-kpis .dashboard-box { min-height: 0; padding: 14px 16px; }
+#admin-secao-kpis .dashboard-box div { font-size: 24px; }
+#admin-secao-kpis .admin-kpi-icon { width: 34px; height: 34px; font-size: 16px; margin-bottom: 10px; }
+#admin-secao-kpis .admin-kpi-link { margin-top: 8px; font-size: 11px; }
+
+/* Nav grid das seções */
+.admin-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+.admin-nav-card {
+  background: linear-gradient(145deg, rgba(15,23,42,0.95), rgba(2,6,23,0.98));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.admin-nav-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124,92,255,0.35);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+}
+.admin-nav-card.ativo {
+  border-color: rgba(99,102,241,0.55);
+  background: linear-gradient(145deg, rgba(99,102,241,0.14), rgba(15,23,42,0.98));
+}
+.admin-nav-card-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.admin-nav-card-emoji { font-size: 18px; line-height: 1; }
+.admin-nav-card-titulo { font-size: 13px; font-weight: 700; color: #e2e8f0; }
+.admin-nav-card-resumo { font-size: 12px; color: #64748b; line-height: 1.5; min-height: 18px; }
+.admin-nav-card-acao { font-size: 11px; color: #6366f1; font-weight: 600; margin-top: 10px; transition: color 0.15s; }
+.admin-nav-card.ativo .admin-nav-card-acao { color: #a5b4fc; }
+
+/* Seções colapsáveis */
+.admin-secao-colapsavel > h3:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+}
+.admin-secao-colapsavel > h3:first-child .admin-sec-chevron {
+  font-size: 10px;
+  opacity: 0.5;
+  transition: transform 0.2s;
+}
+.admin-secao-colapsavel.fechada > *:not(h3) { display: none !important; }
+.admin-secao-colapsavel:not(.fechada) > h3:first-child {
+  margin-bottom: 16px !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+.admin-secao-colapsavel:not(.fechada) > h3:first-child .admin-sec-chevron { transform: rotate(90deg); opacity: 0.8; }
+
 /* Cards KPI clicáveis */
 .admin-kpi-card { cursor: pointer; position: relative; }
 .admin-kpi-card:hover { transform: translateY(-4px) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.45) !important; }
@@ -13397,9 +13462,68 @@ body.tema-claro .ia-resumo-panel {
         </div>
       </div>
 
+      <!-- GRID DE NAVEGAÇÃO DAS SEÇÕES -->
+      <div class="admin-nav-grid" id="admin_nav_grid">
+
+        <div class="admin-nav-card" id="nav-card-railway" onclick="toggleSecaoAdmin('railway')">
+          <div class="admin-nav-card-topo">
+            <span class="admin-nav-card-emoji">🚂</span>
+            <span class="admin-nav-card-titulo">Recursos Railway</span>
+          </div>
+          <div class="admin-nav-card-resumo" id="nav_resumo_railway">Heap, RAM e Uptime do servidor</div>
+          <div class="admin-nav-card-acao" id="nav-acao-railway">Expandir →</div>
+        </div>
+
+        <div class="admin-nav-card" id="nav-card-ia" onclick="toggleSecaoAdmin('ia')">
+          <div class="admin-nav-card-topo">
+            <span class="admin-nav-card-emoji">🤖</span>
+            <span class="admin-nav-card-titulo">Painel IA Ouro</span>
+          </div>
+          <div class="admin-nav-card-resumo" id="nav_resumo_ia">Uso e custo da IA por usuário</div>
+          <div class="admin-nav-card-acao" id="nav-acao-ia">Expandir →</div>
+        </div>
+
+        <div class="admin-nav-card" id="nav-card-criar" onclick="toggleSecaoAdmin('criar')">
+          <div class="admin-nav-card-topo">
+            <span class="admin-nav-card-emoji">➕</span>
+            <span class="admin-nav-card-titulo">Criar Usuário</span>
+          </div>
+          <div class="admin-nav-card-resumo">Adicionar novo usuário à plataforma</div>
+          <div class="admin-nav-card-acao" id="nav-acao-criar">Expandir →</div>
+        </div>
+
+        <div class="admin-nav-card" id="nav-card-usuarios" onclick="toggleSecaoAdmin('usuarios')">
+          <div class="admin-nav-card-topo">
+            <span class="admin-nav-card-emoji">👥</span>
+            <span class="admin-nav-card-titulo">Usuários da Plataforma</span>
+          </div>
+          <div class="admin-nav-card-resumo" id="nav_resumo_usuarios">Tabela completa de usuários</div>
+          <div class="admin-nav-card-acao" id="nav-acao-usuarios">Expandir →</div>
+        </div>
+
+        <div class="admin-nav-card" id="nav-card-manutencao" onclick="toggleSecaoAdmin('manutencao')">
+          <div class="admin-nav-card-topo">
+            <span class="admin-nav-card-emoji">🔧</span>
+            <span class="admin-nav-card-titulo">Manutenção de Dados</span>
+          </div>
+          <div class="admin-nav-card-resumo">Operações de correção de dados</div>
+          <div class="admin-nav-card-acao" id="nav-acao-manutencao">Expandir →</div>
+        </div>
+
+        <div class="admin-nav-card" id="nav-card-financeiro" onclick="toggleSecaoAdmin('financeiro')">
+          <div class="admin-nav-card-topo">
+            <span class="admin-nav-card-emoji">🤝</span>
+            <span class="admin-nav-card-titulo">Financeiro de Parceiros</span>
+          </div>
+          <div class="admin-nav-card-resumo">Splits e faturamentos de parceiros</div>
+          <div class="admin-nav-card-acao" id="nav-acao-financeiro">Expandir →</div>
+        </div>
+
+      </div><!-- /admin-nav-grid -->
+
       <!-- RECURSOS -->
-      <div id="admin-secao-railway" class="admin-secao admin-secao-b">
-        <h3>🚂 Recursos Railway</h3>
+      <div id="admin-secao-railway" class="admin-secao admin-secao-b admin-secao-colapsavel fechada">
+        <h3 onclick="toggleSecaoAdmin('railway')" style="cursor:pointer;">🚂 Recursos Railway <span class="admin-sec-chevron">▶</span></h3>
 
         <div class="admin-recursos-header">
           <div>
@@ -13578,8 +13702,8 @@ body.tema-claro .ia-resumo-panel {
   
       </div>
 
-      <div id="admin-secao-ia" class="admin-secao admin-ia-painel">
-        <h3>Painel IA Ouro</h3>
+      <div id="admin-secao-ia" class="admin-secao admin-ia-painel admin-secao-colapsavel fechada">
+        <h3 onclick="toggleSecaoAdmin('ia')" style="cursor:pointer;">🤖 Painel IA Ouro <span class="admin-sec-chevron">▶</span></h3>
         <p style="color:#fef3c7;margin-top:8px;font-size:13px;">
           Controle operacional da IA: ativar, pausar, acompanhar custo e limitar consumo por usuario Ouro.
           Passe o mouse sobre o simbolo ? para entender cada campo.
@@ -13847,16 +13971,8 @@ body.tema-claro .ia-resumo-panel {
       </div>
 
       <!-- 🔥 CRIAR USUÁRIO -->
-      <div id="admin-secao-criar" class="admin-secao admin-secao-a">
-      
-        <h3
-          style="
-            margin-bottom:20px;
-            color:white;
-          "
-        >
-          ➕ Criar Usuário
-        </h3>
+      <div id="admin-secao-criar" class="admin-secao admin-secao-a admin-secao-colapsavel fechada">
+        <h3 onclick="toggleSecaoAdmin('criar')" style="cursor:pointer;margin-bottom:20px;color:white;">➕ Criar Usuário <span class="admin-sec-chevron">▶</span></h3>
       
         <div
           style="
@@ -14135,9 +14251,8 @@ body.tema-claro .ia-resumo-panel {
       
   
       <!-- TABELA -->
-      <div id="admin-secao-usuarios" class="admin-secao admin-secao-b">
-
-        <h3>👥 Usuários da Plataforma</h3>
+      <div id="admin-secao-usuarios" class="admin-secao admin-secao-b admin-secao-colapsavel fechada">
+        <h3 onclick="toggleSecaoAdmin('usuarios')" style="cursor:pointer;">👥 Usuários da Plataforma <span class="admin-sec-chevron">▶</span></h3>
 
         <div style="overflow-x:auto; width:100%;">
         <table class="tabela-admin" style="min-width:900px;">
@@ -14169,8 +14284,8 @@ body.tema-claro .ia-resumo-panel {
       </div>
 
       <!-- 🔧 MANUTENÇÃO -->
-      <div id="admin-secao-manutencao" class="admin-secao admin-secao-a">
-        <h3 style="margin-bottom:8px;color:white;">🔧 Manutenção de Dados</h3>
+      <div id="admin-secao-manutencao" class="admin-secao admin-secao-a admin-secao-colapsavel fechada">
+        <h3 onclick="toggleSecaoAdmin('manutencao')" style="cursor:pointer;margin-bottom:8px;color:white;">🔧 Manutenção de Dados <span class="admin-sec-chevron">▶</span></h3>
         <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">Operações para corrigir dados existentes no banco.</p>
 
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -14186,8 +14301,8 @@ body.tema-claro .ia-resumo-panel {
       </div>
 
       <!-- 🤝 FINANCEIRO DE PARCEIROS -->
-      <div id="admin-secao-financeiro" class="admin-secao admin-secao-b">
-        <h3 style="margin-bottom:8px;color:white;">🤝 Financeiro de Parceiros</h3>
+      <div id="admin-secao-financeiro" class="admin-secao admin-secao-b admin-secao-colapsavel fechada">
+        <h3 onclick="toggleSecaoAdmin('financeiro')" style="cursor:pointer;margin-bottom:8px;color:white;">🤝 Financeiro de Parceiros <span class="admin-sec-chevron">▶</span></h3>
         <p style="color:#9ca3af;font-size:13px;margin-bottom:20px;">
           Lance o plano, o valor total cobrado do cliente e a porcentagem do parceiro.
           O restante fica com a plataforma.
@@ -25661,6 +25776,23 @@ async function carregarNichosCheckboxes() {
   }
 }
 
+function toggleSecaoAdmin(id) {
+  const sec = document.getElementById(`admin-secao-${id}`);
+  const navCard = document.getElementById(`nav-card-${id}`);
+  const navAcao = document.getElementById(`nav-acao-${id}`);
+  if (!sec) return;
+  const abrindo = sec.classList.contains("fechada");
+  sec.classList.toggle("fechada");
+  if (navCard) navCard.classList.toggle("ativo", abrindo);
+  if (navAcao) navAcao.textContent = abrindo ? "▲ Recolher" : "Expandir →";
+  if (abrindo) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function _atualizarNavResumosAdmin(data) {
+  const el = document.getElementById("nav_resumo_usuarios");
+  if (el && data) el.textContent = `${data.total_usuarios || 0} usuário(s) · ${data.contas_ativas || 0} ativo(s)`;
+}
+
 function fecharModalAdminKpi() {
   const modal = document.getElementById("admin_kpi_modal");
   if (modal) modal.style.display = "none";
@@ -25793,6 +25925,7 @@ async function carregarPainelAdmin() {
       await res.json();
 
     window._adminDadosCache = data;
+    _atualizarNavResumosAdmin(data);
 
     const adminsCorretores =
       data.usuarios.filter(
@@ -25831,7 +25964,18 @@ async function carregarPainelAdmin() {
       data.contas_ativas || 0;
 
     await carregarRecursosAdmin();
+    // Atualiza resumo Railway no nav card
+    const _heap = document.getElementById("admin_memoria")?.textContent?.trim();
+    const _rss = document.getElementById("admin_rss")?.textContent?.trim();
+    const _navRailway = document.getElementById("nav_resumo_railway");
+    if (_navRailway && _heap) _navRailway.textContent = `Heap ${_heap} MB · RSS ${_rss} MB`;
+
     await carregarPainelIAAdmin();
+    // Atualiza resumo IA no nav card
+    const _iaUsuarios = document.getElementById("admin_ia_total_usuarios")?.textContent?.trim()
+      || document.querySelector("#admin-secao-ia .admin-ia-num")?.textContent?.trim();
+    const _navIA = document.getElementById("nav_resumo_ia");
+    if (_navIA && _iaUsuarios) _navIA.textContent = `${_iaUsuarios} usuários Ouro ativos`;
 
     // 🔥 TABELA
     const tabela =

@@ -139,34 +139,72 @@ body::after {
 .login-space-scene::after {
   content: "";
   position: absolute;
-  border-radius: 50%;
-  opacity: 0;
-  filter: blur(0.2px);
-  animation: loginPlanetDrift 6s ease-out forwards;
-}
-
-.login-space-scene::before {
-  width: 148px;
-  height: 148px;
-  left: 14%;
-  top: 20%;
+  inset: -10%;
   background:
-    radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55), transparent 16%),
-    radial-gradient(circle at 62% 72%, rgba(15,23,42,0.28), transparent 28%),
-    linear-gradient(135deg, #10b981, #2563eb 64%, #1e1b4b);
-  box-shadow: 0 0 44px rgba(37,99,235,0.16);
+    radial-gradient(circle at 18% 22%, rgba(45,212,191,0.12), transparent 24%),
+    radial-gradient(circle at 78% 28%, rgba(99,102,241,0.12), transparent 22%),
+    radial-gradient(circle at 52% 72%, rgba(147,51,234,0.09), transparent 28%);
+  opacity: 0;
+  filter: blur(18px);
+  animation: loginNebulaReveal 6.2s ease-out forwards;
 }
 
 .login-space-scene::after {
-  width: 92px;
-  height: 92px;
-  right: 18%;
-  bottom: 24%;
   background:
-    radial-gradient(circle at 36% 30%, rgba(255,255,255,0.62), transparent 15%),
-    linear-gradient(145deg, #f59e0b, #dc2626 58%, #581c87);
-  box-shadow: 0 0 36px rgba(245,158,11,0.14);
+    radial-gradient(circle at 34% 58%, rgba(14,165,233,0.12), transparent 20%),
+    radial-gradient(circle at 68% 66%, rgba(244,63,94,0.08), transparent 18%),
+    radial-gradient(circle at 45% 28%, rgba(250,204,21,0.05), transparent 14%);
+  filter: blur(34px);
   animation-delay: .35s;
+}
+
+.login-starfield {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.95) 0 1px, transparent 1.4px) 4% 10% / 132px 132px,
+    radial-gradient(circle, rgba(147,197,253,0.75) 0 1px, transparent 1.3px) 24% 30% / 176px 176px,
+    radial-gradient(circle, rgba(255,255,255,0.55) 0 .8px, transparent 1.2px) 82% 18% / 108px 108px;
+  opacity: .28;
+  animation: loginStarPulse 6s ease-in-out forwards;
+}
+
+.login-black-hole {
+  position: absolute;
+  right: 29%;
+  top: 18%;
+  width: 164px;
+  height: 164px;
+  border-radius: 50%;
+  opacity: 0;
+  transform: rotate(-18deg) scale(.96);
+  background:
+    radial-gradient(circle at 50% 50%, #000 0 26%, rgba(3,7,18,0.98) 27% 35%, transparent 36%),
+    conic-gradient(from 15deg, transparent 0 14%, rgba(251,191,36,0.82) 18%, rgba(249,115,22,0.45) 26%, transparent 35%, rgba(96,165,250,0.22) 52%, transparent 67%, rgba(251,191,36,0.66) 76%, transparent 100%);
+  filter: drop-shadow(0 0 24px rgba(251,191,36,0.22));
+  animation: loginBlackHoleReveal 6s ease-out forwards;
+}
+
+.login-black-hole::before {
+  content: "";
+  position: absolute;
+  inset: 35px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #000 0 56%, rgba(15,23,42,0.4) 57% 70%, transparent 71%);
+  box-shadow: 0 0 24px rgba(0,0,0,0.88), inset 0 0 18px #000;
+}
+
+.login-black-hole::after {
+  content: "";
+  position: absolute;
+  left: -14px;
+  right: -14px;
+  top: 66px;
+  height: 32px;
+  border-radius: 50%;
+  border-top: 3px solid rgba(253,186,116,0.86);
+  border-bottom: 2px solid rgba(96,165,250,0.28);
+  filter: blur(.2px);
 }
 
 .login-planet {
@@ -174,17 +212,52 @@ body::after {
   display: block;
   border-radius: 50%;
   opacity: 0;
+  overflow: hidden;
   animation: loginPlanetDrift 6s ease-out forwards;
 }
 
+.login-planet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,0.62), transparent 12%),
+    radial-gradient(circle at 76% 76%, rgba(0,0,0,0.34), transparent 38%);
+  mix-blend-mode: screen;
+}
+
+.login-planet::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  border-radius: inherit;
+  background: radial-gradient(circle at 68% 70%, transparent 0 42%, rgba(0,0,0,0.34) 62%, rgba(0,0,0,0.48) 100%);
+}
+
+.login-planet-terra {
+  width: 166px;
+  height: 166px;
+  left: 12%;
+  top: 20%;
+  background:
+    radial-gradient(circle at 26% 30%, rgba(236,253,245,0.72), transparent 10%),
+    radial-gradient(circle at 34% 54%, rgba(16,185,129,0.74), transparent 18%),
+    radial-gradient(circle at 62% 42%, rgba(34,197,94,0.48), transparent 15%),
+    radial-gradient(circle at 56% 70%, rgba(20,184,166,0.54), transparent 18%),
+    linear-gradient(135deg, #0e7490, #1d4ed8 62%, #0f172a);
+  box-shadow: 0 0 48px rgba(56,189,248,0.18);
+}
+
 .login-planet-ring {
-  width: 118px;
-  height: 118px;
-  right: 10%;
-  top: 16%;
+  width: 132px;
+  height: 132px;
+  right: 9%;
+  top: 15%;
   background:
     radial-gradient(circle at 38% 32%, rgba(255,255,255,0.6), transparent 13%),
-    linear-gradient(145deg, #8b5cf6, #1d4ed8 58%, #0f172a);
+    repeating-linear-gradient(8deg, rgba(255,255,255,0.12) 0 2px, transparent 3px 10px),
+    linear-gradient(145deg, #7c3aed, #1d4ed8 58%, #0f172a);
   box-shadow: 0 0 40px rgba(139,92,246,0.16);
   animation-delay: .2s;
 }
@@ -192,25 +265,43 @@ body::after {
 .login-planet-ring::after {
   content: "";
   position: absolute;
-  left: -24px;
-  top: 48px;
-  width: 166px;
-  height: 26px;
+  left: -30px;
+  top: 54px;
+  width: 192px;
+  height: 28px;
   border: 2px solid rgba(191,219,254,0.42);
   border-left-color: transparent;
   border-right-color: transparent;
   border-radius: 50%;
   transform: rotate(-18deg);
+  background: none;
+  mix-blend-mode: normal;
+  box-shadow: none;
 }
 
-.login-planet-small {
-  width: 54px;
-  height: 54px;
-  left: 24%;
-  bottom: 18%;
+.login-planet-ember {
+  width: 102px;
+  height: 102px;
+  right: 18%;
+  bottom: 22%;
+  background:
+    radial-gradient(circle at 40% 34%, rgba(255,255,255,0.55), transparent 11%),
+    radial-gradient(circle at 42% 62%, rgba(251,191,36,0.42), transparent 14%),
+    repeating-radial-gradient(circle at 52% 52%, rgba(127,29,29,0.12) 0 6px, transparent 7px 15px),
+    linear-gradient(145deg, #f97316, #dc2626 58%, #581c87);
+  box-shadow: 0 0 40px rgba(248,113,113,0.16);
+  animation-delay: .45s;
+}
+
+.login-planet-ice {
+  width: 58px;
+  height: 58px;
+  left: 23%;
+  bottom: 17%;
   background:
     radial-gradient(circle at 35% 30%, rgba(255,255,255,0.62), transparent 16%),
-    linear-gradient(145deg, #38bdf8, #1d4ed8 58%, #111827);
+    repeating-linear-gradient(-12deg, rgba(255,255,255,0.12) 0 3px, transparent 4px 9px),
+    linear-gradient(145deg, #67e8f9, #1d4ed8 58%, #111827);
   box-shadow: 0 0 30px rgba(56,189,248,0.14);
   animation-delay: .55s;
 }
@@ -270,10 +361,29 @@ body::after {
   100% { opacity: .7; transform: translate3d(0,-8px,0) scale(1); }
 }
 
+@keyframes loginNebulaReveal {
+  0% { opacity: 0; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes loginStarPulse {
+  0% { opacity: .08; transform: translateY(12px); }
+  40% { opacity: .32; }
+  100% { opacity: .24; transform: translateY(0); }
+}
+
+@keyframes loginBlackHoleReveal {
+  0% { opacity: 0; transform: rotate(-18deg) scale(.88); }
+  28% { opacity: .74; }
+  100% { opacity: .62; transform: rotate(-18deg) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .stars,
   .login-space-scene::before,
   .login-space-scene::after,
+  .login-starfield,
+  .login-black-hole,
   .login-planet,
   .login-rocket-trail,
   .login-scene-rocket {
@@ -282,6 +392,8 @@ body::after {
 
   .login-space-scene::before,
   .login-space-scene::after,
+  .login-starfield,
+  .login-black-hole,
   .login-planet {
     opacity: .45;
   }
@@ -293,25 +405,34 @@ body::after {
 }
 
 @media (max-width: 760px) {
-  .login-space-scene::before {
-    width: 96px;
-    height: 96px;
-    left: 6%;
-    top: 14%;
+  .login-black-hole {
+    width: 106px;
+    height: 106px;
+    right: 10%;
+    top: 12%;
   }
 
-  .login-space-scene::after {
-    width: 66px;
-    height: 66px;
-    right: 8%;
-    bottom: 18%;
+  .login-black-hole::before {
+    inset: 24px;
+  }
+
+  .login-black-hole::after {
+    top: 43px;
+    height: 22px;
+  }
+
+  .login-planet-terra {
+    width: 104px;
+    height: 104px;
+    left: 4%;
+    top: 15%;
   }
 
   .login-planet-ring {
     width: 78px;
     height: 78px;
     right: 8%;
-    top: 18%;
+    top: 21%;
   }
 
   .login-planet-ring::after {
@@ -321,7 +442,14 @@ body::after {
     height: 18px;
   }
 
-  .login-planet-small {
+  .login-planet-ember {
+    width: 66px;
+    height: 66px;
+    right: 8%;
+    bottom: 16%;
+  }
+
+  .login-planet-ice {
     width: 38px;
     height: 38px;
     left: 12%;
@@ -654,10 +782,10 @@ button {
 .sidebar-topo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 16px 14px 12px;
+  gap: 8px;
+  padding: 12px 10px 10px;
   border-bottom: 1px solid #1e293b;
-  min-height: 60px;
+  min-height: 76px;
 }
 .sidebar-logo {
   font-size: 22px;
@@ -665,27 +793,47 @@ button {
   line-height: 1;
 }
 .sidebar-rocket-logo {
-  width: 30px;
-  height: 38px;
+  width: 45px;
+  height: 58px;
   display: block;
   object-fit: contain;
   flex: 0 0 auto;
   filter: drop-shadow(0 0 8px rgba(14,165,233,0.38)) drop-shadow(0 0 8px rgba(124,77,255,0.3));
 }
+.sidebar-brand-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1;
+  opacity: 1;
+  overflow: hidden;
+  transition: opacity .18s, width .18s;
+}
 .sidebar-titulo {
-  font-size: 13px;
-  font-weight: 700;
-  color: #e2e8f0;
-  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  white-space: normal;
   overflow: hidden;
   opacity: 1;
   transition: opacity .18s;
 }
+.sidebar-subtitulo {
+  color: #8aa4ff;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .7px;
+  line-height: 1.05;
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+#sidebar-nav.recolhida .sidebar-brand-copy,
 #sidebar-nav.recolhida .sidebar-titulo { opacity: 0; width: 0; }
 #sidebar-nav.recolhida .sidebar-topo {
   justify-content: center;
   padding-left: 0;
   padding-right: 0;
+  min-height: 64px;
 }
 #sidebar-nav.recolhida .sidebar-rocket-logo {
   width: 28px;
@@ -12034,8 +12182,12 @@ body.tema-claro .ia-resumo-panel {
 <!-- LOGIN -->
 <div class="container" id="loginBox">
   <div class="login-space-scene" aria-hidden="true">
+    <span class="login-starfield"></span>
+    <span class="login-black-hole"></span>
+    <span class="login-planet login-planet-terra"></span>
     <span class="login-planet login-planet-ring"></span>
-    <span class="login-planet login-planet-small"></span>
+    <span class="login-planet login-planet-ember"></span>
+    <span class="login-planet login-planet-ice"></span>
     <span class="login-rocket-trail"></span>
     <img class="login-scene-rocket" src="rocket-logo.png" alt="">
   </div>
@@ -15807,7 +15959,10 @@ function montarSidebar() {
   sidebar.innerHTML = `
     <div class="sidebar-topo">
       <img class="sidebar-rocket-logo" src="rocket-logo.png" alt="">
-      <span class="sidebar-titulo">Plataforma de Leads</span>
+      <span class="sidebar-brand-copy">
+        <span class="sidebar-titulo">Plataforma de<br>Leads</span>
+        <span class="sidebar-subtitulo">Gestão Inteligente de Clientes</span>
+      </span>
     </div>
     <div class="sidebar-menu">${itensMenu}</div>
     <div class="sidebar-rodape">

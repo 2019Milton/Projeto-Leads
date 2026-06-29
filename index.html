@@ -8496,17 +8496,19 @@ body.tema-claro .info-tooltip-popup {
 .hub-conexoes-card > .integ-desc { font-size: 13px; color: #64748b; margin: 0 0 16px; }
 #hub_conexoes_grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 .integ-card {
   background: #0c1628;
   border: 1px solid #1e293b;
-  border-radius: 10px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  min-height: 150px;
+  justify-content: space-between;
   transition: border-color .2s;
 }
 .integ-card:hover { border-color: #334155; }
@@ -22834,7 +22836,7 @@ const HUB_PLATAFORMAS = [
   { id: "tiktok",     nome: "TikTok Ads", icone: "🎵", disponivelConectar: false },
   { id: "linkedin",   nome: "LinkedIn",   icone: "💼", disponivelConectar: false },
   { id: "kwai",       nome: "Kwai Ads",   icone: "🎬", disponivelConectar: false },
-  { id: "formulario", nome: "Formulário", icone: "📋", disponivelConectar: false },
+  { id: "formulario", nome: "Leads Diretos", icone: "🚀", disponivelConectar: false },
 ];
 
 async function carregarHub() {

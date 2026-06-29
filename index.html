@@ -604,13 +604,16 @@ button {
 /* Tabs de plataforma na seção Desempenho */
 #card-desempenho { width: 100%; }
 .desemp-tabs {
-  display: flex; flex-wrap: wrap; gap: 6px;
-  padding: 0 0 14px; border-bottom: 1px solid #1e293b; margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 0 0 16px; border-bottom: 1px solid #1e293b; margin-bottom: 16px;
 }
 .desemp-tab {
-  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  text-align: center; padding: 10px 8px;
+  border-radius: 8px; font-size: 12px; font-weight: 600;
   border: 1px solid #334155; background: transparent; color: #64748b;
-  cursor: pointer; transition: all .15s;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
 }
 .desemp-tab.ativa { border-color: #3b82f6; background: #1e3a5f; color: #93c5fd; }
 .desemp-tab:disabled { opacity: .4; cursor: default; pointer-events: none; }
@@ -25658,6 +25661,116 @@ async function carregarNichosCheckboxes() {
   }
 }
 
+function fecharModalAdminKpi() {
+  const modal = document.getElementById("admin_kpi_modal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function abrirModalAdminKpi(tipo) {
+  const modal = document.getElementById("admin_kpi_modal");
+  const titulo = document.getElementById("admin_kpi_modal_titulo");
+  const corpo = document.getElementById("admin_kpi_modal_corpo");
+  const data = window._adminDadosCache;
+  if (!modal) return;
+  if (!data) { alert("Carregue o painel admin primeiro."); return; }
+
+  const badge = (txt, cor) =>
+    `<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:${cor}20;color:${cor};font-weight:600;">${escHtml(txt)}</span>`;
+
+  switch (tipo) {
+    case "usuarios": {
+      titulo.textContent = "👥 Usuários da Plataforma";
+      const usuarios = data.usuarios || [];
+      corpo.innerHTML = `
+        <div style="margin-bottom:16px;font-size:13px;color:#64748b;">${usuarios.length} usuário(s) cadastrado(s)</div>
+        <table class="admin-kpi-table">
+          <thead><tr><th>E-mail</th><th>Tipo</th><th>Plano</th><th>Status</th><th style="text-align:center;">Campanhas</th><th style="text-align:center;">Leads</th></tr></thead>
+          <tbody>
+            ${usuarios.map(u => `<tr>
+              <td>${escHtml(u.email)}</td>
+              <td>${badge(u.tipo || "-", "#6366f1")}</td>
+              <td>${badge(u.plano || "bronze", "#f59e0b")}</td>
+              <td>${u.ativo ? '<span style="color:#4ade80;">● Ativo</span>' : '<span style="color:#f87171;">● Inativo</span>'}</td>
+              <td style="text-align:center;font-weight:700;">${u.campanhas || 0}</td>
+              <td style="text-align:center;font-weight:700;">${u.leads || 0}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>`;
+      break;
+    }
+    case "campanhas": {
+      titulo.textContent = "📢 Campanhas por Usuário";
+      const usuarios = [...(data.usuarios || [])].sort((a, b) => (b.campanhas || 0) - (a.campanhas || 0));
+      const comCamp = usuarios.filter(u => u.campanhas > 0);
+      corpo.innerHTML = `
+        <div style="margin-bottom:16px;font-size:13px;color:#64748b;">Total: ${data.total_campanhas || 0} campanha(s) na plataforma</div>
+        <table class="admin-kpi-table">
+          <thead><tr><th>Usuário</th><th>Plano</th><th style="text-align:right;">Campanhas</th></tr></thead>
+          <tbody>
+            ${comCamp.length ? comCamp.map(u => `<tr>
+              <td>${escHtml(u.email)}</td>
+              <td>${badge(u.plano || "bronze", "#8b5cf6")}</td>
+              <td style="text-align:right;font-weight:700;color:#c4b5fd;">${u.campanhas}</td>
+            </tr>`).join("") : `<tr><td colspan="3" style="text-align:center;color:#64748b;padding:24px;">Nenhuma campanha criada ainda.</td></tr>`}
+          </tbody>
+        </table>`;
+      break;
+    }
+    case "leads": {
+      titulo.textContent = "🧲 Leads por Usuário";
+      const usuarios = [...(data.usuarios || [])].sort((a, b) => (b.leads || 0) - (a.leads || 0));
+      const comLeads = usuarios.filter(u => u.leads > 0);
+      corpo.innerHTML = `
+        <div style="margin-bottom:16px;font-size:13px;color:#64748b;">Total: ${data.total_leads || 0} lead(s) na plataforma</div>
+        <table class="admin-kpi-table">
+          <thead><tr><th>Usuário</th><th>Plano</th><th style="text-align:right;">Leads</th></tr></thead>
+          <tbody>
+            ${comLeads.length ? comLeads.map(u => `<tr>
+              <td>${escHtml(u.email)}</td>
+              <td>${badge(u.plano || "bronze", "#22c55e")}</td>
+              <td style="text-align:right;font-weight:700;color:#4ade80;">${u.leads}</td>
+            </tr>`).join("") : `<tr><td colspan="3" style="text-align:center;color:#64748b;padding:24px;">Nenhum lead capturado ainda.</td></tr>`}
+          </tbody>
+        </table>`;
+      break;
+    }
+    case "contas": {
+      titulo.textContent = "🚦 Status das Contas";
+      const usuarios = data.usuarios || [];
+      const ativos = usuarios.filter(u => u.ativo);
+      const inativos = usuarios.filter(u => !u.ativo);
+      const pct = usuarios.length > 0 ? Math.round((ativos.length / usuarios.length) * 100) : 0;
+      corpo.innerHTML = `
+        <div style="display:flex;gap:12px;margin-bottom:24px;">
+          <div class="admin-kpi-stat-bloco" style="border-left-color:#4ade80;">
+            <div><div class="num" style="color:#4ade80;">${ativos.length}</div><div class="label">Contas ativas</div></div>
+          </div>
+          <div class="admin-kpi-stat-bloco" style="border-left-color:#f87171;">
+            <div><div class="num" style="color:#f87171;">${inativos.length}</div><div class="label">Inativas</div></div>
+          </div>
+          <div class="admin-kpi-stat-bloco" style="border-left-color:#f59e0b;">
+            <div><div class="num" style="color:#fbbf24;">${pct}%</div><div class="label">Taxa de ativação</div></div>
+          </div>
+        </div>
+        ${inativos.length > 0 ? `
+          <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Contas inativas</div>
+          <table class="admin-kpi-table">
+            <thead><tr><th>E-mail</th><th>Tipo</th><th>Plano</th></tr></thead>
+            <tbody>${inativos.map(u => `<tr>
+              <td>${escHtml(u.email)}</td>
+              <td>${badge(u.tipo || "-", "#6366f1")}</td>
+              <td>${badge(u.plano || "bronze", "#f59e0b")}</td>
+            </tr>`).join("")}</tbody>
+          </table>` : `<div style="text-align:center;color:#4ade80;padding:20px;font-size:14px;font-weight:600;">✓ Todas as contas estão ativas!</div>`}`;
+      break;
+    }
+  }
+
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
 async function carregarPainelAdmin() {
 
   try {
@@ -25678,6 +25791,8 @@ async function carregarPainelAdmin() {
 
     const data =
       await res.json();
+
+    window._adminDadosCache = data;
 
     const adminsCorretores =
       data.usuarios.filter(

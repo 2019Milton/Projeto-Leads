@@ -598,8 +598,13 @@ button {
 /* No modo sidebar os botões expandir/recolher não fazem sentido */
 #app.sidebar-ativa .painel-recolhivel-toggle { display: none !important; }
 
-/* card-meta é legado — os dados Meta agora ficam no hub; esconder sem remover o DOM */
-#app.sidebar-ativa #card-meta { display: none !important; }
+/* card-meta expandido dentro do hub — separador visual, sem card dentro de card */
+.hub-conexoes-card #card-meta {
+  margin-top: 20px;
+  border-top: 1px solid #1e293b;
+  padding-top: 20px;
+}
+.hub-conexoes-card #card-meta > .btn { margin-bottom: 12px; }
 
 /* Tabs de plataforma na seção Desempenho */
 #card-desempenho { width: 100%; }
@@ -8529,7 +8534,7 @@ body.tema-claro .info-tooltip-popup {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 150px;
+  min-height: 190px;
   justify-content: space-between;
   transition: border-color .2s;
 }
@@ -8545,6 +8550,7 @@ body.tema-claro .info-tooltip-popup {
 .integ-card-status.conectado  { color: #4ade80; }
 .integ-card-status.desconectado { color: #64748b; }
 .integ-card-status.sempre { color: #60a5fa; }
+.integ-card-desc { font-size: 11px; color: #475569; margin-top: 4px; line-height: 1.4; }
 .integ-card-conta { font-size: 11px; color: #94a3b8; padding: 5px 8px; background: #0f172a; border-radius: 6px; }
 .integ-card-acoes { display: flex; gap: 6px; flex-wrap: wrap; }
 .integ-card-acoes button {
@@ -12054,27 +12060,12 @@ body.tema-claro .ia-resumo-panel {
         <div id="hub_conexoes_grid">
           <div style="color:#64748b;font-size:13px;">Carregando...</div>
         </div>
-      </div>
 
-      <!-- 🔗 META -->
-      <div class="card meta-card" id="card-meta">
-  
-        <h3>🔗 Conectar Meta</h3>
-  
-        <button
-          id="btn_meta_conexao"
-          class="btn"
-          onclick="conectarMeta()"
-        >
-          Conectar Meta
-        </button>
-  
-        <!-- 🔥 INFO META -->
-        <div id="meta_info">
-          Carregando conexão...
+        <!-- 🔗 META — detalhes expandíveis; conteúdo gerenciado por carregarStatusMeta() -->
+        <div class="meta-card" id="card-meta" style="display:none;">
+          <button id="btn_meta_conexao" class="btn" onclick="conectarMeta()">Conectar Meta</button>
+          <div id="meta_info">Carregando conexão...</div>
         </div>
-
-
       </div>
 
       <div class="card card-criar-campanha" id="card-criar-campanha">
@@ -23167,14 +23158,14 @@ function kpiCard(icone, label, valor, cor) {
 // =============================================
 
 const HUB_PLATAFORMAS = [
-  { id: "meta",      nome: "Meta Ads",      icone: "🟦", disponivelConectar: true  },
-  { id: "google",    nome: "Google Ads",    icone: "🔴", disponivelConectar: false },
-  { id: "tiktok",    nome: "TikTok Ads",    icone: "🎵", disponivelConectar: false },
-  { id: "linkedin",  nome: "LinkedIn Ads",  icone: "💼", disponivelConectar: false },
-  { id: "kwai",      nome: "Kwai Ads",      icone: "🎬", disponivelConectar: false },
-  { id: "pinterest", nome: "Pinterest Ads", icone: "📌", disponivelConectar: false },
-  { id: "snapchat",  nome: "Snapchat Ads",  icone: "👻", disponivelConectar: false },
-  { id: "microsoft", nome: "Microsoft Ads", icone: "🪟", disponivelConectar: false },
+  { id: "meta",      nome: "Meta Ads",      icone: "🟦", disponivelConectar: true,  desc: "Facebook & Instagram Lead Ads" },
+  { id: "google",    nome: "Google Ads",    icone: "🔴", disponivelConectar: false, desc: "Lead Form Extensions via Google" },
+  { id: "tiktok",    nome: "TikTok Ads",    icone: "🎵", disponivelConectar: false, desc: "TikTok Instant Form Leads" },
+  { id: "linkedin",  nome: "LinkedIn Ads",  icone: "💼", disponivelConectar: false, desc: "LinkedIn Lead Gen Forms" },
+  { id: "kwai",      nome: "Kwai Ads",      icone: "🎬", disponivelConectar: false, desc: "Kwai Lead Form Ads" },
+  { id: "pinterest", nome: "Pinterest Ads", icone: "📌", disponivelConectar: false, desc: "Pinterest Lead Ads Webhook" },
+  { id: "snapchat",  nome: "Snapchat Ads",  icone: "👻", disponivelConectar: false, desc: "Snap Lead Generation API" },
+  { id: "microsoft", nome: "Microsoft Ads", icone: "🪟", disponivelConectar: false, desc: "Bing Ads Lead Form Extensions" },
 ];
 
 async function carregarHub() {
@@ -23228,6 +23219,8 @@ function renderIntegCard(p, conn) {
 
   const cls = `integ-card${conectado ? " conectado" : ""}${sempre ? " formulario-ativo" : ""}${emBreve ? " em-breve" : ""}`;
 
+  const descHtml = p.desc ? `<div class="integ-card-desc">${p.desc}</div>` : "";
+
   return `
     <div class="${cls}" id="integ-card-${p.id}">
       <div class="integ-card-topo">
@@ -23237,6 +23230,7 @@ function renderIntegCard(p, conn) {
           ${statusHtml}
         </div>
       </div>
+      ${descHtml}
       ${contaHtml}
       <div class="integ-card-acoes">${acoesHtml}</div>
       ${detalhesHtml}
@@ -23244,13 +23238,26 @@ function renderIntegCard(p, conn) {
 }
 
 function toggleIntegDetalhes(plataforma) {
-  const el  = document.getElementById(`integ-detalhes-${plataforma}`);
   const btn = document.getElementById(`btn-det-${plataforma}`);
+
+  if (plataforma === "meta") {
+    // Para Meta mostramos o painel completo de conexão (card-meta)
+    const cardMeta = document.getElementById("card-meta");
+    if (!cardMeta) return;
+    const abrindo = cardMeta.style.display === "none" || cardMeta.style.display === "";
+    // card-meta starts display:none, "" means it was never shown yet
+    const visivel = cardMeta.offsetParent !== null && cardMeta.style.display !== "none";
+    cardMeta.style.display = visivel ? "none" : "";
+    if (btn) btn.textContent = visivel ? "Ver detalhes ▾" : "Ocultar ▴";
+    if (!visivel) carregarStatusMeta();
+    return;
+  }
+
+  const el = document.getElementById(`integ-detalhes-${plataforma}`);
   if (!el) return;
   const abrindo = el.style.display === "none";
   el.style.display = abrindo ? "" : "none";
   if (btn) btn.textContent = abrindo ? "Ocultar ▴" : "Ver detalhes ▾";
-  if (abrindo && el.innerHTML === "" && plataforma === "meta") carregarDetalhesMetaHub();
 }
 
 async function carregarDetalhesMetaHub() {

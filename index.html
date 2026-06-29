@@ -407,6 +407,231 @@ button {
   color: white;
 }
 
+/* ===== SIDEBAR LAYOUT ===== */
+#app.sidebar-ativa {
+  display: flex !important;
+  height: 100vh;
+  overflow: hidden;
+  background: #020817;
+}
+#app-content-area {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* SIDEBAR */
+#sidebar-nav {
+  width: 220px;
+  min-width: 220px;
+  height: 100vh;
+  background: #0b1121;
+  border-right: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+  transition: width .22s cubic-bezier(.4,0,.2,1), min-width .22s;
+  overflow: hidden;
+  z-index: 100;
+  flex-shrink: 0;
+}
+#sidebar-nav.recolhida {
+  width: 56px;
+  min-width: 56px;
+}
+.sidebar-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid #1e293b;
+  min-height: 60px;
+}
+.sidebar-logo {
+  font-size: 22px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.sidebar-titulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity .18s;
+}
+#sidebar-nav.recolhida .sidebar-titulo { opacity: 0; width: 0; }
+
+.sidebar-menu {
+  flex: 1;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+  position: relative;
+}
+.sidebar-item:hover { background: #1e293b; color: #cbd5e1; }
+.sidebar-item.ativa { background: #1e3a5f; color: #60a5fa; }
+.sidebar-item.ativa .sidebar-icone { color: #60a5fa; }
+.sidebar-icone { font-size: 17px; flex-shrink: 0; line-height: 1; }
+.sidebar-label {
+  opacity: 1;
+  transition: opacity .18s;
+  overflow: hidden;
+}
+#sidebar-nav.recolhida .sidebar-label { opacity: 0; width: 0; }
+.sidebar-badge {
+  margin-left: auto;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+}
+#sidebar-nav.recolhida .sidebar-badge { display: none; }
+
+.sidebar-separador {
+  height: 1px;
+  background: #1e293b;
+  margin: 6px 8px;
+}
+
+.sidebar-rodape {
+  padding: 10px 6px 14px;
+  border-top: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar-perfil-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+.sidebar-perfil-nome {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 1;
+  transition: opacity .18s;
+}
+#sidebar-nav.recolhida .sidebar-perfil-nome { opacity: 0; width: 0; }
+
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+.sidebar-toggle-btn:hover { background: #1e293b; color: #cbd5e1; }
+
+/* CONTEÚDO PRINCIPAL */
+#app-content {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.app-topbar-slim {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  height: 52px;
+  min-height: 52px;
+  border-bottom: 1px solid #1e293b;
+  background: #0b1121;
+  flex-shrink: 0;
+}
+.app-topbar-slim .plano-atual-topo {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.app-topbar-slim .tema-seletor { font-size: 12px; }
+.app-topbar-slim .notif-btn { font-size: 16px; padding: 4px 8px; }
+.app-topbar-slim .logout { font-size: 12px; padding: 4px 12px; }
+.app-topbar-spacer { flex: 1; }
+
+.secao-app {
+  display: none;
+  flex: 1;
+  padding: 16px;
+  min-height: 0;
+}
+.secao-app.ativa { display: flex; flex-direction: column; gap: 14px; }
+
+/* tooltip para sidebar recolhida */
+.sidebar-item[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 54px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 9999;
+  border: 1px solid #334155;
+}
+body:not(.sidebar-recolhida) .sidebar-item::after { display: none !important; }
+
+/* Adaptar cards existentes na secao */
+.secao-app .layout-principal,
+.secao-app .coluna-esquerda,
+.secao-app .coluna-direita {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+}
+.secao-app .card { margin-bottom: 12px; }
+
 /* ===== DASHBOARD ===== */
 #app {
 
@@ -11542,7 +11767,7 @@ body.tema-claro .ia-resumo-panel {
     <div class="coluna-esquerda">
   
       <!-- 🔌 HUB DE CONEXÕES -->
-      <div class="card hub-conexoes-card">
+      <div class="card hub-conexoes-card" id="card-hub-conexoes">
         <h3>🔌 Integrações</h3>
         <div id="hub_conexoes_grid" class="hub-conexoes-grid">
           <div style="color:#64748b;font-size:13px;">Carregando...</div>
@@ -11550,7 +11775,7 @@ body.tema-claro .ia-resumo-panel {
       </div>
 
       <!-- 🔗 META -->
-      <div class="card meta-card">
+      <div class="card meta-card" id="card-meta">
   
         <h3>🔗 Conectar Meta</h3>
   
@@ -11570,7 +11795,7 @@ body.tema-claro .ia-resumo-panel {
 
       </div>
 
-      <div class="card card-criar-campanha">
+      <div class="card card-criar-campanha" id="card-criar-campanha">
 
         <h3>📢 Criar Campanha</h3>
 
@@ -12137,7 +12362,7 @@ body.tema-claro .ia-resumo-panel {
       </div>
 
       <!-- 📋 PAINEL DE INFORMAÇÕES -->
-      <div class="info-painel">
+      <div class="info-painel" id="card-informacoes">
 
         <span class="info-painel-titulo">📋 Informações</span>
 
@@ -12291,7 +12516,7 @@ body.tema-claro .ia-resumo-panel {
       </div>
 
       <!-- 💬 ÁREA DE SUPORTE -->
-      <div class="chat-suporte-area">
+      <div class="chat-suporte-area" id="card-suporte">
         <button class="chat-widget-btn" onclick="toggleChatSuporte()">
           💬 Falar com Suporte
           <span id="chat_badge_btn" class="chat-badge-btn" style="display:none;">0</span>
@@ -12299,7 +12524,7 @@ body.tema-claro .ia-resumo-panel {
       </div>
 
       <!-- 📝 FEEDBACK -->
-      <div class="feedback-area">
+      <div class="feedback-area" id="card-feedback">
         <button class="feedback-toggle-btn" onclick="toggleFeedback()">
           📝 Elogios, Sugestões e Reclamações
         </button>
@@ -12367,7 +12592,7 @@ body.tema-claro .ia-resumo-panel {
 <div class="coluna-direita">
 
   <!-- 🚀 CENTRAL LEADS -->
-  <div class="card leads-central-card">
+  <div class="card leads-central-card" id="card-leads-central">
 
     <div class="leads-central-header">
 
@@ -12818,7 +13043,7 @@ body.tema-claro .ia-resumo-panel {
   </div>
 
   <!-- 📢 CAMPANHAS -->
-  <div class="card campanhas-card">
+  <div class="card campanhas-card" id="card-campanhas">
 
     <div class="campanhas-topo">
 
@@ -14716,10 +14941,165 @@ async function login() {
 }
 
 // INIT
+// =============================================
+//   🧭 SIDEBAR — navegação principal
+// =============================================
+
+const SIDEBAR_SECOES = {
+  leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
+  campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],           icone: "📢", label: "Campanhas" },
+  integracoes:    { ids: ["card-hub-conexoes", "card-meta"],                  icone: "🔌", label: "Integrações" },
+  desempenho:     { ids: ["painel_performance_meta"],                         icone: "📈", label: "Desempenho" },
+  suporte:        { ids: ["card-suporte", "card-feedback"],                   icone: "💬", label: "Suporte" },
+  informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Informações" },
+  admin:          { ids: ["painel_admin"],                                    icone: "🛡️", label: "Admin", condicional: true },
+  "suporte-chat": { ids: ["painel_suporte_chat"],                             icone: "🎧", label: "Painel Suporte", condicional: true },
+  parceiro:       { ids: ["painel_parceiro"],                                 icone: "🤝", label: "Parceiro", condicional: true },
+};
+
+let secaoAtiva = "leads";
+
+function montarSidebar() {
+  const app = document.getElementById("app");
+  app.classList.add("sidebar-ativa");
+
+  // Envolver conteúdo existente em app-content-area
+  const contentArea = document.createElement("div");
+  contentArea.id = "app-content-area";
+  while (app.firstChild) contentArea.appendChild(app.firstChild);
+
+  // Slim topbar (move plano + tema + notif para o topo do content)
+  const slimTopbar = document.createElement("div");
+  slimTopbar.className = "app-topbar-slim";
+  slimTopbar.innerHTML = `
+    <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Recolher menu" style="margin-right:8px;">☰</button>
+    <span id="sidebar-secao-titulo" style="font-size:14px;font-weight:600;color:#e2e8f0;">Leads</span>
+    <span class="app-topbar-spacer"></span>
+  `;
+  // Mover plano, tema e notificações para slim topbar
+  const plano = document.getElementById("plano_atual_topo");
+  const tema = document.querySelector(".topbar .tema-seletor") || document.querySelector(".tema-seletor");
+  const notif = document.getElementById("btn-notificacoes");
+  if (plano) slimTopbar.appendChild(plano);
+  if (tema) slimTopbar.appendChild(tema);
+  if (notif) slimTopbar.appendChild(notif);
+
+  contentArea.insertBefore(slimTopbar, contentArea.firstChild);
+
+  // Ocultar topbar antiga
+  const topbarAntiga = contentArea.querySelector(".topbar");
+  if (topbarAntiga) topbarAntiga.style.display = "none";
+
+  // Remover layout-principal e coluna wrappers (flatten)
+  const layoutPrincipal = contentArea.querySelector(".layout-principal");
+  if (layoutPrincipal) {
+    const parent = layoutPrincipal.parentNode;
+    while (layoutPrincipal.firstChild) parent.insertBefore(layoutPrincipal.firstChild, layoutPrincipal);
+    parent.removeChild(layoutPrincipal);
+  }
+  ["coluna-esquerda", "coluna-direita"].forEach(cls => {
+    const el = contentArea.querySelector("." + cls);
+    if (el) {
+      const p = el.parentNode;
+      while (el.firstChild) p.insertBefore(el.firstChild, el);
+      p.removeChild(el);
+    }
+  });
+
+  // Criar sidebar HTML
+  const sidebar = document.createElement("nav");
+  sidebar.id = "sidebar-nav";
+  const itensMenu = Object.entries(SIDEBAR_SECOES)
+    .map(([id, s]) => `
+      <button class="sidebar-item${s.condicional ? ' sidebar-item-cond' : ''}"
+              id="sidebar-item-${id}" data-secao="${id}"
+              data-tooltip="${s.label}" onclick="navegarPara('${id}')"
+              ${s.condicional ? 'style="display:none;"' : ''}>
+        <span class="sidebar-icone">${s.icone}</span>
+        <span class="sidebar-label">${s.label}</span>
+      </button>
+    `).join("");
+
+  sidebar.innerHTML = `
+    <div class="sidebar-topo">
+      <span class="sidebar-logo">🚀</span>
+      <span class="sidebar-titulo">Plataforma de Leads</span>
+    </div>
+    <div class="sidebar-menu">${itensMenu}</div>
+    <div class="sidebar-rodape">
+      <div class="sidebar-perfil-info">
+        <span class="sidebar-icone">👤</span>
+        <span class="sidebar-perfil-nome" id="sidebar-nome-usuario"></span>
+      </div>
+      <button class="sidebar-item" onclick="abrirMenuPerfil()" data-tooltip="Perfil">
+        <span class="sidebar-icone">⚙️</span><span class="sidebar-label">Perfil</span>
+      </button>
+      <button class="sidebar-item" onclick="logout()" data-tooltip="Sair">
+        <span class="sidebar-icone">↩️</span><span class="sidebar-label">Sair</span>
+      </button>
+    </div>
+  `;
+
+  app.insertBefore(sidebar, app.firstChild);
+  app.appendChild(contentArea);
+
+  // Mostrar seção inicial
+  navegarPara("leads");
+}
+
+function navegarPara(secao) {
+  if (!SIDEBAR_SECOES[secao]) return;
+  secaoAtiva = secao;
+
+  // Atualizar título do topbar
+  const titulo = document.getElementById("sidebar-secao-titulo");
+  if (titulo) titulo.textContent = SIDEBAR_SECOES[secao].label;
+
+  // Ocultar todos os cards gerenciados
+  Object.values(SIDEBAR_SECOES).forEach(s => {
+    s.ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = "none";
+    });
+  });
+
+  // Mostrar cards da seção ativa
+  SIDEBAR_SECOES[secao].ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "";
+  });
+
+  // Destacar item ativo no menu
+  document.querySelectorAll(".sidebar-item[data-secao]").forEach(btn => {
+    btn.classList.toggle("ativa", btn.dataset.secao === secao);
+  });
+
+  // Para desempenho, garantir que o painel visível tem o estado correto
+  if (secao === "desempenho") {
+    const perf = document.getElementById("painel_performance_meta");
+    if (perf) perf.style.display = "";
+  }
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar-nav");
+  if (!sidebar) return;
+  sidebar.classList.toggle("recolhida");
+  const btn = document.querySelector(".sidebar-toggle-btn");
+  if (btn) btn.textContent = sidebar.classList.contains("recolhida") ? "☰" : "☰";
+}
+
+// Expor itens condicionais do sidebar para funções que já existem
+function mostrarSidebarItem(secao) {
+  const btn = document.getElementById("sidebar-item-" + secao);
+  if (btn) btn.style.display = "";
+}
+
 async function init() {
 
   document.getElementById("loginBox").style.display = "none";
-  document.getElementById("app").style.display = "block";
+  montarSidebar();
+  document.getElementById("app").style.display = "flex";
 
   const token =
     localStorage.getItem("token");
@@ -14779,6 +15159,10 @@ async function init() {
       nome
     });
 
+    // Atualizar nome no sidebar
+    const elNomeSidebar = document.getElementById("sidebar-nome-usuario");
+    if (elNomeSidebar) elNomeSidebar.textContent = nomeCompleto || email;
+
     const btnPerfil =
       document.getElementById("btn_perfil");
 
@@ -14826,6 +15210,8 @@ async function init() {
       if (painelAdmin) painelAdmin.style.display = "block";
       if (btnSuporteChat) btnSuporteChat.style.display = "block";
       if (painelSuporteChat) painelSuporteChat.style.display = "block";
+      mostrarSidebarItem("admin");
+      mostrarSidebarItem("suporte-chat");
 
       await carregarPainelAdmin();
       await carregarUsuariosSuporte();
@@ -14838,6 +15224,7 @@ async function init() {
       if (painelAdmin) painelAdmin.style.display = "none";
       if (btnSuporteChat) btnSuporteChat.style.display = "block";
       if (painelSuporteChat) painelSuporteChat.style.display = "block";
+      mostrarSidebarItem("suporte-chat");
 
       await carregarUsuariosSuporte();
       await carregarConversasSuporte();
@@ -24838,6 +25225,7 @@ async function verificarPainelParceiro() {
 
     if (btnParceiro) btnParceiro.style.display = "block";
     if (painelParceiro) painelParceiro.style.display = "block";
+    mostrarSidebarItem("parceiro");
 
     const tabelaClientes =
       document.getElementById("parceiro_painel_clientes");

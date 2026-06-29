@@ -8533,6 +8533,36 @@ body.tema-claro .info-tooltip-popup {
 .card-criar-campanha h3 {
   color: var(--nicho-card-title, #dbeafe) !important;
 }
+.card-criar-campanha.recolhido > *:not(h3) { display: none !important; }
+.btn-recolher-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.55);
+  border-radius: 7px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .18s, color .18s;
+  line-height: 1;
+}
+.btn-recolher-card:hover {
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+}
+body.tema-claro .btn-recolher-card {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.18);
+  color: rgba(0,0,0,0.45);
+}
+body.tema-claro .btn-recolher-card:hover {
+  background: rgba(0,0,0,0.10);
+  color: #000;
+}
 
 /* 🔌 INTEGRAÇÕES — CARDS DE PLATAFORMA */
 .hub-conexoes-card { border: 1px solid #1e293b !important; }
@@ -12156,7 +12186,10 @@ body.tema-claro .ia-resumo-panel {
 
       <div class="card card-criar-campanha" id="card-criar-campanha">
 
-        <h3>📢 Criar Campanha</h3>
+        <h3 style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>📢 Criar Campanha</span>
+          <button id="btn-recolher-campanha" onclick="toggleCriarCampanha()" class="btn-recolher-card" title="Recolher">▲</button>
+        </h3>
 
         <div
           id="ia_criador_campanha_box"
@@ -18409,6 +18442,13 @@ function dadosCampanhaFormularioIA() {
     categoria_especial: document.getElementById("adv_categoria_especial")?.value || "",
     nicho: window._nichoAtivo?.slug || ""
   };
+}
+
+function toggleCriarCampanha() {
+  const card = document.getElementById("card-criar-campanha");
+  const btn = document.getElementById("btn-recolher-campanha");
+  const recolhido = card.classList.toggle("recolhido");
+  if (btn) btn.textContent = recolhido ? "▼" : "▲";
 }
 
 async function gerarCampanhaComIA() {

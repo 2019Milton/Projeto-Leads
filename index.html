@@ -12449,29 +12449,29 @@ body.tema-claro .ia-resumo-panel {
   <!-- 🔥 GRID SUPERIOR -->
   <div class="layout-principal">
 
-    <!-- 📈 DESEMPENHO -->
-    <div id="card-desempenho" style="display:none;">
-      <div class="desemp-tabs">
-        <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta">🟦 Meta Ads</button>
-        <button class="desemp-tab" disabled title="Em breve">🔴 Google Ads</button>
-        <button class="desemp-tab" disabled title="Em breve">🎵 TikTok Ads</button>
-        <button class="desemp-tab" disabled title="Em breve">💼 LinkedIn Ads</button>
-        <button class="desemp-tab" disabled title="Em breve">🎬 Kwai Ads</button>
-        <button class="desemp-tab" disabled title="Em breve">📌 Pinterest Ads</button>
-        <button class="desemp-tab" disabled title="Em breve">👻 Snapchat Ads</button>
-        <button class="desemp-tab" disabled title="Em breve">🪟 Microsoft Ads</button>
-      </div>
-      <div id="painel_performance_meta" class="performance-meta-panel">
-        <div style="color:#64748b;font-size:13px;padding:20px 0;">Carregando...</div>
-      </div>
-    </div>
-
     <div class="coluna-esquerda">
-  
+
       <!-- 📊 DASHBOARD -->
       <div class="card" id="card-dashboard" style="display:none;">
         <div id="dashboard-conteudo">
           <div style="color:#64748b;font-size:13px;padding:8px 0;">Carregando...</div>
+        </div>
+      </div>
+
+      <!-- 📈 DESEMPENHO (exibido no Dashboard) -->
+      <div id="card-desempenho" style="display:none;">
+        <div class="desemp-tabs">
+          <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta">🟦 Meta Ads</button>
+          <button class="desemp-tab" disabled title="Em breve">🔴 Google Ads</button>
+          <button class="desemp-tab" disabled title="Em breve">🎵 TikTok Ads</button>
+          <button class="desemp-tab" disabled title="Em breve">💼 LinkedIn Ads</button>
+          <button class="desemp-tab" disabled title="Em breve">🎬 Kwai Ads</button>
+          <button class="desemp-tab" disabled title="Em breve">📌 Pinterest Ads</button>
+          <button class="desemp-tab" disabled title="Em breve">👻 Snapchat Ads</button>
+          <button class="desemp-tab" disabled title="Em breve">🪟 Microsoft Ads</button>
+        </div>
+        <div id="painel_performance_meta" class="performance-meta-panel">
+          <div style="color:#64748b;font-size:13px;padding:20px 0;">Carregando...</div>
         </div>
       </div>
 
@@ -15729,11 +15729,11 @@ async function login() {
 // =============================================
 
 const SIDEBAR_SECOES = {
-  dashboard:      { ids: ["card-dashboard"],                                  icone: "📊", label: "Dashboard" },
+  dashboard:      { ids: ["card-dashboard", "card-desempenho"],               icone: "📊", label: "Dashboard" },
   integracoes:    { ids: ["card-hub-conexoes"],                               icone: "🔌", label: "Integrações" },
   campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],           icone: "📢", label: "Campanhas" },
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
-  desempenho:     { ids: ["card-desempenho"],                                  icone: "📈", label: "Desempenho" },
+  desempenho:     { ids: ["card-desempenho"],                                  icone: "📈", label: "Desempenho", condicional: true },
   suporte:        { ids: ["suporte-page-wrap"],                                icone: "💬", label: "Suporte" },
   informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Informações" },
   admin:          { ids: ["painel_admin"],                                    icone: "🛡️", label: "Admin", condicional: true },
@@ -15858,8 +15858,8 @@ function navegarPara(secao) {
     btn.classList.toggle("ativa", btn.dataset.secao === secao);
   });
 
-  // Ao navegar para Desempenho, recarregar dados da plataforma ativa
-  if (secao === "desempenho") carregarPerformanceMeta();
+  // Ao navegar para Dashboard, recarregar performance
+  if (secao === "dashboard" || secao === "desempenho") carregarPerformanceMeta();
 
   // Ao navegar para Suporte, carregar/pausar chat inline
   if (secao === "suporte") {
@@ -23627,7 +23627,7 @@ async function carregarDashboard() {
         <span style="font-size:13px;font-weight:600;">Integrações</span><br>
         <span style="font-size:11px;color:#64748b;">Conectar plataformas</span>
       </button>
-      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="navegarPara('desempenho')">
+      <button class="btn" style="background:transparent;border:1px solid #1e3a5f;color:#60a5fa;text-align:left;padding:14px 16px;" onclick="document.getElementById('card-desempenho').scrollIntoView({behavior:'smooth',block:'start'})">
         <span style="font-size:18px;">📈</span><br>
         <span style="font-size:13px;font-weight:600;">Desempenho</span><br>
         <span style="font-size:11px;color:#64748b;">Ver métricas e gastos</span>

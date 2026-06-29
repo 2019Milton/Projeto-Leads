@@ -13928,7 +13928,9 @@ function fecharLead() {
     .classList.remove("ativo");
 }
 
-const API = "https://function-bun-production-446a.up.railway.app";
+const API = ["plataformadeleads.com.br", "www.plataformadeleads.com.br"].includes(window.location.hostname)
+  ? "https://function-bun-production-446a.up.railway.app"
+  : "https://function-bun-staging-3252.up.railway.app";
 
 let resetSenhaToken = null;
 

@@ -595,6 +595,15 @@ button {
 .app-topbar-slim .logout { font-size: 12px; padding: 4px 12px; }
 .app-topbar-spacer { flex: 1; }
 
+/* No modo sidebar os botões expandir/recolher não fazem sentido */
+#app.sidebar-ativa .painel-recolhivel-toggle { display: none !important; }
+#app.sidebar-ativa .painel-recolhido > .painel-recolhivel-conteudo {
+  max-height: none !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  margin-top: revert !important;
+}
+
 .secao-app {
   display: none;
   flex: 1;
@@ -15206,10 +15215,6 @@ async function init() {
 
     if (tipo === "super_admin" || tipo === "master") {
 
-      if (btnAdmin) btnAdmin.style.display = "block";
-      if (painelAdmin) painelAdmin.style.display = "block";
-      if (btnSuporteChat) btnSuporteChat.style.display = "block";
-      if (painelSuporteChat) painelSuporteChat.style.display = "block";
       mostrarSidebarItem("admin");
       mostrarSidebarItem("suporte-chat");
 
@@ -15220,22 +15225,12 @@ async function init() {
 
     } else if (tipo === "suporte") {
 
-      if (btnAdmin) btnAdmin.style.display = "none";
-      if (painelAdmin) painelAdmin.style.display = "none";
-      if (btnSuporteChat) btnSuporteChat.style.display = "block";
-      if (painelSuporteChat) painelSuporteChat.style.display = "block";
       mostrarSidebarItem("suporte-chat");
 
       await carregarUsuariosSuporte();
       await carregarConversasSuporte();
       setInterval(() => carregarConversasSuporte(true), 8000);
 
-    } else {
-
-      if (btnAdmin) btnAdmin.style.display = "none";
-      if (painelAdmin) painelAdmin.style.display = "none";
-      if (btnSuporteChat) btnSuporteChat.style.display = "none";
-      if (painelSuporteChat) painelSuporteChat.style.display = "none";
     }
 
     // Badge de mensagens não lidas (para todos os usuários normais)

@@ -600,6 +600,25 @@ button {
 
 /* card-meta é legado — os dados Meta agora ficam no hub; esconder sem remover o DOM */
 #app.sidebar-ativa #card-meta { display: none !important; }
+
+/* Tabs de plataforma na seção Desempenho */
+#card-desempenho { width: 100%; }
+.desemp-tabs {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 0 0 14px; border-bottom: 1px solid #1e293b; margin-bottom: 16px;
+}
+.desemp-tab {
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  border: 1px solid #334155; background: transparent; color: #64748b;
+  cursor: pointer; transition: all .15s;
+}
+.desemp-tab.ativa { border-color: #3b82f6; background: #1e3a5f; color: #93c5fd; }
+.desemp-tab:disabled { opacity: .4; cursor: default; pointer-events: none; }
+.perf-vazio {
+  padding: 40px 20px; text-align: center;
+  color: #64748b; font-size: 13px; background: #0c1628;
+  border: 1px solid #1e293b; border-radius: 10px;
+}
 #app.sidebar-ativa .painel-recolhido > .painel-recolhivel-conteudo {
   max-height: none !important;
   opacity: 1 !important;
@@ -8589,6 +8608,30 @@ body.tema-claro .info-tooltip-popup {
   background: rgba(18, 7, 38, 0.85);
   border: 1px solid rgba(124, 58, 237, 0.32);
 }
+
+/* Cards KPI clicáveis */
+.admin-kpi-card { cursor: pointer; position: relative; }
+.admin-kpi-card:hover { transform: translateY(-4px) !important; box-shadow: 0 20px 50px rgba(0,0,0,0.45) !important; }
+.admin-kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 14px; }
+.admin-kpi-link { font-size: 12px; color: #475569; margin-top: 12px; font-weight: 600; transition: color 0.15s; }
+.admin-kpi-card:hover .admin-kpi-link { color: #94a3b8; }
+
+/* Modal KPI */
+.admin-kpi-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9500; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+.admin-kpi-modal-box { background: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(8,15,35,0.99)); border: 1px solid rgba(99,102,241,0.25); border-radius: 18px; width: 100%; max-width: 740px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 32px 80px rgba(0,0,0,0.6); overflow: hidden; }
+.admin-kpi-modal-header { padding: 18px 22px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.admin-kpi-modal-header span { font-size: 16px; font-weight: 700; color: #e2e8f0; }
+.admin-kpi-modal-fechar { background: none; border: none; color: #64748b; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; }
+.admin-kpi-modal-fechar:hover { color: #e2e8f0; }
+.admin-kpi-modal-corpo { overflow-y: auto; padding: 20px 22px; flex: 1; }
+.admin-kpi-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.admin-kpi-table th { text-align: left; padding: 8px 12px; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.admin-kpi-table td { padding: 10px 12px; color: #e2e8f0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.admin-kpi-table tr:hover td { background: rgba(255,255,255,0.03); }
+.admin-kpi-stat-bloco { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 12px; background: rgba(255,255,255,0.04); flex: 1; border-left: 3px solid transparent; }
+.admin-kpi-stat-bloco .num { font-size: 28px; font-weight: 800; line-height: 1; }
+.admin-kpi-stat-bloco .label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
 .admin-secao > h3:first-child {
   color: #f1f5f9 !important;
   margin-bottom: 16px !important;
@@ -10051,6 +10094,145 @@ body.tema-claro .targeting-chip {
   opacity: .8;
   margin-bottom: 4px;
 }
+
+/* Painel de suporte — melhorias de layout */
+.suporte-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+.suporte-sidebar {
+  width: 290px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.suporte-main {
+  flex: 1;
+  min-width: 0;
+}
+.suporte-chat-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 440px;
+  gap: 10px;
+  border-radius: 14px;
+  border: 1px dashed rgba(99,102,241,0.18);
+  background: rgba(15,23,42,0.3);
+}
+.suporte-busca {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(99,102,241,0.22);
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+  font-size: 13px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.suporte-busca:focus { border-color: rgba(99,102,241,0.45); }
+.suporte-busca::placeholder { color: #475569; }
+.suporte-filtros-wrap {
+  display: flex;
+  gap: 6px;
+}
+.suporte-filtro-btn {
+  flex: 1;
+  padding: 7px 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(99,102,241,0.2);
+  background: transparent;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.suporte-filtro-btn.ativo {
+  background: rgba(99,102,241,0.2);
+  border-color: rgba(99,102,241,0.45);
+  color: #c4b5fd;
+}
+.suporte-filtro-btn:hover:not(.ativo) {
+  background: rgba(99,102,241,0.08);
+  color: #94a3b8;
+}
+.suporte-stats-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.suporte-stat-chip {
+  padding: 5px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.suporte-stat-abertas {
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.22);
+  color: #4ade80;
+}
+.suporte-stat-nao-lidas {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.22);
+  color: #f87171;
+}
+.suporte-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: -0.5px;
+  user-select: none;
+}
+.suporte-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  user-select: none;
+}
+.suporte-conv-preview {
+  font-size: 11px;
+  color: #475569;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.suporte-popout-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(99,102,241,0.15);
+  border: 1px solid rgba(99,102,241,0.3);
+  color: #a5b4fc;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.suporte-popout-btn:hover { background: rgba(99,102,241,0.25); }
 
 /* =========================================
    📝 FEEDBACK
@@ -11771,13 +11953,21 @@ body.tema-claro .ia-resumo-panel {
   <!-- 🔥 GRID SUPERIOR -->
   <div class="layout-principal">
 
-    <!-- 🔹 ESQUERDA -->
-    <div
-      id="painel_performance_meta"
-      class="performance-meta-panel"
-      style="display:none;"
-    >
-      Carregando performance Meta...
+    <!-- 📈 DESEMPENHO -->
+    <div id="card-desempenho" style="display:none;">
+      <div class="desemp-tabs">
+        <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta">🟦 Meta Ads</button>
+        <button class="desemp-tab" disabled title="Em breve">🔴 Google Ads</button>
+        <button class="desemp-tab" disabled title="Em breve">🎵 TikTok Ads</button>
+        <button class="desemp-tab" disabled title="Em breve">💼 LinkedIn Ads</button>
+        <button class="desemp-tab" disabled title="Em breve">🎬 Kwai Ads</button>
+        <button class="desemp-tab" disabled title="Em breve">📌 Pinterest Ads</button>
+        <button class="desemp-tab" disabled title="Em breve">👻 Snapchat Ads</button>
+        <button class="desemp-tab" disabled title="Em breve">🪟 Microsoft Ads</button>
+      </div>
+      <div id="painel_performance_meta" class="performance-meta-panel">
+        <div style="color:#64748b;font-size:13px;padding:20px 0;">Carregando...</div>
+      </div>
     </div>
 
     <div class="coluna-esquerda">
@@ -13162,36 +13352,47 @@ body.tema-claro .ia-resumo-panel {
       <h3>📊 Visão Geral</h3>
       <div class="dashboard-grid">
 
-        <div class="dashboard-box">
-          <h3>👥 Usuários</h3>
-          <div id="admin_total_usuarios">
-            0
-          </div>
+        <div class="dashboard-box admin-kpi-card" style="border-top:3px solid #3b82f6;" onclick="abrirModalAdminKpi('usuarios')">
+          <div class="admin-kpi-icon" style="background:rgba(59,130,246,0.15);color:#3b82f6;">👥</div>
+          <h3>Usuários</h3>
+          <div id="admin_total_usuarios">0</div>
+          <div class="admin-kpi-link">Ver detalhes →</div>
         </div>
-  
-        <div class="dashboard-box">
-          <h3>📢 Campanhas</h3>
-          <div id="admin_total_campanhas">
-            0
-          </div>
+
+        <div class="dashboard-box admin-kpi-card" style="border-top:3px solid #8b5cf6;" onclick="abrirModalAdminKpi('campanhas')">
+          <div class="admin-kpi-icon" style="background:rgba(139,92,246,0.15);color:#8b5cf6;">📢</div>
+          <h3>Campanhas</h3>
+          <div id="admin_total_campanhas">0</div>
+          <div class="admin-kpi-link">Ver detalhes →</div>
         </div>
-  
-        <div class="dashboard-box">
-          <h3>🧲 Leads</h3>
-          <div id="admin_total_leads">
-            0
-          </div>
+
+        <div class="dashboard-box admin-kpi-card" style="border-top:3px solid #22c55e;" onclick="abrirModalAdminKpi('leads')">
+          <div class="admin-kpi-icon" style="background:rgba(34,197,94,0.15);color:#22c55e;">🧲</div>
+          <h3>Leads</h3>
+          <div id="admin_total_leads">0</div>
+          <div class="admin-kpi-link">Ver detalhes →</div>
         </div>
-  
-        <div class="dashboard-box">
-          <h3>🚦 Contas Ativas</h3>
-          <div id="admin_contas_ativas">
-            0
-          </div>
+
+        <div class="dashboard-box admin-kpi-card" style="border-top:3px solid #f59e0b;" onclick="abrirModalAdminKpi('contas')">
+          <div class="admin-kpi-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;">🚦</div>
+          <h3>Contas Ativas</h3>
+          <div id="admin_contas_ativas">0</div>
+          <div class="admin-kpi-link">Ver detalhes →</div>
         </div>
 
       </div>
       </div><!-- /admin-secao KPIs -->
+
+      <!-- Modal KPI Admin -->
+      <div id="admin_kpi_modal" class="admin-kpi-modal" style="display:none;" onclick="if(event.target===this)fecharModalAdminKpi()">
+        <div class="admin-kpi-modal-box">
+          <div class="admin-kpi-modal-header">
+            <span id="admin_kpi_modal_titulo">Detalhes</span>
+            <button onclick="fecharModalAdminKpi()" class="admin-kpi-modal-fechar">✕</button>
+          </div>
+          <div id="admin_kpi_modal_corpo" class="admin-kpi-modal-corpo"></div>
+        </div>
+      </div>
 
       <!-- RECURSOS -->
       <div id="admin-secao-railway" class="admin-secao admin-secao-b">
@@ -14979,7 +15180,7 @@ const SIDEBAR_SECOES = {
   integracoes:    { ids: ["card-hub-conexoes"],                               icone: "🔌", label: "Integrações" },
   campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],           icone: "📢", label: "Campanhas" },
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
-  desempenho:     { ids: ["painel_performance_meta"],                         icone: "📈", label: "Desempenho" },
+  desempenho:     { ids: ["card-desempenho"],                                  icone: "📈", label: "Desempenho" },
   suporte:        { ids: ["card-suporte", "card-feedback"],                   icone: "💬", label: "Suporte" },
   informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Informações" },
   admin:          { ids: ["painel_admin"],                                    icone: "🛡️", label: "Admin", condicional: true },
@@ -15104,10 +15305,26 @@ function navegarPara(secao) {
     btn.classList.toggle("ativa", btn.dataset.secao === secao);
   });
 
-  // Para desempenho, garantir que o painel visível tem o estado correto
-  if (secao === "desempenho") {
-    const perf = document.getElementById("painel_performance_meta");
-    if (perf) perf.style.display = "";
+  // Ao navegar para Desempenho, recarregar dados da plataforma ativa
+  if (secao === "desempenho") carregarPerformanceMeta();
+}
+
+function selecionarTabDesempenho(plataformaId) {
+  document.querySelectorAll(".desemp-tab[data-plat]").forEach(btn => {
+    btn.classList.toggle("ativa", btn.dataset.plat === plataformaId);
+  });
+  const painel = document.getElementById("painel_performance_meta");
+  if (plataformaId === "meta") {
+    if (painel) painel.style.display = "";
+    carregarPerformanceMeta();
+  } else {
+    if (painel) painel.style.display = "none";
+    // placeholder para plataformas futuras
+    const conteudo = document.getElementById("painel_performance_meta");
+    if (conteudo) {
+      conteudo.style.display = "";
+      conteudo.innerHTML = `<div class="perf-vazio">Performance de ${plataformaId} em breve.</div>`;
+    }
   }
 }
 
@@ -19609,8 +19826,6 @@ function renderizarPainelPerformanceMeta(data) {
     `;
   }).join("");
 
-  painel.style.display = "block";
-
   painel.innerHTML = `
     <div class="performance-meta-head">
       <div>
@@ -20211,8 +20426,8 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
     const data = await res.json();
 
     if (!res.ok || data.error) {
-      painel.style.display = "none";
       console.warn("PERFORMANCE META:", data);
+      painel.innerHTML = `<div class="perf-vazio">Conecte o Meta Ads para ver a performance aqui.</div>`;
       return;
     }
 
@@ -20223,10 +20438,8 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
   } catch (err) {
 
     console.error("PERFORMANCE META:", err);
+    if (painel) painel.innerHTML = `<div class="perf-vazio">Erro ao carregar dados de performance.</div>`;
 
-    if (painel) {
-      painel.style.display = "none";
-    }
   } finally {
     if (btnAtualizar) {
       btnAtualizar.disabled = false;
@@ -27736,6 +27949,10 @@ let _suporteConvAtual = null;
 let _suporteConvStatusAtual = null;
 let _suportePollInterval = null;
 const _suporteConvDados = new Map();
+let _suporteFiltroAtual = "todas";
+let _suporteBuscaAtual = "";
+let _suportePorUsuarioCache = [];
+let _suporteUidAtual = null;
 
 function abrirPainelSuporte() {
   const painel = document.getElementById("painel_suporte_chat");
@@ -27814,41 +28031,142 @@ async function carregarConversasSuporte(silencioso = false) {
       badgeTopbar.textContent = totalNaoLidas;
     }
 
-    if (conversas.length === 0) {
-      lista.innerHTML = '<div class="suporte-vazio">Nenhuma conversa ainda.</div>';
-      return;
-    }
-
     // Agrupa conversas por usuario_id — uma entrada por usuário
     const _porUsuario = new Map();
     conversas.forEach(c => {
       const uid = c.usuario_id;
       const nome = c.usuario_nome || c.usuario_email || "Usuário";
-      _suporteConvDados.set(uid, { nome, email: c.usuario_email || "", usuarioId: uid });
+      const email = c.usuario_email || "";
       if (!_porUsuario.has(uid)) {
-        _porUsuario.set(uid, { usuarioId: uid, nome, email: c.usuario_email || "", atualizado_em: c.atualizado_em, nao_lidas: 0 });
+        _porUsuario.set(uid, {
+          usuarioId: uid, nome, email,
+          atualizado_em: c.atualizado_em,
+          nao_lidas: 0,
+          conversaId: c.id,
+          status: c.status || "aberta",
+          hasAberta: (c.status || "aberta") !== "fechada"
+        });
       }
       const entry = _porUsuario.get(uid);
       entry.nao_lidas += Number(c.nao_lidas || 0);
-      if (new Date(c.atualizado_em) > new Date(entry.atualizado_em)) entry.atualizado_em = c.atualizado_em;
+      if ((c.status || "aberta") !== "fechada") entry.hasAberta = true;
+      if (new Date(c.atualizado_em) > new Date(entry.atualizado_em)) {
+        entry.atualizado_em = c.atualizado_em;
+        entry.conversaId = c.id;
+        entry.status = c.status || "aberta";
+      }
+      _suporteConvDados.set(uid, { nome, email, usuarioId: uid, conversaId: entry.conversaId });
     });
 
-    lista.innerHTML = [..._porUsuario.values()].map(u => {
-      const nomeDisplay = u.nome !== u.email ? `${u.nome} — ${u.email}` : u.email;
-      const data_atualizado = new Date(u.atualizado_em).toLocaleString("pt-BR", { day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit" });
-      return `
-        <div class="suporte-conv-item" onclick="abrirChatUsuario(${u.usuarioId})">
-          <div class="suporte-conv-info">
-            <div class="suporte-conv-email">${escHtml(nomeDisplay)}</div>
-            <div class="suporte-conv-data">Atualizado: ${data_atualizado}</div>
-          </div>
-          ${u.nao_lidas > 0 ? `<span class="suporte-conv-badge">${u.nao_lidas}</span>` : ""}
-        </div>`;
-    }).join("");
+    _suportePorUsuarioCache = [..._porUsuario.values()];
+
+    // Stats
+    const totalAbertas = _suportePorUsuarioCache.filter(u => u.hasAberta).length;
+    const statsRow = document.getElementById("suporte_stats_row");
+    const statAbertas = document.getElementById("suporte_stat_abertas");
+    const statNaoLidas = document.getElementById("suporte_stat_nao_lidas");
+    if (statsRow) statsRow.style.display = _suportePorUsuarioCache.length > 0 ? "flex" : "none";
+    if (statAbertas) statAbertas.textContent = `${totalAbertas} abertas`;
+    if (statNaoLidas) {
+      statNaoLidas.style.display = totalNaoLidas > 0 ? "flex" : "none";
+      statNaoLidas.textContent = `${totalNaoLidas} não lidas`;
+    }
+
+    _renderConversasSuporte();
 
   } catch (e) {
     console.error("suporte conversas:", e);
   }
+}
+
+function _iniciais(nome) {
+  const partes = String(nome || "?").trim().split(/\s+/);
+  if (partes.length >= 2) return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+  return partes[0].slice(0, 2).toUpperCase();
+}
+
+function _renderConversasSuporte() {
+  const lista = document.getElementById("suporte_conv_lista");
+  if (!lista) return;
+  const busca = _suporteBuscaAtual.toLowerCase();
+  let itens = _suportePorUsuarioCache;
+  if (_suporteFiltroAtual === "abertas") itens = itens.filter(u => u.hasAberta);
+  if (_suporteFiltroAtual === "fechadas") itens = itens.filter(u => !u.hasAberta);
+  if (busca) itens = itens.filter(u =>
+    u.nome.toLowerCase().includes(busca) || u.email.toLowerCase().includes(busca)
+  );
+  if (itens.length === 0) {
+    const msg = _suportePorUsuarioCache.length === 0
+      ? "Nenhuma conversa ainda."
+      : "Nenhuma conversa encontrada para este filtro.";
+    lista.innerHTML = `<div class="suporte-vazio">${msg}</div>`;
+    return;
+  }
+  lista.innerHTML = itens.map(u => {
+    const nomeDisplay = u.nome !== u.email ? u.nome : u.email;
+    const emailDisplay = u.nome !== u.email ? u.email : "";
+    const data_atualizado = new Date(u.atualizado_em).toLocaleString("pt-BR", { day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit" });
+    const isSelecionado = u.usuarioId === _suporteUidAtual ? " selecionado" : "";
+    const statusCls = u.hasAberta ? "" : " fechada";
+    const statusLabel = u.hasAberta ? "aberta" : "fechada";
+    return `
+      <div class="suporte-conv-item${isSelecionado}" data-uid="${u.usuarioId}" onclick="abrirConversaInline(${u.usuarioId})">
+        <div class="suporte-avatar">${escHtml(_iniciais(u.nome))}</div>
+        <div class="suporte-conv-info">
+          <div class="suporte-conv-email">${escHtml(nomeDisplay)}</div>
+          ${emailDisplay ? `<div class="suporte-conv-preview">${escHtml(emailDisplay)}</div>` : ""}
+          <div class="suporte-conv-data">${data_atualizado} &middot; <span class="suporte-conv-status${statusCls}">${statusLabel}</span></div>
+        </div>
+        ${u.nao_lidas > 0 ? `<span class="suporte-conv-badge">${u.nao_lidas}</span>` : ""}
+      </div>`;
+  }).join("");
+}
+
+function filtrarSuporte(tipo) {
+  _suporteFiltroAtual = tipo;
+  ["todas","abertas","fechadas"].forEach(t => {
+    const btn = document.getElementById(`filtro_${t}`);
+    if (btn) btn.classList.toggle("ativo", t === tipo);
+  });
+  _renderConversasSuporte();
+}
+
+function buscarConversasSuporte() {
+  const input = document.getElementById("suporte_busca");
+  _suporteBuscaAtual = input ? input.value : "";
+  _renderConversasSuporte();
+}
+
+async function abrirConversaInline(uid) {
+  const d = _suporteConvDados.get(uid) || {};
+  const convId = d.conversaId;
+  if (!convId) {
+    // Sem conversa ainda — abre janela flutuante para iniciar
+    abrirJanelaSuporte(d.nome || "Usuário", d.email || "", uid);
+    return;
+  }
+  _suporteUidAtual = uid;
+  _suporteConvAtual = convId;
+  // Atualiza seleção visual na lista
+  document.querySelectorAll(".suporte-conv-item").forEach(el => {
+    el.classList.toggle("selecionado", Number(el.dataset.uid) === uid);
+  });
+  // Mostra painel de chat inline
+  const placeholder = document.getElementById("suporte_chat_placeholder");
+  const area = document.getElementById("suporte_chat_area");
+  if (placeholder) placeholder.style.display = "none";
+  if (area) area.style.display = "block";
+  // Avatar no header
+  const avatarEl = document.getElementById("suporte_chat_avatar");
+  if (avatarEl) avatarEl.textContent = _iniciais(d.nome || "?");
+  await carregarMensagensSuporte(convId);
+  await marcarVisualizadoSuporte(uid);
+}
+
+function abrirEmJanela() {
+  if (!_suporteUidAtual) return;
+  const d = _suporteConvDados.get(_suporteUidAtual) || {};
+  abrirJanelaSuporte(d.nome || "Usuário", d.email || "", _suporteUidAtual);
 }
 
 async function selecionarConversaSuporte(id) {
@@ -27942,9 +28260,12 @@ function toggleMinimizarJanela(uid) {
 
 async function marcarVisualizadoSuporte(uid) {
   const token = localStorage.getItem("token");
+  if (!token) return;
+  // Tenta janela flutuante primeiro, depois inline
   const j = _janelasSuporte.get(uid);
-  if (!token || !j || !j.convAtivo) return;
-  await fetch(`${API}/chat/conversas/${j.convAtivo}/visualizar`, {
+  const convId = j ? j.convAtivo : (uid === _suporteUidAtual ? _suporteConvAtual : null);
+  if (!convId) return;
+  await fetch(`${API}/chat/conversas/${convId}/visualizar`, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${token}` }
   }).catch(() => {});
@@ -28305,6 +28626,16 @@ async function enviarMensagemSuporteDireta() {
   }
 }
 
+function _fecharChatInline() {
+  _suporteConvAtual = null;
+  _suporteUidAtual = null;
+  document.querySelectorAll(".suporte-conv-item").forEach(el => el.classList.remove("selecionado"));
+  const area = document.getElementById("suporte_chat_area");
+  const placeholder = document.getElementById("suporte_chat_placeholder");
+  if (area) area.style.display = "none";
+  if (placeholder) placeholder.style.display = "flex";
+}
+
 async function fecharConversaSuporte() {
   if (!_suporteConvAtual) return;
   const token = localStorage.getItem("token");
@@ -28315,9 +28646,7 @@ async function fecharConversaSuporte() {
       method: "PUT",
       headers: { "Authorization": "Bearer " + token }
     });
-    _suporteConvAtual = null;
-    const area = document.getElementById("suporte_chat_area");
-    if (area) area.style.display = "none";
+    _fecharChatInline();
     await carregarConversasSuporte();
   } catch (e) {
     console.error("suporte fechar:", e);

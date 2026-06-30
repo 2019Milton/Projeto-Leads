@@ -8943,6 +8943,296 @@ body.tema-claro .info-tooltip-popup {
   font-size: 13px;
 }
 
+.planos-guia {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.planos-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+  gap: 14px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(99,102,241,0.34);
+  background:
+    radial-gradient(circle at 12% 16%, rgba(34,211,238,0.14), transparent 34%),
+    linear-gradient(135deg, rgba(30,41,59,0.78), rgba(15,23,42,0.92));
+}
+
+.planos-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-bottom: 8px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(125,211,252,0.32);
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.planos-hero h3,
+.plano-bloco h4 {
+  margin: 0;
+  color: #f8fafc;
+  letter-spacing: 0;
+}
+
+.planos-hero h3 {
+  font-size: 22px;
+}
+
+.planos-hero p,
+.plano-bloco p,
+.plano-info-card p,
+.plano-resumo-card p {
+  margin: 0;
+  color: #bfd3e8;
+  line-height: 1.55;
+}
+
+.planos-resumo-lista {
+  display: grid;
+  gap: 8px;
+}
+
+.plano-resumo-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,0.22);
+  background: rgba(15,23,42,0.58);
+}
+
+.plano-resumo-card strong {
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.plano-resumo-card p {
+  font-size: 12px;
+}
+
+.plano-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 62px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.plano-badge--bronze {
+  color: #f6c088;
+  border: 1px solid rgba(217,119,6,0.46);
+  background: rgba(146,64,14,0.20);
+}
+
+.plano-badge--prata {
+  color: #dbeafe;
+  border: 1px solid rgba(148,163,184,0.52);
+  background: rgba(148,163,184,0.18);
+}
+
+.plano-badge--ouro {
+  color: #fcd34d;
+  border: 1px solid rgba(245,158,11,0.56);
+  background: rgba(245,158,11,0.18);
+}
+
+.plano-blocos {
+  display: grid;
+  gap: 12px;
+}
+
+.plano-bloco {
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(148,163,184,0.18);
+  background: rgba(8,17,34,0.74);
+}
+
+.plano-bloco--bronze {
+  border-color: rgba(217,119,6,0.38);
+}
+
+.plano-bloco--prata {
+  border-color: rgba(148,163,184,0.42);
+}
+
+.plano-bloco--ouro {
+  border-color: rgba(245,158,11,0.46);
+}
+
+.plano-bloco-head {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-bottom: 1px solid rgba(148,163,184,0.13);
+  background: rgba(30,41,59,0.58);
+}
+
+.plano-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(59,130,246,0.16);
+  color: #bfdbfe;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.plano-bloco-head span:not(.plano-badge):not(.plano-numero) {
+  display: block;
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.plano-bloco-body {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.score-lista {
+  display: grid;
+  gap: 7px;
+}
+
+.score-linha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 9px;
+  border: 1px solid rgba(148,163,184,0.12);
+  background: rgba(15,23,42,0.54);
+  color: #dbeafe;
+  font-size: 13px;
+}
+
+.score-pontos {
+  min-width: 74px;
+  text-align: right;
+  color: #4ade80;
+  font-weight: 900;
+}
+
+.score-pontos--negativo {
+  color: #fb7185;
+}
+
+.plano-nota {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(125,211,252,0.18);
+  background: rgba(14,116,144,0.12);
+  color: #c7e8f8;
+  line-height: 1.55;
+}
+
+.plano-nota strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #e0f2fe;
+}
+
+.plano-info-grid,
+.ouro-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ouro-feature-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.plano-info-card,
+.ouro-feature-card {
+  min-height: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,0.14);
+  background: rgba(15,23,42,0.56);
+}
+
+.plano-info-card strong,
+.ouro-feature-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #f8fafc;
+}
+
+.plano-disponibilidade {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(34,197,94,0.26);
+  background: rgba(22,163,74,0.12);
+  color: #bbf7d0;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.plano-indisponivel {
+  opacity: 0.76;
+}
+
+.plano-indisponivel .plano-disponibilidade {
+  border-color: rgba(245,158,11,0.34);
+  background: rgba(245,158,11,0.12);
+  color: #fde68a;
+}
+
+@media (max-width: 900px) {
+  .planos-hero,
+  .plano-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plano-bloco-head {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .plano-bloco-head .plano-badge {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 620px) {
+  .score-linha {
+    grid-template-columns: 1fr;
+  }
+
+  .score-pontos {
+    min-width: 0;
+    text-align: left;
+  }
+}
+
 .card-criar-campanha {
   background: var(--nicho-card-bg, #0b1f3f) !important;
   border: 1px solid var(--nicho-card-border, #2563eb) !important;
@@ -11351,6 +11641,92 @@ body:not(.tema-claro) .ia-resumo-periodo:hover {
   background: #31215a !important;
   border-color: #8b5cf6 !important;
   color: #ddd6fe !important;
+}
+
+body.tema-claro .planos-hero {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(37,99,235,0.10), transparent 34%),
+    linear-gradient(135deg, #f8fbff, #eaf2ff);
+  border-color: rgba(37,99,235,0.22);
+}
+
+body.tema-claro .planos-kicker {
+  border-color: rgba(37,99,235,0.24);
+  color: #2563eb;
+  background: rgba(37,99,235,0.07);
+}
+
+body.tema-claro .planos-hero h3,
+body.tema-claro .plano-bloco h4,
+body.tema-claro .plano-resumo-card strong,
+body.tema-claro .plano-info-card strong,
+body.tema-claro .ouro-feature-card strong,
+body.tema-claro .plano-nota strong {
+  color: #0f172a;
+}
+
+body.tema-claro .planos-hero p,
+body.tema-claro .plano-bloco p,
+body.tema-claro .plano-info-card p,
+body.tema-claro .plano-resumo-card p {
+  color: #475569;
+}
+
+body.tema-claro .plano-resumo-card,
+body.tema-claro .score-linha,
+body.tema-claro .plano-info-card,
+body.tema-claro .ouro-feature-card {
+  background: rgba(255,255,255,0.78);
+  border-color: rgba(15,23,42,0.10);
+  color: #1e293b;
+}
+
+body.tema-claro .plano-bloco {
+  background: rgba(255,255,255,0.70);
+  color: #1e293b;
+}
+
+body.tema-claro .plano-bloco-head {
+  background: rgba(226,232,240,0.72);
+  border-bottom-color: rgba(15,23,42,0.10);
+}
+
+body.tema-claro .plano-bloco-head span:not(.plano-badge):not(.plano-numero) {
+  color: #64748b;
+}
+
+body.tema-claro .plano-nota {
+  background: rgba(14,165,233,0.08);
+  border-color: rgba(14,165,233,0.22);
+  color: #334155;
+}
+
+body.tema-claro .plano-disponibilidade {
+  background: rgba(22,163,74,0.10);
+  color: #166534;
+}
+
+body.tema-claro .plano-indisponivel .plano-disponibilidade {
+  background: rgba(245,158,11,0.12);
+  color: #92400e;
+}
+
+body.tema-claro .plano-badge--bronze {
+  color: #92400e;
+  border-color: rgba(146,64,14,0.38);
+  background: rgba(217,119,6,0.12);
+}
+
+body.tema-claro .plano-badge--prata {
+  color: #334155;
+  border-color: rgba(100,116,139,0.34);
+  background: rgba(148,163,184,0.18);
+}
+
+body.tema-claro .plano-badge--ouro {
+  color: #a16207;
+  border-color: rgba(202,138,4,0.42);
+  background: rgba(245,158,11,0.14);
 }
 
 body:not(.tema-claro) input,
@@ -14638,155 +15014,195 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         </div>
       </div>
 
-      <!-- 📋 PAINEL DE INFORMAÇÕES -->
+      <!-- 📋 GUIA DOS PLANOS -->
       <div class="info-painel" id="card-informacoes">
 
-        <span class="info-painel-titulo">📋 Informações</span>
+        <span class="info-painel-titulo">📋 Planos e Recursos</span>
 
-        <!-- BLOCO 1: Inteligência do Lead -->
-        <div class="info-bloco score-legenda" style="position:relative;">
-          <div style="position:absolute;top:10px;right:10px;display:flex;gap:4px;">
-            <span style="background:#9ca3af22;border:1px solid #9ca3af55;color:#9ca3af;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">Bronze</span>
-            <span style="background:#94a3b822;border:1px solid #94a3b855;color:#94a3b8;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">Prata</span>
-            <span style="background:#f59e0b22;border:1px solid #f59e0b55;color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">Ouro</span>
-          </div>
-          <h4>Inteligencia do Lead</h4>
-
-          <div class="score-legenda-box">
-
-            <div class="score-item positivo">
-              <span>Lead recem capturado</span>
-              <strong>+10</strong>
+        <div class="planos-guia">
+          <div class="planos-hero">
+            <div>
+              <span class="planos-kicker">Guia dos níveis</span>
+              <h3>Entenda o que cada plano libera na plataforma</h3>
+              <p>
+                Bronze organiza a inteligência do lead, Prata adiciona previsão por Machine Learning
+                e Ouro libera a IA para apoiar atendimento, recuperação e campanhas.
+              </p>
             </div>
-
-            <div class="score-item positivo">
-              <span>Telefone informado</span>
-              <strong>+10</strong>
+            <div class="planos-resumo-lista">
+              <div class="plano-resumo-card">
+                <span class="plano-badge plano-badge--bronze">Bronze</span>
+                <div>
+                  <strong>Score e classificação</strong>
+                  <p>Pontua dados, intenção, urgência e status do funil.</p>
+                </div>
+              </div>
+              <div class="plano-resumo-card">
+                <span class="plano-badge plano-badge--prata">Prata</span>
+                <div>
+                  <strong>Bronze + ML</strong>
+                  <p>Usa histórico para prever tendência e conversão.</p>
+                </div>
+              </div>
+              <div class="plano-resumo-card">
+                <span class="plano-badge plano-badge--ouro">Ouro</span>
+                <div>
+                  <strong>Prata + IA</strong>
+                  <p>Gera prioridades, mensagens, perguntas e campanhas.</p>
+                </div>
+              </div>
             </div>
-
-            <div class="score-item positivo">
-              <span>Email informado</span>
-              <strong>+5</strong>
-            </div>
-
-            <div class="score-item positivo">
-              <span>Intencao forte: visita, financiamento, valor, compra ou parcela</span>
-              <strong>+30</strong>
-            </div>
-
-            <div class="score-item positivo">
-              <span>Urgencia: hoje, rapido, urgente ou essa semana</span>
-              <strong>+20</strong>
-            </div>
-
-            <div class="score-item positivo">
-              <span>Preparo financeiro: renda, credito, FGTS ou pre-aprovado</span>
-              <strong>+15</strong>
-            </div>
-
-            <div class="score-item positivo">
-              <span>Contato recorrente: mesmo telefone ou email apareceu em outro lead</span>
-              <strong>+20</strong>
-            </div>
-
-            <div class="score-item positivo">
-              <span>Status do funil: primeiro contato soma +15, em conversa +30 e fechado +60</span>
-              <strong>+15/+30/+60</strong>
-            </div>
-
-            <div class="score-item negativo">
-              <span>Baixo interesse na observacao ou respostas: sem interesse, desistiu, curioso ou pesquisando</span>
-              <strong>-30</strong>
-            </div>
-
-            <div class="score-item negativo">
-              <span>Lead marcado como perdido</span>
-              <strong>-40</strong>
-            </div>
-
           </div>
 
-          <div class="metrica-explicacao">
-            <strong>Resultado visual</strong>
-            <span>Frio fica abaixo de 35 pontos, Morno de 35 a 69 pontos e Quente a partir de 70 pontos. O status do funil tambem influencia a pontuacao: mover para primeiro contato, em conversa, fechado ou perdido ajusta a classificacao. Se houver score manual, o manual prevalece.</span>
-          </div>
+          <div class="plano-blocos">
+            <section class="plano-bloco plano-bloco--bronze">
+              <div class="plano-bloco-head">
+                <span class="plano-numero">01</span>
+                <div>
+                  <h4>Inteligência do Lead</h4>
+                  <span>Base disponível nos planos Bronze, Prata e Ouro.</span>
+                </div>
+                <span class="plano-badge plano-badge--bronze">Bronze</span>
+              </div>
+              <div class="plano-bloco-body">
+                <div class="score-lista">
+                  <div class="score-linha">
+                    <span>Lead recém capturado</span>
+                    <strong class="score-pontos">+10</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>Telefone informado</span>
+                    <strong class="score-pontos">+10</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>E-mail informado</span>
+                    <strong class="score-pontos">+5</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>Intenção forte: visita, financiamento, valor, compra ou parcela</span>
+                    <strong class="score-pontos">+30</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>Urgência: hoje, rápido, urgente ou essa semana</span>
+                    <strong class="score-pontos">+20</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>Preparo financeiro: renda, crédito, FGTS ou pré-aprovado</span>
+                    <strong class="score-pontos">+15</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>Contato recorrente: mesmo telefone ou e-mail apareceu em outro lead</span>
+                    <strong class="score-pontos">+20</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>Status do funil: primeiro contato, em conversa ou fechado</span>
+                    <strong class="score-pontos">+15/+30/+60</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>Baixo interesse: sem interesse, desistiu, curioso ou pesquisando</span>
+                    <strong class="score-pontos score-pontos--negativo">-30</strong>
+                  </div>
+                  <div class="score-linha">
+                    <span>Lead marcado como perdido</span>
+                    <strong class="score-pontos score-pontos--negativo">-40</strong>
+                  </div>
+                </div>
 
-        </div>
+                <div class="plano-nota">
+                  <strong>Resultado visual</strong>
+                  Frio fica abaixo de 35 pontos, Morno de 35 a 69 pontos e Quente a partir de 70 pontos.
+                  O status do funil também influencia a pontuação. Se houver score manual, o manual prevalece.
+                </div>
+              </div>
+            </section>
 
-        <!-- BLOCO 2: Machine Learning -->
-        <div
-          id="ml_explicacao_lead"
-          class="info-bloco ml-explicacao-lead plano-info-ml"
-          style="position:relative;"
-        >
-          <div style="position:absolute;top:10px;right:10px;display:flex;gap:4px;">
-            <span style="background:#94a3b822;border:1px solid #94a3b855;color:#94a3b8;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">Prata</span>
-            <span style="background:#f59e0b22;border:1px solid #f59e0b55;color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">Ouro</span>
-          </div>
-          <strong>Machine Learning dos Leads</strong>
-          Disponivel nos planos <strong>Prata</strong> e <strong>Ouro</strong>.<br><br>
-          O ML usa o historico de leads fechados e perdidos da sua conta para calcular
-          probabilidade de conversao e tendencia do lead. Quando a previsao fica forte,
-          ele pode ajustar o rotulo visual Frio/Morno/Quente.
-          <br><br>
-          Para sair do modo aprendendo, o sistema precisa de pelo menos
-          <strong>10 leads de historico</strong>, sendo no minimo
-          <strong>4 fechados</strong> e <strong>4 perdidos</strong>.
-        </div>
+            <section id="ml_explicacao_lead" class="plano-bloco plano-bloco--prata">
+              <div class="plano-bloco-head">
+                <span class="plano-numero">02</span>
+                <div>
+                  <h4>Machine Learning dos Leads</h4>
+                  <span>Camada preditiva disponível nos planos Prata e Ouro.</span>
+                </div>
+                <span class="plano-badge plano-badge--prata">Prata</span>
+              </div>
+              <div class="plano-bloco-body">
+                <span class="plano-disponibilidade">Disponível em Prata e Ouro</span>
+                <div class="plano-info-grid">
+                  <div class="plano-info-card">
+                    <strong>Aprendizado</strong>
+                    <p>Usa o histórico de leads fechados e perdidos da conta para entender padrões reais.</p>
+                  </div>
+                  <div class="plano-info-card">
+                    <strong>Previsão</strong>
+                    <p>Calcula probabilidade de conversão e tendência do lead conforme os sinais disponíveis.</p>
+                  </div>
+                  <div class="plano-info-card">
+                    <strong>Ajuste visual</strong>
+                    <p>Quando a previsão fica forte, pode ajustar o rótulo Frio, Morno ou Quente.</p>
+                  </div>
+                </div>
+                <div class="plano-nota">
+                  <strong>Requisito para sair do modo aprendendo</strong>
+                  O sistema precisa de pelo menos 10 leads de histórico, com no mínimo 4 fechados e 4 perdidos.
+                </div>
+              </div>
+            </section>
 
-        <div
-          id="ia_explicacao_ouro"
-          class="info-bloco ia-ouro-card plano-info-ia"
-          style="position:relative;"
-        >
-          <div style="position:absolute;top:10px;right:10px;display:flex;gap:4px;">
-            <span style="background:#f59e0b22;border:1px solid #f59e0b55;color:#f59e0b;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">Ouro</span>
-          </div>
-          <h4>IA Ouro em toda a jornada</h4>
-          <p>
-            Disponivel somente no plano <strong>Ouro</strong>. A IA usa os dados do lead,
-            status, classificacao Frio/Morno/Quente, observacoes, respostas do formulario,
-            tempo parado, historico disponivel, dados de campanha e previsao do ML quando
-            existir para gerar explicacao, prioridade, proxima acao, mensagens, perguntas,
-            recuperacao, reativacao e sugestoes para campanhas.
-          </p>
-          <div class="lead-ia-grid">
-            <div class="lead-ia-mini">
-              <strong>Resumo do lead</strong>
-              Explica rapidamente quem e o lead e o que ele parece buscar.
-            </div>
-            <div class="lead-ia-mini">
-              <strong>Proxima acao</strong>
-              Recomenda ligar, chamar no WhatsApp, nutrir ou qualificar melhor.
-            </div>
-            <div class="lead-ia-mini">
-              <strong>Mensagem pronta</strong>
-              Sugere uma abordagem personalizada para WhatsApp.
-            </div>
-            <div class="lead-ia-mini">
-              <strong>Perguntas de qualificacao</strong>
-              Ajuda o corretor a descobrir valor, regiao, financiamento e prazo.
-            </div>
-            <div class="lead-ia-mini">
-              <strong>Sinais e riscos</strong>
-              Identifica urgencia, intencao, preparo financeiro e possiveis objecoes.
-            </div>
-            <div class="lead-ia-mini">
-              <strong>Resposta e follow-up</strong>
-              Gera mensagem para atendimento e retomada conforme tempo parado.
-            </div>
-            <div class="lead-ia-mini">
-              <strong>Perdidos e reativacao</strong>
-              Sugere motivo de perda e campanhas de recuperacao em lote.
-            </div>
-            <div class="lead-ia-mini">
-              <strong>Campanhas</strong>
-              Cria textos de anuncio e analisa CPL, leads, publico e criativo.
-            </div>
-            <div class="lead-ia-mini">
-              <strong>Resumo diario</strong>
-              Prioriza os leads que merecem atencao hoje.
-            </div>
+            <section id="ia_explicacao_ouro" class="plano-bloco plano-bloco--ouro">
+              <div class="plano-bloco-head">
+                <span class="plano-numero">03</span>
+                <div>
+                  <h4>IA Ouro em toda a jornada</h4>
+                  <span>Assistência completa disponível somente no plano Ouro.</span>
+                </div>
+                <span class="plano-badge plano-badge--ouro">Ouro</span>
+              </div>
+              <div class="plano-bloco-body">
+                <span class="plano-disponibilidade">Disponível no Ouro</span>
+                <p>
+                  A IA usa dados do lead, status, classificação Frio/Morno/Quente, observações,
+                  respostas do formulário, tempo parado, histórico, campanha e previsão do ML quando existir.
+                </p>
+                <div class="ouro-feature-grid">
+                  <div class="ouro-feature-card">
+                    <strong>Resumo do lead</strong>
+                    <p>Explica rapidamente quem é o lead e o que ele parece buscar.</p>
+                  </div>
+                  <div class="ouro-feature-card">
+                    <strong>Próxima ação</strong>
+                    <p>Recomenda ligar, chamar no WhatsApp, nutrir ou qualificar melhor.</p>
+                  </div>
+                  <div class="ouro-feature-card">
+                    <strong>Mensagem pronta</strong>
+                    <p>Sugere uma abordagem personalizada para WhatsApp.</p>
+                  </div>
+                  <div class="ouro-feature-card">
+                    <strong>Perguntas de qualificação</strong>
+                    <p>Ajuda o corretor a descobrir valor, região, financiamento e prazo.</p>
+                  </div>
+                  <div class="ouro-feature-card">
+                    <strong>Sinais e riscos</strong>
+                    <p>Identifica urgência, intenção, preparo financeiro e possíveis objeções.</p>
+                  </div>
+                  <div class="ouro-feature-card">
+                    <strong>Resposta e follow-up</strong>
+                    <p>Gera mensagem para atendimento e retomada conforme o tempo parado.</p>
+                  </div>
+                  <div class="ouro-feature-card">
+                    <strong>Perdidos e reativação</strong>
+                    <p>Sugere motivo de perda e campanhas de recuperação em lote.</p>
+                  </div>
+                  <div class="ouro-feature-card">
+                    <strong>Campanhas</strong>
+                    <p>Cria textos de anúncio e analisa CPL, leads, público e criativo.</p>
+                  </div>
+                  <div class="ouro-feature-card">
+                    <strong>Resumo diário</strong>
+                    <p>Prioriza os leads que merecem atenção hoje.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -17305,7 +17721,7 @@ const SIDEBAR_SECOES = {
   campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],           icone: "📢", label: "Campanhas" },
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
   suporte:        { ids: ["suporte-page-wrap"],                                icone: "💬", label: "Suporte" },
-  informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Informações" },
+  informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Planos e Recursos" },
   admin:          { ids: ["painel_admin"],                                    icone: "🛡️", label: "Admin", condicional: true },
   "suporte-chat": { ids: ["painel_suporte_chat"],                             icone: "🎧", label: "Painel Suporte", condicional: true },
   parceiro:       { ids: ["painel_parceiro"],                                 icone: "🤝", label: "Parceiro", condicional: true },
@@ -18321,17 +18737,19 @@ function atualizarInformacoesPorPlano(
     plano === "ouro";
 
   if (mlInfo) {
-    mlInfo.style.display =
-      temML
-        ? "block"
-        : "none";
+    mlInfo.style.display = "";
+    mlInfo.classList.toggle(
+      "plano-indisponivel",
+      !temML
+    );
   }
 
   if (iaInfo) {
-    iaInfo.style.display =
-      temIA
-        ? "block"
-        : "none";
+    iaInfo.style.display = "";
+    iaInfo.classList.toggle(
+      "plano-indisponivel",
+      !temIA
+    );
   }
 }
 

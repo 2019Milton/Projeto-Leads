@@ -1002,10 +1002,17 @@ button {
    herdado do layout antigo de coluna fixa) que, dentro do flex coluna
    do sidebar, espreme o card na altura da viewport e corta o conteúdo
    sem nunca repassar a sobra para #app-content-area. Forçar visible
-   deixa o card crescer e a rolagem acontecer no nível certo. */
+   deixa o conteúdo vazar, mas sozinho não resolve: a regra genérica
+   ".secao-visivel" usa "flex: 1" (flex-basis 0%), que ignora a altura
+   do conteúdo e trava a caixa exatamente na altura da viewport. Por
+   isso aqui também trocamos para flex-basis "auto" (baseado em
+   conteúdo) — só assim a caixa realmente cresce com o conteúdo e
+   #app-content-area passa a ter altura total maior que 100vh, o que
+   é o que faz a rolagem da página alcançar o fim de verdade. */
 #app.sidebar-ativa #card-dashboard.secao-visivel,
 #app.sidebar-ativa #card-campanhas.secao-visivel {
   overflow: visible !important;
+  flex: 0 0 auto;
 }
 
 /* O wrapper das abas de nicho (#nicho_campanha_container) também vira

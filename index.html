@@ -17843,7 +17843,7 @@ async function login() {
 const SIDEBAR_SECOES = {
   dashboard:      { ids: ["card-dashboard"],                                  icone: "📊", label: "Dashboard" },
   integracoes:    { ids: ["card-hub-conexoes"],                               icone: "🔌", label: "Integrações" },
-  campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],           icone: "📢", label: "Campanhas" },
+  campanhas:      { ids: ["nicho_campanha_container", "card-criar-campanha", "card-campanhas"], icone: "📢", label: "Campanhas" },
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
   suporte:        { ids: ["suporte-page-wrap"],                                icone: "💬", label: "Suporte" },
   informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Planos e Recursos" },
@@ -31242,6 +31242,11 @@ function inicializarNichoTabs() {
   const container = document.createElement("div");
   container.id = "nicho_campanha_container";
   container.style.cssText = "display:flex;flex-direction:column;";
+  // o card já vinha com seu próprio display definido pelo controle de seções
+  // (SIDEBAR_SECOES); herda esse estado para o container não vazar nas outras telas
+  if (card.style.display === "none" || typeof secaoAtiva !== "undefined" && secaoAtiva !== "campanhas") {
+    container.style.display = "none";
+  }
   card.parentNode.insertBefore(container, card);
   container.appendChild(tabsWrap);
   container.appendChild(card);
@@ -34410,6 +34415,11 @@ function inicializarNichoTabs() {
   const container = document.createElement("div");
   container.id = "nicho_campanha_container";
   container.style.cssText = "display:flex;flex-direction:column;";
+  // o card já vinha com seu próprio display definido pelo controle de seções
+  // (SIDEBAR_SECOES); herda esse estado para o container não vazar nas outras telas
+  if (card.style.display === "none" || typeof secaoAtiva !== "undefined" && secaoAtiva !== "campanhas") {
+    container.style.display = "none";
+  }
   card.parentNode.insertBefore(container, card);
   container.appendChild(tabsWrap);
   container.appendChild(card);

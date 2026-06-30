@@ -1235,6 +1235,27 @@ body:not(.sidebar-recolhida) .sidebar-item::after { display: none !important; }
   min-width: 0;
 }
 
+/* Central de Leads precisa crescer com o kanban e rolar pelo painel
+   principal, para o usuario chegar ate a borda final inferior. */
+#app.sidebar-ativa #app-content-area {
+  overflow-y: scroll !important;
+}
+
+#app.sidebar-ativa #card-leads-central.secao-visivel {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: flex;
+  flex-direction: column;
+}
+
+#app.sidebar-ativa #card-leads-central.secao-visivel .leads-central-content {
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-right: 0;
+}
+
 /* ===== DASHBOARD ===== */
 #app {
 

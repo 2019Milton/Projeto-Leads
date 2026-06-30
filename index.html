@@ -1023,6 +1023,16 @@ button {
   margin-bottom: 18px;
 }
 
+/* Leads é seção de id único (não empilha com outras), então pode ter
+   sua própria rolagem: o card verde inteiro (resumo IA + KPIs + kanban)
+   fica preso na altura da viewport e rola por dentro, em vez de depender
+   da rolagem de #app-content-area (que não estava alcançando o fim). */
+#app.sidebar-ativa #card-leads-central.secao-visivel {
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 /* Hub de integrações: grid estira as duas linhas de cards igualmente */
 #app.sidebar-ativa #card-hub-conexoes.secao-visivel {
   display: flex;
@@ -3704,13 +3714,6 @@ body.usuario-super-admin .admin-only-targeting {
   border-bottom: 1px solid rgba(255,255,255,0.05);
 
   margin-bottom: 6px;
-
-  /* Fica fixo no topo enquanto os cards rolam dentro da coluna */
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #0f1729;
-  padding-top: 2px;
 }
 
 /* 🔥 CARDS */
@@ -3974,13 +3977,6 @@ body.usuario-super-admin .admin-only-targeting {
   gap: 10px;
 
   flex-shrink: 0;
-
-  /* Colunas com muitos leads rolam o proprio conteudo em vez de
-     esticar a pagina inteira (havia estilo de scrollbar definido
-     pra isso mas faltava o overflow/max-height que o ativa). */
-  max-height: 60vh;
-
-  overflow-y: auto;
 }
 
 .kanban-column.drag-over {

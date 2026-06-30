@@ -24898,12 +24898,53 @@ async function carregarDetalhesMetaHub() {
   }
 }
 
+const PLATAFORMAS_OAUTH_GENERICO = ["google", "tiktok", "linkedin", "pinterest", "snapchat", "microsoft", "kwai"];
+
 function conectarPlataforma(plataforma) {
   if (plataforma === "meta") {
     conectarMeta();
-  } else {
-    alert(`Integração com ${plataforma} chegando em breve!`);
+    return;
   }
+  if (!PLATAFORMAS_OAUTH_GENERICO.includes(plataforma)) {
+    alert(`Integração com ${plataforma} chegando em breve!`);
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Usuário não autenticado");
+    return;
+  }
+
+  const popup = window.open(
+    `${API}/auth/${plataforma}/login?token=${encodeURIComponent(token)}`,
+    "_blank",
+    "width=600,height=700"
+  );
+
+  let recarregado = false;
+
+  async function aoConectar() {
+    if (recarregado) return;
+    recarregado = true;
+    clearInterval(pollInterval);
+    window.removeEventListener("message", msgHandler);
+    await carregarHub();
+  }
+
+  function msgHandler(event) {
+    if (event.data?.type === "plataforma_conectada" && event.data?.plataforma === plataforma) {
+      aoConectar();
+    }
+  }
+
+  window.addEventListener("message", msgHandler);
+
+  const pollInterval = setInterval(() => {
+    if (popup && popup.closed) {
+      aoConectar();
+    }
+  }, 600);
 }
 
 async function desconectarPlataforma(plataforma) {

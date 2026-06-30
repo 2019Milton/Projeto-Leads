@@ -31045,6 +31045,38 @@ function nomeExibirNicho(nicho = {}) {
   return nicho.slug || "";
 }
 
+// Definidas aqui pelo mesmo motivo: usadas dentro de carregarCampanhas(),
+// chamada por init() logo abaixo, antes dos blocos <script> posteriores carregarem.
+function normalizarTexto(t = "") {
+  return String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+function detectarNichoPorNome(nomeCampanha = "") {
+  const nichos = usuarioLogado?.nichos || [];
+  if (!nichos.length || !nomeCampanha) return null;
+  // normaliza e substitui underscores por espaço para nomes como "Urgencia_Escassez_Imovel"
+  const nome = normalizarTexto(nomeCampanha).replace(/_/g, " ");
+
+  const palavrasPorSlug = {
+    saude:       ["saude", "plano", "convenio", "medico", "hospital", "clinica", "seguro saude"],
+    suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
+    imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
+    saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"]
+  };
+
+  for (const nicho of nichos) {
+    const slug = normalizarTexto(nicho.slug || "");
+    const nichoNome = normalizarTexto(nicho.nome || "");
+
+    if (nome.includes(nichoNome)) return nicho;
+
+    for (const [s, palavras] of Object.entries(palavrasPorSlug)) {
+      if (slug.includes(s) && palavras.some(p => nome.includes(p))) return nicho;
+    }
+  }
+
+  return null;
+}
+
 if (renderizarPaginaLegal()) {
   // página pública renderizada
 } else if (resetTokenUrl) {

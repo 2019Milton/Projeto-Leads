@@ -31148,6 +31148,458 @@ function detectarNichoPorNome(nomeCampanha = "") {
   return null;
 }
 
+// Definidas aqui pelo mesmo motivo: inicializarNichoTabs() é chamada dentro
+// de init() (await /usuario/nichos) antes dos blocos <script> posteriores
+// carregarem, causando ReferenceError silencioso (engolido pelo try/catch)
+// que impedia as abas de nicho de aparecerem no formulário de criar campanha.
+function aplicarTemaNichoCampanha(nicho = {}) {
+  const tema = temaVisualNicho(nicho);
+  const card = document.querySelector(".card-criar-campanha");
+  if (!card) return;
+  const tabsWrap = document.getElementById("nicho_campanha_tabs_wrap");
+
+  [card, tabsWrap].filter(Boolean).forEach(el => {
+    el.style.setProperty("--nicho-card-accent", tema.cor);
+    el.style.setProperty("--nicho-card-bg", tema.bg);
+    el.style.setProperty("--nicho-card-border", tema.border);
+    el.style.setProperty("--nicho-card-text", tema.text);
+    el.style.setProperty("--nicho-card-title", tema.title);
+    el.style.setProperty("--nicho-input-bg", tema.inputBg);
+    el.style.setProperty("--nicho-input-border", tema.inputBorder);
+    el.style.setProperty("--nicho-card-bg-light", tema.bgLight);
+    el.style.setProperty("--nicho-card-border-light", tema.borderLight);
+    el.style.setProperty("--nicho-card-text-light", tema.textLight);
+    el.style.setProperty("--nicho-card-title-light", tema.titleLight);
+    el.style.setProperty("--nicho-input-border-light", tema.inputBorderLight);
+  });
+}
+
+// Injeta tabs de nicho no card de criação de campanha após login
+function inicializarNichoTabs() {
+  const nichos = usuarioLogado?.nichos || [];
+  if (!nichos.length) return;
+
+  const card = document.querySelector(".card-criar-campanha");
+  if (!card) return;
+
+  document.getElementById("nicho_campanha_tabs_wrap")?.remove();
+  document.getElementById("nicho_campanha_tabs")?.remove();
+
+  // Desfaz container anterior (se houver) e restaura card ao parent original
+  const oldContainer = document.getElementById("nicho_campanha_container");
+  if (oldContainer) {
+    oldContainer.parentNode.insertBefore(card, oldContainer);
+    oldContainer.remove();
+  }
+
+  const tabsWrap = document.createElement("div");
+  tabsWrap.className = "nicho-tabs-wrap";
+  tabsWrap.id = "nicho_campanha_tabs_wrap";
+
+  const tabsLabel = document.createElement("span");
+  tabsLabel.className = "nicho-tabs-label";
+  tabsLabel.innerText = "Escolha o nicho da campanha";
+
+  const tabsEl = document.createElement("div");
+  tabsEl.className = "nicho-tabs";
+  tabsEl.id = "nicho_campanha_tabs";
+
+  nichos.forEach((n, i) => {
+    const cor = corSolidaNicho(n);
+    const btn = document.createElement("button");
+    btn.className = "nicho-tab" + (i === 0 ? " ativo" : "");
+    btn.style.setProperty("--nicho-cor", cor);
+    btn.dataset.nichoId = n.id;
+    btn.dataset.nichoSlug = n.slug;
+    btn.dataset.nichoCor = cor;
+    btn.innerText = n.nome;
+    btn.onclick = () => selecionarNichoTab(n, btn);
+    tabsEl.appendChild(btn);
+  });
+
+  tabsWrap.appendChild(tabsLabel);
+  tabsWrap.appendChild(tabsEl);
+
+  // Envolve tabs + card num container sem gap para ficarem colados
+  const container = document.createElement("div");
+  container.id = "nicho_campanha_container";
+  container.style.cssText = "display:flex;flex-direction:column;";
+  card.parentNode.insertBefore(container, card);
+  container.appendChild(tabsWrap);
+  container.appendChild(card);
+
+  // container dos campos específicos por nicho
+  document.getElementById("nicho_campos_extras")?.remove();
+  const camposExtra = document.createElement("div");
+  camposExtra.id = "nicho_campos_extras";
+  // injeta após o input de nome da campanha
+  const inputNome = document.getElementById("campanha_nome");
+  if (inputNome) {
+    inputNome.parentNode.insertBefore(camposExtra, inputNome.nextSibling);
+  } else {
+    card.appendChild(camposExtra);
+  }
+
+  // define o primeiro nicho como ativo
+  selecionarNichoTab(nichos[0], tabsEl.firstElementChild);
+}
+
+function _placeholdersPorNicho(slug) {
+  if (slug === "saude") return {
+    ia:        "Opcional: descreva o plano, público-alvo ou diferencial (ex: plano familiar com cobertura nacional, sem carência, para autônomos)",
+    nome:      "Ex: Plano Amil Família Completo",
+    titulo:    "Ex: Plano de Saúde com Cobertura Total",
+    descricao: "Ex: Sem carência, cobertura nacional",
+    perguntas: "Uma pergunta por linha. Ex: Quantas pessoas serão inclusas no plano?",
+    interesse: "Ex: saúde, plano médico, bem-estar"
+  };
+  if (slug === "suplementos") return {
+    ia:        "Opcional: descreva o produto, público-alvo ou diferencial (ex: whey protein importado para ganho de massa, atletas de 20 a 35 anos)",
+    nome:      "Ex: Whey Protein para Emagrecimento",
+    titulo:    "Ex: Suplementos para Alta Performance",
+    descricao: "Ex: Frete grátis e parcelamento em 12x",
+    perguntas: "Uma pergunta por linha. Ex: Qual seu objetivo principal?",
+    interesse: "Ex: musculação, whey protein, academia"
+  };
+  if (slug === "saas") return {
+    ia:        "Opcional: descreva o produto, publico-alvo ou diferencial (ex: plataforma de gestao de leads com IA para corretores e vendedores que anunciam no Facebook e Instagram)",
+    nome:      "Ex: Central de Leads — IA para Corretores",
+    titulo:    "Ex: Gestao de Leads com Inteligência Artificial",
+    descricao: "Ex: Conecte com a Meta, organize leads e venda mais",
+    perguntas: "Uma pergunta por linha. Ex: Voce ja anuncia no Facebook ou Instagram?",
+    interesse: "Ex: marketing digital, CRM, Facebook Ads, gestao de leads"
+  };
+  return {
+    ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
+    nome:      "Ex: Casas Alto Padrão",
+    titulo:    "Ex: Apartamentos em Santo André",
+    descricao: "Ex: Entrada facilitada e financiamento",
+    perguntas: "Uma pergunta por linha. Ex: Qual faixa de investimento?",
+    interesse: "Ex: imóveis, financiamento, decoração"
+  };
+}
+
+// Persiste o estado do formulário por nicho para não perder ao trocar de aba
+if (!window._nichoFormState) window._nichoFormState = {};
+
+function _salvarEstadoFormNicho(slug) {
+  if (!slug) return;
+  const get = id => document.getElementById(id)?.value ?? "";
+  const checked = id => Boolean(document.getElementById(id)?.checked);
+  const state = {
+    campanha_nome:       get("campanha_nome"),
+    texto:               get("texto"),
+    adv_titulo:          get("adv_titulo"),
+    adv_descricao:       get("adv_descricao"),
+    adv_perguntas:       get("adv_perguntas"),
+    ia_campanha_contexto:get("ia_campanha_contexto"),
+    adv_interesse_busca: get("adv_interesse_busca"),
+    orcamento:           get("orcamento"),
+    adv_audience_plus:   checked("adv_audience_plus"),
+  };
+  if (slug === "imoveis") {
+    state.tipo_imovel = get("nicho_tipo_imovel");
+    state.finalidade  = get("nicho_finalidade");
+    state.valor_min   = get("nicho_valor_min");
+    state.valor_max   = get("nicho_valor_max");
+    state.regiao      = get("nicho_regiao");
+  } else if (slug === "saude") {
+    state.operadora        = get("nicho_operadora");
+    state.tipo_plano       = get("nicho_tipo_plano");
+    state.faixa_etaria_min = get("nicho_faixa_min");
+    state.faixa_etaria_max = get("nicho_faixa_max");
+    state.cobertura        = get("nicho_cobertura");
+    state.acomodacao       = get("nicho_acomodacao");
+  } else if (slug === "suplementos") {
+    state.produto      = get("nicho_produto");
+    state.objetivo     = get("nicho_objetivo");
+    state.marca        = get("nicho_marca");
+    state.publico_alvo = get("nicho_publico_alvo");
+  } else if (slug === "saas") {
+    state.tipo_produto = get("nicho_tipo_produto");
+    state.publico_alvo = get("nicho_publico_alvo_saas");
+  }
+  window._nichoFormState[slug] = state;
+}
+
+function _restaurarEstadoFormNicho(slug) {
+  const state = window._nichoFormState?.[slug];
+  if (!state) return;
+  const set = (id, val) => {
+    if (val == null || val === "") return;
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  };
+  const setChecked = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = Boolean(val);
+  };
+  set("campanha_nome",        state.campanha_nome);
+  set("texto",                state.texto);
+  set("adv_titulo",           state.adv_titulo);
+  set("adv_descricao",        state.adv_descricao);
+  set("adv_perguntas",        state.adv_perguntas);
+  set("ia_campanha_contexto", state.ia_campanha_contexto);
+  set("adv_interesse_busca",  state.adv_interesse_busca);
+  set("orcamento",            state.orcamento);
+  setChecked("adv_audience_plus", state.adv_audience_plus);
+  if (slug === "imoveis") {
+    set("nicho_tipo_imovel", state.tipo_imovel);
+    set("nicho_finalidade",  state.finalidade);
+    set("nicho_valor_min",   state.valor_min);
+    set("nicho_valor_max",   state.valor_max);
+    set("nicho_regiao",      state.regiao);
+  } else if (slug === "saude") {
+    set("nicho_operadora",  state.operadora);
+    set("nicho_tipo_plano", state.tipo_plano);
+    set("nicho_faixa_min",  state.faixa_etaria_min);
+    set("nicho_faixa_max",  state.faixa_etaria_max);
+    set("nicho_cobertura",  state.cobertura);
+    set("nicho_acomodacao", state.acomodacao);
+  } else if (slug === "suplementos") {
+    set("nicho_produto",      state.produto);
+    set("nicho_objetivo",     state.objetivo);
+    set("nicho_marca",        state.marca);
+    set("nicho_publico_alvo", state.publico_alvo);
+  } else if (slug === "saas") {
+    set("nicho_tipo_produto",      state.tipo_produto);
+    set("nicho_publico_alvo_saas", state.publico_alvo);
+  }
+}
+
+function selecionarNichoTab(nicho, btnEl) {
+  // salva estado do nicho atual antes de trocar
+  _salvarEstadoFormNicho(window._nichoAtivo?.slug);
+
+  const cor = corSolidaNicho(nicho);
+
+  // atualiza visual das tabs
+  document.querySelectorAll(".nicho-tab").forEach(b => {
+    b.classList.remove("ativo");
+    b.style.removeProperty("border-bottom-color");
+    b.style.removeProperty("color");
+  });
+  btnEl.classList.add("ativo");
+  btnEl.style.setProperty("--nicho-cor", cor);
+  btnEl.style.removeProperty("border-bottom-color");
+  btnEl.style.removeProperty("color");
+
+  // atualiza a cor do bloco completo de criacao da campanha
+  aplicarTemaNichoCampanha(nicho);
+
+  // atualiza placeholders conforme o nicho
+  const ph = _placeholdersPorNicho(nicho.slug);
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.placeholder = val; };
+  set("ia_campanha_contexto", ph.ia);
+  set("campanha_nome",        ph.nome);
+  set("adv_titulo",           ph.titulo);
+  set("adv_descricao",        ph.descricao);
+  set("adv_perguntas",        ph.perguntas);
+  set("adv_interesse_busca",  ph.interesse);
+
+  // guarda nicho ativo
+  window._nichoAtivo = nicho;
+
+  // limpa campos gerais antes de restaurar (evita misturar conteúdo entre nichos)
+  const _limpar = id => { const el = document.getElementById(id); if (el) el.value = ""; };
+  ["campanha_nome","texto","adv_titulo","adv_descricao","adv_perguntas",
+   "ia_campanha_contexto","adv_interesse_busca","orcamento"].forEach(_limpar);
+
+  // limpa resultados de IA do nicho anterior para não vazar entre nichos
+  sugestoesCampanhaIAAtual = [];
+  const boxIA = document.getElementById("ia_campanha_criador_resultado");
+  if (boxIA) { boxIA.innerHTML = ""; boxIA.style.display = "none"; }
+
+  // renderiza campos extras do nicho
+  const container = document.getElementById("nicho_campos_extras");
+  if (!container) return;
+
+  const _i = (txt) => `<button type="button" class="info-icone" onclick="mostrarInfoCampo('${txt.replace(/'/g,"&#39;")}',event)">i</button>`;
+
+  if (nicho.slug === "imoveis") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de imóvel ${_i('Selecione o tipo de imóvel que você está anunciando: residencial (casas e aptos), comercial (salas e lojas) ou rural (sítios, fazendas).')}</label>
+          <select id="nicho_tipo_imovel" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="residencial">Residencial</option>
+            <option value="comercial">Comercial</option>
+            <option value="rural">Rural</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Finalidade ${_i('O imóvel é para vender ou alugar? Isso ajuda a filtrar quem está procurando comprar versus quem quer apenas alugar.')}</label>
+          <select id="nicho_finalidade" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="venda">Venda</option>
+            <option value="locacao">Locação</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Valor mín. (R$) ${_i('Valor mínimo do imóvel. Ajuda a registrar o perfil da campanha para análise futura.')}</label>
+          <input type="number" id="nicho_valor_min" placeholder="Ex: 300000" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Valor máx. (R$) ${_i('Valor máximo do imóvel. Junto com o mínimo, define a faixa de preço dos imóveis desta campanha.')}</label>
+          <input type="number" id="nicho_valor_max" placeholder="Ex: 800000" style="margin-top:4px;">
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label style="color:#9ca3af;font-size:12px;">Região / Bairro ${_i('Informe a cidade, bairro ou região dos imóveis. Ajuda a identificar campanhas por localização.')}</label>
+        <input type="text" id="nicho_regiao" placeholder="Ex: Santo André, SP" style="margin-top:4px;">
+      </div>
+    `;
+  } else if (nicho.slug === "saude") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Operadora ${_i('A empresa do plano de saúde que você representa. Ex: Amil, Unimed, SulAmérica. Deixe em branco se trabalha com várias.')}</label>
+          <input type="text" id="nicho_operadora" placeholder="Ex: Amil, Unimed..." style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de plano ${_i('Para quem é o plano: só para a pessoa (individual), para a família inteira ou para funcionários de uma empresa.')}</label>
+          <select id="nicho_tipo_plano" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="individual">Individual</option>
+            <option value="familiar">Familiar</option>
+            <option value="empresarial">Empresarial</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Faixa etária mín. ${_i('Idade mínima das pessoas para quem este plano é indicado. Serve para registrar o perfil da campanha.')}</label>
+          <input type="number" id="nicho_faixa_min" placeholder="Ex: 18" min="0" max="120" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Faixa etária máx. ${_i('Idade máxima do público desta campanha. Junto com a mínima, define para qual faixa etária o plano é mais adequado.')}</label>
+          <input type="number" id="nicho_faixa_max" placeholder="Ex: 59" min="0" max="120" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Cobertura ${_i('Nível de cobertura do plano: básica (consultas simples), intermediária (exames e internações) ou premium (tudo incluso).')}</label>
+          <select id="nicho_cobertura" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="basica">Básica</option>
+            <option value="intermediaria">Intermediária</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Acomodação ${_i('Tipo de quarto em caso de internação: enfermaria (quarto compartilhado) ou apartamento (quarto individual).')}</label>
+          <select id="nicho_acomodacao" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="enfermaria">Enfermaria</option>
+            <option value="apartamento">Apartamento</option>
+          </select>
+        </div>
+      </div>
+    `;
+  } else if (nicho.slug === "suplementos") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Produto ${_i('O tipo de suplemento que você está anunciando. Ex: Whey Protein, Creatina. Escolha o mais próximo do seu produto.')}</label>
+          <select id="nicho_produto" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="whey">Whey Protein</option>
+            <option value="creatina">Creatina</option>
+            <option value="pre_workout">Pré-treino</option>
+            <option value="bcaa">BCAA</option>
+            <option value="multivitaminico">Multivitamínico</option>
+            <option value="colageno">Colágeno</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Objetivo ${_i('Para que serve o suplemento anunciado: ganhar massa muscular, emagrecer, melhorar o rendimento nos treinos ou cuidar da saúde em geral.')}</label>
+          <select id="nicho_objetivo" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="ganho_massa">Ganho de massa</option>
+            <option value="emagrecimento">Emagrecimento</option>
+            <option value="performance">Performance</option>
+            <option value="saude">Saúde geral</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Marca ${_i('A marca do suplemento. Ex: Growth, Max Titanium, Integralmédica. Deixe em branco se não quiser especificar.')}</label>
+          <input type="text" id="nicho_marca" placeholder="Ex: Growth, Max Titanium..." style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Para quem é este suplemento: atletas profissionais, pessoas que malham por hobby, quem quer emagrecer, etc.')}</label>
+          <select id="nicho_publico_alvo" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="iniciantes">Iniciantes</option>
+            <option value="intermediario">Intermediário</option>
+            <option value="avancado">Avançado</option>
+          </select>
+        </div>
+      </div>
+    `;
+  } else if (nicho.slug === "saas") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de produto ${_i('O que você está anunciando: uma plataforma SaaS, aplicativo, sistema de gestão, consultoria digital ou curso/mentoria.')}</label>
+          <select id="nicho_tipo_produto" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="saas">Plataforma SaaS</option>
+            <option value="app">Aplicativo</option>
+            <option value="sistema">Sistema de Gestão</option>
+            <option value="consultoria">Consultoria Digital</option>
+            <option value="curso">Curso / Mentoria</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Para quem é o produto: autônomos, pequenas empresas, médias empresas, freelancers ou agências de marketing.')}</label>
+          <select id="nicho_publico_alvo_saas" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="autonomos">Autônomos / Profissionais Liberais</option>
+            <option value="pequenas_empresas">Pequenas Empresas</option>
+            <option value="medias_empresas">Médias Empresas</option>
+            <option value="freelancers">Freelancers</option>
+            <option value="agencias">Agências de Marketing</option>
+          </select>
+        </div>
+      </div>
+    `;
+  }
+
+  // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
+  _restaurarEstadoFormNicho(nicho.slug);
+}
+
+// Coleta os dados extras do nicho ativo ao criar campanha
+function coletarDadosNichoAtivo() {
+  const nicho = window._nichoAtivo;
+  if (!nicho) return {};
+
+  const dados = { nicho_id: nicho.id };
+
+  if (nicho.slug === "imoveis") {
+    dados.tipo_imovel = document.getElementById("nicho_tipo_imovel")?.value || null;
+    dados.finalidade  = document.getElementById("nicho_finalidade")?.value  || null;
+    dados.valor_min   = Number(document.getElementById("nicho_valor_min")?.value) || null;
+    dados.valor_max   = Number(document.getElementById("nicho_valor_max")?.value) || null;
+    dados.regiao      = document.getElementById("nicho_regiao")?.value || null;
+  } else if (nicho.slug === "saude") {
+    dados.operadora        = document.getElementById("nicho_operadora")?.value  || null;
+    dados.tipo_plano       = document.getElementById("nicho_tipo_plano")?.value || null;
+    dados.faixa_etaria_min = Number(document.getElementById("nicho_faixa_min")?.value) || null;
+    dados.faixa_etaria_max = Number(document.getElementById("nicho_faixa_max")?.value) || null;
+    dados.cobertura        = document.getElementById("nicho_cobertura")?.value  || null;
+    dados.acomodacao       = document.getElementById("nicho_acomodacao")?.value || null;
+  } else if (nicho.slug === "suplementos") {
+    dados.produto      = document.getElementById("nicho_produto")?.value      || null;
+    dados.objetivo     = document.getElementById("nicho_objetivo")?.value     || null;
+    dados.marca        = document.getElementById("nicho_marca")?.value        || null;
+    dados.publico_alvo = document.getElementById("nicho_publico_alvo")?.value || null;
+  } else if (nicho.slug === "saas") {
+    dados.tipo_produto = document.getElementById("nicho_tipo_produto")?.value      || null;
+    dados.publico_alvo = document.getElementById("nicho_publico_alvo_saas")?.value || null;
+  }
+
+  return dados;
+}
+
 if (renderizarPaginaLegal()) {
   // página pública renderizada
 } else if (resetTokenUrl) {

@@ -972,6 +972,14 @@ button {
 /* No modo sidebar os botões expandir/recolher genéricos não fazem sentido */
 #app.sidebar-ativa .painel-recolhivel-toggle { display: none !important; }
 
+/* Exceção: dentro da Central de Leads, os painéis "IA Ouro - Resumo do
+   corretor" e "Recuperação de Perdidos" continuam recolhíveis mesmo no
+   modo sidebar, pois a página agora tem rolagem própria. */
+#app.sidebar-ativa #ia_resumo_diario_box .painel-recolhivel-toggle,
+#app.sidebar-ativa .recuperacao-leads-panel .painel-recolhivel-toggle {
+  display: inline-flex !important;
+}
+
 /* card-meta expandido dentro do hub — separador visual, sem card dentro de card */
 .hub-conexoes-card #card-meta {
   margin-top: 20px;
@@ -1056,6 +1064,15 @@ button {
   opacity: 1 !important;
   pointer-events: auto !important;
   margin-top: revert !important;
+}
+
+/* Exceção: estes dois painéis da Central de Leads recolhem de verdade */
+#app.sidebar-ativa #ia_resumo_diario_box.painel-recolhido > .painel-recolhivel-conteudo,
+#app.sidebar-ativa .recuperacao-leads-panel.painel-recolhido > .painel-recolhivel-conteudo {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  margin-top: 0 !important;
 }
 
 .secao-app {
@@ -3618,7 +3635,8 @@ body.usuario-super-admin .admin-only-targeting {
 
   padding: 12px;
 
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 /* 🔥 PLACEHOLDER */
 .leads-placeholder {

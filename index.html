@@ -12585,6 +12585,411 @@ body.tema-claro .desemp-tab:disabled {
   letter-spacing: .05em;
 }
 
+.dashboard-pro-card {
+  padding: 0 !important;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(59,130,246,0.16), transparent 28%),
+    radial-gradient(circle at 72% 4%, rgba(34,197,94,0.10), transparent 24%),
+    linear-gradient(180deg, #0f172a 0%, #101827 100%) !important;
+  border-color: rgba(96,165,250,0.24) !important;
+}
+
+.dashboard-executive {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-hero-pro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.dashboard-hero-copy {
+  min-width: 0;
+  border: 1px solid rgba(96,165,250,0.16);
+  border-radius: 14px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, rgba(37,99,235,0.18), rgba(15,23,42,0.70) 48%, rgba(16,185,129,0.10));
+}
+
+.dashboard-section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+}
+
+.dashboard-hero-copy h2 {
+  margin: 8px 0 6px;
+  color: #f8fafc;
+  font-size: clamp(24px, 2.4vw, 36px);
+  line-height: 1.05;
+}
+
+.dashboard-hero-copy p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 760px;
+}
+
+.dashboard-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.dashboard-command-btn {
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 11px 14px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(96,165,250,0.28) !important;
+  color: #dbeafe !important;
+  background: rgba(15,23,42,0.64) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+
+.dashboard-command-btn.primary {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+  border-color: transparent !important;
+}
+
+.dashboard-command-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(125,211,252,0.62) !important;
+}
+
+.dashboard-live-card {
+  border: 1px solid rgba(34,197,94,0.22);
+  border-radius: 14px;
+  padding: 16px;
+  background:
+    linear-gradient(160deg, rgba(6,78,59,0.30), rgba(15,23,42,0.84));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.dashboard-live-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.dashboard-live-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.dashboard-live-row span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.dashboard-live-row strong {
+  color: #f8fafc;
+  font-size: 15px;
+  text-align: right;
+}
+
+.dashboard-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.dashboard-stat-card {
+  min-width: 0;
+  border: 1px solid rgba(148,163,184,0.16);
+  border-radius: 14px;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.025));
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--dash-accent, #60a5fa);
+}
+
+.dashboard-stat-card span {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.dashboard-stat-card strong {
+  display: block;
+  margin-top: 8px;
+  color: #f8fafc;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.dashboard-stat-card small {
+  display: block;
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.dashboard-intel-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, .85fr) minmax(360px, 1.15fr);
+  gap: 14px;
+}
+
+.dashboard-panel {
+  min-width: 0;
+  border: 1px solid rgba(96,165,250,0.16);
+  border-radius: 14px;
+  background: rgba(15,23,42,0.68);
+  overflow: hidden;
+}
+
+.dashboard-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(30,41,59,0.42);
+}
+
+.dashboard-panel-head h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 15px;
+}
+
+.dashboard-panel-head small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.dashboard-pill {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(59,130,246,0.16);
+  color: #bfdbfe;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dashboard-platform-list {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard-platform-row {
+  display: grid;
+  grid-template-columns: minmax(116px, .55fr) minmax(120px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-platform-name {
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dashboard-platform-track {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.95);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.dashboard-platform-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--dash-accent, #60a5fa), #22c55e);
+}
+
+.dashboard-platform-count {
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.dashboard-campaign-table-wrap {
+  overflow-x: auto;
+}
+
+.dashboard-campaign-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.dashboard-campaign-table th,
+.dashboard-campaign-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  text-align: left;
+  color: #cbd5e1;
+}
+
+.dashboard-campaign-table th {
+  color: #94a3b8;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: .07em;
+}
+
+.dashboard-campaign-table td:nth-child(n+3),
+.dashboard-campaign-table th:nth-child(n+3) {
+  text-align: right;
+}
+
+.dashboard-campaign-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 300px;
+}
+
+.dashboard-campaign-title strong {
+  color: #f8fafc;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-campaign-title small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.dashboard-status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.dashboard-status-chip.active {
+  color: #86efac;
+  background: rgba(22,163,74,0.14);
+  border: 1px solid rgba(34,197,94,0.24);
+}
+
+.dashboard-status-chip.paused {
+  color: #fde68a;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.24);
+}
+
+.dashboard-status-chip.issue {
+  color: #fecaca;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.24);
+}
+
+.dashboard-empty-state {
+  padding: 18px;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dashboard-performance-field {
+  margin: 18px;
+  margin-top: 4px;
+  padding: 16px;
+  border: 1px solid rgba(34,197,94,0.30);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(6,78,59,0.24), rgba(15,23,42,0.64) 36%, rgba(15,23,42,0.88));
+  box-shadow:
+    0 22px 60px rgba(0,0,0,0.26),
+    inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.dashboard-performance-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dashboard-performance-top h3 {
+  margin: 7px 0 4px;
+  color: #f8fafc;
+  font-size: 18px;
+}
+
+.dashboard-performance-top p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.dashboard-performance-badge {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.24);
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dashboard-platform-tabs {
+  padding: 0;
+  margin: 0 0 14px;
+  border-bottom: 0;
+}
+
+.dashboard-performance-body .performance-meta-panel {
+  margin: 0;
+  box-shadow: none;
+}
+
 body.tema-claro .dashboard-kpi-card {
   background: #ffffff !important;
   border-color: var(--claro-border) !important;
@@ -12605,6 +13010,123 @@ body.tema-claro .dashboard-action-btn {
 body.tema-claro .dashboard-action-btn:hover {
   background: #eff6ff !important;
   border-color: #60a5fa !important;
+}
+
+body.tema-claro .dashboard-pro-card {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(37,99,235,0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #eef4f9 100%) !important;
+  border-color: #c4d3e4 !important;
+}
+
+body.tema-claro .dashboard-hero-copy,
+body.tema-claro .dashboard-panel,
+body.tema-claro .dashboard-live-card,
+body.tema-claro .dashboard-stat-card,
+body.tema-claro .dashboard-performance-field {
+  background: #ffffff !important;
+  border-color: #c4d3e4 !important;
+  color: var(--claro-text) !important;
+  box-shadow: 0 10px 28px rgba(15,23,42,0.07);
+}
+
+body.tema-claro .dashboard-hero-copy h2,
+body.tema-claro .dashboard-panel-head h3,
+body.tema-claro .dashboard-stat-card strong,
+body.tema-claro .dashboard-live-row strong,
+body.tema-claro .dashboard-campaign-title strong,
+body.tema-claro .dashboard-campaign-table td,
+body.tema-claro .dashboard-performance-top h3,
+body.tema-claro .dashboard-platform-count,
+body.tema-claro .dashboard-platform-name {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .dashboard-hero-copy p,
+body.tema-claro .dashboard-panel-head small,
+body.tema-claro .dashboard-stat-card small,
+body.tema-claro .dashboard-live-row span,
+body.tema-claro .dashboard-campaign-title small,
+body.tema-claro .dashboard-performance-top p,
+body.tema-claro .dashboard-campaign-table th {
+  color: var(--claro-muted) !important;
+}
+
+body.tema-claro .dashboard-panel-head {
+  background: #f6f9fc !important;
+  border-bottom-color: #d3dfeb !important;
+}
+
+body.tema-claro .dashboard-campaign-table th,
+body.tema-claro .dashboard-campaign-table td {
+  border-bottom-color: #e1e9f2 !important;
+}
+
+body.tema-claro .dashboard-platform-track {
+  background: #e8f0f8 !important;
+  border-color: #d3dfeb !important;
+}
+
+body.tema-claro .dashboard-command-btn {
+  background: #eef6ff !important;
+  border-color: #b8c8d8 !important;
+  color: #1e293b !important;
+}
+
+body.tema-claro .dashboard-command-btn.primary {
+  background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+  color: #ffffff !important;
+}
+
+body.tema-claro .dashboard-pill,
+body.tema-claro .dashboard-performance-badge {
+  background: #dbeafe !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+
+@media (max-width: 1320px) {
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+  }
+
+  .dashboard-intel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-executive,
+  .dashboard-performance-field {
+    padding: 12px;
+    margin: 12px;
+  }
+
+  .dashboard-hero-pro {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+  }
+
+  .dashboard-performance-top {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-platform-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-platform-count {
+    text-align: left;
+  }
 }
 
 body.tema-claro #painel_admin > div > .card,
@@ -13401,14 +13923,22 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
     <div class="coluna-esquerda">
 
       <!-- 📊 DASHBOARD -->
-      <div class="card" id="card-dashboard" style="display:none;">
+      <div class="card dashboard-pro-card" id="card-dashboard" style="display:none;">
         <div id="dashboard-conteudo">
           <div style="color:#64748b;font-size:13px;padding:8px 0;">Carregando...</div>
         </div>
 
         <!-- 📈 DESEMPENHO integrado ao Dashboard -->
-        <div id="card-desempenho" style="margin-top:20px;">
-          <div class="desemp-tabs">
+        <div id="card-desempenho" class="dashboard-performance-field">
+          <div class="dashboard-performance-top">
+            <div>
+              <span class="dashboard-section-kicker">Performance operacional</span>
+              <h3>📈 Campo de performance por plataforma</h3>
+              <p>Veja gasto, leads, CPL, cliques e campanhas com leitura por período.</p>
+            </div>
+            <span class="dashboard-performance-badge">Meta conectado ao painel</span>
+          </div>
+          <div class="desemp-tabs dashboard-platform-tabs">
             <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta">🟦 Meta Ads</button>
             <button class="desemp-tab" disabled title="Em breve">🔴 Google Ads</button>
             <button class="desemp-tab" disabled title="Em breve">🎵 TikTok Ads</button>
@@ -13418,8 +13948,10 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             <button class="desemp-tab" disabled title="Em breve">👻 Snapchat Ads</button>
             <button class="desemp-tab" disabled title="Em breve">🪟 Microsoft Ads</button>
           </div>
-          <div id="painel_performance_meta" class="performance-meta-panel">
-            <div style="color:#64748b;font-size:13px;padding:20px 0;">Carregando...</div>
+          <div class="dashboard-performance-body">
+            <div id="painel_performance_meta" class="performance-meta-panel">
+              <div style="color:#64748b;font-size:13px;padding:20px 0;">Carregando...</div>
+            </div>
           </div>
         </div>
 
@@ -24730,6 +25262,198 @@ async function criarCampanhaCompleta() {
 //   📊 DASHBOARD
 // =============================================
 
+async function dashboardFetchJson(url, token, fallback = null) {
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: "Bearer " + token }
+    });
+    if (!res.ok) return fallback;
+    return await res.json();
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function dashboardLista(data, chaves = ["data", "items", "campanhas", "leads", "conexoes"]) {
+  if (Array.isArray(data)) return data;
+  for (const chave of chaves) {
+    if (Array.isArray(data?.[chave])) return data[chave];
+  }
+  return [];
+}
+
+function dashboardNumero(valor, fallback = 0) {
+  const numero = Number(valor);
+  return Number.isFinite(numero) ? numero : fallback;
+}
+
+function dashboardCompacto(valor) {
+  return dashboardNumero(valor).toLocaleString("pt-BR", {
+    maximumFractionDigits: 0
+  });
+}
+
+function dashboardPercentual(valor) {
+  const numero = dashboardNumero(valor, NaN);
+  return Number.isFinite(numero) ? `${numero.toFixed(1)}%` : "-";
+}
+
+function dashboardPrimeiroNumero(obj, campos) {
+  for (const campo of campos) {
+    const valor = dashboardNumero(obj?.[campo], NaN);
+    if (Number.isFinite(valor)) return valor;
+  }
+  return 0;
+}
+
+function dashboardStatusCampanha(campanha) {
+  const status = String(campanha?.status || "").toUpperCase();
+  const veiculacao = String(campanha?.veiculacao_tipo || campanha?.veiculacao || "").toLowerCase();
+
+  if (
+    campanha?.erro_pagamento ||
+    ["DELETED", "ARCHIVED", "DISAPPROVED"].includes(status)
+  ) {
+    return { classe: "issue", label: "Atenção" };
+  }
+
+  try {
+    if (campanhaEstaAtiva(campanha)) return { classe: "active", label: "Ativa" };
+    if (campanhaEstaPausada(campanha)) return { classe: "paused", label: "Pausada" };
+  } catch (_) {}
+
+  if (status === "ACTIVE" || campanha?.ativo === true) return { classe: "active", label: "Ativa" };
+  if (status === "PAUSED" || campanha?.ativo === false) return { classe: "paused", label: "Pausada" };
+  if (veiculacao && !["ok", "active", "ativo"].includes(veiculacao)) return { classe: "issue", label: "Atenção" };
+  return { classe: "issue", label: status || "Revisar" };
+}
+
+function dashboardPlataformaId(valor) {
+  return String(valor || "meta").toLowerCase().replace(/[^a-z0-9_-]/g, "") || "meta";
+}
+
+function dashboardNormalizarPlataformas(platsData, leads, campanhas) {
+  const brutos = dashboardLista(platsData, ["plataformas", "stats", "data", "items"]);
+
+  if (brutos.length) {
+    return brutos
+      .map(item => ({
+        plataforma: dashboardPlataformaId(item.plataforma || item.origem || item.nome || item.id),
+        total: dashboardPrimeiroNumero(item, ["total", "leads", "quantidade", "count"])
+      }))
+      .filter(item => item.total > 0);
+  }
+
+  const mapa = {};
+  leads.forEach(lead => {
+    const id = dashboardPlataformaId(lead.plataforma || lead.origem || lead.fonte || "formulario");
+    mapa[id] = (mapa[id] || 0) + 1;
+  });
+
+  if (!Object.keys(mapa).length) {
+    campanhas.forEach(campanha => {
+      const id = dashboardPlataformaId(campanha.plataforma || campanha.origem || "meta");
+      const leadsCampanha = dashboardPrimeiroNumero(campanha, ["leads", "leads_total", "total_leads"]);
+      mapa[id] = (mapa[id] || 0) + leadsCampanha;
+    });
+  }
+
+  return Object.entries(mapa)
+    .map(([plataforma, total]) => ({ plataforma, total }))
+    .filter(item => item.total > 0);
+}
+
+function dashboardRenderPlatformRows(plataformas) {
+  if (!plataformas.length) {
+    return `<div class="dashboard-empty-state">Nenhuma plataforma com leads contabilizados ainda.</div>`;
+  }
+
+  const cores = {
+    meta: "#3b82f6",
+    google: "#ef4444",
+    tiktok: "#a78bfa",
+    linkedin: "#2563eb",
+    kwai: "#f97316",
+    pinterest: "#dc2626",
+    snapchat: "#eab308",
+    microsoft: "#0ea5e9",
+    formulario: "#22c55e"
+  };
+
+  const max = Math.max(...plataformas.map(p => p.total), 1);
+
+  return plataformas
+    .sort((a, b) => b.total - a.total)
+    .map(item => {
+      const meta = PLATAFORMA_META[item.plataforma] || { nome: item.plataforma, icone: "📣" };
+      const pct = Math.max(6, Math.round((item.total / max) * 100));
+      const cor = cores[item.plataforma] || "#60a5fa";
+      return `
+        <div class="dashboard-platform-row">
+          <div class="dashboard-platform-name">${meta.icone} ${escHtml(meta.nome)}</div>
+          <div class="dashboard-platform-track">
+            <div class="dashboard-platform-fill" style="width:${pct}%;--dash-accent:${cor};"></div>
+          </div>
+          <div class="dashboard-platform-count">${dashboardCompacto(item.total)}</div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function dashboardRenderCampaignTable(campanhas) {
+  if (!campanhas.length) {
+    return `<div class="dashboard-empty-state">Nenhuma campanha encontrada. Quando as campanhas entrarem, este painel mostra leads, gasto, CPL, CTR e status por campanha.</div>`;
+  }
+
+  return `
+    <div class="dashboard-campaign-table-wrap">
+      <table class="dashboard-campaign-table">
+        <thead>
+          <tr>
+            <th>Campanha</th>
+            <th>Status</th>
+            <th>Leads</th>
+            <th>Gasto</th>
+            <th>CPL</th>
+            <th>CTR</th>
+            <th>Cliques</th>
+            <th>Impressões</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${campanhas.map(campanha => {
+            const status = dashboardStatusCampanha(campanha);
+            const leads = dashboardPrimeiroNumero(campanha, ["leads", "leads_total", "total_leads"]);
+            const gasto = dashboardPrimeiroNumero(campanha, ["gasto", "spend", "valor_gasto"]);
+            const cpl = dashboardPrimeiroNumero(campanha, ["custo_por_lead", "cpl"]);
+            const cplFinal = cpl || (leads > 0 ? gasto / leads : 0);
+            const plataformaId = dashboardPlataformaId(campanha.plataforma || campanha.origem || "meta");
+            const plataforma = PLATAFORMA_META[plataformaId] || { nome: plataformaId, icone: "📣" };
+            return `
+              <tr>
+                <td>
+                  <div class="dashboard-campaign-title">
+                    <strong title="${escHtml(campanha.nome || "Campanha")}">${escHtml(campanha.nome || "Campanha sem nome")}</strong>
+                    <small>${plataforma.icone} ${escHtml(plataforma.nome)}</small>
+                  </div>
+                </td>
+                <td><span class="dashboard-status-chip ${status.classe}">${status.label}</span></td>
+                <td>${dashboardCompacto(leads)}</td>
+                <td>${formatarMoeda(gasto)}</td>
+                <td>${cplFinal ? formatarMoeda(cplFinal) : "-"}</td>
+                <td>${dashboardPercentual(dashboardPrimeiroNumero(campanha, ["ctr"]))}</td>
+                <td>${dashboardCompacto(dashboardPrimeiroNumero(campanha, ["cliques", "clicks"]))}</td>
+                <td>${dashboardCompacto(dashboardPrimeiroNumero(campanha, ["impressoes", "impressions"]))}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 async function carregarDashboard() {
   const el = document.getElementById("dashboard-conteudo");
   if (!el) return;
@@ -24741,86 +25465,161 @@ async function carregarDashboard() {
   const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
 
   el.innerHTML = `
-    <div style="margin-bottom:20px;">
-      <p style="font-size:20px;font-weight:700;color:#e2e8f0;margin:0 0 4px;">
-        ${saudacao}${nomeUsuario ? ", " + nomeUsuario.split(" ")[0] : ""}! 👋
-      </p>
-      <p style="font-size:13px;color:#64748b;margin:0;">Aqui está um resumo rápido da sua plataforma.</p>
-    </div>
-    <div id="dashboard-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
-      <div style="color:#64748b;font-size:13px;">Carregando KPIs...</div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
-      <button class="btn dashboard-action-btn" style="text-align:left;padding:14px 16px;" onclick="navegarPara('leads')">
-        <span style="font-size:18px;">📥</span><br>
-        <span style="font-size:13px;font-weight:600;">Central de Leads</span><br>
-        <span style="font-size:11px;color:#64748b;">Ver e gerenciar leads</span>
-      </button>
-      <button class="btn dashboard-action-btn" style="text-align:left;padding:14px 16px;" onclick="navegarPara('campanhas')">
-        <span style="font-size:18px;">📢</span><br>
-        <span style="font-size:13px;font-weight:600;">Campanhas</span><br>
-        <span style="font-size:11px;color:#64748b;">Criar e acompanhar</span>
-      </button>
-      <button class="btn dashboard-action-btn" style="text-align:left;padding:14px 16px;" onclick="navegarPara('integracoes')">
-        <span style="font-size:18px;">🔌</span><br>
-        <span style="font-size:13px;font-weight:600;">Integrações</span><br>
-        <span style="font-size:11px;color:#64748b;">Conectar plataformas</span>
-      </button>
+    <div class="dashboard-executive">
+      <div class="dashboard-hero-pro">
+        <div class="dashboard-hero-copy">
+          <span class="dashboard-section-kicker">Centro de comando</span>
+          <h2>${saudacao}${nomeUsuario ? ", " + escHtml(nomeUsuario.split(" ")[0]) : ""}! 👋</h2>
+          <p>
+            Painel executivo com leitura consolidada de leads, campanhas, plataformas,
+            investimento, CPL, CTR e pontos de atenção para acelerar a operação.
+          </p>
+          <div class="dashboard-hero-actions">
+            <button class="dashboard-command-btn primary" onclick="navegarPara('campanhas')">📢 Gerenciar campanhas</button>
+            <button class="dashboard-command-btn" onclick="navegarPara('leads')">📥 Abrir central de leads</button>
+            <button class="dashboard-command-btn" onclick="navegarPara('integracoes')">🔌 Conectar plataformas</button>
+          </div>
+        </div>
+        <div class="dashboard-live-card" id="dashboard-live-card">
+          <div class="dashboard-live-row"><span>Carregando operação</span><strong>...</strong></div>
+          <div class="dashboard-live-row"><span>Sincronização</span><strong>Em análise</strong></div>
+          <div class="dashboard-live-row"><span>Próxima ação</span><strong>Atualizar dados</strong></div>
+        </div>
+      </div>
+
+      <div id="dashboard-kpis" class="dashboard-stat-grid">
+        <div class="dashboard-empty-state">Carregando métricas executivas...</div>
+      </div>
+
+      <div id="dashboard-analytics-grid" class="dashboard-intel-grid">
+        <div class="dashboard-empty-state">Carregando inteligência por plataforma e campanha...</div>
+      </div>
     </div>
   `;
 
   // Buscar KPIs reais
   try {
-    const [resLeads, resCamp, resConexoes, resPlats] = await Promise.all([
-      fetch(`${API}/leads?limite=1`,         { headers: { Authorization: "Bearer " + token } }),
-      fetch(`${API}/campanhas`,              { headers: { Authorization: "Bearer " + token } }),
-      fetch(`${API}/conexoes`,               { headers: { Authorization: "Bearer " + token } }),
-      fetch(`${API}/leads/stats/plataformas`,{ headers: { Authorization: "Bearer " + token } }),
+    const [
+      leadsData,
+      campData,
+      conexData,
+      platsData,
+      metricasCampanhasData
+    ] = await Promise.all([
+      dashboardFetchJson(`${API}/leads?limite=100`, token, {}),
+      dashboardFetchJson(`${API}/campanhas`, token, []),
+      dashboardFetchJson(`${API}/conexoes`, token, []),
+      dashboardFetchJson(`${API}/leads/stats/plataformas`, token, []),
+      dashboardFetchJson(`${API}/meta/metricas-campanhas`, token, [])
     ]);
 
-    const leadsData   = resLeads.ok    ? await resLeads.json()   : null;
-    const campData    = resCamp.ok     ? await resCamp.json()    : null;
-    const conexData   = resConexoes.ok ? await resConexoes.json(): [];
-    const platsData   = resPlats.ok    ? await resPlats.json()   : [];
+    const leads = dashboardLista(leadsData, ["leads", "data", "items"]);
+    const campanhasPlataforma = dashboardLista(campData, ["campanhas", "data", "items"]);
+    const campanhasMetricas = dashboardLista(metricasCampanhasData, ["campanhas", "data", "items"]);
+    const campanhas = campanhasMetricas.length ? campanhasMetricas : campanhasPlataforma;
+    const conexoes = dashboardLista(conexData, ["conexoes", "data", "items"]);
+    const plataformas = dashboardNormalizarPlataformas(platsData, leads, campanhas);
 
-    const totalLeads  = leadsData?.total ?? leadsData?.leads?.length ?? "—";
-    const totalCamp   = Array.isArray(campData) ? campData.length : campData?.campanhas?.length ?? "—";
-    const campAtivas  = Array.isArray(campData)
-                        ? campData.filter(c => c.ativo !== false).length
-                        : campData?.campanhas?.filter(c => c.ativo !== false).length ?? "—";
-    const platConect  = Array.isArray(conexData)
-                        ? conexData.filter(x => x.status === "conectado" && x.plataforma !== "formulario").length
-                        : 0;
+    const totalLeads =
+      leadsData?.total ??
+      leadsData?.total_leads ??
+      leads.length ??
+      0;
 
-    document.getElementById("dashboard-kpis").innerHTML = `
-      ${kpiCard("📥", "Total de Leads",   totalLeads, "#60a5fa")}
-      ${kpiCard("📢", "Campanhas Ativas", campAtivas === "—" ? "—" : campAtivas + (totalCamp !== "—" ? " / " + totalCamp : ""), "#34d399")}
-      ${kpiCard("🔌", "Plataformas ativas", platConect || "—", "#a78bfa")}
+    const campanhasTotal = campanhas.length || campanhasPlataforma.length;
+    const campanhasAtivas = campanhas.filter(c => dashboardStatusCampanha(c).classe === "active").length;
+    const campanhasPausadas = campanhas.filter(c => dashboardStatusCampanha(c).classe === "paused").length;
+    const campanhasAtencao = campanhas.filter(c => dashboardStatusCampanha(c).classe === "issue").length;
+
+    const gastoTotal = campanhas.reduce(
+      (total, campanha) => total + dashboardPrimeiroNumero(campanha, ["gasto", "spend", "valor_gasto"]),
+      0
+    );
+    const leadsCampanhas = campanhas.reduce(
+      (total, campanha) => total + dashboardPrimeiroNumero(campanha, ["leads", "leads_total", "total_leads"]),
+      0
+    );
+    const cliquesTotal = campanhas.reduce(
+      (total, campanha) => total + dashboardPrimeiroNumero(campanha, ["cliques", "clicks"]),
+      0
+    );
+    const impressoesTotal = campanhas.reduce(
+      (total, campanha) => total + dashboardPrimeiroNumero(campanha, ["impressoes", "impressions"]),
+      0
+    );
+    const budgetDiario = campanhas.reduce(
+      (total, campanha) => total + (dashboardPrimeiroNumero(campanha, ["daily_budget"]) / 100),
+      0
+    );
+    const cplMedio = leadsCampanhas > 0 ? gastoTotal / leadsCampanhas : 0;
+    const ctrMedio = impressoesTotal > 0 ? (cliquesTotal / impressoesTotal) * 100 : 0;
+    const taxaLeadClique = cliquesTotal > 0 ? (leadsCampanhas / cliquesTotal) * 100 : 0;
+    const plataformasConectadas = conexoes.filter(x =>
+      String(x.status || "").toLowerCase() === "conectado" &&
+      dashboardPlataformaId(x.plataforma) !== "formulario"
+    ).length;
+
+    const topCampanhas = [...campanhas]
+      .sort((a, b) => {
+        const scoreA =
+          dashboardPrimeiroNumero(a, ["leads", "leads_total", "total_leads"]) * 1000 +
+          dashboardPrimeiroNumero(a, ["gasto", "spend", "valor_gasto"]);
+        const scoreB =
+          dashboardPrimeiroNumero(b, ["leads", "leads_total", "total_leads"]) * 1000 +
+          dashboardPrimeiroNumero(b, ["gasto", "spend", "valor_gasto"]);
+        return scoreB - scoreA;
+      })
+      .slice(0, 8);
+
+    const kpis = [
+      { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto(leads.length)} na amostra recente`, cor: "#60a5fa" },
+      { label: "Campanhas", valor: `${campanhasAtivas}/${campanhasTotal || 0}`, detalhe: `${campanhasPausadas} pausadas · ${campanhasAtencao} em atenção`, cor: "#22c55e" },
+      { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Gasto consolidado das campanhas", cor: "#f59e0b" },
+      { label: "CPL médio", valor: cplMedio ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa" },
+      { label: "CTR médio", valor: ctrMedio ? `${ctrMedio.toFixed(1)}%` : "-", detalhe: `${dashboardCompacto(cliquesTotal)} cliques`, cor: "#38bdf8" },
+      { label: "Plataformas", valor: dashboardCompacto(plataformasConectadas || plataformas.length), detalhe: `${plataformas.length || 0} com volume de leads`, cor: "#34d399" }
+    ];
+
+    document.getElementById("dashboard-kpis").innerHTML = kpis.map(kpi => `
+      <div class="dashboard-stat-card" style="--dash-accent:${kpi.cor};">
+        <span>${kpi.label}</span>
+        <strong>${kpi.valor}</strong>
+        <small>${kpi.detalhe}</small>
+      </div>
+    `).join("");
+
+    document.getElementById("dashboard-live-card").innerHTML = `
+      <div class="dashboard-live-row"><span>Saúde das campanhas</span><strong>${campanhasAtencao ? `${campanhasAtencao} revisar` : "Estável"}</strong></div>
+      <div class="dashboard-live-row"><span>Orçamento diário</span><strong>${budgetDiario ? formatarMoeda(budgetDiario) : "-"}</strong></div>
+      <div class="dashboard-live-row"><span>Leads por clique</span><strong>${taxaLeadClique ? `${taxaLeadClique.toFixed(1)}%` : "-"}</strong></div>
+      <div class="dashboard-live-row"><span>Base analisada</span><strong>${dashboardCompacto(campanhasTotal)} campanhas</strong></div>
     `;
 
-    // Breakdown por plataforma
-    if (Array.isArray(platsData) && platsData.length) {
-      const max = Math.max(...platsData.map(p => p.total));
-      const platBarCor = { meta:"#3b82f6", google:"#ef4444", tiktok:"#e2e8f0", linkedin:"#2563eb", kwai:"#f97316", pinterest:"#dc2626", snapchat:"#eab308", microsoft:"#0ea5e9", formulario:"#a855f7" };
-      const rows = platsData.map(p => {
-        const pct  = max ? Math.round((p.total / max) * 100) : 0;
-        const cor  = platBarCor[p.plataforma] || "#3b82f6";
-        const meta = PLATAFORMA_META[p.plataforma] || { nome: p.plataforma, icone: "📣" };
-        return `
-          <div class="plat-breakdown-row">
-            <span style="font-size:14px;">${meta.icone}</span>
-            <span style="font-size:12px;color:#94a3b8;min-width:96px;">${meta.nome}</span>
-            <div class="plat-breakdown-bar-wrap"><div class="plat-breakdown-bar" style="width:${pct}%;background:${cor};"></div></div>
-            <span class="plat-breakdown-count">${p.total}</span>
-          </div>`;
-      }).join("");
-      el.insertAdjacentHTML("beforeend", `
-        <div class="plat-breakdown">
-          <div class="plat-breakdown-title">📊 Leads por plataforma</div>
-          <div class="plat-breakdown-rows">${rows}</div>
+    document.getElementById("dashboard-analytics-grid").innerHTML = `
+      <div class="dashboard-panel">
+        <div class="dashboard-panel-head">
+          <div>
+            <h3>📊 Leads por plataforma</h3>
+            <small>Distribuição de origem dos leads e campanhas conectadas.</small>
+          </div>
+          <span class="dashboard-pill">${dashboardCompacto(totalLeads)} leads</span>
         </div>
-      `);
-    }
+        <div class="dashboard-platform-list">
+          ${dashboardRenderPlatformRows(plataformas)}
+        </div>
+      </div>
+
+      <div class="dashboard-panel">
+        <div class="dashboard-panel-head">
+          <div>
+            <h3>🚀 Campanhas em detalhe</h3>
+            <small>Status, plataforma, volume, investimento, CPL e CTR por campanha.</small>
+          </div>
+          <span class="dashboard-pill">${dashboardCompacto(campanhasTotal)} campanhas</span>
+        </div>
+        ${dashboardRenderCampaignTable(topCampanhas)}
+      </div>
+    `;
 
   } catch (_) {
     document.getElementById("dashboard-kpis").innerHTML = `<div style="color:#64748b;font-size:12px;">Não foi possível carregar KPIs.</div>`;

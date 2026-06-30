@@ -988,14 +988,33 @@ button {
 }
 .hub-conexoes-card #card-meta > .btn { margin-bottom: 12px; }
 
-/* Seção ativa preenche toda a altura disponível e rola seu próprio
-   conteúdo (alguns cards de seção, ex: dashboard-pro-card, têm
-   overflow:hidden próprio que precisa ser sobrescrito aqui). */
+/* Seção ativa preenche toda a altura disponível. A rolagem da página
+   acontece em #app-content-area (único scroll real); por isso aqui
+   NÃO pode haver overflow:auto/hidden — algumas seções (ex: Campanhas)
+   mostram vários ids "secao-visivel" empilhados ao mesmo tempo, e dar
+   overflow a cada um individualmente quebra esse empilhamento. */
 #app.sidebar-ativa .secao-visivel {
   flex: 1;
   min-height: calc(100vh - 56px);
-  overflow-y: auto !important;
-  overflow-x: hidden;
+}
+
+/* Exceção: alguns cards de seção definem overflow próprio (geralmente
+   herdado do layout antigo de coluna fixa) que, dentro do flex coluna
+   do sidebar, espreme o card na altura da viewport e corta o conteúdo
+   sem nunca repassar a sobra para #app-content-area. Forçar visible
+   deixa o card crescer e a rolagem acontecer no nível certo. */
+#app.sidebar-ativa #card-dashboard.secao-visivel,
+#app.sidebar-ativa #card-campanhas.secao-visivel {
+  overflow: visible !important;
+}
+
+/* O wrapper das abas de nicho (#nicho_campanha_container) também vira
+   secao-visivel junto com #card-criar-campanha e #card-campanhas (são
+   3 ids empilhados na mesma seção "campanhas"). Sem isso, o wrapper
+   reserva calc(100vh - 56px) de altura mesmo com o card recolhido,
+   empurrando "Minhas Campanhas" para muito além do fim da tela. */
+#app.sidebar-ativa #nicho_campanha_container.secao-visivel {
+  min-height: auto;
 }
 
 #app.sidebar-ativa #card-informacoes.secao-visivel {

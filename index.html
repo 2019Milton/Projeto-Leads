@@ -5618,9 +5618,11 @@ body.usuario-super-admin .admin-only-targeting {
 /* Mantem o bloco de Performance Meta para dentro da borda visivel,
    com o mesmo respiro lateral do conteudo à esquerda. */
 #app.sidebar-ativa .dashboard-performance-field {
-  width: 100%;
-  max-width: 100%;
+  width: auto !important;
+  max-width: calc(100% - 32px) !important;
   min-width: 0;
+  margin: 4px 14px 18px 18px !important;
+  box-sizing: border-box;
   overflow: hidden;
 }
 

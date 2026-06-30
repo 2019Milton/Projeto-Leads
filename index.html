@@ -5615,6 +5615,38 @@ body.usuario-super-admin .admin-only-targeting {
   margin-top:12px;
 }
 
+/* Mantem o bloco de Performance Meta para dentro da borda visivel,
+   com o mesmo respiro lateral do conteudo à esquerda. */
+#app.sidebar-ativa .dashboard-performance-field {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+#app.sidebar-ativa .dashboard-performance-body {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  padding-right: 8px;
+}
+
+#app.sidebar-ativa .dashboard-performance-body .performance-meta-panel {
+  width: calc(100% - 8px);
+  max-width: calc(100% - 8px);
+  margin-right: 8px;
+  box-sizing: border-box;
+}
+
+#app.sidebar-ativa .performance-meta-table-wrap,
+#app.sidebar-ativa .performance-meta-cards,
+#app.sidebar-ativa .performance-meta-insights {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .perf-expand-btn {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.15);

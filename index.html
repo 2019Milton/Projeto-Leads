@@ -31027,6 +31027,77 @@ function estiloNichoBadge(nicho = {}) {
 function estiloNichoDot() {
   return "background:#fff;width:6px;height:6px;box-shadow:0 0 0 1px rgba(255,255,255,0.45);";
 }
+function temaVisualNicho(nicho = {}) {
+  const slug = slugNichoNormalizado(nicho);
+  const id = Number(nicho.id || nicho.nicho_id);
+  const cor = corSolidaNicho(nicho);
+
+  if (slug.includes("saude") || slug.includes("convenio") || id === 2) {
+    return {
+      cor,
+      bg: "#2a0a0a",
+      border: "#dc2626",
+      text: "#fee2e2",
+      title: "#fecaca",
+      inputBg: "#3d0f0f",
+      inputBorder: "#ef4444",
+      bgLight: "#fff0f0",
+      borderLight: "#dc2626",
+      textLight: "#450a0a",
+      titleLight: "#991b1b",
+      inputBorderLight: "#dc2626"
+    };
+  }
+
+  if (slug.includes("suplement") || id === 3) {
+    return {
+      cor,
+      bg: "#2a1708",
+      border: "#c2410c",
+      text: "#ffedd5",
+      title: "#fed7aa",
+      inputBg: "#3a2312",
+      inputBorder: "#ea580c",
+      bgLight: "#fff1e6",
+      borderLight: "#ea580c",
+      textLight: "#4a2108",
+      titleLight: "#9a3412",
+      inputBorderLight: "#ea580c"
+    };
+  }
+
+  if (slug.includes("saas") || slug.includes("plataforma") || id === 4) {
+    return {
+      cor,
+      bg: "#1a0a2e",
+      border: "#7c3aed",
+      text: "#ede9fe",
+      title: "#ddd6fe",
+      inputBg: "#250f42",
+      inputBorder: "#8b5cf6",
+      bgLight: "#f3f0ff",
+      borderLight: "#7c3aed",
+      textLight: "#2e1065",
+      titleLight: "#5b21b6",
+      inputBorderLight: "#7c3aed"
+    };
+  }
+
+  return {
+    cor,
+    bg: "#0b1f3f",
+    border: "#2563eb",
+    text: "#eff6ff",
+    title: "#dbeafe",
+    inputBg: "#13294a",
+    inputBorder: "#3b82f6",
+    bgLight: "#e8f1ff",
+    borderLight: "#2563eb",
+    textLight: "#102033",
+    titleLight: "#1d4ed8",
+    inputBorderLight: "#2563eb"
+  };
+}
 function nomeExibirNicho(nicho = {}) {
   if (nicho.nome) {
     if (/^plataforma$/i.test(nicho.nome.trim())) return "Plataforma / SaaS";

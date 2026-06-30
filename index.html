@@ -1039,9 +1039,34 @@ button {
    fica preso na altura da viewport e rola por dentro, em vez de depender
    da rolagem de #app-content-area (que não estava alcançando o fim). */
 #app.sidebar-ativa #card-leads-central.secao-visivel {
-  max-height: calc(100vh - 56px);
+  height: calc(100dvh - 88px);
+  max-height: calc(100dvh - 88px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#app.sidebar-ativa #card-leads-central.secao-visivel .leads-central-content {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-right: 10px;
+  scrollbar-gutter: stable;
+}
+
+#app.sidebar-ativa #card-leads-central.secao-visivel .leads-central-content::-webkit-scrollbar {
+  width: 9px;
+}
+
+#app.sidebar-ativa #card-leads-central.secao-visivel .leads-central-content::-webkit-scrollbar-thumb {
+  background: rgba(140,82,255,0.45);
+  border-radius: 999px;
+}
+
+#app.sidebar-ativa #card-leads-central.secao-visivel .leads-central-content::-webkit-scrollbar-track {
+  background: rgba(15,23,42,0.45);
+  border-radius: 999px;
 }
 
 /* Hub de integrações: grid estira as duas linhas de cards igualmente */

@@ -988,10 +988,14 @@ button {
 }
 .hub-conexoes-card #card-meta > .btn { margin-bottom: 12px; }
 
-/* Seção ativa preenche toda a altura disponível */
+/* Seção ativa preenche toda a altura disponível e rola seu próprio
+   conteúdo (alguns cards de seção, ex: dashboard-pro-card, têm
+   overflow:hidden próprio que precisa ser sobrescrito aqui). */
 #app.sidebar-ativa .secao-visivel {
   flex: 1;
   min-height: calc(100vh - 56px);
+  overflow-y: auto !important;
+  overflow-x: hidden;
 }
 
 #app.sidebar-ativa #card-informacoes.secao-visivel {
@@ -3634,9 +3638,6 @@ body.usuario-super-admin .admin-only-targeting {
   min-height: 560px;
 
   padding: 12px;
-
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 /* 🔥 PLACEHOLDER */
 .leads-placeholder {

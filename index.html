@@ -9477,6 +9477,63 @@ body.tema-claro .btn-recolher-card:hover {
 .integ-card-desc { font-size: 11px; color: #475569; margin-top: 4px; line-height: 1.4; }
 .integ-card-conta { font-size: 11px; color: #94a3b8; padding: 7px 8px; background: #0f172a; border-radius: 6px; display: flex; flex-direction: column; gap: 5px; }
 .integ-card-conta .integ-detalhe-valor { max-width: 160px; }
+.integ-card-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.integ-resumo-alerta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid rgba(148, 163, 184, .16);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, .72);
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.integ-resumo-alerta.ok { border-color: rgba(34, 197, 94, .28); color: #bbf7d0; }
+.integ-resumo-alerta.warn { border-color: rgba(245, 158, 11, .34); color: #fde68a; }
+.integ-resumo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.integ-resumo-item {
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(30, 41, 59, .9);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, .64);
+}
+.integ-resumo-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.2;
+}
+.integ-resumo-valor {
+  display: block;
+  color: #dbeafe;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.integ-resumo-valor.sucesso { color: #86efac; }
+.integ-resumo-valor.alerta { color: #facc15; }
+.integ-resumo-valor.erro { color: #fca5a5; }
+.integ-resumo-nota {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.45;
+}
 .integ-card-acoes { display: flex; gap: 6px; flex-wrap: wrap; }
 .integ-card-acoes button {
   font-size: 11px; padding: 5px 12px; border-radius: 6px;
@@ -13062,6 +13119,41 @@ body.tema-claro .integ-card-detalhes {
   border-color: #d9e4ef !important;
   color: var(--claro-muted) !important;
 }
+
+body.tema-claro .integ-resumo-alerta,
+body.tema-claro .integ-resumo-item {
+  background: #f8fbff !important;
+  border-color: #d9e4ef !important;
+}
+
+body.tema-claro .integ-resumo-alerta {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .integ-resumo-alerta.ok {
+  background: #ecfdf3 !important;
+  border-color: #bbf7d0 !important;
+  color: #166534 !important;
+}
+
+body.tema-claro .integ-resumo-alerta.warn {
+  background: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+body.tema-claro .integ-resumo-label,
+body.tema-claro .integ-resumo-nota {
+  color: var(--claro-muted) !important;
+}
+
+body.tema-claro .integ-resumo-valor {
+  color: var(--claro-text) !important;
+}
+
+body.tema-claro .integ-resumo-valor.sucesso { color: #15803d !important; }
+body.tema-claro .integ-resumo-valor.alerta { color: #b45309 !important; }
+body.tema-claro .integ-resumo-valor.erro { color: #b91c1c !important; }
 
 body.tema-claro .integ-card-acoes button {
   background: #ffffff !important;
@@ -26263,6 +26355,130 @@ const HUB_PLATAFORMAS = [
   { id: "microsoft", nome: "Microsoft Ads", icone: "🪟", disponivelConectar: false, desc: "Bing Ads Lead Form Extensions" },
 ];
 
+function hubResumoItem(label, valor, classe = "") {
+  const texto = valor === null || valor === undefined || valor === "" ? "—" : valor;
+  return `
+    <div class="integ-resumo-item">
+      <span class="integ-resumo-label">${escaparHtml(label)}</span>
+      <span class="integ-resumo-valor ${classe}" title="${escaparHtml(String(texto))}">${escaparHtml(String(texto))}</span>
+    </div>`;
+}
+
+function hubResumoAlerta(texto, classe = "") {
+  return `<div class="integ-resumo-alerta ${classe}">${escaparHtml(texto)}</div>`;
+}
+
+function hubResumoData(data) {
+  if (!data) return "Nunca";
+  try {
+    return formatarData(data);
+  } catch (_) {
+    return "Registrado";
+  }
+}
+
+function hubResumoPagamento(conta) {
+  if (!conta) {
+    return { texto: "Não identificado", classe: "erro" };
+  }
+  if (conta.erro_pagamento || conta.pendencia_pagamento) {
+    return { texto: "Pendência", classe: "alerta" };
+  }
+  if (conta.saldo_zerado) {
+    return { texto: "Sem saldo", classe: "alerta" };
+  }
+  if (conta.pagamento_habilitado || conta.possui_pagamento) {
+    return { texto: conta.tipo_pagamento === "manual_pre_pago" ? "Pré-pago ativo" : "Habilitado", classe: "sucesso" };
+  }
+  return { texto: "Revisar", classe: "alerta" };
+}
+
+function renderResumoMeta(conn, metaStatus) {
+  const conectado = conn?.status === "conectado";
+
+  if (!conectado) {
+    return `
+      <div class="integ-card-resumo">
+        ${hubResumoAlerta("Conecte a Meta para importar leads, páginas, campanhas e status de pagamento.")}
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Leads", "Pausados")}
+          ${hubResumoItem("Campanhas", "Sem sync")}
+          ${hubResumoItem("Pagamento", "Não validado")}
+          ${hubResumoItem("Próximo passo", "Conectar")}
+        </div>
+      </div>`;
+  }
+
+  if (!metaStatus?.conectado) {
+    const nomeConta = conn?.dados_conta?.nome || conn?.dados_conta?.name || "Conta conectada";
+    const instagram = conn?.dados_conta?.instagram || conn?.dados_conta?.instagram_username || "";
+    const contaAds = conn?.dados_conta?.conta_anuncios || conn?.conta_anuncios_id || "";
+    const conectadoEm = conn?.conectado_em || conn?.created_at || conn?.atualizado_em;
+    return `
+      <div class="integ-card-resumo">
+        ${hubResumoAlerta("Conexão registrada. Abra os detalhes para validar permissões, conta de anúncios e pagamento.", "warn")}
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Conta", nomeConta, "sucesso")}
+          ${hubResumoItem("Instagram", instagram ? `@${String(instagram).replace(/^@/, "")}` : "A validar")}
+          ${hubResumoItem("Conta Ads", contaAds || "A validar")}
+          ${hubResumoItem("Conectado", hubResumoData(conectadoEm), "sucesso")}
+        </div>
+      </div>`;
+  }
+
+  const pagina = metaStatus.paginas?.[0] || null;
+  const instagram =
+    metaStatus.instagram ||
+    pagina?.instagram ||
+    metaStatus.contas_instagram_anuncio?.[0] ||
+    null;
+  const conta = metaStatus.conta_anuncios || null;
+  const metricas = metaStatus.metricas || {};
+  const pagamento = hubResumoPagamento(conta);
+  const campanhasTotal = Number(metricas.campanhas || 0);
+  const campanhasAtivas = Number(metricas.campanhas_ativas || 0);
+  const pageId = pagina?.id ? String(pagina.id) : "";
+  const tosOk = pageId && Array.isArray(metaStatus.tos_aceitas) && metaStatus.tos_aceitas.includes(pageId);
+  const pronta = Boolean(metaStatus.pronto_para_anunciar);
+  const alertaTexto = pronta
+    ? "Pronto para anunciar: Meta, conta de anúncios e pagamento estão operacionais."
+    : "Ajustes pendentes: revise conta, pagamento, página ou termos antes de anunciar.";
+
+  const pagamentoLinha = conta?.erro_pagamento
+    ? `<div class="integ-resumo-nota">Pagamento precisa de atenção. Abra os detalhes para ver como resolver.</div>`
+    : "";
+
+  return `
+    <div class="integ-card-resumo">
+      ${hubResumoAlerta(alertaTexto, pronta ? "ok" : "warn")}
+      <div class="integ-resumo-grid">
+        ${hubResumoItem("Página", pagina?.name || "Não vinculada", pagina?.name ? "sucesso" : "erro")}
+        ${hubResumoItem("Instagram", instagram?.username ? `@${instagram.username}` : "Opcional", instagram?.username ? "sucesso" : "")}
+        ${hubResumoItem("Conta Ads", conta?.nome || (metaStatus.selecao_conta_anuncios_pendente ? "Selecionar conta" : "Não selecionada"), conta?.ativa ? "sucesso" : conta?.pendencia_pagamento ? "alerta" : "erro")}
+        ${hubResumoItem("Pagamento", pagamento.texto, pagamento.classe)}
+        ${hubResumoItem("Campanhas", `${campanhasAtivas}/${campanhasTotal} ativas`, campanhasAtivas > 0 ? "sucesso" : "")}
+        ${hubResumoItem("Leads hoje", metricas.leads_hoje || 0, Number(metricas.leads_hoje || 0) > 0 ? "sucesso" : "")}
+        ${hubResumoItem("Gasto hoje", metricas.gasto_hoje_formatado || "R$ 0,00")}
+        ${hubResumoItem("Termos Lead Ads", tosOk ? "Aceitos" : pageId ? "Revisar" : "Sem página", tosOk ? "sucesso" : "alerta")}
+      </div>
+      <div class="integ-resumo-nota">Último sync: ${escaparHtml(hubResumoData(metricas.ultimo_sync))}</div>
+      ${pagamentoLinha}
+    </div>`;
+}
+
+function renderResumoEmBreve(p) {
+  return `
+    <div class="integ-card-resumo">
+      ${hubResumoAlerta("Integração planejada para captar formulários nativos e consolidar leads no painel.")}
+      <div class="integ-resumo-grid">
+        ${hubResumoItem("Entrada", "Lead forms")}
+        ${hubResumoItem("Sincronização", "Automática")}
+        ${hubResumoItem("Dados", "Leads e campanhas")}
+        ${hubResumoItem("Status", "Em breve")}
+      </div>
+    </div>`;
+}
+
 async function carregarHub() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -26270,6 +26486,7 @@ async function carregarHub() {
   if (!grid) return;
 
   let mapa = {};
+  let metaStatusCompleto = null;
   try {
     const res = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) {
@@ -26278,7 +26495,16 @@ async function carregarHub() {
     }
   } catch (_) {}
 
-  grid.innerHTML = HUB_PLATAFORMAS.map(p => renderIntegCard(p, mapa[p.id])).join("");
+  if (mapa.meta?.status === "conectado") {
+    try {
+      const resMeta = await fetch(`${API}/meta/status-completo`, { headers: { Authorization: `Bearer ${token}` } });
+      if (resMeta.ok) {
+        metaStatusCompleto = await resMeta.json();
+      }
+    } catch (_) {}
+  }
+
+  grid.innerHTML = HUB_PLATAFORMAS.map(p => renderIntegCard(p, mapa[p.id], p.id === "meta" ? metaStatusCompleto : null)).join("");
 }
 
 function renderResumoConexao(p, conn) {
@@ -26302,7 +26528,7 @@ function renderResumoConexao(p, conn) {
     </div>`).join("")}</div>`;
 }
 
-function renderIntegCard(p, conn) {
+function renderIntegCard(p, conn, metaStatusCompleto = null) {
   const conectado = conn?.status === "conectado";
   const sempre    = p.id === "formulario";
   const emBreve   = !p.disponivelConectar && !sempre;
@@ -26334,6 +26560,11 @@ function renderIntegCard(p, conn) {
   const cls = `integ-card${conectado ? " conectado" : ""}${sempre ? " formulario-ativo" : ""}${emBreve ? " em-breve" : ""}`;
 
   const descHtml = p.desc ? `<div class="integ-card-desc">${p.desc}</div>` : "";
+  const resumoHtml = p.id === "meta"
+    ? renderResumoMeta(conn, metaStatusCompleto)
+    : emBreve
+    ? renderResumoEmBreve(p)
+    : "";
 
   return `
     <div class="${cls}" id="integ-card-${p.id}">
@@ -26345,7 +26576,7 @@ function renderIntegCard(p, conn) {
         </div>
       </div>
       ${descHtml}
-      ${contaHtml}
+      ${resumoHtml || contaHtml}
       <div class="integ-card-acoes">${acoesHtml}</div>
       ${detalhesHtml}
     </div>`;

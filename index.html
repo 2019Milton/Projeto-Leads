@@ -9435,7 +9435,8 @@ body.tema-claro .btn-recolher-card:hover {
 .integ-card-status.desconectado { color: #64748b; }
 .integ-card-status.sempre { color: #60a5fa; }
 .integ-card-desc { font-size: 11px; color: #475569; margin-top: 4px; line-height: 1.4; }
-.integ-card-conta { font-size: 11px; color: #94a3b8; padding: 5px 8px; background: #0f172a; border-radius: 6px; }
+.integ-card-conta { font-size: 11px; color: #94a3b8; padding: 7px 8px; background: #0f172a; border-radius: 6px; display: flex; flex-direction: column; gap: 5px; }
+.integ-card-conta .integ-detalhe-valor { max-width: 160px; }
 .integ-card-acoes { display: flex; gap: 6px; flex-wrap: wrap; }
 .integ-card-acoes button {
   font-size: 11px; padding: 5px 12px; border-radius: 6px;
@@ -26240,11 +26241,31 @@ async function carregarHub() {
   grid.innerHTML = HUB_PLATAFORMAS.map(p => renderIntegCard(p, mapa[p.id])).join("");
 }
 
+function renderResumoConexao(p, conn) {
+  if (!conn) return "";
+  const conta = conn.conta || {};
+  const linhas = [];
+
+  if (p.id === "meta") {
+    if (conta.instagram_username) linhas.push(["Instagram", `@${conta.instagram_username}`]);
+    if (conta.conta_anuncios_id)  linhas.push(["Conta de Anúncios", conta.conta_anuncios_id]);
+  }
+  if (conn.conectado_em) {
+    linhas.push(["Conectado em", new Date(conn.conectado_em).toLocaleDateString("pt-BR")]);
+  }
+
+  if (!linhas.length) return "";
+  return `<div class="integ-card-conta">${linhas.map(([label, valor]) => `
+    <div class="integ-detalhe-linha">
+      <span class="integ-detalhe-label">${label}</span>
+      <span class="integ-detalhe-valor" title="${escaparHtml(String(valor))}">${escaparHtml(String(valor))}</span>
+    </div>`).join("")}</div>`;
+}
+
 function renderIntegCard(p, conn) {
   const conectado = conn?.status === "conectado";
   const sempre    = p.id === "formulario";
   const emBreve   = !p.disponivelConectar && !sempre;
-  const nomeConta = conn?.dados_conta?.nome || conn?.dados_conta?.name || "";
 
   let statusHtml, acoesHtml;
   if (sempre) {
@@ -26265,8 +26286,7 @@ function renderIntegCard(p, conn) {
     acoesHtml  = `<button class="btn-conectar" onclick="conectarPlataforma('${p.id}')">Conectar</button>`;
   }
 
-  const contaHtml = (conectado && nomeConta)
-    ? `<div class="integ-card-conta">📎 ${escaparHtml(nomeConta)}</div>` : "";
+  const contaHtml = conectado ? renderResumoConexao(p, conn) : "";
 
   const detalhesHtml = (p.id === "meta")
     ? `<div class="integ-card-detalhes" id="integ-detalhes-${p.id}" style="display:none;"></div>` : "";

@@ -7369,11 +7369,13 @@ body.tema-claro .cal-nav span { color: #111827; }
   display: grid;
 
   grid-template-columns:
-    repeat(auto-fill, minmax(340px, 1fr));
+    repeat(auto-fill, minmax(280px, 360px));
 
-  gap: 18px;
+  gap: 14px;
 
   width: 100%;
+  align-items: start;
+  justify-content: start;
 }
 
 /* CARD */
@@ -7387,9 +7389,9 @@ body.tema-claro .cal-nav span { color: #111827; }
   border:
     1px solid rgba(255,255,255,0.12);
 
-  border-radius: 20px;
+  border-radius: 16px;
 
-  padding: 18px;
+  padding: 14px;
 
   overflow: hidden;
 
@@ -7398,7 +7400,7 @@ body.tema-claro .cal-nav span { color: #111827; }
   backdrop-filter: blur(10px);
 
   box-shadow:
-    0 10px 30px rgba(0,0,0,0.35);
+    0 8px 22px rgba(0,0,0,0.32);
 }
 
 
@@ -7468,9 +7470,9 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   align-items: flex-start;
 
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 
-  gap: 10px;
+  gap: 8px;
 }
 
 .campanha-header {
@@ -7479,7 +7481,7 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   flex-direction: column;
 
-  gap: 10px;
+  gap: 7px;
 
   flex: 1;
 }
@@ -7488,7 +7490,7 @@ body.tema-claro .cal-nav span { color: #111827; }
 
   margin: 0;
 
-  font-size: 18px;
+  font-size: 15px;
 
   line-height: 1.3;
 
@@ -7649,6 +7651,81 @@ body.tema-claro .cal-nav span { color: #111827; }
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+/* Campanhas: cabeçalho clicável, abas condicionais e cards compactos */
+#nicho_campanha_container.criar-campanha-recolhido #nicho_campanha_tabs_wrap {
+  display: none !important;
+}
+
+#nicho_campanha_container.criar-campanha-recolhido .card-criar-campanha {
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+}
+
+.card-criar-campanha .criar-campanha-cabecalho {
+  cursor: pointer;
+  user-select: none;
+  padding: 2px 0;
+}
+
+.card-criar-campanha .criar-campanha-cabecalho:hover .criar-campanha-titulo {
+  color: #ffffff;
+}
+
+.campanha-card {
+  padding: 12px !important;
+  border-radius: 14px !important;
+}
+
+.campanha-card .campanha-topo {
+  margin-bottom: 8px;
+}
+
+.campanha-card .campanha-header {
+  gap: 6px;
+}
+
+.campanha-card .campanha-header h3 {
+  font-size: 14px !important;
+  line-height: 1.25;
+}
+
+.campanha-card .performance-box {
+  margin: 12px 0;
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.campanha-card .kpi-principal {
+  margin-bottom: 6px;
+}
+
+.campanha-card .kpi-principal strong {
+  font-size: 34px;
+  letter-spacing: -1px;
+}
+
+.campanha-card .chart-box {
+  height: 54px;
+}
+
+.campanha-card .metricas-grid {
+  gap: 8px;
+}
+
+.campanha-card .metrica {
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.campanha-card .metrica span {
+  font-size: 16px;
+}
+
+.campanha-card .ia-badge,
+.campanha-card .campanha-veiculacao {
+  margin-top: 6px;
 }
 
 /* ── Tooltip de ajuda dos campos ── */
@@ -14743,12 +14820,17 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
       <div class="card card-criar-campanha" id="card-criar-campanha">
 
-        <h3 class="criar-campanha-cabecalho" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <h3
+          class="criar-campanha-cabecalho"
+          onclick="toggleCriarCampanha()"
+          title="Expandir ou recolher Criar Campanha"
+          style="display:flex;align-items:center;justify-content:space-between;gap:8px;"
+        >
           <span class="criar-campanha-titulo">📢 Criar Campanha</span>
           <button
             type="button"
             id="btn-recolher-campanha"
-            onclick="toggleCriarCampanha()"
+            onclick="event.stopPropagation(); toggleCriarCampanha()"
             class="btn-recolher-card"
             title="Recolher Criar Campanha"
             aria-label="Recolher Criar Campanha"
@@ -21210,10 +21292,14 @@ const CHAVE_CRIAR_CAMPANHA_RECOLHIDA = "criar_campanha_recolhida";
 function aplicarEstadoCriarCampanha(recolhido, salvar = true) {
   const card = document.getElementById("card-criar-campanha");
   const btn = document.getElementById("btn-recolher-campanha");
+  const container = document.getElementById("nicho_campanha_container");
 
   if (!card) return;
 
   card.classList.toggle("recolhido", recolhido);
+  if (container) {
+    container.classList.toggle("criar-campanha-recolhido", recolhido);
+  }
 
   if (btn) {
     btn.textContent = recolhido ? "▼" : "▲";
@@ -31668,6 +31754,10 @@ function inicializarNichoTabs() {
   const container = document.createElement("div");
   container.id = "nicho_campanha_container";
   container.style.cssText = "display:flex;flex-direction:column;";
+  container.classList.toggle(
+    "criar-campanha-recolhido",
+    card.classList.contains("recolhido")
+  );
   // o card já vinha com seu próprio display definido pelo controle de seções
   // (SIDEBAR_SECOES); herda esse estado para o container não vazar nas outras telas
   if (card.style.display === "none" || typeof secaoAtiva !== "undefined" && secaoAtiva !== "campanhas") {
@@ -34841,6 +34931,10 @@ function inicializarNichoTabs() {
   const container = document.createElement("div");
   container.id = "nicho_campanha_container";
   container.style.cssText = "display:flex;flex-direction:column;";
+  container.classList.toggle(
+    "criar-campanha-recolhido",
+    card.classList.contains("recolhido")
+  );
   // o card já vinha com seu próprio display definido pelo controle de seções
   // (SIDEBAR_SECOES); herda esse estado para o container não vazar nas outras telas
   if (card.style.display === "none" || typeof secaoAtiva !== "undefined" && secaoAtiva !== "campanhas") {

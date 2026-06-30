@@ -11389,18 +11389,18 @@ body.tema-claro .suporte-page-hdr--feedback { color: #92400e; }
 }
 .cfg-card {
   background: rgba(15,23,42,0.98);
-  border: 1px solid rgba(99,102,241,0.18);
+  border: 1px solid rgba(239,68,68,0.28);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 18px 44px rgba(0,0,0,0.32);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.32), 0 0 0 1px rgba(127,29,29,0.16);
 }
 .cfg-card-header {
   padding: 13px 18px;
   font-size: 13px;
   font-weight: 600;
-  color: #c4b5fd;
-  background: linear-gradient(145deg, rgba(99,102,241,0.24), rgba(139,92,246,0.12));
-  border-bottom: 1px solid rgba(99,102,241,0.14);
+  color: #fecaca;
+  background: linear-gradient(145deg, rgba(127,29,29,0.78), rgba(69,10,10,0.48));
+  border-bottom: 1px solid rgba(239,68,68,0.30);
 }
 .cfg-field {
   padding: 14px 18px;
@@ -11493,9 +11493,13 @@ body.tema-claro .suporte-page-hdr--feedback { color: #92400e; }
 body.tema-claro .cfg-section-title { color: #0f172a; }
 body.tema-claro .cfg-card {
   background: rgba(248,250,252,0.96);
-  border-color: rgba(79,70,229,0.18);
+  border-color: rgba(185,28,28,0.28);
 }
-body.tema-claro .cfg-card-header { color: #4338ca; }
+body.tema-claro .cfg-card-header {
+  color: #7f1d1d;
+  background: linear-gradient(145deg, rgba(254,226,226,0.96), rgba(252,165,165,0.34));
+  border-bottom-color: rgba(185,28,28,0.22);
+}
 body.tema-claro .cfg-value-static { background: rgba(0,0,0,0.04); color: #475569; }
 body.tema-claro .cfg-input { background: #fff; color: #0f172a; border-color: rgba(0,0,0,0.18); }
 body.tema-claro .cfg-toggle-label { color: #0f172a; }
@@ -12852,9 +12856,25 @@ body.tema-claro .pagamento-modo,
 body.tema-claro .suporte-page-card,
 body.tema-claro .cfg-card {
   background: var(--claro-surface) !important;
-  border-color: var(--claro-border) !important;
+  border-color: rgba(185,28,28,0.28) !important;
   color: var(--claro-text) !important;
   box-shadow: var(--claro-shadow) !important;
+}
+
+body.tema-claro .cfg-card-header {
+  color: #7f1d1d !important;
+  background: linear-gradient(145deg, rgba(254,226,226,0.96), rgba(252,165,165,0.34)) !important;
+  border-bottom-color: rgba(185,28,28,0.22) !important;
+}
+
+body.tema-claro #card-configuracoes .cfg-card {
+  border-color: rgba(185,28,28,0.28) !important;
+}
+
+body.tema-claro #card-configuracoes .cfg-card-header {
+  color: #7f1d1d !important;
+  background: linear-gradient(145deg, rgba(254,226,226,0.96), rgba(252,165,165,0.34)) !important;
+  border-bottom-color: rgba(185,28,28,0.22) !important;
 }
 
 body.tema-claro h1,

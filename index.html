@@ -2034,6 +2034,10 @@ body.tema-claro .passo-meta-step-text p {
   font-weight: 700;
 }
 
+.pagamento-saldo.negativo {
+  color: #fca5a5;
+}
+
 .pagamento-saldo-info {
 
   display: block;
@@ -10895,6 +10899,7 @@ body.tema-claro .meta-status-tile small,
 body.tema-claro .pagamento-modo small { color: #526174; }
 body.tema-claro .pagamento-modo strong { color: #1e293b; }
 body.tema-claro .pagamento-saldo { color: #1e293b; }
+body.tema-claro .pagamento-saldo.negativo { color: #b91c1c; }
 
 body.tema-claro .pagamento-saldo-info { color: #92400e; }
 
@@ -20693,6 +20698,25 @@ function formatarMoeda(valor) {
   );
 }
 
+function metaContaTemDebito(conta) {
+  return Boolean(
+    conta?.pendencia_pagamento ||
+    conta?.erro_pagamento
+  );
+}
+
+function rotuloSaldoMeta(conta) {
+  return metaContaTemDebito(conta)
+    ? "Débito pendente"
+    : "Saldo";
+}
+
+function classeSaldoMeta(conta) {
+  return metaContaTemDebito(conta)
+    ? "pagamento-saldo negativo"
+    : "pagamento-saldo";
+}
+
 function formatarSaldoMeta(conta) {
 
   if (
@@ -20710,7 +20734,12 @@ function formatarSaldoMeta(conta) {
     return `${conta.saldo} ${conta.moeda || ""}`.trim();
   }
 
-  return valor.toLocaleString(
+  const valorExibido =
+    metaContaTemDebito(conta)
+      ? -Math.abs(valor)
+      : valor;
+
+  return valorExibido.toLocaleString(
     "pt-BR",
     {
       style: "currency",
@@ -20821,7 +20850,7 @@ function abrirModalPagamento(tipo) {
       "Esse modo cobre contas Meta abastecidas por saldo, como PIX ou boleto quando disponíveis. A plataforma reconhece o modo pré-pago e mostra o saldo que a Meta já informou para a conta.";
 
     alerta.innerHTML = `
-      Saldo reconhecido pela Meta:
+      ${rotuloSaldoMeta(contaPagamentoAtual)} reconhecido pela Meta:
       <strong>${formatarSaldoMeta(contaPagamentoAtual)}</strong>
       <br>
       Um PIX ou boleto ainda em processamento pode não aparecer aqui imediatamente.
@@ -27214,7 +27243,7 @@ async function carregarStatusMeta() {
           conta?.tipo_pagamento === "manual_pre_pago"
             ? conta?.saldo !== null &&
               conta?.saldo !== undefined
-              ? `Saldo pre-pago na Meta: ${formatarSaldoMeta(conta)}`
+              ? `${rotuloSaldoMeta(conta)} na Meta: ${formatarSaldoMeta(conta)}`
               : "Conta manual/pre-paga. A Meta nao confirmou o saldo pela API."
             : conta?.tipo_pagamento === "metodo_detectado"
             ? "A Meta retornou uma fonte de pagamento, mas a API não confirmou o modo de cobrança."
@@ -27366,7 +27395,7 @@ async function carregarStatusMeta() {
                 >
                   <strong>Manual / pré-pago</strong>
                   <small>PIX, boleto ou saldo disponível na Meta.</small>
-                  <span class="pagamento-saldo">Saldo: ${formatarSaldoMeta(data.conta_anuncios)}</span>
+                  <span class="${classeSaldoMeta(data.conta_anuncios)}">${rotuloSaldoMeta(data.conta_anuncios)}: ${formatarSaldoMeta(data.conta_anuncios)}</span>
                   ${data.conta_anuncios?.saldo_observacao
                     ? `<small class="pagamento-saldo-info">${escaparHtml(data.conta_anuncios.saldo_observacao)}</small>`
                     : ""}

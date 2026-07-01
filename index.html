@@ -13749,6 +13749,14 @@ body.tema-claro .desemp-tab:disabled {
   overflow: hidden;
 }
 
+.dashboard-stat-card[title],
+.dashboard-live-row[title],
+.dashboard-panel-head [title],
+.dashboard-platform-row[title],
+.dashboard-campaign-table th[title] {
+  cursor: help;
+}
+
 .dashboard-stat-card::before {
   content: "";
   position: absolute;
@@ -26373,6 +26381,33 @@ function dashboardPercentual(valor) {
   return Number.isFinite(numero) ? `${numero.toFixed(1)}%` : "-";
 }
 
+const DASHBOARD_AJUDA = {
+  leadsTotais: "Total de leads recentes.",
+  campanhas: "Ativas sobre o total.",
+  investimento: "Gasto total das campanhas.",
+  cplMedio: "Custo medio por lead.",
+  ctrMedio: "Taxa media de cliques.",
+  plataformas: "Canais com leads.",
+  saude: "Campanhas que pedem atencao.",
+  orcamento: "Soma dos orcamentos diarios.",
+  leadsPorClique: "Leads gerados por clique.",
+  base: "Campanhas analisadas.",
+  leadsPlataforma: "Origem dos leads.",
+  campanhasDetalhe: "Resultado por campanha.",
+  campanha: "Nome da campanha.",
+  status: "Situacao atual.",
+  leads: "Leads atribuidos.",
+  gasto: "Valor investido.",
+  cpl: "Custo por lead.",
+  ctr: "Cliques sobre impressoes.",
+  cliques: "Total de cliques.",
+  impressoes: "Vezes que apareceu."
+};
+
+function dashboardAjuda(chave) {
+  return `title="${escHtml(DASHBOARD_AJUDA[chave] || "")}"`;
+}
+
 function dashboardPrimeiroNumero(obj, campos) {
   for (const campo of campos) {
     const valor = dashboardNumero(obj?.[campo], NaN);
@@ -26464,7 +26499,7 @@ function dashboardRenderPlatformRows(plataformas) {
       const pct = Math.max(6, Math.round((item.total / max) * 100));
       const cor = cores[item.plataforma] || "#60a5fa";
       return `
-        <div class="dashboard-platform-row">
+        <div class="dashboard-platform-row" ${dashboardAjuda("leadsPlataforma")}>
           <div class="dashboard-platform-name">${meta.icone} ${escHtml(meta.nome)}</div>
           <div class="dashboard-platform-track">
             <div class="dashboard-platform-fill" style="width:${pct}%;--dash-accent:${cor};"></div>
@@ -26486,14 +26521,14 @@ function dashboardRenderCampaignTable(campanhas) {
       <table class="dashboard-campaign-table">
         <thead>
           <tr>
-            <th>Campanha</th>
-            <th>Status</th>
-            <th>Leads</th>
-            <th>Gasto</th>
-            <th>CPL</th>
-            <th>CTR</th>
-            <th>Cliques</th>
-            <th>Impressões</th>
+            <th ${dashboardAjuda("campanha")}>Campanha</th>
+            <th ${dashboardAjuda("status")}>Status</th>
+            <th ${dashboardAjuda("leads")}>Leads</th>
+            <th ${dashboardAjuda("gasto")}>Gasto</th>
+            <th ${dashboardAjuda("cpl")}>CPL</th>
+            <th ${dashboardAjuda("ctr")}>CTR</th>
+            <th ${dashboardAjuda("cliques")}>Cliques</th>
+            <th ${dashboardAjuda("impressoes")}>Impressões</th>
           </tr>
         </thead>
         <tbody>
@@ -26647,16 +26682,16 @@ async function carregarDashboard() {
       .slice(0, 8);
 
     const kpis = [
-      { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto(leads.length)} na amostra recente`, cor: "#60a5fa" },
-      { label: "Campanhas", valor: `${campanhasAtivas}/${campanhasTotal || 0}`, detalhe: `${campanhasPausadas} pausadas · ${campanhasAtencao} em atenção`, cor: "#22c55e" },
-      { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Gasto consolidado das campanhas", cor: "#f59e0b" },
-      { label: "CPL médio", valor: cplMedio ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa" },
-      { label: "CTR médio", valor: ctrMedio ? `${ctrMedio.toFixed(1)}%` : "-", detalhe: `${dashboardCompacto(cliquesTotal)} cliques`, cor: "#38bdf8" },
-      { label: "Plataformas", valor: dashboardCompacto(plataformasConectadas || plataformas.length), detalhe: `${plataformas.length || 0} com volume de leads`, cor: "#34d399" }
+      { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto(leads.length)} na amostra recente`, cor: "#60a5fa", ajuda: "leadsTotais" },
+      { label: "Campanhas", valor: `${campanhasAtivas}/${campanhasTotal || 0}`, detalhe: `${campanhasPausadas} pausadas · ${campanhasAtencao} em atenção`, cor: "#22c55e", ajuda: "campanhas" },
+      { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Gasto consolidado das campanhas", cor: "#f59e0b", ajuda: "investimento" },
+      { label: "CPL médio", valor: cplMedio ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa", ajuda: "cplMedio" },
+      { label: "CTR médio", valor: ctrMedio ? `${ctrMedio.toFixed(1)}%` : "-", detalhe: `${dashboardCompacto(cliquesTotal)} cliques`, cor: "#38bdf8", ajuda: "ctrMedio" },
+      { label: "Plataformas", valor: dashboardCompacto(plataformasConectadas || plataformas.length), detalhe: `${plataformas.length || 0} com volume de leads`, cor: "#34d399", ajuda: "plataformas" }
     ];
 
     document.getElementById("dashboard-kpis").innerHTML = kpis.map(kpi => `
-      <div class="dashboard-stat-card" style="--dash-accent:${kpi.cor};">
+      <div class="dashboard-stat-card" style="--dash-accent:${kpi.cor};" ${dashboardAjuda(kpi.ajuda)}>
         <span>${kpi.label}</span>
         <strong>${kpi.valor}</strong>
         <small>${kpi.detalhe}</small>
@@ -26664,20 +26699,20 @@ async function carregarDashboard() {
     `).join("");
 
     document.getElementById("dashboard-live-card").innerHTML = `
-      <div class="dashboard-live-row"><span>Saúde das campanhas</span><strong>${campanhasAtencao ? `${campanhasAtencao} revisar` : "Estável"}</strong></div>
-      <div class="dashboard-live-row"><span>Orçamento diário</span><strong>${budgetDiario ? formatarMoeda(budgetDiario) : "-"}</strong></div>
-      <div class="dashboard-live-row"><span>Leads por clique</span><strong>${taxaLeadClique ? `${taxaLeadClique.toFixed(1)}%` : "-"}</strong></div>
-      <div class="dashboard-live-row"><span>Base analisada</span><strong>${dashboardCompacto(campanhasTotal)} campanhas</strong></div>
+      <div class="dashboard-live-row" ${dashboardAjuda("saude")}><span>Saúde das campanhas</span><strong>${campanhasAtencao ? `${campanhasAtencao} revisar` : "Estável"}</strong></div>
+      <div class="dashboard-live-row" ${dashboardAjuda("orcamento")}><span>Orçamento diário</span><strong>${budgetDiario ? formatarMoeda(budgetDiario) : "-"}</strong></div>
+      <div class="dashboard-live-row" ${dashboardAjuda("leadsPorClique")}><span>Leads por clique</span><strong>${taxaLeadClique ? `${taxaLeadClique.toFixed(1)}%` : "-"}</strong></div>
+      <div class="dashboard-live-row" ${dashboardAjuda("base")}><span>Base analisada</span><strong>${dashboardCompacto(campanhasTotal)} campanhas</strong></div>
     `;
 
     document.getElementById("dashboard-analytics-grid").innerHTML = `
       <div class="dashboard-panel">
         <div class="dashboard-panel-head">
           <div>
-            <h3>📊 Leads por plataforma</h3>
+            <h3 ${dashboardAjuda("leadsPlataforma")}>📊 Leads por plataforma</h3>
             <small>Distribuição de origem dos leads e campanhas conectadas.</small>
           </div>
-          <span class="dashboard-pill">${dashboardCompacto(totalLeads)} leads</span>
+          <span class="dashboard-pill" ${dashboardAjuda("leadsTotais")}>${dashboardCompacto(totalLeads)} leads</span>
         </div>
         <div class="dashboard-platform-list">
           ${dashboardRenderPlatformRows(plataformas)}
@@ -26687,10 +26722,10 @@ async function carregarDashboard() {
       <div class="dashboard-panel">
         <div class="dashboard-panel-head">
           <div>
-            <h3>🚀 Campanhas em detalhe</h3>
+            <h3 ${dashboardAjuda("campanhasDetalhe")}>🚀 Campanhas em detalhe</h3>
             <small>Status, plataforma, volume, investimento, CPL e CTR por campanha.</small>
           </div>
-          <span class="dashboard-pill">${dashboardCompacto(campanhasTotal)} campanhas</span>
+          <span class="dashboard-pill" ${dashboardAjuda("campanhas")}>${dashboardCompacto(campanhasTotal)} campanhas</span>
         </div>
         ${dashboardRenderCampaignTable(topCampanhas)}
       </div>

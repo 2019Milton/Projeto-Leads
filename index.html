@@ -1309,23 +1309,27 @@ body:not(.sidebar-recolhida) .sidebar-item::after { display: none !important; }
    com respiro nas bordas e sem cards esticando para fora da tela. */
 #app.sidebar-ativa {
   padding: 0 !important;
-  width: 100vw;
-  max-width: 100vw;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }
 
 #app.sidebar-ativa #app-content-area {
-  width: 0;
+  flex: 1 1 0;
+  width: auto;
   max-width: 100%;
   min-width: 0;
   padding: 0;
   box-sizing: border-box;
+  overflow-x: hidden !important;
 }
 
 #app.sidebar-ativa #app-content {
+  width: 100%;
   min-width: 0;
   max-width: 100%;
+  overflow-x: hidden !important;
 }
 
 #app.sidebar-ativa .secao-app {
@@ -13608,6 +13612,9 @@ body.tema-claro .desemp-tab:disabled {
 .dashboard-pro-card {
   padding: 0 !important;
   overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background:
     radial-gradient(circle at 12% 10%, rgba(59,130,246,0.16), transparent 28%),
     radial-gradient(circle at 72% 4%, rgba(34,197,94,0.10), transparent 24%),
@@ -13620,13 +13627,17 @@ body.tema-claro .desemp-tab:disabled {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .dashboard-hero-pro {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
   gap: 16px;
   align-items: stretch;
+  min-width: 0;
 }
 
 .dashboard-hero-copy {
@@ -13696,6 +13707,7 @@ body.tema-claro .desemp-tab:disabled {
 }
 
 .dashboard-live-card {
+  min-width: 0;
   border: 1px solid rgba(34,197,94,0.22);
   border-radius: 14px;
   padding: 16px;
@@ -13730,12 +13742,16 @@ body.tema-claro .desemp-tab:disabled {
   color: #f8fafc;
   font-size: 15px;
   text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dashboard-stat-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
   gap: 12px;
+  min-width: 0;
 }
 
 .dashboard-stat-card {
@@ -13791,8 +13807,9 @@ body.tema-claro .desemp-tab:disabled {
 
 .dashboard-intel-grid {
   display: grid;
-  grid-template-columns: minmax(280px, .85fr) minmax(360px, 1.15fr);
+  grid-template-columns: minmax(min(300px, 100%), .85fr) minmax(min(420px, 100%), 1.15fr);
   gap: 14px;
+  min-width: 0;
 }
 
 .dashboard-panel {
@@ -14113,13 +14130,15 @@ body.tema-claro .dashboard-performance-badge {
   color: #1d4ed8 !important;
 }
 
-@media (max-width: 1320px) {
-  .dashboard-stat-grid {
-    grid-template-columns: repeat(3, minmax(160px, 1fr));
-  }
-
+@media (max-width: 1500px) {
   .dashboard-intel-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1380px) {
+  .dashboard-hero-pro {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -18978,6 +18978,8 @@ let leadsFiltradosAtuais = [];
 
 let campanhasAtuais = [];
 
+const campanhasRenderCache = {};
+
 let contaPagamentoAtual = null;
 
 let usuarioLogado = null;
@@ -18992,6 +18994,88 @@ let guiaSecretoReavaliarTimer = null;
 let guiaCriacaoCampanhaAtiva = false;
 let performanceMetaPeriodoAtual = "semanal";
 let performanceMetaUltimoRelatorio = null;
+
+function registrarCampanhaRenderizada(campanha, indice = 0) {
+  const base =
+    campanha?.id ||
+    campanha?.campaign_id ||
+    indice;
+
+  const chave =
+    String(base).replace(/[^a-zA-Z0-9_-]/g, "_") ||
+    String(indice);
+
+  campanhasRenderCache[chave] = campanha;
+
+  return chave;
+}
+
+function obterCampanhaRenderizada(chave) {
+  const key = String(chave || "");
+
+  return (
+    campanhasRenderCache[key] ||
+    campanhasAtuais.find(c =>
+      String(c.id) === key ||
+      String(c.campaign_id) === key
+    ) ||
+    null
+  );
+}
+
+function campanhaEncodedPorChave(chave) {
+  const campanha =
+    obterCampanhaRenderizada(chave);
+
+  if (!campanha) {
+    alert("Nao foi possivel carregar os dados desta campanha. Clique em Sincronizar e tente novamente.");
+    return null;
+  }
+
+  return encodeURIComponent(JSON.stringify(campanha));
+}
+
+function abrirCampanhaDrawerPorChave(chave) {
+  const encoded =
+    campanhaEncodedPorChave(chave);
+
+  if (encoded) {
+    abrirCampanhaDrawer(encoded);
+  }
+}
+
+function abrirEdicaoCampanhaPorChave(chave) {
+  const encoded =
+    campanhaEncodedPorChave(chave);
+
+  if (encoded) {
+    abrirEdicaoCampanha(encoded);
+  }
+}
+
+function abrirModalEncaminharCampanhaPorChave(chave) {
+  const encoded =
+    campanhaEncodedPorChave(chave);
+
+  if (encoded) {
+    abrirModalEncaminharCampanha(encoded);
+  }
+}
+
+function duplicarCampanhaPorChave(chave) {
+  const campanha =
+    obterCampanhaRenderizada(chave);
+
+  if (!campanha) {
+    alert("Nao foi possivel carregar os dados desta campanha. Clique em Sincronizar e tente novamente.");
+    return;
+  }
+
+  duplicarCampanha(
+    Number(campanha.id),
+    campanha.nome || "Campanha"
+  );
+}
 
 const PAINEIS_RECOLHIVEIS = [
   {
@@ -27891,6 +27975,10 @@ async function carregarCampanhas() {
 
   div.innerHTML = "";
 
+  Object.keys(campanhasRenderCache).forEach(chave => {
+    delete campanhasRenderCache[chave];
+  });
+
   if (!campanhasFiltradas.length) {
 
     div.innerHTML = `
@@ -27900,7 +27988,10 @@ async function carregarCampanhas() {
     return;
   }
 
-  campanhasFiltradas.forEach(c => {
+  campanhasFiltradas.forEach((c, indiceCampanha) => {
+
+    const campanhaCacheKey =
+      registrarCampanhaRenderizada(c, indiceCampanha);
 
     const usuarioReceptorCampanha =
       usuarioEhCorretorReceptor();
@@ -28367,11 +28458,7 @@ async function carregarCampanhas() {
           <button
             class="btn-acao"
             title="Detalhes"
-            onclick="
-              abrirCampanhaDrawer(
-                '${encodeURIComponent(JSON.stringify(c))}'
-              )
-            "
+            onclick="abrirCampanhaDrawerPorChave('${campanhaCacheKey}')"
           >
             ⚙️
           </button>
@@ -28391,18 +28478,14 @@ async function carregarCampanhas() {
                 <button
                   class="btn-acao"
                   title="Editar campanha"
-                  onclick="
-                    abrirEdicaoCampanha(
-                      '${encodeURIComponent(JSON.stringify(c))}'
-                    )
-                  "
+                  onclick="abrirEdicaoCampanhaPorChave('${campanhaCacheKey}')"
                 >
                   ✏️
                 </button>
                 <button
                   class="btn-acao"
                   title="Duplicar campanha"
-                  onclick="duplicarCampanha(${Number(c.id)}, '${(c.nome || '').replace(/'/g, "\\'")}')"
+                  onclick="duplicarCampanhaPorChave('${campanhaCacheKey}')"
                 >
                   📋
                 </button>
@@ -28415,11 +28498,7 @@ async function carregarCampanhas() {
                 <button
                   class="btn-acao"
                   title="Encaminhar para corretor"
-                  onclick="
-                    abrirModalEncaminharCampanha(
-                      '${encodeURIComponent(JSON.stringify(c))}'
-                    )
-                  "
+                  onclick="abrirModalEncaminharCampanhaPorChave('${campanhaCacheKey}')"
                 >
                   ↗
                 </button>

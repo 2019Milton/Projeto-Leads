@@ -24080,6 +24080,28 @@ let contasInstagramAnuncioDisponiveis = [];
 let instagramActorIdSelecionado = null;
 let sincronizacaoMetaAtiva = false;
 
+function atualizarChipsPublicos() {
+  const chips =
+    document.getElementById("adv_publicos_selecionados_chips");
+
+  if (!chips) return;
+
+  chips.innerHTML =
+    publicosPersonalizadosSelecionados.map(p => `
+      <span class="geo-chip">
+        ${escaparHtml(p.nome || p.id || "Publico")}
+        <button type="button" onclick="removerPublicoSelecionado('${String(p.id).replace(/'/g, "\\'")}')" aria-label="Remover">x</button>
+      </span>
+    `).join("");
+}
+
+function removerPublicoSelecionado(id) {
+  publicosPersonalizadosSelecionados =
+    publicosPersonalizadosSelecionados.filter(p => String(p.id) !== String(id));
+
+  atualizarChipsPublicos();
+}
+
 function atualizarEstadoSincronizacaoMeta(ativo) {
 
   sincronizacaoMetaAtiva = ativo;
@@ -28571,7 +28593,6 @@ async function carregarCampanhas() {
   setTimeout(() => {
 
     if (typeof ApexCharts === "undefined") {
-      console.warn("ApexCharts indisponivel; graficos das campanhas ignorados.");
       return;
     }
   

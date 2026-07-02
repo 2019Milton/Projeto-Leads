@@ -24497,20 +24497,8 @@ function mostrarGuiaSecreto(passo) {
 
 function atualizarGuiaSecreto() {
 
-  if (
-    sessionStorage.getItem("guia_secreto_pausado") === "1"
-  ) {
-    limparGuiaSecreto();
-    return;
-  }
-
-  clearTimeout(guiaSecretoReavaliarTimer);
-
-  guiaSecretoReavaliarTimer = setTimeout(() => {
-    mostrarGuiaSecreto(
-      obterProximoPassoGuiaSecreto()
-    );
-  }, 250);
+  limparGuiaSecreto();
+  return;
 }
 
 function ativarEventosGuiaSecreto() {

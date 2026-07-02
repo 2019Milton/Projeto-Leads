@@ -15075,7 +15075,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         </div>
   
         <!-- ═══ SEÇÃO 1: CONFIGURAÇÃO DA CAMPANHA ═══ -->
-        <details class="advanced-campaign" open>
+        <details class="advanced-campaign" id="bloco_configuracao_campanha" open>
           <summary>📋 Configuração da campanha</summary>
 
           <div class="advanced-grid">
@@ -15161,7 +15161,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         </details>
 
         <!-- ═══ SEÇÃO 2: CONTEÚDO DO ANÚNCIO ═══ -->
-        <details class="advanced-campaign" open>
+        <details class="advanced-campaign" id="bloco_imagens_texto" open>
           <summary>🖼️ Imagens e texto</summary>
 
           <div class="advanced-grid">
@@ -15202,7 +15202,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         </details>
 
         <!-- ═══ SEÇÃO 3: PÚBLICO E ORÇAMENTO ═══ -->
-        <details class="advanced-campaign" open>
+        <details class="advanced-campaign" id="bloco_publico_orcamento" open>
           <summary>👥 Público e orçamento</summary>
 
           <div id="bloco_orcamento" style="margin-top:12px;">
@@ -15520,7 +15520,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
         </details>
 
-        <details class="advanced-campaign">
+        <details class="advanced-campaign" id="bloco_titulo_formulario">
 
           <summary>
             📝 Título, perguntas e formulário
@@ -25167,11 +25167,12 @@ function atualizarAvisoCategoriaEspecial() {
 // ─── EDIÇÃO DE CAMPANHA EXISTENTE ───────────────────────────────────────────
 
 const BLOCOS_SEGMENTACAO_EDITAVEL = [
-  "bloco_onde_anunciar",
-  "bloco_orcamento",
-  "bloco_publico",
+  "bloco_configuracao_campanha",
+  "bloco_imagens_texto",
+  "bloco_publico_orcamento",
   "bloco_agendamento_custo",
-  "bloco_segmentacao_adicional"
+  "bloco_segmentacao_adicional",
+  "bloco_titulo_formulario"
 ];
 
 let campanhaEmEdicao = null;
@@ -25222,6 +25223,76 @@ function definirValorCampo(id, valor) {
 function definirCheckbox(id, valor) {
   const el = document.getElementById(id);
   if (el) el.checked = Boolean(valor);
+}
+
+function coletarCamposBasicosCampanha() {
+  return {
+    nome: valorCampo("campanha_nome"),
+    page_id: valorCampo("pagina_select"),
+    texto: valorCampo("texto"),
+    cta: valorCampo("cta")
+  };
+}
+
+function assinaturaImagensCampanha() {
+  return Array.from(
+    document.querySelectorAll(".imagem-input")
+  )
+    .map(input => {
+      const file = input.files?.[0];
+      return file
+        ? `${file.name}:${file.size}:${file.lastModified}`
+        : "";
+    })
+    .join("|");
+}
+
+function primeiroValorCampanha(campanha, caminhos = []) {
+  for (const caminho of caminhos) {
+    const partes = caminho.split(".");
+    let atual = campanha;
+    for (const parte of partes) {
+      atual = atual?.[parte];
+    }
+    if (atual !== null && atual !== undefined && atual !== "") {
+      return atual;
+    }
+  }
+  return "";
+}
+
+function preencherCamposBasicosCampanha(campanha = {}) {
+  definirValorCampo(
+    "campanha_nome",
+    primeiroValorCampanha(campanha, ["nome", "campanha_nome", "name"])
+  );
+  definirValorCampo(
+    "pagina_select",
+    primeiroValorCampanha(campanha, [
+      "page_id",
+      "pagina_id",
+      "configuracoes_avancadas.page_id"
+    ])
+  );
+  definirValorCampo(
+    "texto",
+    primeiroValorCampanha(campanha, [
+      "texto",
+      "texto_anuncio",
+      "primary_text",
+      "message",
+      "configuracoes_avancadas.texto"
+    ])
+  );
+  definirValorCampo(
+    "cta",
+    primeiroValorCampanha(campanha, [
+      "cta",
+      "call_to_action",
+      "configuracoes_avancadas.cta"
+    ]) || "LEARN_MORE"
+  );
+  atualizarTosHint();
 }
 
 function marcarCheckboxesPorValor(seletor, valores) {
@@ -25392,8 +25463,10 @@ function abrirEdicaoCampanha(campanhaEncoded) {
   campanhaEmEdicao = campanha;
 
   _snapshotCriarCampanha = {
+    basicos: coletarCamposBasicosCampanha(),
     avancadas: coletarConfiguracoesAvancadas(),
-    orcamento: valorCampo("orcamento")
+    orcamento: valorCampo("orcamento"),
+    imagensAssinatura: assinaturaImagensCampanha()
   };
 
   BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
@@ -25417,6 +25490,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     campanha.configuracoes_avancadas || {},
     campanha.daily_budget
   );
+  preencherCamposBasicosCampanha(campanha);
 
   const feedback = document.getElementById("editar_campanha_feedback");
 
@@ -25444,6 +25518,11 @@ function fecharEdicaoCampanha() {
   }
 
   if (_snapshotCriarCampanha) {
+    definirValorCampo("campanha_nome", _snapshotCriarCampanha.basicos?.nome || "");
+    definirValorCampo("pagina_select", _snapshotCriarCampanha.basicos?.page_id || "");
+    definirValorCampo("texto", _snapshotCriarCampanha.basicos?.texto || "");
+    definirValorCampo("cta", _snapshotCriarCampanha.basicos?.cta || "LEARN_MORE");
+    atualizarTosHint();
     preencherConfiguracoesAvancadas(_snapshotCriarCampanha.avancadas, null);
     definirValorCampo("orcamento", _snapshotCriarCampanha.orcamento);
   }
@@ -25472,7 +25551,23 @@ async function salvarEdicaoCampanha() {
   const [usuario_id] = decoded.split(":");
 
   const orcamento = valorCampo("orcamento");
+  const camposBasicos = coletarCamposBasicosCampanha();
   const configuracoes_avancadas = coletarConfiguracoesAvancadas();
+  configuracoes_avancadas.page_id = camposBasicos.page_id;
+  configuracoes_avancadas.texto = camposBasicos.texto;
+  configuracoes_avancadas.cta = camposBasicos.cta;
+
+  const imagensForamAlteradas =
+    assinaturaImagensCampanha() !==
+    (_snapshotCriarCampanha?.imagensAssinatura || "");
+
+  const imagensArquivos = imagensForamAlteradas
+    ? Array.from(
+        document.querySelectorAll(".imagem-input")
+      )
+        .map(input => input.files?.[0])
+        .filter(Boolean)
+    : [];
 
   const feedback = document.getElementById("editar_campanha_feedback");
   const btn = document.getElementById("editar_campanha_btn_salvar");
@@ -25498,6 +25593,51 @@ async function salvarEdicaoCampanha() {
 
   try {
 
+    const imageHashes = [];
+
+    for (const file of imagensArquivos) {
+      const formData = new FormData();
+      formData.append("imagem", file);
+      formData.append("usuario_id", usuario_id);
+
+      const uploadRes = await fetch(
+        `${API}/meta/upload-imagem`,
+        {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token },
+          body: formData
+        }
+      );
+
+      const upload = await uploadRes.json();
+
+      if (!uploadRes.ok || upload.error) {
+        throw new Error(
+          upload.error?.message ||
+          upload.error ||
+          "Erro ao enviar imagem"
+        );
+      }
+
+      imageHashes.push(upload.hash);
+    }
+
+    const payloadEdicao = {
+      usuario_id,
+      campaign_id: campanhaEmEdicao.campaign_id,
+      nome: camposBasicos.nome,
+      page_id: camposBasicos.page_id,
+      texto: camposBasicos.texto,
+      cta: camposBasicos.cta,
+      daily_budget: orcamento ? Number(orcamento) * 100 : null,
+      configuracoes_avancadas
+    };
+
+    if (imageHashes.length) {
+      payloadEdicao.imageHash = imageHashes[0];
+      payloadEdicao.imageHashes = imageHashes;
+    }
+
     const res = await fetch(
       `${API}/meta/editar-campanha`,
       {
@@ -25506,12 +25646,7 @@ async function salvarEdicaoCampanha() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          usuario_id,
-          campaign_id: campanhaEmEdicao.campaign_id,
-          daily_budget: orcamento ? Number(orcamento) * 100 : null,
-          configuracoes_avancadas
-        })
+        body: JSON.stringify(payloadEdicao)
       }
     );
 

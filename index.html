@@ -20470,6 +20470,7 @@ function criarLeadCard(lead) {
       draggable="true"
 
       data-lead-id="${escaparHtml(lead.id)}"
+      data-lead-action="detalhes"
 
       data-lead-status="${escaparHtml(lead.status || "novo")}"
 
@@ -20512,6 +20513,8 @@ function criarLeadCard(lead) {
 
           <span
             class="lead-score ${classeScore}"
+            data-lead-action="score"
+            data-lead-id="${Number(lead.id)}"
           
             onclick='
               event.stopPropagation();
@@ -20584,13 +20587,13 @@ function criarLeadCard(lead) {
 
       <!-- DATA DE CONTATO -->
       ${lead.data_contato ? `
-        <div class="lead-data-contato agendado" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '${lead.data_contato}', ${JSON.stringify(lead.observacao_agendamento || '')})">
+        <div class="lead-data-contato agendado" data-lead-action="agendar" data-lead-id="${Number(lead.id)}" data-lead-data="${escaparHtml(lead.data_contato)}" data-lead-obs="${escaparHtml(lead.observacao_agendamento || "")}" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '${lead.data_contato}', ${JSON.stringify(lead.observacao_agendamento || '')})">
           📅 Contato em: <strong>${formatarDataContato(lead.data_contato)}</strong>
           ${lead.observacao_agendamento ? `<span style="display:block;font-size:11px;opacity:0.7;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lead.observacao_agendamento}</span>` : ''}
-          <span class="lead-data-contato-remover" onclick="event.stopPropagation(); removerDataContato(${Number(lead.id)})" title="Remover data">✕</span>
+          <span class="lead-data-contato-remover" data-lead-action="remover-agendamento" data-lead-id="${Number(lead.id)}" onclick="event.stopPropagation(); removerDataContato(${Number(lead.id)})" title="Remover data">✕</span>
         </div>
       ` : `
-        <div class="lead-data-contato vazio" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '', '')">
+        <div class="lead-data-contato vazio" data-lead-action="agendar" data-lead-id="${Number(lead.id)}" data-lead-data="" data-lead-obs="" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '', '')">
           📅 Agendar contato
         </div>
       `}
@@ -20600,6 +20603,9 @@ function criarLeadCard(lead) {
 
         <button
           title="WhatsApp"
+          type="button"
+          data-lead-action="whatsapp"
+          data-lead-id="${Number(lead.id)}"
           data-telefone="${telefoneSeguro}"
           onclick="
             event.stopPropagation();
@@ -20611,6 +20617,9 @@ function criarLeadCard(lead) {
 
         <button
           title="Ligar"
+          type="button"
+          data-lead-action="ligar"
+          data-lead-id="${Number(lead.id)}"
           onclick="
             abrirMenuLigacao(
               event,
@@ -20623,6 +20632,9 @@ function criarLeadCard(lead) {
 
         <button
           title="Mover"
+          type="button"
+          data-lead-action="mover"
+          data-lead-id="${Number(lead.id)}"
           onclick="
             abrirMenuMover(event, decodificarJsonInline('${leadJsonSeguro}'))
           "
@@ -20632,6 +20644,9 @@ function criarLeadCard(lead) {
 
         <button
           title="Detalhes"
+          type="button"
+          data-lead-action="detalhes"
+          data-lead-id="${Number(lead.id)}"
           onclick="event.stopPropagation(); abrirLeadDrawerPorId(${Number(lead.id)})"
         >
           👁️
@@ -22757,6 +22772,115 @@ async function moverLeadRapido(status) {
     leadMoverAtual = null;
   }
 }
+
+function obterCampanhaPorBotaoAcao(botao) {
+  const campanha =
+    obterCampanhaRenderizada(botao?.dataset?.campanhaKey);
+
+  if (!campanha) {
+    alert("Nao foi possivel carregar esta campanha. Clique em Sincronizar e tente novamente.");
+  }
+
+  return campanha;
+}
+
+function configurarCliquesDinamicos() {
+  if (window.__cliquesDinamicosConfigurados) {
+    return;
+  }
+
+  window.__cliquesDinamicosConfigurados = true;
+
+  document.addEventListener("click", async (event) => {
+    const acaoCampanha =
+      event.target.closest("[data-campanha-action]");
+
+    if (acaoCampanha) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      const action =
+        acaoCampanha.dataset.campanhaAction;
+
+      if (action === "sync") {
+        sincronizarCampanhas();
+        return;
+      }
+
+      const campanha =
+        obterCampanhaPorBotaoAcao(acaoCampanha);
+
+      if (!campanha) return;
+
+      if (action === "toggle") {
+        toggleCampanha(campanha.campaign_id, campanha.status);
+      } else if (action === "detalhes") {
+        abrirCampanhaDrawerPorChave(acaoCampanha.dataset.campanhaKey);
+      } else if (action === "editar") {
+        abrirEdicaoCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+      } else if (action === "duplicar") {
+        duplicarCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+      } else if (action === "encaminhar") {
+        abrirModalEncaminharCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+      } else if (action === "restaurar") {
+        restaurarCampanha(campanha.campaign_id);
+      } else if (action === "excluir-definitivo") {
+        excluirCampanhaDefinitiva(Number(campanha.id));
+      } else if (action === "excluir") {
+        excluirCampanha(campanha.campaign_id);
+      }
+
+      return;
+    }
+
+    const acaoLead =
+      event.target.closest("[data-lead-action]");
+
+    if (!acaoLead) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    if (leadFoiArrastado) {
+      leadFoiArrastado = false;
+      return;
+    }
+
+    const leadId =
+      acaoLead.dataset.leadId ||
+      acaoLead.closest(".lead-card")?.dataset.leadId;
+
+    const lead =
+      obterLeadPorId(leadId);
+
+    const action =
+      acaoLead.dataset.leadAction;
+
+    if (action === "whatsapp") {
+      abrirWhatsAppDeBotao(acaoLead);
+    } else if (action === "ligar" && lead) {
+      abrirMenuLigacao(event, lead);
+    } else if (action === "mover" && lead) {
+      abrirMenuMover(event, lead);
+    } else if (action === "score" && lead) {
+      abrirMenuScore(event, lead);
+    } else if (action === "agendar") {
+      abrirAgendadorContato(
+        Number(leadId),
+        acaoLead.dataset.leadData || "",
+        acaoLead.dataset.leadObs || ""
+      );
+    } else if (action === "remover-agendamento") {
+      removerDataContato(Number(leadId));
+    } else if (leadId) {
+      abrirLeadDrawerPorId(Number(leadId));
+    }
+  }, true);
+}
+
+configurarCliquesDinamicos();
 
 // 🔥 HISTÓRICO
 async function carregarHistoricoLead(id) {
@@ -28461,6 +28585,9 @@ async function carregarCampanhas() {
               ? `
                 <button
                   class="btn-acao btn-publicar-receptor"
+                  type="button"
+                  data-campanha-action="toggle"
+                  data-campanha-key="${campanhaCacheKey}"
                   title="${campanhaEstaAtiva(c) ? "Pausar campanha" : "Publicar campanha"}"
                   onclick="
                     toggleCampanha(
@@ -28477,6 +28604,9 @@ async function carregarCampanhas() {
 
           <button
             class="btn-acao"
+            type="button"
+            data-campanha-action="detalhes"
+            data-campanha-key="${campanhaCacheKey}"
             title="Detalhes"
             onclick="abrirCampanhaDrawerPorChave('${campanhaCacheKey}')"
           >
@@ -28485,6 +28615,8 @@ async function carregarCampanhas() {
     
           <button
             class="btn-acao"
+            type="button"
+            data-campanha-action="sync"
             title="Sincronizar"
             onclick="sincronizarCampanhas()"
           >
@@ -28497,6 +28629,9 @@ async function carregarCampanhas() {
               : `
                 <button
                   class="btn-acao"
+                  type="button"
+                  data-campanha-action="editar"
+                  data-campanha-key="${campanhaCacheKey}"
                   title="Editar campanha"
                   onclick="abrirEdicaoCampanhaPorChave('${campanhaCacheKey}')"
                 >
@@ -28504,6 +28639,9 @@ async function carregarCampanhas() {
                 </button>
                 <button
                   class="btn-acao"
+                  type="button"
+                  data-campanha-action="duplicar"
+                  data-campanha-key="${campanhaCacheKey}"
                   title="Duplicar campanha"
                   onclick="duplicarCampanhaPorChave('${campanhaCacheKey}')"
                 >
@@ -28517,6 +28655,9 @@ async function carregarCampanhas() {
               ? `
                 <button
                   class="btn-acao"
+                  type="button"
+                  data-campanha-action="encaminhar"
+                  data-campanha-key="${campanhaCacheKey}"
                   title="Encaminhar para corretor"
                   onclick="abrirModalEncaminharCampanhaPorChave('${campanhaCacheKey}')"
                 >
@@ -28533,6 +28674,9 @@ async function carregarCampanhas() {
               ? `
                 <button
                   class="btn-acao"
+                  type="button"
+                  data-campanha-action="restaurar"
+                  data-campanha-key="${campanhaCacheKey}"
                   title="Restaurar"
                   onclick="
                     restaurarCampanha(
@@ -28544,6 +28688,9 @@ async function carregarCampanhas() {
                 </button>
                 <button
                   class="btn-danger btn-definitivo"
+                  type="button"
+                  data-campanha-action="excluir-definitivo"
+                  data-campanha-key="${campanhaCacheKey}"
                   title="Excluir definitivamente"
                   onclick="
                     excluirCampanhaDefinitiva(
@@ -28557,6 +28704,9 @@ async function carregarCampanhas() {
               : `
                 <button
                   class="btn-danger"
+                  type="button"
+                  data-campanha-action="excluir"
+                  data-campanha-key="${campanhaCacheKey}"
                   title="Excluir"
                   onclick="
                     excluirCampanha(

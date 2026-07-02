@@ -18425,7 +18425,7 @@ async function login() {
 const SIDEBAR_SECOES = {
   dashboard:      { ids: ["card-dashboard"],                                  icone: "📊", label: "Dashboard" },
   integracoes:    { ids: ["card-hub-conexoes"],                               icone: "🔌", label: "Integrações" },
-  campanhas:      { ids: ["nicho_campanha_container", "card-criar-campanha", "card-campanhas"], icone: "📢", label: "Campanhas" },
+  campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],            icone: "📢", label: "Campanhas" },
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Leads" },
   suporte:        { ids: ["suporte-page-wrap"],                                icone: "💬", label: "Suporte" },
   informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Planos e Recursos" },
@@ -18464,6 +18464,24 @@ function usuarioPodeEncaminharCampanhas() {
   );
 }
 
+function definirVisibilidadeSecao(id, visivel) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = visivel ? "" : "none";
+    el.classList.toggle("secao-visivel", visivel);
+  }
+
+  if (id === "card-criar-campanha") {
+    const container =
+      document.getElementById("nicho_campanha_container");
+
+    if (container) {
+      container.style.display = visivel ? "" : "none";
+      container.classList.toggle("secao-visivel", visivel);
+    }
+  }
+}
+
 function aplicarPermissoesCampanhasUsuario() {
   const esconderCriacao =
     usuarioEhCorretorReceptor();
@@ -18478,7 +18496,7 @@ function aplicarPermissoesCampanhasUsuario() {
       el.style.display = "none";
       el.classList.remove("secao-visivel");
     } else if (secaoAtiva === "campanhas") {
-      el.style.display = "";
+      definirVisibilidadeSecao(id, true);
     }
   });
 }
@@ -18650,15 +18668,13 @@ function navegarPara(secao) {
   // Ocultar todos os cards gerenciados
   Object.values(SIDEBAR_SECOES).forEach(s => {
     s.ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.style.display = "none"; el.classList.remove("secao-visivel"); }
+      definirVisibilidadeSecao(id, false);
     });
   });
 
   // Mostrar cards da seção ativa
   SIDEBAR_SECOES[secao].ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.style.display = ""; el.classList.add("secao-visivel"); }
+    definirVisibilidadeSecao(id, true);
   });
 
   aplicarPermissoesCampanhasUsuario();

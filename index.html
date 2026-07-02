@@ -3029,6 +3029,12 @@ body.usuario-corretor-receptor #card-criar-campanha {
   display: none !important;
 }
 
+body.usuario-corretor-receptor .btn-duplicar-campanha,
+body.usuario-corretor-receptor .btn-encaminhar-campanha {
+
+  display: none !important;
+}
+
 .simple-advanced-note {
 
   grid-column: 1 / -1;
@@ -22803,6 +22809,13 @@ function configurarCliquesDinamicos() {
       const action =
         acaoCampanha.dataset.campanhaAction;
 
+      if (
+        usuarioEhCorretorReceptor() &&
+        ["duplicar", "encaminhar"].includes(action)
+      ) {
+        return;
+      }
+
       if (action === "sync") {
         sincronizarCampanhas();
         return;
@@ -28144,6 +28157,7 @@ async function carregarCampanhas() {
       (
         usuarioPodeEncaminharCampanhas()
       ) &&
+      !usuarioReceptorCampanha &&
       !c.recebida_por_encaminhamento;
 
     const nomeCorretorEncaminhado =
@@ -28638,7 +28652,7 @@ async function carregarCampanhas() {
                   ✏️
                 </button>
                 <button
-                  class="btn-acao"
+                  class="btn-acao btn-duplicar-campanha"
                   type="button"
                   data-campanha-action="duplicar"
                   data-campanha-key="${campanhaCacheKey}"
@@ -28654,7 +28668,7 @@ async function carregarCampanhas() {
             podeEncaminhar
               ? `
                 <button
-                  class="btn-acao"
+                  class="btn-acao btn-encaminhar-campanha"
                   type="button"
                   data-campanha-action="encaminhar"
                   data-campanha-key="${campanhaCacheKey}"

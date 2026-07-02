@@ -22699,6 +22699,10 @@ function abrirMenuMover(event, lead) {
   const menu =
     document.getElementById("menuMover");
 
+  if (!menu) {
+    return;
+  }
+
   menu.style.display = "flex";
 
   menu.style.left =
@@ -22713,9 +22717,12 @@ document.addEventListener(
   "click",
   () => {
 
-    document.getElementById(
-      "menuMover"
-    ).style.display = "none";
+    const menu =
+      document.getElementById("menuMover");
+
+    if (menu) {
+      menu.style.display = "none";
+    }
   }
 );
 
@@ -22739,9 +22746,12 @@ async function moverLeadRapido(status) {
       status
     );
 
-  document.getElementById(
-    "menuMover"
-  ).style.display = "none";
+  const menu =
+    document.getElementById("menuMover");
+
+  if (menu) {
+    menu.style.display = "none";
+  }
 
   if (movido) {
     leadMoverAtual = null;
@@ -28559,6 +28569,11 @@ async function carregarCampanhas() {
 
   // 🔥 renderiza gráficos
   setTimeout(() => {
+
+    if (typeof ApexCharts === "undefined") {
+      console.warn("ApexCharts indisponivel; graficos das campanhas ignorados.");
+      return;
+    }
   
     campanhasFiltradas.forEach(c => {
   

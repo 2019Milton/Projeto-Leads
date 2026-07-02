@@ -3017,9 +3017,16 @@ body.tema-claro .ia-flag-campo.pendente {
 }
 
 body.usuario-admin-corretor .admin-only-targeting,
-body.usuario-super-admin .admin-only-targeting {
+body.usuario-super-admin .admin-only-targeting,
+body.usuario-criador-campanha .admin-only-targeting {
 
   display: block;
+}
+
+body.usuario-corretor-receptor #nicho_campanha_container,
+body.usuario-corretor-receptor #card-criar-campanha {
+
+  display: none !important;
 }
 
 .simple-advanced-note {
@@ -8457,6 +8464,17 @@ body.tema-claro .info-tooltip-popup {
   min-width: 38px !important;
   padding: 0 10px;
   font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.campanha-acoes button.btn-publicar-receptor {
+  width: auto !important;
+  min-width: 92px !important;
+  padding: 0 14px;
+  border: 1px solid rgba(34,197,94,0.45);
+  background: linear-gradient(135deg,#22c55e,#2563eb);
+  font-size: 12px;
   font-weight: 800;
   white-space: nowrap;
 }
@@ -17222,6 +17240,10 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 Corretor
               </option>
 
+              <option value="corretor_receptor">
+                Corretor Receptor
+              </option>
+
               <option value="suporte">
                 Suporte
               </option>
@@ -18414,6 +18436,53 @@ const SIDEBAR_SECOES = {
 
 let secaoAtiva = "dashboard";
 
+function labelTipoUsuario(tipo) {
+  const labels = {
+    super_admin: "Super Admin",
+    master: "Master",
+    admin_corretor: "Admin Corretor",
+    corretor: "Corretor",
+    corretor_receptor: "Corretor Receptor",
+    suporte: "Suporte",
+    criador_campanha: "Criador de Campanha"
+  };
+
+  return labels[tipo] || "Corretor";
+}
+
+function tipoUsuarioEhCorretor(tipo) {
+  return ["corretor", "corretor_receptor"].includes(tipo);
+}
+
+function usuarioEhCorretorReceptor() {
+  return usuarioLogado?.tipo === "corretor_receptor";
+}
+
+function usuarioPodeEncaminharCampanhas() {
+  return ["admin_corretor", "super_admin", "criador_campanha"].includes(
+    usuarioLogado?.tipo
+  );
+}
+
+function aplicarPermissoesCampanhasUsuario() {
+  const esconderCriacao =
+    usuarioEhCorretorReceptor();
+
+  [
+    "nicho_campanha_container",
+    "card-criar-campanha"
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (esconderCriacao) {
+      el.style.display = "none";
+      el.classList.remove("secao-visivel");
+    } else if (secaoAtiva === "campanhas") {
+      el.style.display = "";
+    }
+  });
+}
+
 function montarSidebar() {
   const app = document.getElementById("app");
   app.classList.add("sidebar-ativa");
@@ -18592,6 +18661,8 @@ function navegarPara(secao) {
     if (el) { el.style.display = ""; el.classList.add("secao-visivel"); }
   });
 
+  aplicarPermissoesCampanhasUsuario();
+
   // Destacar item ativo no menu
   document.querySelectorAll(".sidebar-item[data-secao]").forEach(btn => {
     btn.classList.toggle("ativa", btn.dataset.secao === secao);
@@ -18699,7 +18770,15 @@ async function init() {
     );
     document.body.classList.toggle(
       "usuario-corretor",
-      tipo === "corretor"
+      tipoUsuarioEhCorretor(tipo)
+    );
+    document.body.classList.toggle(
+      "usuario-corretor-receptor",
+      tipo === "corretor_receptor"
+    );
+    document.body.classList.toggle(
+      "usuario-criador-campanha",
+      tipo === "criador_campanha"
     );
     
     console.log("USUARIO:", {
@@ -18708,6 +18787,8 @@ async function init() {
       tipo,
       nome
     });
+
+    aplicarPermissoesCampanhasUsuario();
 
     // Atualizar nome no sidebar
     const elNomeSidebar = document.getElementById("sidebar-nome-usuario");
@@ -18727,17 +18808,7 @@ async function init() {
             margin-top:2px;
           "
         >
-          ${
-            tipo === "super_admin"
-              ? "Super Admin"
-              : tipo === "admin_corretor"
-              ? "Admin Corretor"
-              : tipo === "suporte"
-              ? "Suporte"
-              : tipo === "criador_campanha"
-              ? "Criador de Campanha"
-              : "Corretor"
-          }
+          ${labelTipoUsuario(tipo)}
         </div>
       `;
     }
@@ -18782,7 +18853,8 @@ async function init() {
 
     if (
       tipo === "admin_corretor" ||
-      tipo === "super_admin"
+      tipo === "super_admin" ||
+      tipo === "criador_campanha"
     ) {
       await carregarCorretoresCampanha();
     }
@@ -27814,10 +27886,12 @@ async function carregarCampanhas() {
 
   campanhasFiltradas.forEach(c => {
 
+    const usuarioReceptorCampanha =
+      usuarioEhCorretorReceptor();
+
     const podeEncaminhar =
       (
-        usuarioLogado?.tipo === "admin_corretor" ||
-        usuarioLogado?.tipo === "super_admin"
+        usuarioPodeEncaminharCampanhas()
       ) &&
       !c.recebida_por_encaminhamento;
 
@@ -28255,6 +28329,25 @@ async function carregarCampanhas() {
     
         <div class="campanha-acoes">
 
+          ${
+            usuarioReceptorCampanha && !campanhaEstaExcluida(c)
+              ? `
+                <button
+                  class="btn-acao btn-publicar-receptor"
+                  title="${campanhaEstaAtiva(c) ? "Pausar campanha" : "Publicar campanha"}"
+                  onclick="
+                    toggleCampanha(
+                      '${c.campaign_id}',
+                      '${c.status}'
+                    )
+                  "
+                >
+                  ${campanhaEstaAtiva(c) ? "Pausar" : "Publicar"}
+                </button>
+              `
+              : ""
+          }
+
           <button
             class="btn-acao"
             title="Detalhes"
@@ -28276,7 +28369,7 @@ async function carregarCampanhas() {
           </button>
 
           ${
-            campanhaEstaExcluida(c)
+            campanhaEstaExcluida(c) || usuarioReceptorCampanha
               ? ""
               : `
                 <button
@@ -28319,7 +28412,7 @@ async function carregarCampanhas() {
           }
     
           ${
-            c.recebida_por_encaminhamento
+            c.recebida_por_encaminhamento || usuarioReceptorCampanha
               ? ""
               : campanhaEstaExcluida(c)
               ? `
@@ -30018,7 +30111,7 @@ async function carregarPainelAdmin() {
               "
             >
 
-              <span>${u.tipo}</span>
+              <span>${labelTipoUsuario(u.tipo)}</span>
               ${u.tipo === "admin_corretor" ? `
                 <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
                   ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${x.email}</div>`).join("") || "<div>Nenhum corretor</div>"}
@@ -30102,7 +30195,7 @@ async function carregarPainelAdmin() {
           <td>
 
             ${
-              u.tipo === "corretor"
+              tipoUsuarioEhCorretor(u.tipo)
           
               ?
           

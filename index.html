@@ -22778,6 +22778,40 @@ function configurarCliquesDinamicos() {
   window.__cliquesDinamicosConfigurados = true;
 
   document.addEventListener("click", async (event) => {
+    const btnAdicionarImagem =
+      event.target.closest("#btn-adicionar-imagem");
+
+    if (btnAdicionarImagem) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      if (typeof inicializarCarrosselImagens === "function") {
+        inicializarCarrosselImagens();
+      }
+
+      document
+        .getElementById("input-multiplas-imagens")
+        ?.click();
+
+      return;
+    }
+
+    const btnGerarBanner =
+      event.target.closest(".btn-gerar-banner-ia");
+
+    if (btnGerarBanner) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      if (typeof abrirModalGerarBanner === "function") {
+        abrirModalGerarBanner();
+      }
+
+      return;
+    }
+
     const acaoCampanha =
       event.target.closest("[data-campanha-action]");
 

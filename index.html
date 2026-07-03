@@ -8569,6 +8569,14 @@ body.tema-claro .info-tooltip-popup {
   color: #e2e8f0;
 }
 
+.campanha-encaminhar-modal select option[data-status="enviado"] {
+  color: #bbf7d0;
+}
+
+.campanha-encaminhar-modal select option[data-status="cancelado"] {
+  color: #fde68a;
+}
+
 .campanha-editar-modal .pagamento-modal-content {
 
   width: min(640px, 100%);
@@ -29599,6 +29607,22 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
       .filter(Boolean)
       .join(", ");
 
+  const historicoEnvio =
+    new Map(
+      (campanhaEncaminharAtual.corretores_envio_historico || [])
+        .map(cor => [Number(cor.id), cor])
+    );
+
+  const nomesCancelados =
+    (campanhaEncaminharAtual.corretores_envio_historico || [])
+      .filter(cor =>
+        String(cor.status || "").toLowerCase() === "cancelado" &&
+        !idsEncaminhados.has(Number(cor.id))
+      )
+      .map(cor => cor.nome || cor.email)
+      .filter(Boolean)
+      .join(", ");
+
   select.innerHTML = corretoresCampanha.map(corretor => {
     const nomeCompleto =
       [
@@ -29606,16 +29630,40 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
         corretor.sobrenome
       ].filter(Boolean).join(" ");
 
+    const corretorId =
+      Number(corretor.id);
+
+    const enviado =
+      idsEncaminhados.has(corretorId);
+
+    const historico =
+      historicoEnvio.get(corretorId);
+
+    const cancelado =
+      !enviado &&
+      String(historico?.status || "").toLowerCase() === "cancelado";
+
+    const status =
+      enviado
+        ? "enviado"
+        : cancelado
+          ? "cancelado"
+          : "";
+
+    const sufixo =
+      enviado
+        ? " - enviada"
+        : cancelado
+          ? " - cancelada"
+          : "";
+
     return `
       <option
         value="${corretor.id}"
-        ${
-          idsEncaminhados.has(Number(corretor.id))
-            ? "selected"
-            : ""
-        }
+        data-status="${status}"
+        ${enviado ? "selected" : ""}
       >
-        ${nomeCompleto || corretor.email}
+        ${escaparHtml(nomeCompleto || corretor.email)}${sufixo}
       </option>
     `;
   }).join("");
@@ -29631,12 +29679,21 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
         : "none";
   }
 
-  definirStatusEncaminhamentoModal(
-    nomesEncaminhados ? "enviado" : "",
-    nomesEncaminhados
-      ? `Enviado para: ${nomesEncaminhados}`
-      : "Ainda nao enviado para nenhum corretor."
-  );
+  if (nomesEncaminhados) {
+    definirStatusEncaminhamentoModal(
+      "enviado",
+      `Enviado para: ${nomesEncaminhados}${
+        nomesCancelados ? ` | Cancelado para: ${nomesCancelados}` : ""
+      }`
+    );
+  } else if (nomesCancelados) {
+    definirStatusEncaminhamentoModal(
+      "cancelado",
+      `Envio cancelado para: ${nomesCancelados}`
+    );
+  } else {
+    definirStatusEncaminhamentoModal("", "");
+  }
 
   modal.classList.add("active");
 }

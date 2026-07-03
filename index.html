@@ -8521,6 +8521,8 @@ body.tema-claro .info-tooltip-popup {
 
   display: flex;
 
+  flex-wrap: wrap;
+
   gap: 10px;
 
   margin-top: 14px;
@@ -8528,7 +8530,14 @@ body.tema-claro .info-tooltip-popup {
 
 .campanha-encaminhar-acoes button {
 
-  flex: 1;
+  flex: 1 1 120px;
+}
+
+.campanha-encaminhar-acoes button.btn-cancelar-envio {
+  flex-basis: 100%;
+  border: 1px solid rgba(245,158,11,0.45);
+  background: rgba(245,158,11,0.12);
+  color: #fbbf24;
 }
 
 .campanha-acoes button {
@@ -29485,7 +29494,7 @@ function fecharModalEncaminharCampanha() {
     ?.classList.remove("active");
 }
 
-async function salvarEncaminhamentoCampanha() {
+async function salvarEncaminhamentoCampanha(corretorIdsForcados = null) {
 
   if (!campanhaEncaminharAtual) {
     return;
@@ -29494,13 +29503,12 @@ async function salvarEncaminhamentoCampanha() {
   const token =
     localStorage.getItem("token");
 
-  const select = document.getElementById(
-    "campanha_corretor_select"
-  );
+  const select = document.getElementById("campanha_corretor_select");
 
-  const corretorIds = Array.from(
-    select?.selectedOptions || []
-  ).map(opt => Number(opt.value));
+  const corretorIds = Array.isArray(corretorIdsForcados)
+    ? corretorIdsForcados
+    : Array.from(select?.selectedOptions || [])
+        .map(opt => Number(opt.value));
 
   try {
 
@@ -29541,7 +29549,7 @@ async function salvarEncaminhamentoCampanha() {
         ? usuarioUsaEnvioCriadorCampanha()
           ? "Campanha enviada ao corretor selecionado."
           : "Campanha encaminhada aos corretores selecionados."
-        : "Encaminhamento removido."
+        : "Envio cancelado. A campanha nao aparecera mais para o corretor."
     );
 
     fecharModalEncaminharCampanha();
@@ -29556,6 +29564,22 @@ async function salvarEncaminhamentoCampanha() {
 
     alert("Erro ao encaminhar campanha");
   }
+}
+
+async function cancelarEnvioCampanha() {
+  if (!campanhaEncaminharAtual) {
+    return;
+  }
+
+  const confirmar = confirm(
+    "Cancelar o envio desta campanha? Ela deixara de aparecer para os corretores selecionados."
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  await salvarEncaminhamentoCampanha([]);
 }
 
 async function sincronizarCampanhas() {
@@ -34914,6 +34938,14 @@ async function enviarFeedback() {
         onclick="fecharModalEncaminharCampanha()"
       >
         Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="btn-cancelar-envio"
+        onclick="cancelarEnvioCampanha()"
+      >
+        Cancelar envio para o corretor
       </button>
 
     </div>

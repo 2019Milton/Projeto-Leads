@@ -11482,6 +11482,212 @@ body.tema-claro .targeting-chip {
 }
 .chat-janela-fechar:hover { color: #e2e8f0; }
 
+/* =========================================
+   🤖 ChatIALeads
+========================================= */
+.chat-ia-leads-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 5200;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  min-width: auto;
+  padding: 13px 18px;
+  border: 1px solid rgba(34,197,94,0.42);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #10b981, #2563eb);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 18px 44px rgba(16,185,129,0.28), 0 0 0 1px rgba(255,255,255,0.08) inset;
+  cursor: pointer;
+}
+
+.chat-ia-leads-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 56px rgba(37,99,235,0.32), 0 0 0 1px rgba(255,255,255,0.12) inset;
+}
+
+.chat-ia-leads-janela {
+  position: fixed;
+  right: 24px;
+  bottom: 84px;
+  width: min(430px, calc(100vw - 32px));
+  max-height: min(720px, calc(100vh - 110px));
+  border-radius: 16px;
+  background: rgba(8,13,32,0.98);
+  border: 1px solid rgba(34,197,94,0.28);
+  box-shadow: 0 28px 72px rgba(0,0,0,0.6);
+  z-index: 5201;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(16px);
+}
+
+.chat-ia-leads-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(37,99,235,0.18));
+  border-bottom: 1px solid rgba(34,197,94,0.18);
+}
+
+.chat-ia-leads-header h4 {
+  margin: 0;
+  color: #d1fae5;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.chat-ia-leads-header span {
+  display: block;
+  color: #93c5fd;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.chat-ia-leads-fechar {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  margin: 0;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(148,163,184,0.24);
+  background: rgba(15,23,42,0.55);
+  color: #cbd5e1;
+  box-shadow: none;
+}
+
+.chat-ia-leads-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.chat-ia-leads-acoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(148,163,184,0.12);
+}
+
+.chat-ia-leads-acao {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(96,165,250,0.22);
+  background: rgba(15,23,42,0.72);
+  color: #dbeafe;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+  box-shadow: none;
+}
+
+.chat-ia-leads-acao:hover {
+  border-color: rgba(34,197,94,0.42);
+  background: rgba(16,185,129,0.12);
+  transform: none;
+  box-shadow: none;
+}
+
+.chat-ia-leads-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-height: 260px;
+}
+
+.chat-ia-leads-msg {
+  max-width: 88%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-ia-leads-msg.bot {
+  align-self: flex-start;
+  border: 1px solid rgba(34,197,94,0.2);
+  background: rgba(16,185,129,0.1);
+  color: #d1fae5;
+}
+
+.chat-ia-leads-msg.user {
+  align-self: flex-end;
+  border: 1px solid rgba(96,165,250,0.25);
+  background: rgba(37,99,235,0.18);
+  color: #eff6ff;
+}
+
+.chat-ia-leads-input-area {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid rgba(148,163,184,0.12);
+}
+
+.chat-ia-leads-input {
+  min-height: 42px;
+  max-height: 110px;
+  resize: vertical;
+  border: 1px solid rgba(96,165,250,0.24);
+  border-radius: 10px;
+  background: rgba(15,23,42,0.72);
+  color: #e2e8f0;
+  padding: 10px 12px;
+  font-size: 13px;
+  outline: none;
+}
+
+.chat-ia-leads-input:focus {
+  border-color: rgba(34,197,94,0.5);
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
+}
+
+.chat-ia-leads-enviar {
+  width: auto;
+  min-width: 86px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .chat-ia-leads-fab {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .chat-ia-leads-janela {
+    right: 12px;
+    bottom: 76px;
+    width: calc(100vw - 24px);
+  }
+
+  .chat-ia-leads-acoes {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Janelas flutuantes de suporte (admin/suporte) */
 .chat-admin-janela {
   position: fixed;
@@ -16403,6 +16609,67 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           onkeydown="chatInputKeydown(event)"
         ></textarea>
         <button class="chat-enviar" onclick="enviarMensagemChat()">Enviar</button>
+      </div>
+    </div>
+
+    <!-- 🤖 CHAT IA LEADS -->
+    <button
+      id="chat_ia_leads_fab"
+      class="chat-ia-leads-fab"
+      type="button"
+      onclick="toggleChatIALeads()"
+      title="Abrir ChatIALeads"
+    >
+      🤖 ChatIALeads
+    </button>
+
+    <div
+      id="chat_ia_leads_janela"
+      class="chat-ia-leads-janela"
+      style="display:none;"
+    >
+      <div class="chat-ia-leads-header">
+        <div>
+          <h4>🤖 ChatIALeads</h4>
+          <span>IA para imagens, leads, campanhas e dúvidas da plataforma</span>
+        </div>
+        <button
+          type="button"
+          class="chat-ia-leads-fechar"
+          onclick="toggleChatIALeads(false)"
+          title="Fechar"
+        >✕</button>
+      </div>
+
+      <div class="chat-ia-leads-body">
+        <div class="chat-ia-leads-acoes">
+          <button type="button" class="chat-ia-leads-acao" onclick="acaoChatIALeads('gerar_imagem')">🎨 Gerar imagem nova</button>
+          <button type="button" class="chat-ia-leads-acao" onclick="acaoChatIALeads('editar_imagem')">✏️ Editar imagem</button>
+          <button type="button" class="chat-ia-leads-acao" onclick="acaoChatIALeads('resumo_corretor')">📊 Resumo do corretor</button>
+          <button type="button" class="chat-ia-leads-acao" onclick="acaoChatIALeads('recuperacao_leads')">♻️ Recuperação de leads</button>
+        </div>
+
+        <div id="chat_ia_leads_msgs" class="chat-ia-leads-msgs">
+          <div class="chat-ia-leads-msg bot">
+            Oi! Posso ajudar com imagens da campanha, resumo do corretor, recuperação de leads e dúvidas sobre onde fazer cada coisa na plataforma.
+          </div>
+        </div>
+
+        <div class="chat-ia-leads-input-area">
+          <textarea
+            id="chat_ia_leads_input"
+            class="chat-ia-leads-input"
+            placeholder="Pergunte sobre a plataforma, seu nicho, campanhas ou leads..."
+            onkeydown="chatIALeadsKeydown(event)"
+          ></textarea>
+          <button
+            type="button"
+            class="chat-ia-leads-enviar"
+            onclick="enviarChatIALeads()"
+          >
+            Enviar
+          </button>
+        </div>
       </div>
     </div>
 
@@ -22191,6 +22458,286 @@ async function gerarReativacaoLoteIA() {
   } catch (err) {
     box.innerHTML =
       escaparHtml(err.message || "Erro ao gerar reativacao.");
+  }
+}
+
+// ─── CHAT IA LEADS ──────────────────────────────────────────────────────────
+
+function toggleChatIALeads(forcar) {
+  const janela = document.getElementById("chat_ia_leads_janela");
+  if (!janela) return;
+
+  const abrir =
+    typeof forcar === "boolean"
+      ? forcar
+      : janela.style.display === "none";
+
+  janela.style.display = abrir ? "flex" : "none";
+
+  if (abrir) {
+    setTimeout(() => document.getElementById("chat_ia_leads_input")?.focus(), 80);
+  }
+}
+
+function rolarChatIALeadsFim() {
+  const lista = document.getElementById("chat_ia_leads_msgs");
+  if (lista) lista.scrollTop = lista.scrollHeight;
+}
+
+function adicionarMensagemChatIALeads(texto, tipo = "bot") {
+  const lista = document.getElementById("chat_ia_leads_msgs");
+  if (!lista) return null;
+
+  const msg = document.createElement("div");
+  msg.className = `chat-ia-leads-msg ${tipo === "user" ? "user" : "bot"}`;
+  msg.textContent = texto || "";
+  lista.appendChild(msg);
+  rolarChatIALeadsFim();
+  return msg;
+}
+
+function substituirMensagemChatIALeads(el, texto) {
+  if (!el) return;
+  el.textContent = texto || "";
+  rolarChatIALeadsFim();
+}
+
+function chatIALeadsKeydown(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    enviarChatIALeads();
+  }
+}
+
+function contextoChatIALeads() {
+  const nichos =
+    (usuarioLogado?.nichos || [])
+      .map(n => n.nome || n.slug)
+      .filter(Boolean);
+
+  return {
+    usuario: {
+      nome: usuarioLogado?.nome || usuarioLogado?.nomeCompleto || "",
+      email: usuarioLogado?.email || "",
+      tipo: usuarioLogado?.tipo || "",
+      plano: usuarioLogado?.plano || "",
+      acesso_total: Boolean(usuarioLogado?.acesso_total)
+    },
+    secao_ativa: secaoAtiva,
+    nicho_ativo: window._nichoAtivo?.nome || window._nichoAtivo?.slug || "",
+    nichos,
+    campanhas: {
+      total: campanhasAtuais.length,
+      ativas: campanhasAtuais.filter(campanhaEstaAtiva).length,
+      pausadas: campanhasAtuais.filter(campanhaEstaPausada).length
+    },
+    leads: {
+      total: todosLeads.length,
+      novos: todosLeads.filter(l => String(l.status || "").toLowerCase() === "novo").length,
+      perdidos: todosLeads.filter(l => String(l.status || "").toLowerCase() === "perdido").length
+    }
+  };
+}
+
+async function buscarRespostaChatIALeadsIA(mensagem) {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  const res = await fetch(`${API}/ia/chat-leads`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      mensagem,
+      contexto: contextoChatIALeads()
+    })
+  });
+
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  if (data.error) return null;
+
+  return (
+    data.resposta ||
+    data.mensagem ||
+    data.texto ||
+    data.sugestao?.resumo ||
+    null
+  );
+}
+
+function respostaLocalChatIALeads(mensagem) {
+  const m = String(mensagem || "").toLowerCase();
+  const nicho =
+    window._nichoAtivo?.nome ||
+    window._nichoAtivo?.slug ||
+    (usuarioLogado?.nichos || [])[0]?.nome ||
+    "";
+
+  if (m.includes("imagem") || m.includes("banner") || m.includes("criativo")) {
+    return "Para criar ou editar imagens, clique em 'Gerar imagem nova' ou 'Editar imagem'. Eles abrem o mesmo Gerar Banner com IA usado na criação da campanha.";
+  }
+
+  if (m.includes("video") || m.includes("vídeo")) {
+    return "Na criação ou edição da campanha, abra 'Imagens e texto'. Ali você pode adicionar imagens e também um vídeo do anúncio em MP4, MOV ou WebM.";
+  }
+
+  if (m.includes("lead") || m.includes("central") || m.includes("kanban")) {
+    return "Os leads ficam em Central de Leads. Lá você busca, filtra por campanha/período, muda status no kanban, abre detalhes do lead e usa a recuperação de perdidos.";
+  }
+
+  if (m.includes("recuper")) {
+    return "Para recuperar leads, use o botão 'Recuperação de leads' aqui no ChatIALeads ou vá em Central de Leads > Recuperação de Perdidos. A plataforma prioriza quem tem maior chance de retorno e sugere uma abordagem.";
+  }
+
+  if (m.includes("resumo") || m.includes("corretor") || m.includes("prioridade")) {
+    return "O Resumo do corretor fica na Central de Leads. Ele mostra prioridades, oportunidades e leads que merecem atenção no período diário, semanal ou mensal.";
+  }
+
+  if (m.includes("campanha") || m.includes("publicar") || m.includes("anunciar") || m.includes("editar")) {
+    return "As campanhas ficam em Campanhas. Em Criar Campanha você monta uma nova; em Minhas Campanhas você edita, publica, pausa, sincroniza e acompanha métricas.";
+  }
+
+  if (m.includes("plataforma") || m.includes("meta") || m.includes("facebook") || m.includes("instagram") || m.includes("conectar")) {
+    return "As conexões ficam em Plataformas. Ali você conecta Meta, escolhe página, conta de anúncios, Instagram vinculado, pagamento e vê se está pronto para anunciar.";
+  }
+
+  if (m.includes("dashboard") || m.includes("painel") || m.includes("resultado") || m.includes("cpl") || m.includes("ctr")) {
+    return "No Dashboard você vê visão geral: leads, campanhas, investimento, CPL, CTR, plataformas e saúde das campanhas. É o ponto rápido para decidir onde atuar.";
+  }
+
+  if (m.includes("nicho") || m.includes("ideia") || m.includes("ideias") || m.includes("copy") || m.includes("texto")) {
+    return `Para o nicho ${nicho || "selecionado"}, uma boa ideia é trabalhar uma promessa clara, dor imediata e chamada direta para cadastro. Posso ajudar com textos, criativos, público e perguntas do formulário.`;
+  }
+
+  if (m.includes("suporte") || m.includes("ajuda") || m.includes("erro")) {
+    return "Para falar com atendimento humano, use o menu Suporte. Para dúvidas rápidas de uso da plataforma, pode perguntar por aqui que eu te guio pelo caminho.";
+  }
+
+  return "Posso te ajudar com caminhos da plataforma, ideias para campanhas, dúvidas do seu nicho, imagens com IA, resumo do corretor e recuperação de leads. Pergunte algo como: onde edito uma campanha? Como recuperar leads perdidos? Me dê ideias para meu nicho.";
+}
+
+async function enviarChatIALeads() {
+  const input = document.getElementById("chat_ia_leads_input");
+  const mensagem = input?.value?.trim();
+  if (!mensagem) return;
+
+  input.value = "";
+  adicionarMensagemChatIALeads(mensagem, "user");
+
+  const carregando =
+    adicionarMensagemChatIALeads("Pensando na melhor orientação...", "bot");
+
+  try {
+    const respostaIA =
+      await buscarRespostaChatIALeadsIA(mensagem);
+
+    substituirMensagemChatIALeads(
+      carregando,
+      respostaIA || respostaLocalChatIALeads(mensagem)
+    );
+  } catch (_) {
+    substituirMensagemChatIALeads(
+      carregando,
+      respostaLocalChatIALeads(mensagem)
+    );
+  }
+}
+
+async function acaoResumoCorretorChatIALeads() {
+  toggleChatIALeads(true);
+  navegarPara("leads");
+
+  const carregando =
+    adicionarMensagemChatIALeads("Gerando resumo do corretor...", "bot");
+
+  try {
+    const token = localStorage.getItem("token");
+    const periodo = periodoResumoIA || "diario";
+    const res = await fetch(
+      `${API}/ia/resumo-diario?periodo=${encodeURIComponent(periodo)}`,
+      {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      }
+    );
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao gerar resumo.");
+    }
+
+    const texto = [
+      data.sugestao?.titulo,
+      data.sugestao?.resumo,
+      data.sugestao?.acao_principal ? `Ação principal: ${data.sugestao.acao_principal}` : "",
+      ...(data.sugestao?.recomendacoes || []).map(item => `- ${item}`)
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    substituirMensagemChatIALeads(
+      carregando,
+      texto || "Resumo gerado. Veja também o painel IA Ouro na Central de Leads."
+    );
+
+    const box = document.getElementById("ia_resumo_diario_resultado");
+    if (box) {
+      box.style.display = "block";
+      box.innerHTML = renderizarSugestaoIA(data.sugestao);
+    }
+  } catch (err) {
+    substituirMensagemChatIALeads(
+      carregando,
+      err.message || "Não consegui gerar o resumo agora. Abra a Central de Leads e tente novamente."
+    );
+  }
+}
+
+function acaoRecuperacaoLeadsChatIALeads() {
+  toggleChatIALeads(true);
+  navegarPara("leads");
+  filtrarRecuperacaoLeads("recuperaveis");
+
+  const recuperaveis =
+    todosLeads.filter(lead => classificarRecuperacaoLead(lead).recuperavel);
+  const perdidos =
+    todosLeads.filter(lead => String(lead.status || "").toLowerCase() === "perdido");
+
+  adicionarMensagemChatIALeads(
+    `Abri a Central de Leads com foco em recuperação.\n\nRecuperáveis agora: ${recuperaveis.length}\nPerdidos: ${perdidos.length}\n\nAbra um lead para ver a sugestão de abordagem e, no plano Ouro, gerar análise/mensagem com IA.`,
+    "bot"
+  );
+}
+
+function acaoChatIALeads(acao) {
+  toggleChatIALeads(true);
+
+  if (acao === "gerar_imagem") {
+    adicionarMensagemChatIALeads("Abrindo Gerar Banner com IA no modo imagem nova.", "bot");
+    abrirModalGerarBanner();
+    selecionarModoBanner("gerar");
+    return;
+  }
+
+  if (acao === "editar_imagem") {
+    adicionarMensagemChatIALeads("Abrindo Gerar Banner com IA no modo edição. Selecione uma imagem do carrossel como base.", "bot");
+    abrirModalGerarBanner();
+    selecionarModoBanner("editar");
+    return;
+  }
+
+  if (acao === "resumo_corretor") {
+    acaoResumoCorretorChatIALeads();
+    return;
+  }
+
+  if (acao === "recuperacao_leads") {
+    acaoRecuperacaoLeadsChatIALeads();
   }
 }
 

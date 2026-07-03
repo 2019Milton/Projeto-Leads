@@ -29422,7 +29422,9 @@ async function salvarEncaminhamentoCampanha() {
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          corretor_ids: corretorIds
+          corretor_ids: corretorIds,
+          permitir_usuarios_sem_vinculo: usuarioPodeEnviarCampanhaParaTodos(),
+          origem_envio: usuarioLogado?.tipo || ""
         })
       }
     );
@@ -29430,9 +29432,15 @@ async function salvarEncaminhamentoCampanha() {
     const data = await res.json();
 
     if (!res.ok || data.error) {
-      alert(
+      const erroEnvio =
         data.error ||
-        "Erro ao encaminhar campanha"
+        "Erro ao encaminhar campanha";
+
+      alert(
+        usuarioPodeEnviarCampanhaParaTodos() &&
+        /vinculad/i.test(erroEnvio)
+          ? "A API ainda esta exigindo vinculo para enviar esta campanha. O frontend ja envia permissao de Super Admin/Criador, mas o backend precisa liberar usuarios sem vinculo neste endpoint."
+          : erroEnvio
       );
       return;
     }

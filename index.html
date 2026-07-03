@@ -23866,29 +23866,35 @@ function atualizarDescricaoCusto() {
 
   const v = sel.value;
   desc.className = "adv-custo-desc visivel";
-  inp.disabled = false;
+  if (inp) inp.disabled = false;
 
   if (!v) {
     desc.textContent = "A Meta decide automaticamente onde e quanto gastar para trazer o maior número de leads pelo menor preço possível. Recomendado para quem está começando.";
     desc.classList.add("verde");
-    inp.disabled = true;
-    inp.placeholder = "Não disponível no modo automático";
+    if (inp) {
+      inp.value = "";
+      inp.disabled = true;
+      inp.placeholder = "Não disponível no modo automático";
+    }
     if (hint) hint.textContent = "No modo automático a Meta controla o custo sozinha.";
   } else if (v === "LOWEST_COST_WITHOUT_CAP") {
     desc.textContent = "A Meta vai gastar seu orçamento buscando o menor custo por lead possível, sem nenhum limite de lance. Maximiza o volume de leads, mas o CPL pode variar.";
     desc.classList.add("verde");
-    inp.disabled = true;
-    inp.placeholder = "Não aplicável nesta estratégia";
+    if (inp) {
+      inp.value = "";
+      inp.disabled = true;
+      inp.placeholder = "Não aplicável nesta estratégia";
+    }
     if (hint) hint.textContent = "Esta estratégia não usa valor de controle — a Meta otimiza livremente.";
   } else if (v === "LOWEST_COST_WITH_BID_CAP") {
     desc.textContent = "Você define o lance máximo que aceita pagar por leilão. A Meta nunca vai além desse valor no leilão, mas isso pode reduzir o alcance se o limite for muito baixo.";
     desc.classList.add("azul");
-    inp.placeholder = "Ex: 3.00 (lance máximo em R$)";
+    if (inp) inp.placeholder = "Ex: 3.00 (lance máximo em R$)";
     if (hint) hint.textContent = "Informe o valor máximo de lance por impressão. Não é o CPL — é o limite no leilão de anúncios.";
   } else if (v === "COST_CAP") {
     desc.textContent = "Você define um custo-alvo por lead (CPL). A Meta tenta manter a média abaixo desse valor, mas em dias de alto custo pode ultrapassar levemente para não perder alcance.";
     desc.classList.add("amber");
-    inp.placeholder = "Ex: 5.00 (custo-alvo por lead em R$)";
+    if (inp) inp.placeholder = "Ex: 5.00 (custo-alvo por lead em R$)";
     if (hint) hint.textContent = "Informe quanto quer pagar em média por lead. A Meta usa isso como meta de CPL.";
   }
 }
@@ -26465,6 +26471,7 @@ function mapearErroMetaParaCampo(mensagem) {
   if (m.includes("page_id") || (m.includes("page") && (m.includes("not found") || m.includes("invalid") || m.includes("não encontrada")))) return "#pagina_select";
   if (m.includes("special_ad_categor") || m.includes("special ad categor") || m.includes("categoria especial") || m.includes("housing") || m.includes("credit") || m.includes("employment")) return "#adv_categoria_especial";
   if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("minimum age") || m.includes("sugestão ao criar") || m.includes("sugest") && m.includes("conjunto de anúncios")) return "#adv_idade_min";
+  if (m.includes("bid_amount")) return "#adv_bid_amount";
   if ((m.includes("bid") || m.includes("lance")) && (m.includes("amount") || m.includes("cap") || m.includes("strategy"))) return "#adv_bid_strategy";
   if (m.includes("attribution")) return "#adv_attribution_spec";
   if (m.includes("image") || m.includes("imagem") || m.includes("creative") || m.includes("criativo") || m.includes("hash")) return "#btn-adicionar-imagem";
@@ -26511,6 +26518,70 @@ function mostrarErroPublicacao(mensagem) {
   setTimeout(() => el.remove(), 9000);
 }
 
+const ESTRATEGIAS_CONTROLE_COM_VALOR = new Set([
+  "LOWEST_COST_WITH_BID_CAP",
+  "COST_CAP",
+  "TARGET_COST"
+]);
+
+function estrategiaControleExigeValor(estrategia) {
+  return ESTRATEGIAS_CONTROLE_COM_VALOR.has(String(estrategia || ""));
+}
+
+function normalizarConfiguracoesAvancadasParaEnvio(configuracoes = {}) {
+  const normalizada = { ...configuracoes };
+
+  if (normalizada.bid_strategy === "LOWEST_COST_WITHOUT_CAP") {
+    normalizada.bid_strategy = "";
+    normalizada.bid_amount = "";
+  }
+
+  if (!estrategiaControleExigeValor(normalizada.bid_strategy)) {
+    normalizada.bid_amount = "";
+  }
+
+  return normalizada;
+}
+
+function validarControleCustoCampanha(configuracoes = {}) {
+  const estrategia = configuracoes.bid_strategy || "";
+
+  if (!estrategiaControleExigeValor(estrategia)) {
+    return true;
+  }
+
+  const valorControle = Number(configuracoes.bid_amount);
+
+  if (!Number.isFinite(valorControle) || valorControle <= 0) {
+    return conduzirParaCampoCampanha(
+      "#adv_bid_amount",
+      "Informe o valor de controle para esta estratégia, ou selecione Automático da Meta / Menor custo possível."
+    );
+  }
+
+  return true;
+}
+
+async function descartarCampanhaCriadaPorFalha(campaign_id, token) {
+  if (!campaign_id || !token) return;
+
+  try {
+    await fetch(
+      `${API}/meta/excluir-campanha`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ campaign_id })
+      }
+    );
+  } catch (err) {
+    console.warn("Nao foi possivel remover a campanha criada apos falha:", err);
+  }
+}
+
 function validarPublicacaoCampanha({
   campanha_nome,
   page_id,
@@ -26519,6 +26590,8 @@ function validarPublicacaoCampanha({
   configuracoes_avancadas,
   imagensArquivos
 }) {
+  limparValidacaoCampanha();
+
   const paginaSelect = document.getElementById("pagina_select");
   const paginaInvalida =
     !page_id ||
@@ -26567,15 +26640,22 @@ function validarPublicacaoCampanha({
     );
   }
 
+  if (!validarControleCustoCampanha(configuracoes_avancadas)) {
+    return false;
+  }
+
   limparValidacaoCampanha();
   return true;
 }
 
 async function criarCampanhaCompleta() {
 
+  let campanhaCriadaId = null;
+  let token = null;
+
   try {
 
-    const token = localStorage.getItem("token");
+    token = localStorage.getItem("token");
 
     if (!token) {
       return;
@@ -26604,7 +26684,9 @@ async function criarCampanhaCompleta() {
       document.getElementById("orcamento").value;
 
     const configuracoes_avancadas =
-      coletarConfiguracoesAvancadas();
+      normalizarConfiguracoesAvancadasParaEnvio(
+        coletarConfiguracoesAvancadas()
+      );
 
     // 🔥 COLETAR IMAGENS DO CARROSSEL (na ordem definida pelo usuário)
     const imagensArquivos = Array.from(
@@ -26703,6 +26785,8 @@ async function criarCampanhaCompleta() {
       return;
     }
 
+    campanhaCriadaId = campanha.id;
+
     setPublishProgress(55, "Criando formulário de leads...");
 
     // 🔥 FORM
@@ -26728,6 +26812,7 @@ async function criarCampanhaCompleta() {
     
     if (form.error) {
       setPublishProgress(null);
+      await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
       mostrarErroPublicacao(form.error?.message || form.error || "Erro ao criar formulário de leads");
       return;
     }
@@ -26761,6 +26846,7 @@ async function criarCampanhaCompleta() {
     
     if (adset.error) {
       setPublishProgress(null);
+      await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
       const msgAdset = adset.detalhe?.error?.error_user_msg || adset.detalhe?.error?.message || adset.error?.error_user_msg || adset.error?.message || adset.error || "Erro ao criar conjunto de anúncios";
       const msgOrigAdset = adset.detalhe?.error?.message && adset.detalhe?.error?.message !== msgAdset ? ` [Meta: ${adset.detalhe.error.message}]` : "";
       mostrarErroPublicacao(msgAdset + msgOrigAdset);
@@ -26813,6 +26899,7 @@ async function criarCampanhaCompleta() {
 
       console.error(anuncio);
       setPublishProgress(null);
+      await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
       mostrarErroPublicacao(
         anuncio.detalhe?.error_user_msg ||
         anuncio.detalhe?.message ||
@@ -26847,6 +26934,7 @@ async function criarCampanhaCompleta() {
 
     console.error("ERRO publicarCampanha:", err);
     setPublishProgress(null);
+    await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
     mostrarErroPublicacao("Erro ao criar campanha: " + (err?.message || String(err) || "Erro desconhecido"));
   }
 }

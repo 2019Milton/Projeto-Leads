@@ -19019,6 +19019,34 @@ let corretoresCampanha = [];
 
 let campanhaEncaminharAtual = null;
 
+function usuarioPodeEnviarCampanhaParaTodos() {
+  return ["super_admin", "criador_campanha"].includes(usuarioLogado?.tipo);
+}
+
+function usuarioElegivelParaReceberCampanha(usuario = {}) {
+  const tipo = String(usuario.tipo || "");
+  const idUsuario = Number(usuario.id);
+  const idLogado = Number(usuarioLogado?.id);
+
+  if (idUsuario && idUsuario === idLogado) return false;
+  if (["suporte", "master"].includes(tipo)) return false;
+  if (usuario.ativo === false || usuario.status === false) return false;
+
+  return true;
+}
+
+function normalizarUsuariosParaEnvioCampanha(lista = []) {
+  return (Array.isArray(lista) ? lista : [])
+    .filter(usuarioElegivelParaReceberCampanha)
+    .map(usuario => ({
+      ...usuario,
+      id: usuario.id,
+      nome: usuario.nome || usuario.name || "",
+      sobrenome: usuario.sobrenome || "",
+      email: usuario.email || ""
+    }));
+}
+
 let statusMetaGuia = null;
 let guiaSecretoAtual = null;
 let guiaSecretoReavaliarTimer = null;
@@ -29165,6 +29193,48 @@ async function carregarCorretoresCampanha() {
 
   try {
 
+    if (usuarioPodeEnviarCampanhaParaTodos()) {
+      const endpointsAmplos = [
+        `${API}/admin/usuarios`,
+        `${API}/chat/usuarios`
+      ];
+
+      for (const url of endpointsAmplos) {
+        try {
+          const resAmplo = await fetch(
+            url,
+            {
+              headers: {
+                "Authorization": `Bearer ${token}`
+              }
+            }
+          );
+
+          const dataAmplo = await resAmplo.json();
+          const usuarios =
+            dataAmplo.usuarios ||
+            dataAmplo.data ||
+            dataAmplo.items ||
+            [];
+
+          if (resAmplo.ok && !dataAmplo.error && usuarios.length) {
+            const usuariosElegiveis =
+              normalizarUsuariosParaEnvioCampanha(usuarios);
+
+            if (usuariosElegiveis.length) {
+              corretoresCampanha = usuariosElegiveis;
+              return;
+            }
+          }
+        } catch (errEndpoint) {
+          console.warn(
+            "LISTA AMPLA ENVIO CAMPANHA:",
+            errEndpoint
+          );
+        }
+      }
+    }
+
     const res = await fetch(
       `${API}/campanhas/corretores-vinculados`,
       {
@@ -29185,7 +29255,7 @@ async function carregarCorretoresCampanha() {
     }
 
     corretoresCampanha =
-      data.corretores || [];
+      normalizarUsuariosParaEnvioCampanha(data.corretores || []);
 
   } catch (err) {
     console.error(

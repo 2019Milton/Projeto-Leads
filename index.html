@@ -21922,14 +21922,27 @@ function marcarCampoIA(seletor, status, texto) {
   const el = document.querySelector(seletor);
   if (!el) return;
 
+  const alvoInsercao =
+    el.matches('input[type="checkbox"], input[type="radio"]')
+      ? (
+          el.closest(".advanced-checks") ||
+          el.closest("label") ||
+          el
+        )
+      : (
+          el.closest(".geo-busca-wrap") ||
+          el
+        );
+
   // Marca borda/brilho no campo ou container mais próximo
   const campoMarcador =
+    el.closest("#nicho_campos_extras > div") ||
     el.closest(".advanced-full") ||
     el.closest(".advanced-grid > div") ||
     el.closest(".advanced-checks") ||
     (el.matches(".campaign-setup-section") ? el : null) ||
-    el.closest("#nicho_campos_extras > div") ||
     el;
+
   campoMarcador.classList.add("ia-campo-marcado");
   campoMarcador.classList.add(status === "preenchido" ? "ia-campo-preenchido" : "ia-campo-pendente");
 
@@ -21939,7 +21952,7 @@ function marcarCampoIA(seletor, status, texto) {
     status === "preenchido"
       ? `IA preencheu: ${texto}`
       : `Preencher manualmente: ${texto}`;
-  campoMarcador.insertAdjacentElement("afterend", flag);
+  alvoInsercao.insertAdjacentElement("afterend", flag);
 }
 
 function marcarCamposAposAplicarIA(camposPreenchidos = []) {

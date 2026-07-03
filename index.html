@@ -2856,6 +2856,117 @@ body.tema-claro .passo-meta-step-text p {
   box-shadow: none;
 }
 
+.video-anuncio-card {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  margin-top: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  background: rgba(15,23,42,0.52);
+}
+
+.video-anuncio-preview {
+  width: 120px;
+  aspect-ratio: 16 / 9;
+  border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: rgba(255,255,255,0.45);
+  font-size: 22px;
+}
+
+.video-anuncio-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.video-anuncio-card.preenchido .video-anuncio-preview {
+  border-style: solid;
+  border-color: rgba(34,197,94,0.38);
+}
+
+.video-anuncio-info {
+  min-width: 0;
+}
+
+.video-anuncio-info strong,
+.video-anuncio-info span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.video-anuncio-info strong {
+  color: #e2e8f0;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.video-anuncio-info span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.video-anuncio-acoes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn-video-anuncio {
+  width: auto;
+  min-width: auto;
+  margin-top: 0;
+  padding: 8px 14px;
+  border: 1px solid rgba(96,165,250,0.35);
+  border-radius: 8px;
+  background: rgba(37,99,235,0.14);
+  color: #dbeafe;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.btn-video-anuncio:hover {
+  border-color: rgba(96,165,250,0.65);
+  background: rgba(37,99,235,0.24);
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-video-anuncio.remover {
+  border-color: rgba(239,68,68,0.32);
+  background: rgba(239,68,68,0.1);
+  color: #fecaca;
+}
+
+@media (max-width: 720px) {
+  .video-anuncio-card {
+    grid-template-columns: 1fr;
+  }
+
+  .video-anuncio-preview {
+    width: 100%;
+  }
+
+  .video-anuncio-acoes {
+    justify-content: flex-start;
+  }
+}
+
 .campo-validacao-erro {
   border-color: #ef4444 !important;
   box-shadow: 0 0 0 3px rgba(239,68,68,0.25) !important;
@@ -3413,6 +3524,51 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   margin: 0;
 }
 
+.perguntas-rapidas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.perguntas-rapidas label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 9px;
+  border: 1px solid rgba(148,163,184,0.18);
+  border-radius: 10px;
+  background: rgba(15,23,42,0.45);
+  color: #dbeafe;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.perguntas-rapidas input {
+  width: auto;
+  margin: 2px 0 0;
+}
+
+.perguntas-rapidas-ajuda {
+  display: block;
+  margin-top: 7px;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+body.tema-claro .perguntas-rapidas label {
+  background: rgba(255,255,255,0.72);
+  border-color: rgba(37,99,235,0.18);
+  color: #1e293b;
+}
+
+body.tema-claro .perguntas-rapidas-ajuda {
+  color: #64748b;
+}
+
 .card button {
 
   width: auto;
@@ -3646,6 +3802,14 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   background: rgba(59,130,246,0.15);
   color: #bfdbfe;
   font-size: 11px;
+}
+
+.detalhe-video {
+  width: 100%;
+  max-height: 260px;
+  border-radius: 10px;
+  border: 1px solid rgba(96,165,250,0.24);
+  background: rgba(15,23,42,0.72);
 }
 
 .origem-badge {
@@ -15428,6 +15592,23 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 onclick="abrirModalGerarBanner()"
               >✨ Gerar Banner com IA</button>
               <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
+
+              <label style="margin-top:14px;">Vídeo do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(opcional)</span></label>
+              <div class="video-anuncio-card" id="video_anuncio_card">
+                <div class="video-anuncio-preview">
+                  <span id="video_anuncio_placeholder">🎬</span>
+                  <video id="video_anuncio_preview" muted playsinline controls></video>
+                </div>
+                <div class="video-anuncio-info">
+                  <strong id="video_anuncio_nome">Nenhum vídeo selecionado</strong>
+                  <span id="video_anuncio_status">Use MP4, MOV ou WebM. Se adicionar vídeo, ele será enviado como criativo da campanha.</span>
+                </div>
+                <div class="video-anuncio-acoes">
+                  <input type="file" id="video_anuncio_input" accept="video/mp4,video/quicktime,video/webm" style="display:none">
+                  <button type="button" class="btn-video-anuncio" id="btn-adicionar-video">+ Adicionar vídeo</button>
+                  <button type="button" class="btn-video-anuncio remover" id="btn-remover-video" style="display:none">Remover</button>
+                </div>
+              </div>
             </div>
 
             <div class="advanced-full">
@@ -15808,8 +15989,13 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               <label>Perguntas qualificadoras <button type="button" class="info-icone" onclick="mostrarInfoCampo('Perguntas que o cliente responde antes de enviar os dados de contato. Ajudam a filtrar quem está mais interessado. Coloque uma pergunta por linha.', event)">i</button></label>
               <textarea
                 id="adv_perguntas"
+                oninput="sincronizarPerguntasRapidasComTexto()"
                 placeholder="Uma pergunta por linha. Ex: Qual faixa de investimento?"
               ></textarea>
+              <div id="adv_perguntas_rapidas" class="perguntas-rapidas"></div>
+              <small class="perguntas-rapidas-ajuda">
+                Escolha poucas perguntas-chave. Elas entram no formulário da Meta e ajudam a filtrar quem tem interesse real.
+              </small>
             </div>
 
             <div class="advanced-full">
@@ -25731,7 +25917,8 @@ function coletarConfiguracoesAvancadas() {
     valorCampo("adv_perguntas")
       .split("\n")
       .map(p => p.trim())
-      .filter(Boolean);
+      .filter(Boolean)
+      .slice(0, 4);
 
   return {
     categoria_especial:
@@ -26096,6 +26283,8 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
       ? Number(dailyBudgetCentavos) / 100
       : ""
   );
+
+  preencherVideoCampanhaSalvo(cfg);
 }
 
 function abrirEdicaoCampanha(campanhaEncoded) {
@@ -26115,7 +26304,9 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     basicos: coletarCamposBasicosCampanha(),
     avancadas: coletarConfiguracoesAvancadas(),
     orcamento: valorCampo("orcamento"),
-    imagensAssinatura: assinaturaImagensCampanha()
+    imagensAssinatura: assinaturaImagensCampanha(),
+    videoAssinatura: assinaturaVideoCampanha(),
+    videoArquivo: obterArquivoVideoCampanha()
   };
 
   BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
@@ -26174,6 +26365,15 @@ function fecharEdicaoCampanha() {
     atualizarTosHint();
     preencherConfiguracoesAvancadas(_snapshotCriarCampanha.avancadas, null);
     definirValorCampo("orcamento", _snapshotCriarCampanha.orcamento);
+    if (_snapshotCriarCampanha.videoArquivo) {
+      const inputVideo = document.getElementById("video_anuncio_input");
+      const dt = new DataTransfer();
+      dt.items.add(_snapshotCriarCampanha.videoArquivo);
+      if (inputVideo) inputVideo.files = dt.files;
+      aplicarVideoCampanha(_snapshotCriarCampanha.videoArquivo);
+    } else {
+      limparVideoCampanha();
+    }
   }
 
   _snapshotCriarCampanha = null;
@@ -26201,7 +26401,11 @@ async function salvarEdicaoCampanha() {
 
   const orcamento = valorCampo("orcamento");
   const camposBasicos = coletarCamposBasicosCampanha();
-  const configuracoes_avancadas = coletarConfiguracoesAvancadas();
+  const configuracoes_avancadas =
+    normalizarConfiguracoesAvancadasParaEnvio({
+      ...obterConfiguracoesCampanha(campanhaEmEdicao),
+      ...coletarConfiguracoesAvancadas()
+    });
   configuracoes_avancadas.page_id = camposBasicos.page_id;
   configuracoes_avancadas.texto = camposBasicos.texto;
   configuracoes_avancadas.cta = camposBasicos.cta;
@@ -26218,6 +26422,15 @@ async function salvarEdicaoCampanha() {
         .filter(Boolean)
     : [];
 
+  const videoFoiAlterado =
+    assinaturaVideoCampanha() !==
+    (_snapshotCriarCampanha?.videoAssinatura || "");
+
+  const videoArquivo =
+    videoFoiAlterado
+      ? obterArquivoVideoCampanha()
+      : null;
+
   const feedback = document.getElementById("editar_campanha_feedback");
   const btn = document.getElementById("editar_campanha_btn_salvar");
 
@@ -26232,6 +26445,10 @@ async function salvarEdicaoCampanha() {
         "Escolha Facebook, Instagram ou os dois para anunciar.";
       feedback.style.display = "block";
     }
+    return;
+  }
+
+  if (videoArquivo && !validarArquivoVideoCampanha(videoArquivo)) {
     return;
   }
 
@@ -26271,6 +26488,24 @@ async function salvarEdicaoCampanha() {
       imageHashes.push(upload.hash);
     }
 
+    if (videoArquivo) {
+      const uploadVideo =
+        await uploadVideoCampanha({
+          arquivo: videoArquivo,
+          token,
+          usuario_id
+        });
+
+      configuracoes_avancadas.criativo_tipo = "video";
+      configuracoes_avancadas.video_id = uploadVideo.video_id;
+      configuracoes_avancadas.videoId = uploadVideo.video_id;
+      configuracoes_avancadas.video_url = uploadVideo.video_url;
+      configuracoes_avancadas.videoUrl = uploadVideo.video_url;
+      configuracoes_avancadas.video_nome = uploadVideo.video_nome;
+      configuracoes_avancadas.video_tipo = uploadVideo.video_tipo;
+      configuracoes_avancadas.video_tamanho = uploadVideo.video_tamanho;
+    }
+
     const payloadEdicao = {
       usuario_id,
       campaign_id: campanhaEmEdicao.campaign_id,
@@ -26285,6 +26520,13 @@ async function salvarEdicaoCampanha() {
     if (imageHashes.length) {
       payloadEdicao.imageHash = imageHashes[0];
       payloadEdicao.imageHashes = imageHashes;
+    }
+
+    if (videoArquivo && configuracoes_avancadas.video_id) {
+      payloadEdicao.video_id = configuracoes_avancadas.video_id;
+      payloadEdicao.videoId = configuracoes_avancadas.video_id;
+      payloadEdicao.video_url = configuracoes_avancadas.video_url;
+      payloadEdicao.videoUrl = configuracoes_avancadas.video_url;
     }
 
     const res = await fetch(
@@ -26327,7 +26569,9 @@ async function salvarEdicaoCampanha() {
 
     console.error("EDITAR CAMPANHA:", err);
 
-    const mensagem = "Erro ao salvar alterações";
+    const mensagem =
+      err?.message ||
+      "Erro ao salvar alterações";
 
     if (feedback) {
       feedback.textContent = mensagem;
@@ -26596,6 +26840,255 @@ function inicializarCarrosselImagens() {
   });
 }
 
+// ─── VIDEO DO ANUNCIO ────────────────────────────────────────────────────────
+
+const VIDEO_ANUNCIO_MAX_BYTES = 200 * 1024 * 1024;
+const VIDEO_ANUNCIO_TIPOS = new Set([
+  "video/mp4",
+  "video/quicktime",
+  "video/webm"
+]);
+
+function formatarTamanhoArquivo(bytes = 0) {
+  const numero = Number(bytes) || 0;
+
+  if (numero >= 1024 * 1024) {
+    return `${(numero / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  if (numero >= 1024) {
+    return `${(numero / 1024).toFixed(1)} KB`;
+  }
+
+  return `${numero} B`;
+}
+
+function obterArquivoVideoCampanha() {
+  return document.getElementById("video_anuncio_input")?.files?.[0] || null;
+}
+
+function validarArquivoVideoCampanha(arquivo, mostrarErro = true) {
+  if (!arquivo) return true;
+
+  const tipoAceito =
+    VIDEO_ANUNCIO_TIPOS.has(arquivo.type) ||
+    /\.(mp4|mov|webm)$/i.test(arquivo.name || "");
+
+  if (!tipoAceito) {
+    if (mostrarErro) {
+      conduzirParaCampoCampanha(
+        "#video_anuncio_card",
+        "Use um vídeo em MP4, MOV ou WebM."
+      );
+    }
+    return false;
+  }
+
+  if (arquivo.size > VIDEO_ANUNCIO_MAX_BYTES) {
+    if (mostrarErro) {
+      conduzirParaCampoCampanha(
+        "#video_anuncio_card",
+        "O vídeo pode ter no máximo 200 MB."
+      );
+    }
+    return false;
+  }
+
+  return true;
+}
+
+function limparVideoCampanha() {
+  const card = document.getElementById("video_anuncio_card");
+  const input = document.getElementById("video_anuncio_input");
+  const preview = document.getElementById("video_anuncio_preview");
+  const placeholder = document.getElementById("video_anuncio_placeholder");
+  const nome = document.getElementById("video_anuncio_nome");
+  const status = document.getElementById("video_anuncio_status");
+  const remover = document.getElementById("btn-remover-video");
+
+  if (input) input.value = "";
+
+  if (preview) {
+    if (preview.dataset.objectUrl) {
+      URL.revokeObjectURL(preview.dataset.objectUrl);
+      delete preview.dataset.objectUrl;
+    }
+    preview.removeAttribute("src");
+    preview.style.display = "none";
+    preview.load();
+  }
+
+  if (placeholder) placeholder.style.display = "";
+  if (nome) nome.textContent = "Nenhum vídeo selecionado";
+  if (status) status.textContent = "Use MP4, MOV ou WebM. Se adicionar vídeo, ele será enviado como criativo da campanha.";
+  if (remover) remover.style.display = "none";
+  if (card) card.classList.remove("preenchido");
+}
+
+function aplicarVideoCampanha(arquivo) {
+  if (!arquivo || !validarArquivoVideoCampanha(arquivo)) {
+    limparVideoCampanha();
+    return;
+  }
+
+  const card = document.getElementById("video_anuncio_card");
+  const preview = document.getElementById("video_anuncio_preview");
+  const placeholder = document.getElementById("video_anuncio_placeholder");
+  const nome = document.getElementById("video_anuncio_nome");
+  const status = document.getElementById("video_anuncio_status");
+  const remover = document.getElementById("btn-remover-video");
+
+  if (preview) {
+    if (preview.dataset.objectUrl) {
+      URL.revokeObjectURL(preview.dataset.objectUrl);
+    }
+    const url = URL.createObjectURL(arquivo);
+    preview.src = url;
+    preview.dataset.objectUrl = url;
+    preview.style.display = "block";
+    preview.load();
+  }
+
+  if (placeholder) placeholder.style.display = "none";
+  if (nome) nome.textContent = arquivo.name;
+  if (status) status.textContent = `${arquivo.type || "video"} · ${formatarTamanhoArquivo(arquivo.size)}`;
+  if (remover) remover.style.display = "";
+  if (card) card.classList.add("preenchido");
+}
+
+function preencherVideoCampanhaSalvo(cfg = {}) {
+  const videoNome =
+    cfg.video_nome ||
+    cfg.video_name ||
+    cfg.video?.nome ||
+    cfg.video?.name ||
+    "";
+
+  const videoId =
+    cfg.video_id ||
+    cfg.videoId ||
+    cfg.video?.id ||
+    "";
+
+  const videoUrl =
+    cfg.video_url ||
+    cfg.videoUrl ||
+    cfg.video?.url ||
+    "";
+
+  limparVideoCampanha();
+
+  if (!videoNome && !videoId && !videoUrl) {
+    return;
+  }
+
+  const card = document.getElementById("video_anuncio_card");
+  const preview = document.getElementById("video_anuncio_preview");
+  const placeholder = document.getElementById("video_anuncio_placeholder");
+  const nome = document.getElementById("video_anuncio_nome");
+  const status = document.getElementById("video_anuncio_status");
+  const remover = document.getElementById("btn-remover-video");
+
+  if (videoUrl && preview) {
+    preview.src = videoUrl;
+    preview.style.display = "block";
+    preview.load();
+    if (placeholder) placeholder.style.display = "none";
+  }
+
+  if (nome) nome.textContent = videoNome || "Vídeo salvo na campanha";
+  if (status) status.textContent = videoId ? `Vídeo Meta: ${videoId}` : "Vídeo salvo nos dados da campanha.";
+  if (remover) remover.style.display = "";
+  if (card) card.classList.add("preenchido");
+}
+
+function assinaturaVideoCampanha() {
+  const file = obterArquivoVideoCampanha();
+
+  return file
+    ? `${file.name}:${file.size}:${file.lastModified}`
+    : "";
+}
+
+function inicializarVideoCampanha() {
+  const input = document.getElementById("video_anuncio_input");
+  const adicionar = document.getElementById("btn-adicionar-video");
+  const remover = document.getElementById("btn-remover-video");
+
+  if (!input || input.dataset.iniciado) return;
+  input.dataset.iniciado = "1";
+
+  adicionar?.addEventListener("click", () => input.click());
+  remover?.addEventListener("click", limparVideoCampanha);
+
+  input.addEventListener("change", () => {
+    aplicarVideoCampanha(input.files?.[0]);
+  });
+}
+
+async function uploadVideoCampanha({ arquivo, token, usuario_id }) {
+  if (!arquivo) return null;
+
+  const formData = new FormData();
+  formData.append("video", arquivo);
+  formData.append("usuario_id", usuario_id);
+  formData.append("nome", arquivo.name);
+  formData.append("tipo", arquivo.type || "");
+
+  const uploadRes = await fetch(
+    `${API}/meta/upload-video`,
+    {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token },
+      body: formData
+    }
+  );
+
+  let upload = {};
+
+  try {
+    upload = await uploadRes.json();
+  } catch (_) {
+    upload = {};
+  }
+
+  if (!uploadRes.ok || upload.error) {
+    const indisponivel =
+      uploadRes.status === 404 ||
+      uploadRes.status === 405;
+
+    throw new Error(
+      upload.error?.message ||
+      upload.error ||
+      (
+        indisponivel
+          ? "Upload de vídeo ainda não está disponível no servidor."
+          : "Erro ao enviar vídeo"
+      )
+    );
+  }
+
+  const videoId =
+    upload.video_id ||
+    upload.videoId ||
+    upload.id ||
+    upload.hash ||
+    null;
+
+  if (!videoId) {
+    throw new Error("Servidor não retornou o ID do vídeo enviado.");
+  }
+
+  return {
+    ...upload,
+    video_id: videoId,
+    video_url: upload.video_url || upload.videoUrl || upload.url || null,
+    video_nome: arquivo.name,
+    video_tipo: arquivo.type || "",
+    video_tamanho: arquivo.size
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 function atualizarTosHint() {
@@ -26824,6 +27317,7 @@ function mapearErroMetaParaCampo(mensagem) {
   if (m.includes("bid_amount")) return "#adv_bid_amount";
   if ((m.includes("bid") || m.includes("lance")) && (m.includes("amount") || m.includes("cap") || m.includes("strategy"))) return "#adv_bid_strategy";
   if (m.includes("attribution")) return "#adv_attribution_spec";
+  if (m.includes("video")) return "#video_anuncio_card";
   if (m.includes("image") || m.includes("imagem") || m.includes("creative") || m.includes("criativo") || m.includes("hash")) return "#btn-adicionar-imagem";
   if (m.includes("message") || m.includes("primary text") || m.includes("ad text") || m.includes("corpo")) return "#texto";
   if (m.includes("targeting") || m.includes("audience") || m.includes("segmentação") || m.includes("público")) return "#adv_pais";
@@ -26840,6 +27334,8 @@ function traduzirErroMeta(mensagem) {
     return "O orçamento diário está abaixo do mínimo exigido pelo Meta. Use pelo menos R$ 15,00 (recomendado R$ 30,00+).";
   if (m.includes("page_id") || (m.includes("page") && m.includes("invalid")))
     return "Página do Facebook inválida ou não encontrada. Verifique a Página Facebook selecionada.";
+  if (m.includes("video"))
+    return "Vídeo inválido ou não enviado. Adicione um vídeo em MP4, MOV ou WebM.";
   if (m.includes("image") || m.includes("imagem") || m.includes("hash"))
     return "Imagem inválida ou não enviada. Adicione uma imagem ao anúncio.";
   if (m.includes("special_ad_categor") || m.includes("housing"))
@@ -26953,7 +27449,8 @@ function validarPublicacaoCampanha({
   texto,
   orcamento,
   configuracoes_avancadas,
-  imagensArquivos
+  imagensArquivos,
+  videoArquivo
 }) {
   limparValidacaoCampanha();
 
@@ -26984,11 +27481,15 @@ function validarPublicacaoCampanha({
     );
   }
 
-  if (!imagensArquivos.length) {
+  if (!imagensArquivos.length && !videoArquivo) {
     return conduzirParaCampoCampanha(
       "#btn-adicionar-imagem",
-      "Adicione ao menos uma imagem para o anúncio."
+      "Adicione ao menos uma imagem ou um vídeo para o anúncio."
     );
+  }
+
+  if (videoArquivo && !validarArquivoVideoCampanha(videoArquivo)) {
+    return false;
   }
 
   if (!texto?.trim()) {
@@ -27066,13 +27567,17 @@ async function criarCampanhaCompleta() {
       .map(input => input.files[0])
       .filter(Boolean);
 
+    const videoArquivo =
+      obterArquivoVideoCampanha();
+
     if (!validarPublicacaoCampanha({
       campanha_nome,
       page_id,
       texto,
       orcamento,
       configuracoes_avancadas,
-      imagensArquivos
+      imagensArquivos,
+      videoArquivo
     })) {
       return;
     }
@@ -27084,7 +27589,9 @@ async function criarCampanhaCompleta() {
 
     for (let i = 0; i < imagensArquivos.length; i++) {
       const file = imagensArquivos[i];
-      const pct = Math.round(5 + ((i + 1) / totalImagens) * 20);
+      const pct = totalImagens
+        ? Math.round(5 + ((i + 1) / totalImagens) * 20)
+        : 20;
       setPublishProgress(pct, `Enviando imagem ${i + 1} de ${totalImagens}...`);
 
       const formData = new FormData();
@@ -27119,6 +27626,38 @@ async function criarCampanhaCompleta() {
     configuracoes_avancadas.imageHashes = imageHashes;
     configuracoes_avancadas.imagens_urls = imageUrls.filter(Boolean);
     configuracoes_avancadas.image_urls = imageUrls.filter(Boolean);
+
+    let videoUpload = null;
+
+    if (videoArquivo) {
+      setPublishProgress(28, "Enviando vídeo...");
+
+      try {
+        videoUpload =
+          await uploadVideoCampanha({
+            arquivo: videoArquivo,
+            token,
+            usuario_id
+          });
+      } catch (err) {
+        setPublishProgress(null);
+        mostrarErroPublicacao(err?.message || "Erro ao enviar vídeo");
+        return;
+      }
+
+      configuracoes_avancadas.criativo_tipo = "video";
+      configuracoes_avancadas.video_id = videoUpload.video_id;
+      configuracoes_avancadas.videoId = videoUpload.video_id;
+      configuracoes_avancadas.video_url = videoUpload.video_url;
+      configuracoes_avancadas.videoUrl = videoUpload.video_url;
+      configuracoes_avancadas.video_nome = videoUpload.video_nome;
+      configuracoes_avancadas.video_tipo = videoUpload.video_tipo;
+      configuracoes_avancadas.video_tamanho = videoUpload.video_tamanho;
+    } else {
+      configuracoes_avancadas.criativo_tipo = imageHashes.length > 1
+        ? "carrossel"
+        : "imagem";
+    }
 
     setPublishProgress(35, "Criando campanha no Meta...");
 
@@ -27265,7 +27804,13 @@ async function criarCampanhaCompleta() {
           // 🔥 IMAGEM
           imageHash,
           imageHashes,
-          imageUrls
+          imageUrls,
+
+          // 🔥 VIDEO
+          video_id: videoUpload?.video_id || null,
+          videoId: videoUpload?.video_id || null,
+          video_url: videoUpload?.video_url || null,
+          videoUrl: videoUpload?.video_url || null
         })
       }
     );
@@ -29443,19 +29988,68 @@ function coletarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
   };
 }
 
+function coletarVideoCampanhaDetalhe(campanha = {}, cfg = {}) {
+  const videoUrl =
+    cfg.video_url ||
+    cfg.videoUrl ||
+    cfg.video?.url ||
+    campanha.video_url ||
+    campanha.videoUrl ||
+    campanha.video?.url ||
+    "";
+
+  const videoId =
+    cfg.video_id ||
+    cfg.videoId ||
+    cfg.video?.id ||
+    campanha.video_id ||
+    campanha.videoId ||
+    campanha.video?.id ||
+    "";
+
+  const videoNome =
+    cfg.video_nome ||
+    cfg.video_name ||
+    cfg.video?.nome ||
+    cfg.video?.name ||
+    campanha.video_nome ||
+    campanha.video_name ||
+    campanha.video?.nome ||
+    campanha.video?.name ||
+    "";
+
+  return { videoUrl, videoId, videoNome };
+}
+
 function renderizarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
   const imagens = coletarImagensCampanhaDetalhe(campanha, cfg);
+  const video = coletarVideoCampanhaDetalhe(campanha, cfg);
 
-  if (!imagens.urls.length && !imagens.hashes.length) {
+  if (
+    !imagens.urls.length &&
+    !imagens.hashes.length &&
+    !video.videoUrl &&
+    !video.videoId
+  ) {
     return `
       <div class="detalhe-imagem-placeholder">
-        Nenhuma imagem salva nos dados desta campanha.
+        Nenhuma mídia salva nos dados desta campanha.
       </div>
     `;
   }
 
   return `
     <div class="detalhe-imagens-grid">
+      ${video.videoUrl ? `
+        <video class="detalhe-video" controls src="${escaparHtml(video.videoUrl)}"></video>
+      ` : ""}
+      ${video.videoId ? `
+        <div class="detalhe-imagem-placeholder">
+          Vídeo vinculado na Meta:
+          <code>${escaparHtml(video.videoId)}</code>
+          ${video.videoNome ? `<br>${escaparHtml(video.videoNome)}` : ""}
+        </div>
+      ` : ""}
       ${imagens.urls.map(url => `
         <img src="${escaparHtml(url)}" class="detalhe-imagem" alt="Imagem da campanha">
       `).join("")}
@@ -29579,7 +30173,9 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Título do anúncio", cfg.titulo)}
       ${detalheItem("Descrição", cfg.descricao, "full")}
       ${detalheItem("Link de destino", cfg.link, "full")}
+      ${detalheItem("Tipo de criativo", cfg.criativo_tipo || (cfg.video_id || cfg.videoId ? "video" : cfg.imageHashes?.length > 1 || cfg.image_hashes?.length > 1 ? "carrossel" : "imagem"))}
       ${detalheItem("Criativo Meta", cfg.creative_id || cfg.criativo?.creative_id)}
+      ${detalheItem("Vídeo Meta", cfg.video_id || cfg.videoId || cfg.video?.id)}
       ${detalheItem("Carrossel", cfg.criativo?.carrossel ? "Sim" : cfg.imageHashes?.length > 1 || cfg.image_hashes?.length > 1 ? "Sim" : "Não")}
       ${detalheItem("País", cfg.pais || "BR")}
       ${detalheItem("Área da campanha", formatarLocalidadesResumo(cfg))}
@@ -33486,6 +34082,130 @@ function _placeholdersPorNicho(slug) {
   };
 }
 
+window.PERGUNTAS_RAPIDAS_FORMULARIO = window.PERGUNTAS_RAPIDAS_FORMULARIO || {
+  imoveis: [
+    "Qual cidade ou bairro voce procura?",
+    "Qual faixa de investimento?",
+    "Pretende financiar?",
+    "Em quanto tempo deseja comprar ou alugar?"
+  ],
+  saude: [
+    "Quantas pessoas serao incluidas no plano?",
+    "Voce possui CNPJ?",
+    "Voce possui plano de saude atualmente?",
+    "Qual cidade ou regiao de atendimento?"
+  ],
+  suplementos: [
+    "Qual seu principal objetivo?",
+    "Voce ja usa suplementos atualmente?",
+    "Com que frequencia voce treina?",
+    "Voce tem alguma restricao alimentar?"
+  ],
+  saas: [
+    "Voce possui CNPJ?",
+    "Quantos leads recebe por mes?",
+    "Voce ja anuncia no Facebook ou Instagram?",
+    "Como organiza seus leads hoje?"
+  ],
+  default: [
+    "Qual sua principal necessidade?",
+    "Qual melhor horario para contato?",
+    "Voce possui CNPJ?",
+    "Quando pretende comecar?"
+  ]
+};
+
+function perguntasRapidasDoNicho(slug = "") {
+  const chave =
+    String(slug || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+  if (chave.includes("saude")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.saude;
+  if (chave.includes("suplement")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.suplementos;
+  if (chave.includes("saas") || chave.includes("plataforma")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.saas;
+  if (chave.includes("imove")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.imoveis;
+
+  return window.PERGUNTAS_RAPIDAS_FORMULARIO.default;
+}
+
+function linhasPerguntasFormulario() {
+  const campo =
+    document.getElementById("adv_perguntas");
+
+  return String(campo?.value || "")
+    .split("\n")
+    .map(p => p.trim())
+    .filter(Boolean);
+}
+
+function definirLinhasPerguntasFormulario(linhas) {
+  const campo =
+    document.getElementById("adv_perguntas");
+
+  if (!campo) return;
+
+  campo.value =
+    Array.from(new Set(linhas.map(p => p.trim()).filter(Boolean)))
+      .join("\n");
+}
+
+function renderizarPerguntasRapidasFormulario(slug = "") {
+  const box =
+    document.getElementById("adv_perguntas_rapidas");
+
+  if (!box) return;
+
+  const linhasAtuais =
+    new Set(linhasPerguntasFormulario());
+
+  box.innerHTML =
+    perguntasRapidasDoNicho(slug)
+      .map(pergunta => `
+        <label>
+          <input
+            type="checkbox"
+            class="adv-pergunta-rapida"
+            value="${escaparHtml(pergunta)}"
+            ${linhasAtuais.has(pergunta) ? "checked" : ""}
+            onchange="alternarPerguntaRapidaFormulario(this)"
+          >
+          <span>${escaparHtml(pergunta)}</span>
+        </label>
+      `)
+      .join("");
+}
+
+function alternarPerguntaRapidaFormulario(input) {
+  const pergunta =
+    String(input?.value || "").trim();
+
+  if (!pergunta) return;
+
+  const linhas =
+    linhasPerguntasFormulario()
+      .filter(p => p !== pergunta);
+
+  if (input.checked) {
+    linhas.push(pergunta);
+  }
+
+  definirLinhasPerguntasFormulario(linhas);
+  sincronizarPerguntasRapidasComTexto();
+}
+
+function sincronizarPerguntasRapidasComTexto() {
+  const linhas =
+    new Set(linhasPerguntasFormulario());
+
+  document
+    .querySelectorAll(".adv-pergunta-rapida")
+    .forEach(input => {
+      input.checked = linhas.has(input.value);
+    });
+}
+
 // Persiste o estado do formulário por nicho para não perder ao trocar de aba
 if (!window._nichoFormState) window._nichoFormState = {};
 
@@ -33772,6 +34492,7 @@ function selecionarNichoTab(nicho, btnEl) {
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
   _restaurarEstadoFormNicho(nicho.slug);
+  renderizarPerguntasRapidasFormulario(nicho.slug);
 }
 
 // Coleta os dados extras do nicho ativo ao criar campanha
@@ -36251,7 +36972,10 @@ function adicionarBannerGeradoAoCarrossel() {
 }
 </script>
 
-<script>inicializarCarrosselImagens();</script>
+<script>
+  inicializarCarrosselImagens();
+  inicializarVideoCampanha();
+</script>
 
 <!-- ===== MODAL NICHOS USUÁRIO (ADMIN) ===== -->
 <div
@@ -36963,6 +37687,7 @@ function selecionarNichoTab(nicho, btnEl) {
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
   _restaurarEstadoFormNicho(nicho.slug);
+  renderizarPerguntasRapidasFormulario(nicho.slug);
 }
 
 // Coleta os dados extras do nicho ativo ao criar campanha

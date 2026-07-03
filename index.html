@@ -18475,6 +18475,10 @@ function usuarioEhCriadorCampanha() {
   return usuarioLogado?.tipo === "criador_campanha";
 }
 
+function usuarioUsaEnvioCriadorCampanha() {
+  return usuarioEhCriadorCampanha() || usuarioLogado?.tipo === "super_admin";
+}
+
 function definirVisibilidadeSecao(id, visivel) {
   const el = document.getElementById(id);
   if (el) {
@@ -28268,7 +28272,7 @@ async function carregarCampanhas() {
       !c.recebida_por_encaminhamento;
 
     const botaoEnvioCriadorCampanha =
-      usuarioEhCriadorCampanha();
+      usuarioUsaEnvioCriadorCampanha();
 
     const nomeCorretorEncaminhado =
       (c.corretores_encaminhados || [])
@@ -29215,7 +29219,7 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
   const descricao =
     document.getElementById("campanha_encaminhar_descricao");
 
-  if (usuarioEhCriadorCampanha()) {
+  if (usuarioUsaEnvioCriadorCampanha()) {
     if (titulo) {
       titulo.innerText = "Enviar campanha ao corretor";
     }
@@ -29349,7 +29353,7 @@ async function salvarEncaminhamentoCampanha() {
 
     alert(
       corretorIds.length
-        ? usuarioEhCriadorCampanha()
+        ? usuarioUsaEnvioCriadorCampanha()
           ? "Campanha enviada ao corretor selecionado."
           : "Campanha encaminhada aos corretores selecionados."
         : "Encaminhamento removido."

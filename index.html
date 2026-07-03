@@ -29689,7 +29689,7 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl) {
     console.log("TOGGLE:", data);
 
     if (data.error) {
-      alert(data.error);
+      mostrarErroPublicacao(data.error);
       if (btnEl) {
         btnEl.disabled = false;
         btnEl.textContent = btnEl.dataset.textoOriginal || (publicando ? "Publicar" : "⏸ Pausar");
@@ -29701,7 +29701,7 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl) {
 
   } catch (err) {
     console.error("TOGGLE:", err);
-    alert("Erro ao alterar campanha");
+    mostrarErroPublicacao("Erro ao alterar campanha. Tente novamente.");
     if (btnEl) {
       btnEl.disabled = false;
       btnEl.textContent = btnEl.dataset.textoOriginal || (publicando ? "Publicar" : "⏸ Pausar");

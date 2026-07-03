@@ -2859,14 +2859,16 @@ body.tema-claro .passo-meta-step-text p {
 .validacao-campanha-msg {
   display: block;
   margin: 8px 0 4px;
-  padding: 8px 12px;
-  border: 1px solid #ef4444;
+  padding: 10px 12px;
+  border: 1px solid #f87171;
+  border-left: 4px solid #ef4444;
   border-radius: 8px;
-  background: #450a0a;
-  color: #fca5a5;
+  background: #1f0a0d;
+  color: #fecaca;
   font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
+  font-weight: 800;
+  line-height: 1.45;
+  box-shadow: 0 8px 24px rgba(239,68,68,0.18);
 }
 
 .validacao-campanha-pulso {
@@ -2909,24 +2911,26 @@ body.tema-claro .validacao-campanha-msg {
   align-items: center;
   gap: 5px;
   width: fit-content;
-  margin: 5px 0 8px;
-  padding: 4px 8px;
+  margin: 6px 0 10px;
+  padding: 5px 9px;
   border-radius: 999px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.25;
+  letter-spacing: 0;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.22);
 }
 
 .ia-flag-campo.preenchido {
-  background: rgba(34,197,94,0.15);
-  border: 1px solid rgba(34,197,94,0.35);
-  color: #86efac;
+  background: #062f1f;
+  border: 1px solid #22c55e;
+  color: #bbf7d0;
 }
 
 .ia-flag-campo.pendente {
-  background: rgba(245,158,11,0.14);
-  border: 1px solid rgba(245,158,11,0.35);
-  color: #fcd34d;
+  background: #3a2604;
+  border: 1px solid #f59e0b;
+  color: #fde68a;
 }
 
 body.tema-claro .ia-flag-campo.preenchido {
@@ -32451,7 +32455,7 @@ function corSolidaNicho(nicho = {}) {
   const slug = slugNichoNormalizado(nicho);
   const id = Number(nicho.id || nicho.nicho_id);
   if (slug.includes("imove") || id === 1) return "#2563EB";
-  if (slug.includes("saude") || slug.includes("convenio") || id === 2) return "#DC2626";
+  if (slug.includes("saude") || slug.includes("convenio") || id === 2) return "#14B8A6";
   if (slug.includes("suplement") || id === 3) return "#C2410C";
   if (slug.includes("saas") || slug.includes("plataforma") || id === 4) return "#7C3AED";
   return nicho.cor || nicho.nicho_cor || "#2563EB";
@@ -32471,17 +32475,17 @@ function temaVisualNicho(nicho = {}) {
   if (slug.includes("saude") || slug.includes("convenio") || id === 2) {
     return {
       cor,
-      bg: "#2a0a0a",
-      border: "#dc2626",
-      text: "#fee2e2",
-      title: "#fecaca",
-      inputBg: "#3d0f0f",
-      inputBorder: "#ef4444",
-      bgLight: "#fff0f0",
-      borderLight: "#dc2626",
-      textLight: "#450a0a",
-      titleLight: "#991b1b",
-      inputBorderLight: "#dc2626"
+      bg: "#062426",
+      border: "#14b8a6",
+      text: "#d7fff5",
+      title: "#a7f3d0",
+      inputBg: "#0f2638",
+      inputBorder: "#38bdf8",
+      bgLight: "#ecfeff",
+      borderLight: "#0d9488",
+      textLight: "#083344",
+      titleLight: "#0f766e",
+      inputBorderLight: "#0891b2"
     };
   }
 
@@ -35651,7 +35655,7 @@ function corSolidaNicho(nicho = {}) {
   }
 
   if (slug.includes("saude") || slug.includes("convenio") || id === 2) {
-    return "#DC2626";
+    return "#14B8A6";
   }
 
   if (slug.includes("suplement") || id === 3) {
@@ -35673,17 +35677,17 @@ function temaVisualNicho(nicho = {}) {
   if (slug.includes("saude") || slug.includes("convenio") || id === 2) {
     return {
       cor,
-      bg: "#2a0a0a",
-      border: "#dc2626",
-      text: "#fee2e2",
-      title: "#fecaca",
-      inputBg: "#3d0f0f",
-      inputBorder: "#ef4444",
-      bgLight: "#fff0f0",
-      borderLight: "#dc2626",
-      textLight: "#450a0a",
-      titleLight: "#991b1b",
-      inputBorderLight: "#dc2626"
+      bg: "#062426",
+      border: "#14b8a6",
+      text: "#d7fff5",
+      title: "#a7f3d0",
+      inputBg: "#0f2638",
+      inputBorder: "#38bdf8",
+      bgLight: "#ecfeff",
+      borderLight: "#0d9488",
+      textLight: "#083344",
+      titleLight: "#0f766e",
+      inputBorderLight: "#0891b2"
     };
   }
 

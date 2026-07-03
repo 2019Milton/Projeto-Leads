@@ -22778,131 +22778,102 @@ function configurarCliquesDinamicos() {
   window.__cliquesDinamicosConfigurados = true;
 
   document.addEventListener("click", async (event) => {
-    const btnAdicionarImagem =
-      event.target.closest("#btn-adicionar-imagem");
+    try {
+      const acaoCampanha =
+        event.target.closest("#campanhas_lista [data-campanha-action]");
 
-    if (btnAdicionarImagem) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
+      if (acaoCampanha) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
 
-      if (typeof inicializarCarrosselImagens === "function") {
-        inicializarCarrosselImagens();
+        const action =
+          acaoCampanha.dataset.campanhaAction;
+
+        if (
+          usuarioEhCorretorReceptor() &&
+          ["duplicar", "encaminhar"].includes(action)
+        ) {
+          return;
+        }
+
+        if (action === "sync") {
+          sincronizarCampanhas();
+          return;
+        }
+
+        const campanha =
+          obterCampanhaPorBotaoAcao(acaoCampanha);
+
+        if (!campanha) return;
+
+        if (action === "toggle") {
+          toggleCampanha(campanha.campaign_id, campanha.status);
+        } else if (action === "detalhes") {
+          abrirCampanhaDrawerPorChave(acaoCampanha.dataset.campanhaKey);
+        } else if (action === "editar") {
+          abrirEdicaoCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+        } else if (action === "duplicar") {
+          duplicarCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+        } else if (action === "encaminhar") {
+          abrirModalEncaminharCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+        } else if (action === "restaurar") {
+          restaurarCampanha(campanha.campaign_id);
+        } else if (action === "excluir-definitivo") {
+          excluirCampanhaDefinitiva(Number(campanha.id));
+        } else if (action === "excluir") {
+          excluirCampanha(campanha.campaign_id);
+        }
+
+        return;
       }
 
-      document
-        .getElementById("input-multiplas-imagens")
-        ?.click();
+      const acaoLead =
+        event.target.closest("#card-leads-central [data-lead-action]");
 
-      return;
-    }
+      if (!acaoLead) return;
 
-    const btnGerarBanner =
-      event.target.closest(".btn-gerar-banner-ia");
-
-    if (btnGerarBanner) {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
 
-      if (typeof abrirModalGerarBanner === "function") {
-        abrirModalGerarBanner();
+      if (leadFoiArrastado) {
+        leadFoiArrastado = false;
+        return;
       }
 
-      return;
-    }
+      const leadId =
+        acaoLead.dataset.leadId ||
+        acaoLead.closest(".lead-card")?.dataset.leadId;
 
-    const acaoCampanha =
-      event.target.closest("[data-campanha-action]");
-
-    if (acaoCampanha) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
+      const lead =
+        obterLeadPorId(leadId);
 
       const action =
-        acaoCampanha.dataset.campanhaAction;
+        acaoLead.dataset.leadAction;
 
-      if (
-        usuarioEhCorretorReceptor() &&
-        ["duplicar", "encaminhar"].includes(action)
-      ) {
-        return;
+      if (action === "whatsapp") {
+        abrirWhatsAppDeBotao(acaoLead);
+      } else if (action === "ligar" && lead) {
+        abrirMenuLigacao(event, lead);
+      } else if (action === "mover" && lead) {
+        abrirMenuMover(event, lead);
+      } else if (action === "score" && lead) {
+        abrirMenuScore(event, lead);
+      } else if (action === "agendar") {
+        abrirAgendadorContato(
+          Number(leadId),
+          acaoLead.dataset.leadData || "",
+          acaoLead.dataset.leadObs || ""
+        );
+      } else if (action === "remover-agendamento") {
+        removerDataContato(Number(leadId));
+      } else if (leadId) {
+        abrirLeadDrawerPorId(Number(leadId));
       }
-
-      if (action === "sync") {
-        sincronizarCampanhas();
-        return;
-      }
-
-      const campanha =
-        obterCampanhaPorBotaoAcao(acaoCampanha);
-
-      if (!campanha) return;
-
-      if (action === "toggle") {
-        toggleCampanha(campanha.campaign_id, campanha.status);
-      } else if (action === "detalhes") {
-        abrirCampanhaDrawerPorChave(acaoCampanha.dataset.campanhaKey);
-      } else if (action === "editar") {
-        abrirEdicaoCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
-      } else if (action === "duplicar") {
-        duplicarCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
-      } else if (action === "encaminhar") {
-        abrirModalEncaminharCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
-      } else if (action === "restaurar") {
-        restaurarCampanha(campanha.campaign_id);
-      } else if (action === "excluir-definitivo") {
-        excluirCampanhaDefinitiva(Number(campanha.id));
-      } else if (action === "excluir") {
-        excluirCampanha(campanha.campaign_id);
-      }
-
-      return;
-    }
-
-    const acaoLead =
-      event.target.closest("[data-lead-action]");
-
-    if (!acaoLead) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-
-    if (leadFoiArrastado) {
-      leadFoiArrastado = false;
-      return;
-    }
-
-    const leadId =
-      acaoLead.dataset.leadId ||
-      acaoLead.closest(".lead-card")?.dataset.leadId;
-
-    const lead =
-      obterLeadPorId(leadId);
-
-    const action =
-      acaoLead.dataset.leadAction;
-
-    if (action === "whatsapp") {
-      abrirWhatsAppDeBotao(acaoLead);
-    } else if (action === "ligar" && lead) {
-      abrirMenuLigacao(event, lead);
-    } else if (action === "mover" && lead) {
-      abrirMenuMover(event, lead);
-    } else if (action === "score" && lead) {
-      abrirMenuScore(event, lead);
-    } else if (action === "agendar") {
-      abrirAgendadorContato(
-        Number(leadId),
-        acaoLead.dataset.leadData || "",
-        acaoLead.dataset.leadObs || ""
-      );
-    } else if (action === "remover-agendamento") {
-      removerDataContato(Number(leadId));
-    } else if (leadId) {
-      abrirLeadDrawerPorId(Number(leadId));
+    } catch (err) {
+      console.error("ERRO CLIQUE CARD:", err);
+      alert("Nao foi possivel executar esta acao. Atualize a pagina e tente novamente.");
     }
   }, true);
 }

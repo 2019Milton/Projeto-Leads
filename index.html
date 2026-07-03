@@ -8560,6 +8560,18 @@ body.tema-claro .info-tooltip-popup {
   font-weight: 700;
 }
 
+.campanha-erro-publicacao {
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(239,68,68,0.45);
+  background: rgba(127,29,29,0.35);
+  color: #fecaca;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .campanha-encaminhar-modal .pagamento-modal-content {
 
   width: min(430px, 100%);
@@ -26856,6 +26868,21 @@ function mostrarErroPublicacao(mensagem) {
   setTimeout(() => el.remove(), 9000);
 }
 
+function mostrarSucessoPublicacao(mensagem) {
+  const el = document.createElement("div");
+  el.textContent = "✅ " + mensagem;
+  Object.assign(el.style, {
+    position:"fixed", bottom:"24px", right:"24px",
+    background:"#14532d", color:"#86efac",
+    padding:"14px 18px", borderRadius:"10px",
+    fontSize:"13px", lineHeight:"1.5",
+    zIndex:"99999", boxShadow:"0 4px 20px rgba(0,0,0,.4)",
+    maxWidth:"400px", wordBreak:"break-word"
+  });
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 5000);
+}
+
 const ESTRATEGIAS_CONTROLE_COM_VALOR = new Set([
   "LOWEST_COST_WITH_BID_CAP",
   "COST_CAP",
@@ -28610,6 +28637,11 @@ async function carregarCampanhas() {
       !usuarioReceptorCampanha &&
       !c.recebida_por_encaminhamento;
 
+    const campanhaRecebidaLocal =
+      Boolean(c.recebida_por_encaminhamento) &&
+      campanhaUsaHistoricoLocal(c) &&
+      !c.campaign_id;
+
     const botaoEnvioCriadorCampanha =
       usuarioUsaEnvioCriadorCampanha();
 
@@ -28761,8 +28793,12 @@ async function carregarCampanhas() {
             : `
         <button
           class="btn-campanha-toggle btn-campanha-publicar${veiculacaoSubcategoria === "campanha_pausada" ? " btn-campanha-publicar-destaque" : ""}"
-          onclick="toggleCampanha('${c.campaign_id}', '${c.status}', this)"
-          title="Publicar / ativar campanha"
+          onclick="${
+            campanhaRecebidaLocal
+              ? `publicarCampanhaRecebida(${Number(c.id)}, this)`
+              : `toggleCampanha('${c.campaign_id}', '${c.status}', this)`
+          }"
+          title="${campanhaRecebidaLocal ? "Publicar campanha na sua Meta conectada" : "Publicar / ativar campanha"}"
         >Publicar</button>
             `
         }
@@ -28879,6 +28915,16 @@ async function carregarCampanhas() {
           ? `
             <div class="campanha-encaminhada">
               Historico local da plataforma. Metricas da Meta indisponiveis.
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        c.erro_publicacao
+          ? `
+            <div class="campanha-erro-publicacao">
+              ⚠️ ${escaparHtml(c.erro_publicacao)}
             </div>
           `
           : ""
@@ -30110,6 +30156,76 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl) {
     if (btnEl) {
       btnEl.disabled = false;
       btnEl.textContent = btnEl.dataset.textoOriginal || (publicando ? "Publicar" : "⏸ Pausar");
+    }
+  }
+}
+
+async function publicarCampanhaRecebida(campanhaId, btnEl) {
+
+  const token =
+    localStorage.getItem("token");
+
+  if (!token || !campanhaId) {
+    return;
+  }
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.dataset.textoOriginal = btnEl.textContent.trim();
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Publicando...';
+  }
+
+  try {
+
+    const res = await fetch(
+      `${API}/campanhas/${campanhaId}/publicar-recebida`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      mostrarErroPublicacao(
+        data.error ||
+        "Não foi possível publicar esta campanha"
+      );
+      await carregarCampanhas();
+      return;
+    }
+
+    await carregarCampanhas();
+    await carregarStatusMeta();
+    await carregarPerformanceMeta();
+
+    mostrarSucessoPublicacao(
+      "Campanha publicada na Meta com sucesso."
+    );
+
+  } catch (err) {
+
+    console.error(
+      "PUBLICAR CAMPANHA RECEBIDA:",
+      err
+    );
+
+    mostrarErroPublicacao(
+      "Erro ao publicar campanha recebida"
+    );
+
+    await carregarCampanhas();
+
+  } finally {
+
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.textContent =
+        btnEl.dataset.textoOriginal || "Publicar";
     }
   }
 }

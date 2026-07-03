@@ -22811,7 +22811,9 @@ function configurarCliquesDinamicos() {
         }
 
         if (action === "sync") {
-          sincronizarCampanhas();
+          if (typeof sincronizarCampanhas === "function") {
+            sincronizarCampanhas();
+          }
           return;
         }
 
@@ -22820,22 +22822,24 @@ function configurarCliquesDinamicos() {
 
         if (!campanha) return;
 
-        if (action === "toggle") {
+        if (action === "toggle" && typeof toggleCampanha === "function") {
           toggleCampanha(campanha.campaign_id, campanha.status);
-        } else if (action === "detalhes") {
+        } else if (action === "detalhes" && typeof abrirCampanhaDrawerPorChave === "function") {
           abrirCampanhaDrawerPorChave(acaoCampanha.dataset.campanhaKey);
-        } else if (action === "editar") {
+        } else if (action === "editar" && typeof abrirEdicaoCampanhaPorChave === "function") {
           abrirEdicaoCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
-        } else if (action === "duplicar") {
+        } else if (action === "duplicar" && typeof duplicarCampanhaPorChave === "function") {
           duplicarCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
-        } else if (action === "encaminhar") {
+        } else if (action === "encaminhar" && typeof abrirModalEncaminharCampanhaPorChave === "function") {
           abrirModalEncaminharCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
-        } else if (action === "restaurar") {
+        } else if (action === "restaurar" && typeof restaurarCampanha === "function") {
           restaurarCampanha(campanha.campaign_id);
-        } else if (action === "excluir-definitivo") {
+        } else if (action === "excluir-definitivo" && typeof excluirCampanhaDefinitiva === "function") {
           excluirCampanhaDefinitiva(Number(campanha.id));
-        } else if (action === "excluir") {
+        } else if (action === "excluir" && typeof excluirCampanha === "function") {
           excluirCampanha(campanha.campaign_id);
+        } else {
+          console.warn("Acao de campanha sem handler disponivel:", action);
         }
 
         return;
@@ -22865,28 +22869,29 @@ function configurarCliquesDinamicos() {
       const action =
         acaoLead.dataset.leadAction;
 
-      if (action === "whatsapp") {
+      if (action === "whatsapp" && typeof abrirWhatsAppDeBotao === "function") {
         abrirWhatsAppDeBotao(acaoLead);
-      } else if (action === "ligar" && lead) {
+      } else if (action === "ligar" && lead && typeof abrirMenuLigacao === "function") {
         abrirMenuLigacao(event, lead);
-      } else if (action === "mover" && lead) {
+      } else if (action === "mover" && lead && typeof abrirMenuMover === "function") {
         abrirMenuMover(event, lead);
-      } else if (action === "score" && lead) {
+      } else if (action === "score" && lead && typeof abrirMenuScore === "function") {
         abrirMenuScore(event, lead);
-      } else if (action === "agendar") {
+      } else if (action === "agendar" && typeof abrirAgendadorContato === "function") {
         abrirAgendadorContato(
           Number(leadId),
           acaoLead.dataset.leadData || "",
           acaoLead.dataset.leadObs || ""
         );
-      } else if (action === "remover-agendamento") {
+      } else if (action === "remover-agendamento" && typeof removerDataContato === "function") {
         removerDataContato(Number(leadId));
-      } else if (leadId) {
+      } else if (leadId && typeof abrirLeadDrawerPorId === "function") {
         abrirLeadDrawerPorId(Number(leadId));
+      } else {
+        console.warn("Acao de lead sem handler disponivel:", action, leadId);
       }
     } catch (err) {
       console.error("ERRO CLIQUE CARD:", err);
-      alert("Nao foi possivel executar esta acao. Atualize a pagina e tente novamente.");
     }
   }, true);
 }
@@ -28144,44 +28149,56 @@ async function carregarCampanhas() {
     return nicho;
   };
 
-  // detecta nichos únicos presentes nas campanhas carregadas
-  const nichosNasCampanhas = [];
+  // Mantem o filtro de nicho disponivel mesmo quando o status atual nao tem campanhas.
+  const nichosParaFiltro = [];
   const nichosVistos = new Set();
+
+  (usuarioLogado?.nichos || []).forEach(n => {
+    const chave = n.slug || n.nome || String(n.id || "");
+    if (chave && !nichosVistos.has(chave)) {
+      nichosVistos.add(chave);
+      nichosParaFiltro.push(n);
+    }
+  });
+
   campanhasAtuais.forEach(c => {
     const nicho = resolverNichoCampanha(c);
     if (!nicho) return;
     const chave = nicho.slug || nicho.nome || String(nicho.id);
     if (chave && !nichosVistos.has(chave)) {
       nichosVistos.add(chave);
-      nichosNasCampanhas.push(nicho);
+      nichosParaFiltro.push(nicho);
     }
   });
 
   const selectNicho = document.getElementById("filtro_nicho");
   if (selectNicho) {
-    if (nichosNasCampanhas.length > 1) {
-      const valorAtual = selectNicho.value;
-      selectNicho.innerHTML = `<option value="">Todos os nichos</option>` +
-        nichosNasCampanhas.map(n => {
-          const val = n.slug || n.nome || String(n.id);
-          const label = n.nome || n.slug || val;
-          const sel = valorAtual === val ? " selected" : "";
-          return `<option value="${val}"${sel}>${label}</option>`;
-        }).join("");
-      selectNicho.style.display = "";
-    } else {
-      selectNicho.style.display = "none";
+    const valorAtual = selectNicho.value;
+    const opcoesNicho = nichosParaFiltro.map(n => {
+      const val = n.slug || n.nome || String(n.id);
+      const label = n.nome || n.slug || val;
+      const sel = valorAtual === val ? " selected" : "";
+      return `<option value="${escaparHtml(val)}"${sel}>${escaparHtml(label)}</option>`;
+    }).join("");
+
+    selectNicho.innerHTML =
+      `<option value="">Todos os nichos</option>${opcoesNicho}`;
+
+    if (
+      valorAtual &&
+      !nichosParaFiltro.some(n => (n.slug || n.nome || String(n.id)) === valorAtual)
+    ) {
       selectNicho.value = "";
     }
+
+    selectNicho.style.display = "";
   }
 
   const filtro =
     document.getElementById("filtro_status")?.value;
 
   const filtroNicho =
-    selectNicho?.style.display !== "none"
-      ? (selectNicho?.value || "")
-      : "";
+    selectNicho?.value || "";
 
   let campanhasFiltradas = [...campanhasAtuais];
 

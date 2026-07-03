@@ -2929,20 +2929,6 @@ body.tema-claro .validacao-campanha-msg {
   color: #fcd34d;
 }
 
-.ia-summary-badge-list {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-left: 10px;
-  vertical-align: middle;
-}
-
-.advanced-campaign summary .ia-flag-campo {
-  margin: 0;
-  vertical-align: middle;
-  font-size: 10px;
-}
-
 body.tema-claro .ia-flag-campo.preenchido {
   background: #dcfce7;
   border-color: #86efac;
@@ -21930,7 +21916,6 @@ function limparMarcacoesCamposIA() {
     });
 
   document.querySelectorAll(".ia-flag-campo").forEach((el) => el.remove());
-  document.querySelectorAll(".ia-summary-badge-list").forEach((el) => el.remove());
 }
 
 function marcarCampoIA(seletor, status, texto) {
@@ -21939,43 +21924,22 @@ function marcarCampoIA(seletor, status, texto) {
 
   // Marca borda/brilho no campo ou container mais próximo
   const campoMarcador =
-    el.closest(".campaign-setup-section") ||
     el.closest(".advanced-full") ||
+    el.closest(".advanced-grid > div") ||
     el.closest(".advanced-checks") ||
+    (el.matches(".campaign-setup-section") ? el : null) ||
+    el.closest("#nicho_campos_extras > div") ||
     el;
   campoMarcador.classList.add("ia-campo-marcado");
   campoMarcador.classList.add(status === "preenchido" ? "ia-campo-preenchido" : "ia-campo-pendente");
 
-  if (status === "pendente") {
-    // Injeta badge no <summary> do <details> pai para ficar visível mesmo colapsado
-    const details = el.closest("details.advanced-campaign");
-    const summary = details ? details.querySelector(":scope > summary") : null;
-
-    if (summary) {
-      let lista = summary.querySelector(".ia-summary-badge-list");
-      if (!lista) {
-        lista = document.createElement("span");
-        lista.className = "ia-summary-badge-list";
-        summary.appendChild(lista);
-      }
-      const badge = document.createElement("span");
-      badge.className = "ia-flag-campo pendente";
-      badge.textContent = `Preencher: ${texto}`;
-      lista.appendChild(badge);
-    } else {
-      // Fallback: insere após o container do campo
-      const flag = document.createElement("span");
-      flag.className = "ia-flag-campo pendente";
-      flag.textContent = `Preencher manualmente: ${texto}`;
-      campoMarcador.insertAdjacentElement("afterend", flag);
-    }
-  } else {
-    // preenchido: mantém flag inline dentro da seção expandida
-    const flag = document.createElement("span");
-    flag.className = "ia-flag-campo preenchido";
-    flag.textContent = `IA preencheu: ${texto}`;
-    campoMarcador.insertAdjacentElement("afterend", flag);
-  }
+  const flag = document.createElement("span");
+  flag.className = `ia-flag-campo ${status === "preenchido" ? "preenchido" : "pendente"}`;
+  flag.textContent =
+    status === "preenchido"
+      ? `IA preencheu: ${texto}`
+      : `Preencher manualmente: ${texto}`;
+  campoMarcador.insertAdjacentElement("afterend", flag);
 }
 
 function marcarCamposAposAplicarIA(camposPreenchidos = []) {
@@ -22037,9 +22001,10 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_objetivo", "objetivo do suplemento"],
     ["#nicho_marca", "marca"],
     ["#nicho_publico_alvo", "público-alvo"],
-    ["#bloco_onde_anunciar", "Facebook/Instagram"],
-    ["#bloco_agendamento_custo", "datas e controle de custo"],
-    ["#bloco_segmentacao_adicional", "posicionamentos e dispositivos"]
+    ["#adv_platform_facebook", "Facebook/Instagram"],
+    ["#adv_inicio_btn", "data de início"],
+    ["#adv_bid_strategy", "controle de custo"],
+    ["#adv_device_mobile", "dispositivos"]
   ].forEach(([seletor, texto]) => {
     if (!preenchidos.has(seletor)) {
       marcarCampoIA(seletor, "pendente", texto);

@@ -29195,6 +29195,7 @@ async function carregarCorretoresCampanha() {
 
     if (usuarioPodeEnviarCampanhaParaTodos()) {
       const endpointsAmplos = [
+        `${API}/usuarios/corretores-disponiveis`,
         `${API}/admin/usuarios`,
         `${API}/chat/usuarios`
       ];

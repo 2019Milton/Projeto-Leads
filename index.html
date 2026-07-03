@@ -8242,6 +8242,40 @@ body.tema-claro .info-tooltip-popup {
   font-weight: 700;
 }
 
+.campanha-encaminhada.nao-enviada {
+  background: rgba(148,163,184,0.12);
+  color: #cbd5e1;
+}
+
+.campanha-encaminhamento-status {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148,163,184,0.28);
+  background: rgba(15,23,42,0.7);
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.campanha-encaminhamento-status.enviado {
+  border-color: rgba(34,197,94,0.45);
+  background: rgba(34,197,94,0.12);
+  color: #bbf7d0;
+}
+
+.campanha-encaminhamento-status.cancelado {
+  border-color: rgba(245,158,11,0.45);
+  background: rgba(245,158,11,0.12);
+  color: #fde68a;
+}
+
+.campanha-encaminhamento-status.erro {
+  border-color: rgba(239,68,68,0.45);
+  background: rgba(239,68,68,0.12);
+  color: #fecaca;
+}
+
 .campanha-veiculacao {
 
   width: fit-content;
@@ -28712,7 +28746,13 @@ async function carregarCampanhas() {
           : nomeCorretorEncaminhado
           ? `
             <div class="campanha-encaminhada">
-              Encaminhada para ${nomeCorretorEncaminhado}
+              Enviada para ${nomeCorretorEncaminhado}
+            </div>
+          `
+          : podeEncaminhar
+          ? `
+            <div class="campanha-encaminhada nao-enviada">
+              Nao enviada para corretor
             </div>
           `
           : ""
@@ -29437,6 +29477,12 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
       .map(cor => Number(cor.id))
   );
 
+  const nomesEncaminhados =
+    (campanhaEncaminharAtual.corretores_encaminhados || [])
+      .map(cor => cor.nome || cor.email)
+      .filter(Boolean)
+      .join(", ");
+
   select.innerHTML = corretoresCampanha.map(corretor => {
     const nomeCompleto =
       [
@@ -29469,6 +29515,13 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
         : "none";
   }
 
+  definirStatusEncaminhamentoModal(
+    nomesEncaminhados ? "enviado" : "",
+    nomesEncaminhados
+      ? `Enviado para: ${nomesEncaminhados}`
+      : "Ainda nao enviado para nenhum corretor."
+  );
+
   modal.classList.add("active");
 }
 
@@ -29486,6 +29539,20 @@ function abrirAcessoContaAnunciosMeta() {
     `https://business.facebook.com/settings/ad-accounts/${idSemPrefixo}`;
 
   window.open(url, "_blank", "width=1100,height=750");
+}
+
+function definirStatusEncaminhamentoModal(tipo, mensagem) {
+  const status =
+    document.getElementById("campanha_encaminhar_status");
+
+  if (!status) {
+    return;
+  }
+
+  status.className =
+    `campanha-encaminhamento-status ${tipo || ""}`.trim();
+  status.textContent = mensagem || "";
+  status.style.display = mensagem ? "block" : "none";
 }
 
 function fecharModalEncaminharCampanha() {
@@ -29544,17 +29611,23 @@ async function salvarEncaminhamentoCampanha(corretorIdsForcados = null) {
           ? "A API ainda esta exigindo vinculo para enviar esta campanha. O frontend ja envia permissao de Super Admin/Criador, mas o backend precisa liberar usuarios sem vinculo neste endpoint."
           : erroEnvio
       );
+      definirStatusEncaminhamentoModal("erro", erroEnvio);
       return;
     }
 
-    alert(
+    const mensagemSucesso =
       corretorIds.length
         ? usuarioUsaEnvioCriadorCampanha()
           ? "Campanha enviada ao corretor selecionado."
           : "Campanha encaminhada aos corretores selecionados."
-        : "Envio cancelado. A campanha nao aparecera mais para o corretor."
+        : "Envio cancelado. A campanha nao aparecera mais para o corretor.";
+
+    definirStatusEncaminhamentoModal(
+      corretorIds.length ? "enviado" : "cancelado",
+      mensagemSucesso
     );
 
+    await new Promise(resolve => setTimeout(resolve, 900));
     fecharModalEncaminharCampanha();
     await carregarCampanhas();
 
@@ -34936,6 +35009,12 @@ async function enviarFeedback() {
     </div>
 
     <select id="campanha_corretor_select" multiple size="6"></select>
+
+    <div
+      id="campanha_encaminhar_status"
+      class="campanha-encaminhamento-status"
+      style="display:none;"
+    ></div>
 
     <div class="pagamento-modal-alerta">
       O corretor precisa ter acesso à conta de anúncios ou à campanha na Meta

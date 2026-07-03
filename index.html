@@ -1137,10 +1137,22 @@ button {
    conteúdo) — só assim a caixa realmente cresce com o conteúdo e
    #app-content-area passa a ter altura total maior que 100vh, o que
    é o que faz a rolagem da página alcançar o fim de verdade. */
-#app.sidebar-ativa #card-dashboard.secao-visivel,
+/* Dashboard: NÃO sobrescreve overflow — .dashboard-pro-card { overflow:hidden }
+   já contém o overflow horizontal corretamente. Só precisamos tirar o flex:1
+   e o min-height para que o card não ocupe uma viewport inteira de altura. */
+#app.sidebar-ativa #card-dashboard.secao-visivel {
+  flex: 0 0 auto;
+  min-height: 0 !important;
+}
+
+/* Campanhas: o .campanhas-card define overflow-y:auto próprio que cria
+   rolagem interna prematura, cortando o conteúdo antes da rolagem da página.
+   Por isso aqui SIM precisamos forçar overflow:visible para repassar a rolagem
+   ao #app-content-area (o único scroll real da interface). */
 #app.sidebar-ativa #card-campanhas.secao-visivel {
   overflow: visible !important;
   flex: 0 0 auto;
+  min-height: 0 !important;
 }
 
 /* O wrapper das abas de nicho (#nicho_campanha_container) também vira
@@ -3506,6 +3518,82 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
 .switch input:checked + .slider:before {
 
   transform: translateX(20px);
+}
+
+.btn-campanha-toggle {
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-campanha-publicar {
+  background: #22c55e;
+  color: #fff;
+}
+
+.btn-campanha-publicar:hover {
+  background: #16a34a;
+  transform: scale(1.04);
+}
+
+.btn-campanha-publicar-destaque {
+  box-shadow: 0 0 0 2px #4ade80, 0 0 12px rgba(34,197,94,0.5);
+  animation: pulso-toggle 1.6s ease-in-out infinite;
+  position: relative;
+}
+
+.btn-campanha-publicar-destaque::after {
+  content: "Pausada via Meta — clique para reativar";
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #1a1f2e;
+  color: #fde68a;
+  border: 1px solid rgba(250,204,21,0.45);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  z-index: 200;
+}
+
+.btn-campanha-publicar-destaque:hover::after {
+  opacity: 1;
+}
+
+.btn-campanha-pausar {
+  background: rgba(120,120,140,0.22);
+  color: #aaa;
+}
+
+.btn-campanha-pausar:hover {
+  background: rgba(120,120,140,0.38);
+  transform: scale(1.04);
+}
+
+.detalhe-imagens-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.detalhe-imagem {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .origem-badge {
@@ -24474,16 +24562,6 @@ function obterProximoPassoGuiaSecreto() {
     };
   }
 
-  if (!valorCampo("campanha_nome")) {
-    return {
-      id: "nome_campanha",
-      seletor: "#campanha_nome",
-      titulo: "Dê um nome para a campanha",
-      texto:
-        "Use um nome simples para identificar a campanha depois, como o empreendimento, bairro ou objetivo."
-    };
-  }
-
   if (!document.getElementById("pagina_select")?.value) {
     return {
       id: "pagina_campanha",
@@ -26765,6 +26843,7 @@ async function criarCampanhaCompleta() {
 
     // 🔥 UPLOAD DE TODAS AS IMAGENS
     const imageHashes = [];
+    const imageUrls = [];
     const totalImagens = imagensArquivos.length;
 
     for (let i = 0; i < imagensArquivos.length; i++) {
@@ -26795,6 +26874,7 @@ async function criarCampanhaCompleta() {
       }
 
       imageHashes.push(upload.hash);
+      imageUrls.push(upload.url || null);
     }
 
     const imageHash = imageHashes[0];
@@ -26943,7 +27023,8 @@ async function criarCampanhaCompleta() {
     
           // 🔥 IMAGEM
           imageHash,
-          imageHashes
+          imageHashes,
+          imageUrls
         })
       }
     );
@@ -28438,23 +28519,20 @@ async function carregarCampanhas() {
         ${
           campanhaEstaExcluida(c)
             ? ""
+            : campanhaEstaAtiva(c)
+            ? `
+        <button
+          class="btn-campanha-toggle btn-campanha-pausar"
+          onclick="toggleCampanha('${c.campaign_id}', '${c.status}')"
+          title="Pausar campanha"
+        >⏸ Pausar</button>
+            `
             : `
-        <label class="switch ${veiculacaoSubcategoria === "campanha_pausada" && campanhaEstaPausada(c) ? "switch-destaque" : ""}">
-
-          <input
-            type="checkbox"
-            ${campanhaEstaAtiva(c) ? "checked" : ""}
-            onchange="
-              toggleCampanha(
-                '${c.campaign_id}',
-                '${c.status}'
-              )
-            "
-          >
-
-          <span class="slider"></span>
-
-        </label>
+        <button
+          class="btn-campanha-toggle btn-campanha-publicar${veiculacaoSubcategoria === "campanha_pausada" ? " btn-campanha-publicar-destaque" : ""}"
+          onclick="toggleCampanha('${c.campaign_id}', '${c.status}')"
+          title="Publicar / ativar campanha"
+        >Publicar</button>
             `
         }
     
@@ -28499,7 +28577,7 @@ async function carregarCampanhas() {
                       veiculacaoSubcategoria === "campanha_pausada" && campanhaEstaPausada(c)
                         ? `
                           <div class="campanha-veiculacao-hint-toggle">
-                            ↑ Use a chave acima para ativar esta campanha
+                            ↑ Clique em "Publicar" acima para reativar esta campanha
                           </div>
                         `
                         : veiculacaoSubcategoria === "campanha_pausada" && campanhaEstaAtiva(c)
@@ -29122,6 +29200,8 @@ function abrirCampanhaDrawer(campanhaEncoded) {
   titulo.innerText =
     campanha.nome || "Campanha";
 
+  const imagensUrls = Array.isArray(cfg.imagens_urls) ? cfg.imagens_urls.filter(Boolean) : [];
+
   conteudo.innerHTML = `
     <div class="ia-ouro-destaque">
       <h4>IA Ouro - Analise de campanha</h4>
@@ -29140,9 +29220,19 @@ function abrirCampanhaDrawer(campanhaEncoded) {
         style="display:none;"
       ></div>
     </div>
+
+    ${imagensUrls.length ? `
+      <div class="detalhe-imagens-grid">
+        ${imagensUrls.map(url => `<img src="${escaparHtml(url)}" class="detalhe-imagem" alt="Imagem da campanha">`).join("")}
+      </div>
+    ` : ""}
+
     <div class="detalhes-grid">
       ${detalheItem("Status", campanha.status)}
       ${detalheItem("Origem", campanha.origem)}
+      ${campanha.daily_budget ? detalheItem("Orçamento/dia", "R$ " + Number(campanha.daily_budget / 100).toFixed(2)) : ""}
+      ${detalheItem("Texto do anúncio", cfg.texto, "full")}
+      ${detalheItem("CTA", cfg.cta)}
       ${detalheItem("Categoria especial", labelCategoriaEspecial(cfg.categoria_especial))}
       ${detalheItem("Objetivo", campanha.objetivo || "Leads")}
       ${detalheItem("Título do anúncio", cfg.titulo)}

@@ -8485,6 +8485,17 @@ body.tema-claro .info-tooltip-popup {
   white-space: nowrap;
 }
 
+.campanha-acoes button.btn-enviar-corretor {
+  width: auto !important;
+  min-width: 118px !important;
+  padding: 0 12px;
+  border: 1px solid rgba(14,165,233,0.45);
+  background: linear-gradient(135deg,#0ea5e9,#4f46e5);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 /* BOTÕES */
 
 .btn-acao {
@@ -18470,6 +18481,10 @@ function usuarioPodeEncaminharCampanhas() {
   );
 }
 
+function usuarioEhCriadorCampanha() {
+  return usuarioLogado?.tipo === "criador_campanha";
+}
+
 function definirVisibilidadeSecao(id, visivel) {
   const el = document.getElementById(id);
   if (el) {
@@ -28160,6 +28175,9 @@ async function carregarCampanhas() {
       !usuarioReceptorCampanha &&
       !c.recebida_por_encaminhamento;
 
+    const botaoEnvioCriadorCampanha =
+      usuarioEhCriadorCampanha();
+
     const nomeCorretorEncaminhado =
       (c.corretores_encaminhados || [])
         .map(cor => cor.nome || cor.email)
@@ -28668,14 +28686,14 @@ async function carregarCampanhas() {
             podeEncaminhar
               ? `
                 <button
-                  class="btn-acao btn-encaminhar-campanha"
+                  class="btn-acao btn-encaminhar-campanha ${botaoEnvioCriadorCampanha ? "btn-enviar-corretor" : ""}"
                   type="button"
                   data-campanha-action="encaminhar"
                   data-campanha-key="${campanhaCacheKey}"
-                  title="Encaminhar para corretor"
+                  title="${botaoEnvioCriadorCampanha ? "Enviar campanha ao corretor solicitante" : "Encaminhar para corretor"}"
                   onclick="abrirModalEncaminharCampanhaPorChave('${campanhaCacheKey}')"
                 >
-                  ↗
+                  ${botaoEnvioCriadorCampanha ? "Enviar" : "↗"}
                 </button>
               `
               : ""
@@ -29099,6 +29117,32 @@ function abrirModalEncaminharCampanha(campanhaEncoded) {
     return;
   }
 
+  const titulo =
+    document.getElementById("campanha_encaminhar_titulo");
+
+  const descricao =
+    document.getElementById("campanha_encaminhar_descricao");
+
+  if (usuarioEhCriadorCampanha()) {
+    if (titulo) {
+      titulo.innerText = "Enviar campanha ao corretor";
+    }
+
+    if (descricao) {
+      descricao.innerText =
+        "Escolha o corretor que solicitou esta campanha. Ela aparecerá em Minhas Campanhas para ele publicar pela conta Meta configurada.";
+    }
+  } else {
+    if (titulo) {
+      titulo.innerText = "Encaminhar campanha";
+    }
+
+    if (descricao) {
+      descricao.innerText =
+        "Escolha um ou mais corretores vinculados (Ctrl/Cmd + clique para selecionar vários). A campanha aparecerá no painel deles para ativação com a conexão Meta de cada corretor.";
+    }
+  }
+
   nome.innerText =
     campanhaEncaminharAtual.nome ||
     "Campanha";
@@ -29213,7 +29257,9 @@ async function salvarEncaminhamentoCampanha() {
 
     alert(
       corretorIds.length
-        ? "Campanha encaminhada aos corretores selecionados."
+        ? usuarioEhCriadorCampanha()
+          ? "Campanha enviada ao corretor selecionado."
+          : "Campanha encaminhada aos corretores selecionados."
         : "Encaminhamento removido."
     );
 
@@ -34538,7 +34584,7 @@ async function enviarFeedback() {
 
     <div class="pagamento-modal-header">
 
-      <h3>Encaminhar campanha</h3>
+      <h3 id="campanha_encaminhar_titulo">Encaminhar campanha</h3>
 
       <button
         title="Fechar"
@@ -34553,7 +34599,7 @@ async function enviarFeedback() {
       <strong id="campanha_encaminhar_nome">
         Campanha
       </strong>
-      <p>
+      <p id="campanha_encaminhar_descricao">
         Escolha um ou mais corretores vinculados (Ctrl/Cmd + clique para
         selecionar vários). A campanha aparecerá no painel deles para
         ativação com a conexão Meta de cada corretor.

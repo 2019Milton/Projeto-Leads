@@ -19145,6 +19145,7 @@ async function init() {
 
   inicializarPaineisRecolhaveis();
   inicializarEstadoCriarCampanha();
+  atualizarDescricaoCusto();
   inicializarKanbanTopScrollbar();
 }
 
@@ -22252,7 +22253,6 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_publico_alvo", "público-alvo"],
     ["#adv_platform_facebook", "Facebook/Instagram"],
     ["#adv_inicio_btn", "data de início"],
-    ["#adv_bid_strategy", "controle de custo"],
     ["#adv_device_mobile", "dispositivos"]
   ].forEach(([seletor, texto]) => {
     if (!preenchidos.has(seletor)) {
@@ -24108,6 +24108,10 @@ function atualizarDescricaoCusto() {
   const v = sel.value;
   desc.className = "adv-custo-desc visivel";
   if (inp) inp.disabled = false;
+
+  if (!estrategiaControleExigeValor(v)) {
+    limparValidacaoControleCusto();
+  }
 
   if (!v) {
     desc.textContent = "A Meta decide automaticamente onde e quanto gastar para trazer o maior número de leads pelo menor preço possível. Recomendado para quem está começando.";
@@ -26602,6 +26606,40 @@ function limparValidacaoCampanha() {
   document
     .querySelectorAll(".validacao-campanha-msg")
     .forEach((el) => el.remove());
+}
+
+function limparValidacaoControleCusto() {
+  const campos = [
+    document.getElementById("adv_bid_strategy"),
+    document.getElementById("adv_bid_amount")
+  ].filter(Boolean);
+
+  campos.forEach((campo) => {
+    campo.classList.remove("campo-validacao-erro", "validacao-campanha-pulso");
+    campo.style.borderColor = "";
+    campo.style.boxShadow = "";
+
+    const marcador =
+      campo.closest(".campaign-setup-section") ||
+      campo.closest(".advanced-full") ||
+      campo.closest(".advanced-checks") ||
+      campo.closest(".advanced-grid > div");
+
+    marcador?.classList.remove("campo-validacao-erro", "validacao-campanha-pulso");
+  });
+
+  document.querySelectorAll(".validacao-campanha-msg").forEach((aviso) => {
+    const texto = (aviso.textContent || "").toLowerCase();
+    if (
+      texto.includes("bid_amount") ||
+      texto.includes("lance") ||
+      texto.includes("valor de controle") ||
+      texto.includes("estratégia de controle") ||
+      texto.includes("estrategia de controle")
+    ) {
+      aviso.remove();
+    }
+  });
 }
 
 function abrirAreaDoCampoCampanha(campo) {

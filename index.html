@@ -3530,6 +3530,30 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   transition: background 0.2s, transform 0.15s;
   white-space: nowrap;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-campanha-toggle:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+@keyframes spin-toggle {
+  to { transform: rotate(360deg); }
+}
+
+.spinner-toggle {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin-toggle 0.7s linear infinite;
+  flex-shrink: 0;
 }
 
 .btn-campanha-publicar {
@@ -28532,14 +28556,14 @@ async function carregarCampanhas() {
             ? `
         <button
           class="btn-campanha-toggle btn-campanha-pausar"
-          onclick="toggleCampanha('${c.campaign_id}', '${c.status}')"
+          onclick="toggleCampanha('${c.campaign_id}', '${c.status}', this)"
           title="Pausar campanha"
         >⏸ Pausar</button>
             `
             : `
         <button
           class="btn-campanha-toggle btn-campanha-publicar${veiculacaoSubcategoria === "campanha_pausada" ? " btn-campanha-publicar-destaque" : ""}"
-          onclick="toggleCampanha('${c.campaign_id}', '${c.status}')"
+          onclick="toggleCampanha('${c.campaign_id}', '${c.status}', this)"
           title="Publicar / ativar campanha"
         >Publicar</button>
             `
@@ -28839,27 +28863,6 @@ async function carregarCampanhas() {
     
         <div class="campanha-acoes">
 
-          ${
-            usuarioReceptorCampanha && !campanhaEstaExcluida(c)
-              ? `
-                <button
-                  class="btn-acao btn-publicar-receptor"
-                  type="button"
-                  data-campanha-action="toggle"
-                  data-campanha-key="${campanhaCacheKey}"
-                  title="${campanhaEstaAtiva(c) ? "Pausar campanha" : "Publicar campanha"}"
-                  onclick="
-                    toggleCampanha(
-                      '${c.campaign_id}',
-                      '${c.status}'
-                    )
-                  "
-                >
-                  ${campanhaEstaAtiva(c) ? "Pausar" : "Publicar"}
-                </button>
-              `
-              : ""
-          }
 
           <button
             class="btn-acao"
@@ -29643,46 +29646,67 @@ async function sincronizarCampanhas() {
 
 
 
-async function toggleCampanha(campaign_id, statusAtual) {
+async function toggleCampanha(campaign_id, statusAtual, btnEl) {
 
   const token = localStorage.getItem("token");
 
   const statusNormalizado =
     String(statusAtual || "").toUpperCase();
 
-  const novoStatus =
-    ["ACTIVE", "ENABLED"].includes(statusNormalizado)
-      ? "PAUSED"
-      : "ACTIVE";
+  const publicando =
+    !["ACTIVE", "ENABLED"].includes(statusNormalizado);
 
-  const res = await fetch(
-    `${API}/meta/toggle-campanha`,
-    {
-      method: "POST",
+  const novoStatus = publicando ? "ACTIVE" : "PAUSED";
 
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-
-      body: JSON.stringify({
-        campaign_id,
-        status: novoStatus
-      })
-    }
-  );
-
-  const data = await res.json();
-
-  console.log("TOGGLE:", data);
-
-  if (data.error) {
-
-    alert(data.error);
-    return;
+  // Animação de loading no botão
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.dataset.textoOriginal = btnEl.textContent.trim();
+    btnEl.innerHTML = '<span class="spinner-toggle"></span>' + (publicando ? " Publicando..." : " Pausando...");
   }
 
-  await carregarCampanhas();
+  try {
+
+    const res = await fetch(
+      `${API}/meta/toggle-campanha`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+
+        body: JSON.stringify({
+          campaign_id,
+          status: novoStatus
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    console.log("TOGGLE:", data);
+
+    if (data.error) {
+      alert(data.error);
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.textContent = btnEl.dataset.textoOriginal || (publicando ? "Publicar" : "⏸ Pausar");
+      }
+      return;
+    }
+
+    await carregarCampanhas();
+
+  } catch (err) {
+    console.error("TOGGLE:", err);
+    alert("Erro ao alterar campanha");
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.textContent = btnEl.dataset.textoOriginal || (publicando ? "Publicar" : "⏸ Pausar");
+    }
+  }
 }
 
 async function excluirCampanha(campaign_id) {

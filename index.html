@@ -3541,6 +3541,13 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   transform: none !important;
 }
 
+.btn-campanha-toggle.encerrada {
+  background: rgba(148,163,184,0.22);
+  border: 1px solid rgba(148,163,184,0.35);
+  color: #cbd5e1;
+  box-shadow: none;
+}
+
 @keyframes spin-toggle {
   to { transform: rotate(360deg); }
 }
@@ -8266,6 +8273,12 @@ body.tema-claro .info-tooltip-popup {
 .campanha-encaminhada.nao-enviada {
   background: rgba(148,163,184,0.12);
   color: #cbd5e1;
+}
+
+.campanha-encaminhada.expirada {
+  background: rgba(245,158,11,0.14);
+  color: #fde68a;
+  border: 1px solid rgba(245,158,11,0.28);
 }
 
 .campanha-encaminhamento-status {
@@ -19568,6 +19581,62 @@ function campanhaEstaExcluida(campanha) {
   return String(campanha?.status || "").toUpperCase() === "DELETED";
 }
 
+function obterConfiguracoesCampanha(campanha) {
+  const cfg =
+    campanha?.configuracoes_avancadas ||
+    campanha?.configuracoes ||
+    {};
+
+  if (typeof cfg === "string") {
+    try {
+      return JSON.parse(cfg) || {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  return cfg && typeof cfg === "object" ? cfg : {};
+}
+
+function obterDataFimCampanha(campanha) {
+  const cfg = obterConfiguracoesCampanha(campanha);
+  const valor =
+    cfg.fim ||
+    cfg.data_fim ||
+    cfg.end_time ||
+    campanha?.fim ||
+    campanha?.data_fim ||
+    campanha?.end_time ||
+    campanha?.stop_time ||
+    "";
+
+  if (!valor) return null;
+
+  const data = new Date(valor);
+
+  return Number.isNaN(data.getTime()) ? null : data;
+}
+
+function campanhaPublicacaoExpirada(campanha) {
+  const fim = obterDataFimCampanha(campanha);
+
+  return Boolean(fim && fim.getTime() <= Date.now());
+}
+
+function formatarDataFimCampanha(campanha) {
+  const fim = obterDataFimCampanha(campanha);
+
+  return fim
+    ? fim.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    : "";
+}
+
 function campanhaUsaHistoricoLocal(campanha) {
   return campanha?.metricas_origem === "local";
 }
@@ -28623,12 +28692,20 @@ async function carregarCampanhas() {
       em_analise:   "🔎 Ver status na Meta"
     }[veiculacaoSubcategoria] || "↗ Abrir na Meta";
 
+    const publicacaoExpirada =
+      campanhaPublicacaoExpirada(c);
+
+    const dataFimFormatada =
+      formatarDataFimCampanha(c);
+
     div.innerHTML += `
 
     <div class="
       campanha-card
 
-      ${campanhaEstaAtiva(c)
+      ${publicacaoExpirada
+        ? "paused-card"
+        : campanhaEstaAtiva(c)
         ? "active-card"
         : campanhaEstaPausada(c)
         ? "paused-card"
@@ -28664,6 +28741,15 @@ async function carregarCampanhas() {
         ${
           campanhaEstaExcluida(c)
             ? ""
+            : publicacaoExpirada
+            ? `
+        <button
+          class="btn-campanha-toggle encerrada"
+          type="button"
+          disabled
+          title="A data de publicação expirou. Edite a campanha e escolha uma nova data para publicar."
+        >Encerrada</button>
+            `
             : campanhaEstaAtiva(c)
             ? `
         <button
@@ -28685,7 +28771,9 @@ async function carregarCampanhas() {
     
       <div class="
         status-badge
-        ${campanhaEstaAtiva(c)
+        ${publicacaoExpirada
+          ? "status-paused"
+          : campanhaEstaAtiva(c)
           ? "status-active"
           : campanhaEstaPausada(c)
           ? "status-paused"
@@ -28694,7 +28782,9 @@ async function carregarCampanhas() {
       ">
     
         ${
-          campanhaEstaAtiva(c)
+          publicacaoExpirada
+            ? "🟠 ENCERRADA"
+            : campanhaEstaAtiva(c)
             ? `🟢 ${String(c.status || "ACTIVE").toUpperCase()}`
             : campanhaEstaPausada(c)
             ? "🟡 PAUSED"
@@ -28831,6 +28921,16 @@ async function carregarCampanhas() {
           ? `
             <div class="campanha-encaminhada nao-enviada">
               Nao enviada para corretor
+            </div>
+          `
+          : ""
+      }
+
+      ${
+        publicacaoExpirada
+          ? `
+            <div class="campanha-encaminhada expirada">
+              Publicacao encerrada${dataFimFormatada ? ` em ${dataFimFormatada}` : ""}. Edite a data para publicar novamente.
             </div>
           `
           : ""
@@ -29004,7 +29104,7 @@ async function carregarCampanhas() {
           </button>
 
           ${
-            campanhaEstaExcluida(c) || usuarioReceptorCampanha
+            campanhaEstaExcluida(c)
               ? ""
               : `
                 <button
@@ -29017,6 +29117,13 @@ async function carregarCampanhas() {
                 >
                   ✏️
                 </button>
+              `
+          }
+
+          ${
+            campanhaEstaExcluida(c) || usuarioReceptorCampanha
+              ? ""
+              : `
                 <button
                   class="btn-acao btn-duplicar-campanha"
                   type="button"
@@ -29941,6 +30048,20 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl) {
     !["ACTIVE", "ENABLED"].includes(statusNormalizado);
 
   const novoStatus = publicando ? "ACTIVE" : "PAUSED";
+
+  if (publicando) {
+    const campanha =
+      campanhasAtuais.find(c =>
+        String(c.campaign_id) === String(campaign_id)
+      );
+
+    if (campanhaPublicacaoExpirada(campanha)) {
+      mostrarErroPublicacao(
+        "A data de termino desta campanha expirou. Edite a campanha e escolha uma nova data antes de publicar."
+      );
+      return;
+    }
+  }
 
   // Animação de loading no botão
   if (btnEl) {

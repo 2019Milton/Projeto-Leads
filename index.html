@@ -3620,6 +3620,27 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   border: 1px solid rgba(255,255,255,0.1);
 }
 
+.detalhe-imagem-placeholder {
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed rgba(148,163,184,0.35);
+  border-radius: 10px;
+  background: rgba(15,23,42,0.72);
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.detalhe-imagem-placeholder code {
+  display: inline-block;
+  margin: 4px 4px 0 0;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: rgba(59,130,246,0.15);
+  color: #bfdbfe;
+  font-size: 11px;
+}
+
 .origem-badge {
 
   padding: 3px 8px;
@@ -26887,7 +26908,13 @@ async function criarCampanhaCompleta() {
 
     const configuracoes_avancadas =
       normalizarConfiguracoesAvancadasParaEnvio(
-        coletarConfiguracoesAvancadas()
+        {
+          ...coletarConfiguracoesAvancadas(),
+          ...coletarDadosNichoAtivo(),
+          page_id,
+          texto,
+          cta
+        }
       );
 
     // 🔥 COLETAR IMAGENS DO CARROSSEL (na ordem definida pelo usuário)
@@ -26945,6 +26972,11 @@ async function criarCampanhaCompleta() {
     }
 
     const imageHash = imageHashes[0];
+
+    configuracoes_avancadas.imageHash = imageHash || null;
+    configuracoes_avancadas.imageHashes = imageHashes;
+    configuracoes_avancadas.imagens_urls = imageUrls.filter(Boolean);
+    configuracoes_avancadas.image_urls = imageUrls.filter(Boolean);
 
     setPublishProgress(35, "Criando campanha no Meta...");
 
@@ -27388,9 +27420,9 @@ async function carregarDashboard() {
             investimento, CPL, CTR e pontos de atenção para acelerar a operação.
           </p>
           <div class="dashboard-hero-actions">
-            <button class="dashboard-command-btn primary" onclick="navegarPara('campanhas')">📢 Gerenciar campanhas</button>
-            <button class="dashboard-command-btn" onclick="navegarPara('leads')">📥 Abrir central de leads</button>
-            <button class="dashboard-command-btn" onclick="navegarPara('integracoes')">🔌 Conectar plataformas</button>
+            <button class="dashboard-command-btn primary" onclick="navegarPara('campanhas')">📢 Campanhas</button>
+            <button class="dashboard-command-btn" onclick="navegarPara('leads')">📥 Central de Leads</button>
+            <button class="dashboard-command-btn" onclick="navegarPara('integracoes')">🔌 Plataformas</button>
           </div>
         </div>
         <div class="dashboard-live-card" id="dashboard-live-card">
@@ -29179,6 +29211,65 @@ function detalheItem(titulo, valor, classe = "") {
   `;
 }
 
+function detalheItensExtras(objeto = {}, mapa = []) {
+  return mapa
+    .map(([titulo, chave, classe]) =>
+      detalheItem(titulo, objeto?.[chave], classe)
+    )
+    .join("");
+}
+
+function coletarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
+  const urls = [
+    ...(Array.isArray(cfg.imagens_urls) ? cfg.imagens_urls : []),
+    ...(Array.isArray(cfg.image_urls) ? cfg.image_urls : []),
+    ...(Array.isArray(campanha.imagens_urls) ? campanha.imagens_urls : []),
+    cfg.imagem_url,
+    cfg.image_url,
+    campanha.imagem_url
+  ].filter(Boolean);
+
+  const hashes = [
+    ...(Array.isArray(cfg.imageHashes) ? cfg.imageHashes : []),
+    ...(Array.isArray(cfg.image_hashes) ? cfg.image_hashes : []),
+    ...(Array.isArray(cfg.criativo?.image_hashes) ? cfg.criativo.image_hashes : []),
+    cfg.imageHash,
+    cfg.image_hash,
+    cfg.criativo?.image_hash
+  ].filter(Boolean);
+
+  return {
+    urls: Array.from(new Set(urls.map(String))),
+    hashes: Array.from(new Set(hashes.map(String)))
+  };
+}
+
+function renderizarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
+  const imagens = coletarImagensCampanhaDetalhe(campanha, cfg);
+
+  if (!imagens.urls.length && !imagens.hashes.length) {
+    return `
+      <div class="detalhe-imagem-placeholder">
+        Nenhuma imagem salva nos dados desta campanha.
+      </div>
+    `;
+  }
+
+  return `
+    <div class="detalhe-imagens-grid">
+      ${imagens.urls.map(url => `
+        <img src="${escaparHtml(url)}" class="detalhe-imagem" alt="Imagem da campanha">
+      `).join("")}
+      ${imagens.hashes.length ? `
+        <div class="detalhe-imagem-placeholder">
+          Imagens vinculadas na Meta:
+          ${imagens.hashes.map(hash => `<code>${escaparHtml(hash)}</code>`).join("")}
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
 function formatarLocalidadesResumo(cfg) {
 
   if (Array.isArray(cfg?.localidades) && cfg.localidades.length) {
@@ -29252,8 +29343,6 @@ function abrirCampanhaDrawer(campanhaEncoded) {
   titulo.innerText =
     campanha.nome || "Campanha";
 
-  const imagensUrls = Array.isArray(cfg.imagens_urls) ? cfg.imagens_urls.filter(Boolean) : [];
-
   conteudo.innerHTML = `
     <div class="ia-ouro-destaque">
       <h4>IA Ouro - Analise de campanha</h4>
@@ -29273,15 +29362,16 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ></div>
     </div>
 
-    ${imagensUrls.length ? `
-      <div class="detalhe-imagens-grid">
-        ${imagensUrls.map(url => `<img src="${escaparHtml(url)}" class="detalhe-imagem" alt="Imagem da campanha">`).join("")}
-      </div>
-    ` : ""}
+    ${renderizarImagensCampanhaDetalhe(campanha, cfg)}
 
     <div class="detalhes-grid">
       ${detalheItem("Status", campanha.status)}
       ${detalheItem("Origem", campanha.origem)}
+      ${detalheItem("ID da campanha Meta", campanha.campaign_id)}
+      ${detalheItem("ID do conjunto", campanha.adset_id || cfg.adset_id)}
+      ${detalheItem("ID do anúncio", campanha.ad_id || cfg.ad_id)}
+      ${detalheItem("ID do formulário", campanha.form_id || cfg.form_id)}
+      ${detalheItem("Página Facebook", campanha.page_id || cfg.page_id)}
       ${campanha.daily_budget ? detalheItem("Orçamento/dia", "R$ " + Number(campanha.daily_budget / 100).toFixed(2)) : ""}
       ${detalheItem("Texto do anúncio", cfg.texto, "full")}
       ${detalheItem("CTA", cfg.cta)}
@@ -29290,6 +29380,8 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Título do anúncio", cfg.titulo)}
       ${detalheItem("Descrição", cfg.descricao, "full")}
       ${detalheItem("Link de destino", cfg.link, "full")}
+      ${detalheItem("Criativo Meta", cfg.creative_id || cfg.criativo?.creative_id)}
+      ${detalheItem("Carrossel", cfg.criativo?.carrossel ? "Sim" : cfg.imageHashes?.length > 1 || cfg.image_hashes?.length > 1 ? "Sim" : "Não")}
       ${detalheItem("País", cfg.pais || "BR")}
       ${detalheItem("Área da campanha", formatarLocalidadesResumo(cfg))}
       ${detalheItem("Idade mínima", cfg.idade_min)}
@@ -29308,9 +29400,33 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("CBO (otimização de orçamento)", (cfg.cbo ?? true) ? "Ativo — Meta distribui automaticamente" : "Desativado — orçamento por conjunto")}
       ${detalheItem("Janela de atribuição", cfg.attribution_spec || "Padrão da Meta")}
       ${detalheItem("Públicos personalizados", cfg.custom_audiences?.length ? `${cfg.custom_audiences.length} público(s) selecionado(s)` : "Nenhum")}
+      ${detalheItem("Conta Instagram", cfg.instagram_actor_id)}
+      ${detalheItem("Interesses detalhados", cfg.interesses_detalhados, "full")}
       ${detalheItem("Política de privacidade", cfg.privacidade_url, "full")}
+      ${detalheItem("Texto da política", cfg.privacidade_texto, "full")}
       ${detalheItem("Perguntas qualificadoras", cfg.perguntas, "full")}
+      ${detalheItem("Título obrigado", cfg.obrigado_titulo)}
+      ${detalheItem("Texto obrigado", cfg.obrigado_texto, "full")}
+      ${detalheItem("Botão obrigado", cfg.obrigado_botao)}
       ${detalheItem("Página de obrigado", cfg.obrigado_url, "full")}
+      ${detalheItensExtras(cfg, [
+        ["Tipo de imóvel", "tipo_imovel"],
+        ["Finalidade", "finalidade"],
+        ["Valor mínimo", "valor_min"],
+        ["Valor máximo", "valor_max"],
+        ["Região", "regiao", "full"],
+        ["Operadora", "operadora"],
+        ["Tipo de plano", "tipo_plano"],
+        ["Faixa etária mínima", "faixa_etaria_min"],
+        ["Faixa etária máxima", "faixa_etaria_max"],
+        ["Cobertura", "cobertura"],
+        ["Acomodação", "acomodacao"],
+        ["Produto", "produto"],
+        ["Objetivo do nicho", "objetivo"],
+        ["Marca", "marca"],
+        ["Público-alvo", "publico_alvo", "full"],
+        ["Tipo de produto", "tipo_produto"]
+      ])}
     </div>
   `;
 

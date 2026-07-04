@@ -11487,8 +11487,9 @@ body.tema-claro .targeting-chip {
 ========================================= */
 .chat-ia-leads-fab {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  left: 24px;
+  right: auto;
+  bottom: 138px;
   z-index: 5200;
   display: inline-flex;
   align-items: center;
@@ -11513,8 +11514,9 @@ body.tema-claro .targeting-chip {
 
 .chat-ia-leads-janela {
   position: fixed;
-  right: 24px;
-  bottom: 84px;
+  left: 24px;
+  right: auto;
+  bottom: 198px;
   width: min(430px, calc(100vw - 32px));
   max-height: min(720px, calc(100vh - 110px));
   border-radius: 16px;
@@ -11712,11 +11714,13 @@ body.tema-claro .targeting-chip {
 
 @media (max-width: 720px) {
   .chat-ia-leads-fab {
-    right: 16px;
+    left: 16px;
+    right: auto;
     bottom: 16px;
   }
 
   .chat-ia-leads-janela {
+    left: 12px;
     right: 12px;
     bottom: 76px;
     width: calc(100vw - 24px);

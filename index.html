@@ -28149,10 +28149,10 @@ function conduzirParaCampoCampanha(alvo, mensagem) {
 
 function mapearErroMetaParaCampo(mensagem) {
   const m = (mensagem || "").toLowerCase();
-  if (m.includes("daily_budget") || m.includes("budget") || m.includes("orçamento") || m.includes("mínimo") || m.includes("minimum amount")) return "#orcamento";
-  if (m.includes("page_id") || (m.includes("page") && (m.includes("not found") || m.includes("invalid") || m.includes("não encontrada")))) return "#pagina_select";
   if (m.includes("special_ad_categor") || m.includes("special ad categor") || m.includes("categoria especial") || m.includes("housing") || m.includes("credit") || m.includes("employment")) return "#adv_categoria_especial";
   if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("minimum age") || m.includes("sugestão ao criar") || m.includes("sugest") && m.includes("conjunto de anúncios")) return "#adv_idade_min";
+  if (m.includes("daily_budget") || m.includes("budget") || m.includes("orçamento") || m.includes("mínimo") || m.includes("minimum amount")) return "#orcamento";
+  if (m.includes("page_id") || (m.includes("page") && (m.includes("not found") || m.includes("invalid") || m.includes("não encontrada")))) return "#pagina_select";
   if (m.includes("bid_amount")) {
     const estrategiaAtual =
       document.getElementById("adv_bid_strategy")?.value || "";
@@ -28176,8 +28176,16 @@ function traduzirErroMeta(mensagem) {
   const m = (mensagem || "").toLowerCase();
   if (m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed"))
     return "Não foi possível conectar ao servidor agora. Atualize a página e tente publicar novamente.";
-  if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios")))
-    return "Para campanhas de Imóveis, o Meta não permite restrição de idade. Deixe Idade mínima em 18 e Idade máxima em 65, ou selecione 'HOUSING' em Categoria Especial nas configurações avançadas.";
+  if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios"))) {
+    const slugNicho =
+      String(window._nichoAtivo?.slug || "").toLowerCase();
+
+    if (slugNicho === "imoveis") {
+      return "Para campanhas de Imóveis, a Meta não permite restrição de idade quando a categoria especial de Moradia está ativa. Deixe a idade ampla ou use HOUSING em Categoria Especial.";
+    }
+
+    return "A Meta recusou a configuração de idade do público. Revise Idade mínima e Idade máxima em Público, ou tente publicar novamente com público mais amplo.";
+  }
   if (m.includes("daily_budget") || m.includes("budget") || m.includes("mínimo") || m.includes("minimum amount"))
     return "O orçamento diário está abaixo do mínimo exigido pelo Meta. Use pelo menos R$ 15,00 (recomendado R$ 30,00+).";
   if (m.includes("page_id") || (m.includes("page") && m.includes("invalid")))

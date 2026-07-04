@@ -28153,7 +28153,14 @@ function mapearErroMetaParaCampo(mensagem) {
   if (m.includes("page_id") || (m.includes("page") && (m.includes("not found") || m.includes("invalid") || m.includes("não encontrada")))) return "#pagina_select";
   if (m.includes("special_ad_categor") || m.includes("special ad categor") || m.includes("categoria especial") || m.includes("housing") || m.includes("credit") || m.includes("employment")) return "#adv_categoria_especial";
   if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("minimum age") || m.includes("sugestão ao criar") || m.includes("sugest") && m.includes("conjunto de anúncios")) return "#adv_idade_min";
-  if (m.includes("bid_amount")) return "#adv_bid_amount";
+  if (m.includes("bid_amount")) {
+    const estrategiaAtual =
+      document.getElementById("adv_bid_strategy")?.value || "";
+
+    return estrategiaControleExigeValor(estrategiaAtual)
+      ? "#adv_bid_amount"
+      : null;
+  }
   if ((m.includes("bid") || m.includes("lance")) && (m.includes("amount") || m.includes("cap") || m.includes("strategy"))) return "#adv_bid_strategy";
   if (m.includes("attribution")) return "#adv_attribution_spec";
   if (m.includes("video")) return "#video_anuncio_card";
@@ -28185,6 +28192,21 @@ function traduzirErroMeta(mensagem) {
 }
 
 function mostrarErroPublicacao(mensagem) {
+  const mensagemLower =
+    String(mensagem || "").toLowerCase();
+  const estrategiaAtual =
+    document.getElementById("adv_bid_strategy")?.value || "";
+
+  if (
+    mensagemLower.includes("bid_amount") &&
+    !estrategiaControleExigeValor(estrategiaAtual)
+  ) {
+    limparValidacaoControleCusto();
+    atualizarDescricaoCusto();
+    mensagem =
+      "O controle de custo está em modo automático. Tente publicar novamente; se persistir, atualize a página para carregar a versão mais recente.";
+  }
+
   const seletor = mapearErroMetaParaCampo(mensagem);
   const mensagemFinal = traduzirErroMeta(mensagem);
   if (seletor && document.querySelector(seletor)) {

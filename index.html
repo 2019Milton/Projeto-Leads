@@ -19618,7 +19618,7 @@ async function init() {
     if (btnPerfil) {
 
       btnPerfil.innerHTML = `
-        👤 ${nomeCompleto || email}
+        👤 ${escaparHtml(nomeCompleto || email)}
         <div
           style="
             font-size:11px;
@@ -21476,7 +21476,7 @@ function criarLeadCard(lead) {
       ${lead.data_contato ? `
         <div class="lead-data-contato agendado" data-lead-action="agendar" data-lead-id="${Number(lead.id)}" data-lead-data="${escaparHtml(lead.data_contato)}" data-lead-obs="${escaparHtml(lead.observacao_agendamento || "")}" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '${lead.data_contato}', ${JSON.stringify(lead.observacao_agendamento || '')})">
           📅 Contato em: <strong>${formatarDataContato(lead.data_contato)}</strong>
-          ${lead.observacao_agendamento ? `<span style="display:block;font-size:11px;opacity:0.7;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${lead.observacao_agendamento}</span>` : ''}
+          ${lead.observacao_agendamento ? `<span style="display:block;font-size:11px;opacity:0.7;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escaparHtml(lead.observacao_agendamento)}</span>` : ''}
           <span class="lead-data-contato-remover" data-lead-action="remover-agendamento" data-lead-id="${Number(lead.id)}" onclick="event.stopPropagation(); removerDataContato(${Number(lead.id)})" title="Remover data">✕</span>
         </div>
       ` : `
@@ -24528,7 +24528,7 @@ async function carregarHistoricoLead(id) {
         <div class="timeline-text">
 
           ${iconeHistorico(item.tipo)}
-          ${item.descricao}
+          ${escaparHtml(item.descricao || "")}
 
         </div>
 
@@ -30448,7 +30448,7 @@ async function carregarCampanhas() {
           ${nichoCampanha ? `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#fff;display:inline-block;padding:3px 10px;border-radius:4px;margin-bottom:6px;background:${nichoCampanhaTema.cor};">${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}</div>` : ""}
 
           <h3 style="${nichoCampanhaTema ? `color:${nichoCampanhaCardTitle};` : ""}">
-            🚀 ${c.nome}
+            🚀 ${escaparHtml(c.nome)}
           </h3>
 
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
@@ -30459,7 +30459,7 @@ async function carregarCampanhas() {
               </span>
             ` : ""}
             ${platBadge(c.plataforma || c.origem)}
-            <span class="badge meta" style="display:none;">${c.origem}</span>
+            <span class="badge meta" style="display:none;">${escaparHtml(c.origem)}</span>
           </div>
 
         </div>
@@ -32748,9 +32748,9 @@ async function verificarPainelParceiro() {
 
     tabelaClientes.innerHTML = (data.clientes || []).map(cli => `
       <tr>
-        <td>${cli.email}</td>
-        <td>${cli.tipo}</td>
-        <td>${cli.plano}</td>
+        <td>${escaparHtml(cli.email)}</td>
+        <td>${escaparHtml(cli.tipo)}</td>
+        <td>${escaparHtml(cli.plano)}</td>
         <td>${cli.ativo ? "🟢 Ativo" : "🔴 Desativado"}</td>
       </tr>
     `).join("") || `<tr><td colspan="4">Nenhum cliente vinculado</td></tr>`;
@@ -32760,9 +32760,9 @@ async function verificarPainelParceiro() {
 
     tabelaFinanceiro.innerHTML = (data.lancamentos || []).map(l => `
       <tr>
-        <td>${l.cliente_email}</td>
+        <td>${escaparHtml(l.cliente_email)}</td>
         <td>${new Date(l.mes_referencia).toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric", timeZone: "UTC" })}</td>
-        <td>${l.plano || "-"}</td>
+        <td>${escaparHtml(l.plano || "-")}</td>
         <td>${formatarMoeda(l.valor_mensalidade)}</td>
         <td>${formatarMoeda(l.valor_comissao)}</td>
         <td>${l.status === "pago" ? "🟢 Pago" : "🟡 Pendente"}</td>
@@ -33020,7 +33020,7 @@ async function carregarPainelAdmin() {
 
           <td>${u.id}</td>
 
-          <td>${u.email}</td>
+          <td>${escaparHtml(u.email)}</td>
 
           <td>
 
@@ -33035,7 +33035,7 @@ async function carregarPainelAdmin() {
               <span>${labelTipoUsuario(u.tipo)}</span>
               ${u.tipo === "admin_corretor" ? `
                 <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
-                  ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${x.email}</div>`).join("") || "<div>Nenhum corretor</div>"}
+                  ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${escaparHtml(x.email)}</div>`).join("") || "<div>Nenhum corretor</div>"}
                 </div>
               ` : ""}
 
@@ -33051,7 +33051,7 @@ async function carregarPainelAdmin() {
                   : (u.nichos || []).map(n => `
                       <span class="nicho-badge" style="${estiloNichoBadge(n)}">
                         <span class="nicho-dot" style="${estiloNichoDot()}"></span>
-                        ${n.nome}
+                        ${escaparHtml(n.nome)}
                       </span>
                     `).join("")
               }
@@ -33141,7 +33141,7 @@ async function carregarPainelAdmin() {
                         : ""
                     }
                   >
-                    ${admin.email}
+                    ${escaparHtml(admin.email)}
                   </option>
                 `).join("")}
           
@@ -34579,8 +34579,8 @@ async function carregarFinanceiroParceiros(usuarios) {
 
     selectCliente.innerHTML = clientesVinculados.length
       ? clientesVinculados.map(u => `
-          <option value="${u.id}" data-plano="${u.plano || "bronze"}">
-            ${u.email} (parceiro: ${u.parceiro_email})
+          <option value="${u.id}" data-plano="${escaparHtml(u.plano || "bronze")}">
+            ${escaparHtml(u.email)} (parceiro: ${escaparHtml(u.parceiro_email)})
           </option>
         `).join("")
       : `<option value="">Nenhum cliente vinculado a parceiro</option>`;
@@ -34611,10 +34611,10 @@ async function carregarFinanceiroParceiros(usuarios) {
 
     tabela.innerHTML = data.lancamentos.map(l => `
       <tr>
-        <td>${l.parceiro_email}</td>
-        <td>${l.cliente_email}</td>
+        <td>${escaparHtml(l.parceiro_email)}</td>
+        <td>${escaparHtml(l.cliente_email)}</td>
         <td>${new Date(l.mes_referencia).toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric", timeZone: "UTC" })}</td>
-        <td>${l.plano || "-"}</td>
+        <td>${escaparHtml(l.plano || "-")}</td>
         <td>${formatarMoeda(l.valor_mensalidade)}</td>
         <td>${formatarMoeda(l.valor_mensalidade - l.valor_comissao)}</td>
         <td>${formatarMoeda(l.valor_comissao)}</td>
@@ -35041,7 +35041,7 @@ function temaVisualNicho(nicho = {}) {
 function nomeExibirNicho(nicho = {}) {
   if (nicho.nome) {
     if (/^plataforma$/i.test(nicho.nome.trim())) return "Plataforma / SaaS";
-    return nicho.nome;
+    return escaparHtml(nicho.nome);
   }
   const slug = slugNichoNormalizado(nicho);
   if (slug.includes("saude") || slug.includes("saúde")) return "Planos de Saúde";
@@ -35053,7 +35053,7 @@ function nomeExibirNicho(nicho = {}) {
   if (id === 2) return "Planos de Saúde";
   if (id === 3) return "Suplementos";
   if (id === 4) return "Plataforma / SaaS";
-  return nicho.slug || "";
+  return escaparHtml(nicho.slug || "");
 }
 
 // Definidas aqui pelo mesmo motivo: usadas dentro de carregarCampanhas(),
@@ -36658,10 +36658,10 @@ function renderAnexoChat(m) {
   if (!m.anexo_url) return "";
 
   if (String(m.anexo_tipo || "").startsWith("image/")) {
-    return `<img src="${m.anexo_url}" alt="${escHtml(m.anexo_nome || "imagem")}" class="chat-msg-anexo-img" onclick="abrirLightboxChat(this.src)">`;
+    return `<img src="${escHtml(m.anexo_url)}" alt="${escHtml(m.anexo_nome || "imagem")}" class="chat-msg-anexo-img" onclick="abrirLightboxChat(this.src)">`;
   }
 
-  return `<a href="${m.anexo_url}" target="_blank" rel="noopener" class="chat-msg-anexo-arquivo">📎 ${escHtml(m.anexo_nome || "arquivo")}</a>`;
+  return `<a href="${escHtml(m.anexo_url)}" target="_blank" rel="noopener" class="chat-msg-anexo-arquivo">📎 ${escHtml(m.anexo_nome || "arquivo")}</a>`;
 }
 
 /* =========================================
@@ -38417,7 +38417,7 @@ function estiloNichoBadge(nicho = {}) {
 function nomeExibirNicho(nicho = {}) {
   if (nicho.nome) {
     if (/^plataforma$/i.test(nicho.nome.trim())) return "Plataforma / SaaS";
-    return nicho.nome;
+    return escaparHtml(nicho.nome);
   }
   const slug = slugNichoNormalizado(nicho);
   if (slug.includes("saude") || slug.includes("saúde")) return "Planos de Saúde";
@@ -38429,7 +38429,7 @@ function nomeExibirNicho(nicho = {}) {
   if (id === 2) return "Planos de Saúde";
   if (id === 3) return "Suplementos";
   if (id === 4) return "Plataforma / SaaS";
-  return nicho.slug || "";
+  return escaparHtml(nicho.slug || "");
 }
 
 function estiloNichoDot() {

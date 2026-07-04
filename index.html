@@ -24221,7 +24221,12 @@ function configurarCliquesDinamicos() {
         const campanha =
           obterCampanhaPorBotaoAcao(acaoCampanha);
 
-        if (!campanha) return;
+        if (!campanha) {
+          if (action !== "sync") {
+            alert("Não foi possível carregar os dados desta campanha. Clique em Sincronizar e tente novamente.");
+          }
+          return;
+        }
 
         if (action === "toggle" && typeof toggleCampanha === "function") {
           toggleCampanha(campanha.campaign_id, campanha.status);
@@ -27203,90 +27208,108 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     return;
   }
 
-  campanhaEmEdicao = campanha;
+  try {
 
-  _snapshotCriarCampanha = {
-    basicos: coletarCamposBasicosCampanha(),
-    avancadas: coletarConfiguracoesAvancadas(),
-    orcamento: valorCampo("orcamento"),
-    imagensAssinatura: assinaturaImagensCampanha(),
-    videoAssinatura: assinaturaVideoCampanha(),
-    videoArquivo: obterArquivoVideoCampanha()
-  };
+    campanhaEmEdicao = campanha;
 
-  BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
-    moverBloco(blocoId, "editar_campanha_campos");
-  });
+    _snapshotCriarCampanha = {
+      basicos: coletarCamposBasicosCampanha(),
+      avancadas: coletarConfiguracoesAvancadas(),
+      orcamento: valorCampo("orcamento"),
+      imagensAssinatura: assinaturaImagensCampanha(),
+      videoAssinatura: assinaturaVideoCampanha(),
+      videoArquivo: obterArquivoVideoCampanha()
+    };
 
-  const instagramFeedback =
-    document.getElementById("instagram_pagina_feedback");
+    BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
+      moverBloco(blocoId, "editar_campanha_campos");
+    });
 
-  if (instagramFeedback) {
-    instagramFeedback.style.display = "none";
+    const instagramFeedback =
+      document.getElementById("instagram_pagina_feedback");
+
+    if (instagramFeedback) {
+      instagramFeedback.style.display = "none";
+    }
+
+    const nomeEl = document.getElementById("editar_campanha_nome");
+
+    if (nomeEl) {
+      nomeEl.textContent = campanha.nome || "Campanha";
+    }
+
+    preencherConfiguracoesAvancadas(
+      campanha.configuracoes_avancadas || {},
+      campanha.daily_budget
+    );
+    preencherCamposBasicosCampanha(campanha);
+
+    const feedback = document.getElementById("editar_campanha_feedback");
+
+    if (feedback) {
+      feedback.style.display = "none";
+      feedback.textContent = "";
+    }
+
+    document
+      .getElementById("campanhaEditarModal")
+      ?.classList.add("active");
+
+  } catch (err) {
+    console.error("ERRO ao abrir edição de campanha:", err);
+    campanhaEmEdicao = null;
+    _snapshotCriarCampanha = null;
+    alert("Erro ao abrir o editor da campanha. Clique em Sincronizar e tente novamente.");
   }
-
-  const nomeEl = document.getElementById("editar_campanha_nome");
-
-  if (nomeEl) {
-    nomeEl.textContent = campanha.nome || "Campanha";
-  }
-
-  preencherConfiguracoesAvancadas(
-    campanha.configuracoes_avancadas || {},
-    campanha.daily_budget
-  );
-  preencherCamposBasicosCampanha(campanha);
-
-  const feedback = document.getElementById("editar_campanha_feedback");
-
-  if (feedback) {
-    feedback.style.display = "none";
-    feedback.textContent = "";
-  }
-
-  document
-    .getElementById("campanhaEditarModal")
-    ?.classList.add("active");
 }
 
 function fecharEdicaoCampanha() {
 
-  BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
-    restaurarBloco(blocoId);
-  });
+  try {
 
-  const instagramFeedback =
-    document.getElementById("instagram_pagina_feedback");
+    BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
+      restaurarBloco(blocoId);
+    });
 
-  if (instagramFeedback) {
-    instagramFeedback.style.display = "";
-  }
+    const instagramFeedback =
+      document.getElementById("instagram_pagina_feedback");
 
-  if (_snapshotCriarCampanha) {
-    definirValorCampo("campanha_nome", _snapshotCriarCampanha.basicos?.nome || "");
-    definirValorCampo("pagina_select", _snapshotCriarCampanha.basicos?.page_id || "");
-    definirValorCampo("texto", _snapshotCriarCampanha.basicos?.texto || "");
-    definirValorCampo("cta", _snapshotCriarCampanha.basicos?.cta || "LEARN_MORE");
-    atualizarTosHint();
-    preencherConfiguracoesAvancadas(_snapshotCriarCampanha.avancadas, null);
-    definirValorCampo("orcamento", _snapshotCriarCampanha.orcamento);
-    if (_snapshotCriarCampanha.videoArquivo) {
-      const inputVideo = document.getElementById("video_anuncio_input");
-      const dt = new DataTransfer();
-      dt.items.add(_snapshotCriarCampanha.videoArquivo);
-      if (inputVideo) inputVideo.files = dt.files;
-      aplicarVideoCampanha(_snapshotCriarCampanha.videoArquivo);
-    } else {
-      limparVideoCampanha();
+    if (instagramFeedback) {
+      instagramFeedback.style.display = "";
     }
+
+    if (_snapshotCriarCampanha) {
+      definirValorCampo("campanha_nome", _snapshotCriarCampanha.basicos?.nome || "");
+      definirValorCampo("pagina_select", _snapshotCriarCampanha.basicos?.page_id || "");
+      definirValorCampo("texto", _snapshotCriarCampanha.basicos?.texto || "");
+      definirValorCampo("cta", _snapshotCriarCampanha.basicos?.cta || "LEARN_MORE");
+      atualizarTosHint();
+      preencherConfiguracoesAvancadas(_snapshotCriarCampanha.avancadas, null);
+      definirValorCampo("orcamento", _snapshotCriarCampanha.orcamento);
+      if (_snapshotCriarCampanha.videoArquivo) {
+        try {
+          const inputVideo = document.getElementById("video_anuncio_input");
+          const dt = new DataTransfer();
+          dt.items.add(_snapshotCriarCampanha.videoArquivo);
+          if (inputVideo) inputVideo.files = dt.files;
+          aplicarVideoCampanha(_snapshotCriarCampanha.videoArquivo);
+        } catch (_) {
+          limparVideoCampanha();
+        }
+      } else {
+        limparVideoCampanha();
+      }
+    }
+
+  } catch (err) {
+    console.error("ERRO ao fechar edição de campanha:", err);
+  } finally {
+    _snapshotCriarCampanha = null;
+    campanhaEmEdicao = null;
+    document
+      .getElementById("campanhaEditarModal")
+      ?.classList.remove("active");
   }
-
-  _snapshotCriarCampanha = null;
-  campanhaEmEdicao = null;
-
-  document
-    .getElementById("campanhaEditarModal")
-    ?.classList.remove("active");
 }
 
 async function salvarEdicaoCampanha() {
@@ -30120,6 +30143,7 @@ async function carregarCampanhas() {
     return;
   }
 
+  const _campanhasHTMLParts = [];
   campanhasFiltradas.forEach((c, indiceCampanha) => {
 
     const campanhaCacheKey =
@@ -30228,7 +30252,7 @@ async function carregarCampanhas() {
     const dataFimFormatada =
       formatarDataFimCampanha(c);
 
-    div.innerHTML += `
+    _campanhasHTMLParts.push(`
 
     <div class="
       campanha-card
@@ -30632,7 +30656,6 @@ async function carregarCampanhas() {
             data-campanha-action="detalhes"
             data-campanha-key="${campanhaCacheKey}"
             title="Detalhes"
-            onclick="abrirCampanhaDrawerPorChave('${campanhaCacheKey}')"
           >
             ⚙️
           </button>
@@ -30657,7 +30680,6 @@ async function carregarCampanhas() {
                   data-campanha-action="editar"
                   data-campanha-key="${campanhaCacheKey}"
                   title="Editar campanha"
-                  onclick="abrirEdicaoCampanhaPorChave('${campanhaCacheKey}')"
                 >
                   ✏️
                 </button>
@@ -30674,7 +30696,6 @@ async function carregarCampanhas() {
                   data-campanha-action="duplicar"
                   data-campanha-key="${campanhaCacheKey}"
                   title="Duplicar campanha"
-                  onclick="duplicarCampanhaPorChave('${campanhaCacheKey}')"
                 >
                   📋
                 </button>
@@ -30690,7 +30711,6 @@ async function carregarCampanhas() {
                   data-campanha-action="encaminhar"
                   data-campanha-key="${campanhaCacheKey}"
                   title="${botaoEnvioCriadorCampanha ? "Enviar campanha ao corretor solicitante" : "Encaminhar para corretor"}"
-                  onclick="abrirModalEncaminharCampanhaPorChave('${campanhaCacheKey}')"
                 >
                   ${botaoEnvioCriadorCampanha ? "Enviar" : "↗"}
                 </button>
@@ -30755,8 +30775,9 @@ async function carregarCampanhas() {
       </div>
     
     </div>
-    `;
+    `);
   });
+  div.innerHTML = _campanhasHTMLParts.join("");
 
   // 🔥 renderiza gráficos
   setTimeout(() => {

@@ -28202,7 +28202,7 @@ function traduzirErroMeta(mensagem) {
   if (m.includes("page_id") || (m.includes("page") && m.includes("invalid")))
     return "Página do Facebook inválida ou não encontrada. Verifique a Página Facebook selecionada.";
   if (m.includes("video"))
-    return "Vídeo inválido ou não enviado. Adicione um vídeo em MP4, MOV ou WebM.";
+    return "A Meta recusou o vídeo. Mensagem: " + mensagem;
   if (m.includes("image") || m.includes("imagem") || m.includes("hash"))
     return "Imagem inválida ou não enviada. Adicione uma imagem ao anúncio.";
   if (m.includes("special_ad_categor") || m.includes("housing"))

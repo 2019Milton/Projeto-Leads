@@ -1239,24 +1239,27 @@ button {
 }
 .campanha-plat-selector {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
   margin-bottom: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .plat-sel-btn {
-  padding: 7px 4px; font-size: 10.5px; font-weight: 600;
+  padding: 8px 2px; font-size: 10px; font-weight: 600;
   border-radius: 7px; border: 2px solid #334155;
   background: transparent; color: #64748b;
   cursor: pointer; transition: all .15s;
   white-space: normal; word-break: break-word;
   text-align: center; line-height: 1.3;
-  min-width: 0;
+  min-width: 0; width: 100%; box-sizing: border-box;
 }
 .plat-sel-btn.ativa {
-  border-color: #3b82f6;
-  background: #1e3a5f;
-  color: #93c5fd;
-  box-shadow: 0 0 0 2px #3b82f640;
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 0 0 3px #3b82f650, inset 0 1px 0 rgba(255,255,255,.15);
   font-weight: 700;
 }
 .plat-sel-btn:not(:disabled):not(.ativa):hover {

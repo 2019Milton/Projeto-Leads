@@ -27347,6 +27347,7 @@ async function salvarEdicaoCampanha() {
 
     const payloadEdicao = {
       usuario_id,
+      campanha_local_id: campanhaEmEdicao.id ?? null,
       campaign_id: campanhaEmEdicao.campaign_id,
       nome: camposBasicos.nome,
       page_id: camposBasicos.page_id,

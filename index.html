@@ -31186,7 +31186,7 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Janela de atribuição", cfg.attribution_spec || "Padrão da Meta")}
       ${detalheItem("Públicos personalizados", cfg.custom_audiences?.length ? `${cfg.custom_audiences.length} público(s) selecionado(s)` : "Nenhum")}
       ${detalheItem("Conta Instagram", cfg.instagram_actor_id)}
-      ${detalheItem("Interesses detalhados", cfg.interesses_detalhados, "full")}
+      ${detalheItem("Interesses detalhados", Array.isArray(cfg.interesses_detalhados) ? cfg.interesses_detalhados.map(i => i?.nome || i?.name || String(i)).filter(Boolean) : cfg.interesses_detalhados, "full")}
       ${detalheItem("Política de privacidade", cfg.privacidade_url, "full")}
       ${detalheItem("Texto da política", cfg.privacidade_texto, "full")}
       ${detalheItem("Perguntas qualificadoras", cfg.perguntas, "full")}
@@ -38683,38 +38683,6 @@ function selecionarNichoTab(nicho, btnEl) {
   renderizarPerguntasRapidasFormulario(nicho.slug);
 }
 
-// Coleta os dados extras do nicho ativo ao criar campanha
-function coletarDadosNichoAtivo() {
-  const nicho = window._nichoAtivo;
-  if (!nicho) return {};
-
-  const dados = { nicho_id: nicho.id };
-
-  if (nicho.slug === "imoveis") {
-    dados.tipo_imovel = document.getElementById("nicho_tipo_imovel")?.value || null;
-    dados.finalidade  = document.getElementById("nicho_finalidade")?.value  || null;
-    dados.valor_min   = Number(document.getElementById("nicho_valor_min")?.value) || null;
-    dados.valor_max   = Number(document.getElementById("nicho_valor_max")?.value) || null;
-    dados.regiao      = document.getElementById("nicho_regiao")?.value || null;
-  } else if (nicho.slug === "saude") {
-    dados.operadora        = document.getElementById("nicho_operadora")?.value  || null;
-    dados.tipo_plano       = document.getElementById("nicho_tipo_plano")?.value || null;
-    dados.faixa_etaria_min = Number(document.getElementById("nicho_faixa_min")?.value) || null;
-    dados.faixa_etaria_max = Number(document.getElementById("nicho_faixa_max")?.value) || null;
-    dados.cobertura        = document.getElementById("nicho_cobertura")?.value  || null;
-    dados.acomodacao       = document.getElementById("nicho_acomodacao")?.value || null;
-  } else if (nicho.slug === "suplementos") {
-    dados.produto      = document.getElementById("nicho_produto")?.value      || null;
-    dados.objetivo     = document.getElementById("nicho_objetivo")?.value     || null;
-    dados.marca        = document.getElementById("nicho_marca")?.value        || null;
-    dados.publico_alvo = document.getElementById("nicho_publico_alvo")?.value || null;
-  } else if (nicho.slug === "saas") {
-    dados.tipo_produto = document.getElementById("nicho_tipo_produto")?.value      || null;
-    dados.publico_alvo = document.getElementById("nicho_publico_alvo_saas")?.value || null;
-  }
-
-  return dados;
-}
 </script>
 
 <!-- ===== MODAL PERFIL DO USUÁRIO ===== -->

@@ -8809,6 +8809,30 @@ body.tema-claro .info-tooltip-popup {
   box-shadow: none;
 }
 
+.campanha-editar-modal .campanha-plat-selector {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  align-items: center;
+}
+
+.campanha-editar-modal .plat-sel-btn {
+  min-width: 0;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 560px) {
+  .campanha-editar-modal .campanha-plat-selector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .campanha-encaminhar-acoes {
 
   display: flex;

@@ -28176,7 +28176,10 @@ function traduzirErroMeta(mensagem) {
   const m = (mensagem || "").toLowerCase();
   if (m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed"))
     return "Não foi possível conectar ao servidor agora. Atualize a página e tente publicar novamente.";
-  if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios"))) {
+  if (m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios"))) {
+    return "A Meta sugeriu ampliar o público. Desative a Otimização de público (Advantage+) nas opções avançadas ou tente publicar novamente — o sistema tentará automaticamente com público mais amplo.";
+  }
+  if (m.includes("idade") || m.includes("age_min") || m.includes("age_max")) {
     const slugNicho =
       String(window._nichoAtivo?.slug || "").toLowerCase();
 

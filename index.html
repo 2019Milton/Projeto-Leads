@@ -22955,8 +22955,60 @@ async function acaoRecuperacaoLeadsChatIALeads() {
   );
 }
 
-function abrirEditorImagemChatIALeads(modo = "gerar") {
+function esperarElementoChatIALeads(id, timeoutMs = 7000) {
+  const existente = document.getElementById(id);
+  if (existente) {
+    return Promise.resolve(existente);
+  }
+
+  return new Promise(resolve => {
+    const inicio = Date.now();
+
+    const tentar = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        resolve(el);
+        return;
+      }
+
+      if (Date.now() - inicio >= timeoutMs) {
+        resolve(null);
+        return;
+      }
+
+      setTimeout(tentar, 120);
+    };
+
+    tentar();
+  });
+}
+
+function prepararAreaBannerChatIALeads() {
+  try {
+    navegarPara("campanhas");
+  } catch (_) {}
+
+  try {
+    aplicarEstadoCriarCampanha(false);
+  } catch (_) {}
+
+  const blocoImagens =
+    document.getElementById("bloco_imagens_texto");
+
+  if (blocoImagens) {
+    blocoImagens.open = true;
+  }
+}
+
+async function abrirEditorImagemChatIALeads(modo = "gerar") {
   toggleChatIALeads(true);
+
+  if (window._chatIaLeadsAbrindoEditor) {
+    adicionarMensagemChatIALeads("Ja estou preparando o editor de banner. Aguarde um instante.", "bot");
+    return;
+  }
+
+  window._chatIaLeadsAbrindoEditor = true;
 
   const label =
     modo === "editar"
@@ -22964,20 +23016,24 @@ function abrirEditorImagemChatIALeads(modo = "gerar") {
       : "imagem nova";
 
   const carregando =
-    adicionarMensagemChatIALeads(`Abrindo o editor de ${label} no centro da tela...`, "bot");
+    adicionarMensagemChatIALeads(`Preparando o editor de ${label}...`, "bot");
 
   try {
-    if (typeof abrirModalGerarBanner === "function") {
-      abrirModalGerarBanner();
-    }
+    prepararAreaBannerChatIALeads();
 
-    const modal = document.getElementById("modal_banner_ia");
+    const modal =
+      await esperarElementoChatIALeads("modal_banner_ia");
+
     if (!modal) {
       substituirMensagemChatIALeads(
         carregando,
-        "Nao encontrei o editor de banner nesta tela. Abra Campanhas > Criar Campanha > Imagens e texto, ou recarregue a pagina."
+        "Ainda estou carregando o editor de banner. Abra Campanhas > Criar Campanha > Imagens e texto e clique em Gerar Banner com IA."
       );
       return;
+    }
+
+    if (typeof abrirModalGerarBanner === "function") {
+      abrirModalGerarBanner();
     }
 
     modal.classList.add("active");
@@ -22985,7 +23041,11 @@ function abrirEditorImagemChatIALeads(modo = "gerar") {
     modal.style.zIndex = "9000";
 
     if (typeof selecionarModoBanner === "function") {
-      setTimeout(() => selecionarModoBanner(modo), 30);
+      setTimeout(() => {
+        try {
+          selecionarModoBanner(modo);
+        } catch (_) {}
+      }, 30);
     }
 
     const content = modal.querySelector(".modal-banner-ia-content");
@@ -23004,6 +23064,8 @@ function abrirEditorImagemChatIALeads(modo = "gerar") {
       carregando,
       "Nao consegui abrir o editor automaticamente. Abra Campanhas > Criar Campanha > Imagens e texto > Gerar Banner com IA."
     );
+  } finally {
+    window._chatIaLeadsAbrindoEditor = false;
   }
 }
 

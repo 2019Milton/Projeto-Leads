@@ -28177,7 +28177,7 @@ function traduzirErroMeta(mensagem) {
   if (m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed"))
     return "Não foi possível conectar ao servidor agora. Atualize a página e tente publicar novamente.";
   if (m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios"))) {
-    return "A Meta sugeriu ampliar o público. Desative a Otimização de público (Advantage+) nas opções avançadas ou tente publicar novamente — o sistema tentará automaticamente com público mais amplo.";
+    return "A Meta sugeriu ampliar o público. Tente publicar novamente — o sistema tentará automaticamente com público mais amplo. Mensagem: " + mensagem;
   }
   if (m.includes("idade") || m.includes("age_min") || m.includes("age_max")) {
     const slugNicho =
@@ -28187,7 +28187,7 @@ function traduzirErroMeta(mensagem) {
       return "Para campanhas de Imóveis, a Meta não permite restrição de idade quando a categoria especial de Moradia está ativa. Deixe a idade ampla ou use HOUSING em Categoria Especial.";
     }
 
-    return "A Meta recusou a configuração de idade do público. Revise Idade mínima e Idade máxima em Público, ou tente publicar novamente com público mais amplo.";
+    return "A Meta recusou a configuração de idade do público. Mensagem: " + mensagem;
   }
   if (m.includes("daily_budget") || m.includes("budget") || m.includes("mínimo") || m.includes("minimum amount"))
     return "O orçamento diário está abaixo do mínimo exigido pelo Meta. Use pelo menos R$ 15,00 (recomendado R$ 30,00+).";

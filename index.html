@@ -22912,17 +22912,20 @@ function formatarHtmlChatIA(texto) {
   return html;
 }
 
+const CHAT_SECOES_VALIDAS = new Set(["dashboard","integracoes","campanhas","leads","suporte","informacoes"]);
+
 function renderizarMensagemChatIA(el, texto, acao) {
   const htmlTexto = formatarHtmlChatIA(texto);
-  const htmlAcao = acao
-    ? `<div class="chat-ia-leads-opcoes"><button type="button" class="chat-ia-leads-opcao" onclick="abrirSecaoChatIALeads('${acao.secao}')">${escaparHtml(acao.label)}</button></div>`
-    : "";
+  let htmlAcao = "";
+  if (acao && CHAT_SECOES_VALIDAS.has(String(acao.secao || ""))) {
+    htmlAcao = `<div class="chat-ia-leads-opcoes"><button type="button" class="chat-ia-leads-opcao" onclick="abrirSecaoChatIALeads('${escaparHtml(String(acao.secao))}')">${escaparHtml(String(acao.label || "Abrir"))}</button></div>`;
+  }
   substituirMensagemHtmlChatIALeads(el, htmlTexto + htmlAcao);
 }
 
 async function enviarChatIALeads() {
   const input = document.getElementById("chat_ia_leads_input");
-  const mensagem = input?.value?.trim();
+  const mensagem = (input?.value || "").trim().slice(0, 800);
   if (!mensagem) return;
 
   input.value = "";

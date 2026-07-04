@@ -16002,6 +16002,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 id="adv_bid_amount"
                 min="1"
                 step="0.01"
+                oninput="limparValidacaoControleCusto()"
                 placeholder="Deixe vazio para automático"
               >
               <small id="adv_bid_hint" style="color:#64748b;font-size:12px;margin-top:4px;display:block;">
@@ -25205,10 +25206,15 @@ function atualizarDescricaoCusto() {
 
   const v = sel.value;
   desc.className = "adv-custo-desc visivel";
-  if (inp) inp.disabled = false;
+  limparValidacaoControleCusto();
+
+  if (inp) {
+    inp.disabled = false;
+    inp.required = estrategiaControleExigeValor(v);
+  }
 
   if (!estrategiaControleExigeValor(v)) {
-    limparValidacaoControleCusto();
+    if (inp) inp.value = "";
   }
 
   if (!v) {
@@ -25217,6 +25223,7 @@ function atualizarDescricaoCusto() {
     if (inp) {
       inp.value = "";
       inp.disabled = true;
+      inp.required = false;
       inp.placeholder = "Não disponível no modo automático";
     }
     if (hint) hint.textContent = "No modo automático a Meta controla o custo sozinha.";
@@ -25226,6 +25233,7 @@ function atualizarDescricaoCusto() {
     if (inp) {
       inp.value = "";
       inp.disabled = true;
+      inp.required = false;
       inp.placeholder = "Não aplicável nesta estratégia";
     }
     if (hint) hint.textContent = "Esta estratégia não usa valor de controle — a Meta otimiza livremente.";
@@ -28222,13 +28230,15 @@ function estrategiaControleExigeValor(estrategia) {
   return ESTRATEGIAS_CONTROLE_COM_VALOR.has(String(estrategia || ""));
 }
 
+function normalizarBidStrategyFormulario(estrategia) {
+  const valor = String(estrategia || "").trim();
+  return valor || "";
+}
+
 function normalizarConfiguracoesAvancadasParaEnvio(configuracoes = {}) {
   const normalizada = { ...configuracoes };
-
-  if (normalizada.bid_strategy === "LOWEST_COST_WITHOUT_CAP") {
-    normalizada.bid_strategy = "";
-    normalizada.bid_amount = "";
-  }
+  normalizada.bid_strategy =
+    normalizarBidStrategyFormulario(normalizada.bid_strategy);
 
   if (!estrategiaControleExigeValor(normalizada.bid_strategy)) {
     normalizada.bid_amount = "";
@@ -28238,7 +28248,8 @@ function normalizarConfiguracoesAvancadasParaEnvio(configuracoes = {}) {
 }
 
 function validarControleCustoCampanha(configuracoes = {}) {
-  const estrategia = configuracoes.bid_strategy || "";
+  const estrategia =
+    normalizarBidStrategyFormulario(configuracoes.bid_strategy);
 
   if (!estrategiaControleExigeValor(estrategia)) {
     return true;
@@ -28247,6 +28258,7 @@ function validarControleCustoCampanha(configuracoes = {}) {
   const valorControle = Number(configuracoes.bid_amount);
 
   if (!Number.isFinite(valorControle) || valorControle <= 0) {
+    atualizarDescricaoCusto();
     return conduzirParaCampoCampanha(
       "#adv_bid_amount",
       "Informe o valor de controle para esta estratégia, ou selecione Automático da Meta / Menor custo possível."

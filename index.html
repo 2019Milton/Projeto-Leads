@@ -11668,9 +11668,24 @@ body.tema-claro .targeting-chip {
   padding: 10px 12px;
   border-radius: 12px;
   font-size: 13px;
-  line-height: 1.45;
-  white-space: pre-wrap;
+  line-height: 1.5;
+  white-space: normal;
   word-break: break-word;
+}
+.chat-ia-leads-msg .chat-ia-step {
+  display: inline-block;
+  background: rgba(96,165,250,0.18);
+  color: #93c5fd;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 11px;
+  margin-right: 2px;
+}
+.chat-ia-leads-msg .chat-ia-bullet {
+  color: #34d399;
+  font-weight: 700;
+  margin-right: 3px;
 }
 
 .chat-ia-leads-msg.bot {
@@ -22820,13 +22835,10 @@ async function buscarRespostaChatIALeadsIA(mensagem) {
   const data = await res.json();
   if (data.error) return null;
 
-  return (
-    data.resposta ||
-    data.mensagem ||
-    data.texto ||
-    data.sugestao?.resumo ||
-    null
-  );
+  const resposta = data.resposta || data.mensagem || data.texto || null;
+  if (!resposta) return null;
+
+  return { resposta, acao: data.acao || null };
 }
 
 function respostaLocalChatIALeads(mensagem) {
@@ -22886,6 +22898,28 @@ function respostaLocalChatIALeads(mensagem) {
   return "Posso te ajudar com caminhos da plataforma, ideias para campanhas, dúvidas do seu nicho, imagens com IA, resumo do corretor e recuperação de leads.\n\nExemplos: onde edito uma campanha? Onde conecto a Meta? Como vejo leads perdidos? Como publico uma campanha? Me dê ideias para meu nicho.";
 }
 
+function formatarHtmlChatIA(texto) {
+  // Converte texto plano da IA em HTML legível preservando passos e listas
+  let html = escaparHtml(String(texto || ""));
+  // Parágrafos duplos
+  html = html.replace(/\n{2,}/g, "\n\n");
+  // Listas com hífen ou asterisco → bullets estilizados
+  html = html.replace(/^[-*] (.+)/gm, "<span class='chat-ia-bullet'>•</span> $1");
+  // Listas numeradas → mantidas mas com estilo
+  html = html.replace(/^(\d+)\. (.+)/gm, "<span class='chat-ia-step'>$1.</span> $2");
+  // Quebras de linha simples
+  html = html.replace(/\n/g, "<br>");
+  return html;
+}
+
+function renderizarMensagemChatIA(el, texto, acao) {
+  const htmlTexto = formatarHtmlChatIA(texto);
+  const htmlAcao = acao
+    ? `<div class="chat-ia-leads-opcoes"><button type="button" class="chat-ia-leads-opcao" onclick="abrirSecaoChatIALeads('${acao.secao}')">${escaparHtml(acao.label)}</button></div>`
+    : "";
+  substituirMensagemHtmlChatIALeads(el, htmlTexto + htmlAcao);
+}
+
 async function enviarChatIALeads() {
   const input = document.getElementById("chat_ia_leads_input");
   const mensagem = input?.value?.trim();
@@ -22895,44 +22929,25 @@ async function enviarChatIALeads() {
   adicionarMensagemChatIALeads(mensagem, "user");
 
   const caminho = encontrarCaminhoChatIALeads(mensagem);
-  const carregando =
-    adicionarMensagemChatIALeads("Pensando na melhor orientação...", "bot");
+  const carregando = adicionarMensagemChatIALeads("Consultando o assistente...", "bot");
 
   try {
-    const respostaIA =
-      await buscarRespostaChatIALeadsIA(mensagem);
+    const iaResult = await buscarRespostaChatIALeadsIA(mensagem);
 
-    if (respostaIA) {
-      substituirMensagemChatIALeads(carregando, respostaIA);
-    } else if (caminho) {
-      substituirMensagemHtmlChatIALeads(
-        carregando,
-        `${escaparHtml(respostaLocalChatIALeads(mensagem))}
-        <div class="chat-ia-leads-opcoes">
-          <button type="button" class="chat-ia-leads-opcao" onclick="abrirSecaoChatIALeads('${caminho.secao}')">Abrir agora</button>
-        </div>`
-      );
+    if (iaResult) {
+      const { resposta, acao } = iaResult;
+      const acaoFinal = acao || (caminho ? { secao: caminho.secao, label: "Abrir agora" } : null);
+      renderizarMensagemChatIA(carregando, resposta, acaoFinal);
     } else {
-      substituirMensagemChatIALeads(
-        carregando,
-        respostaLocalChatIALeads(mensagem)
-      );
+      // Fallback local quando IA indisponível
+      const respostaLocal = respostaLocalChatIALeads(mensagem);
+      const acaoLocal = caminho ? { secao: caminho.secao, label: "Abrir agora" } : null;
+      renderizarMensagemChatIA(carregando, respostaLocal, acaoLocal);
     }
   } catch (_) {
-    if (caminho) {
-      substituirMensagemHtmlChatIALeads(
-        carregando,
-        `${escaparHtml(respostaLocalChatIALeads(mensagem))}
-        <div class="chat-ia-leads-opcoes">
-          <button type="button" class="chat-ia-leads-opcao" onclick="abrirSecaoChatIALeads('${caminho.secao}')">Abrir agora</button>
-        </div>`
-      );
-    } else {
-      substituirMensagemChatIALeads(
-        carregando,
-        respostaLocalChatIALeads(mensagem)
-      );
-    }
+    const respostaLocal = respostaLocalChatIALeads(mensagem);
+    const acaoLocal = caminho ? { secao: caminho.secao, label: "Abrir agora" } : null;
+    renderizarMensagemChatIA(carregando, respostaLocal, acaoLocal);
   }
 }
 

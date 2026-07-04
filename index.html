@@ -15850,7 +15850,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 </div>
                 <div class="video-anuncio-acoes">
                   <input type="file" id="video_anuncio_input" accept="video/mp4,video/quicktime,video/webm" style="display:none">
-                  <button type="button" class="btn-video-anuncio" id="btn-adicionar-video">+ Adicionar vídeo</button>
+                  <button type="button" class="btn-video-anuncio" id="btn-adicionar-video" onclick="document.getElementById('video_anuncio_input').click()">+ Adicionar vídeo</button>
                   <button type="button" class="btn-video-anuncio remover" id="btn-remover-video" style="display:none">Remover</button>
                 </div>
               </div>
@@ -37854,8 +37854,8 @@ function adicionarBannerGeradoAoCarrossel() {
 </script>
 
 <script>
-  inicializarCarrosselImagens();
-  inicializarVideoCampanha();
+  try { inicializarCarrosselImagens(); } catch(e) { console.error("inicializarCarrosselImagens:", e); }
+  try { inicializarVideoCampanha(); } catch(e) { console.error("inicializarVideoCampanha:", e); }
 </script>
 
 <!-- ===== MODAL NICHOS USUÁRIO (ADMIN) ===== -->

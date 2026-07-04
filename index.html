@@ -28150,7 +28150,8 @@ function conduzirParaCampoCampanha(alvo, mensagem) {
 function mapearErroMetaParaCampo(mensagem) {
   const m = (mensagem || "").toLowerCase();
   if (m.includes("special_ad_categor") || m.includes("special ad categor") || m.includes("categoria especial") || m.includes("housing") || m.includes("credit") || m.includes("employment")) return "#adv_categoria_especial";
-  if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("minimum age") || m.includes("sugestão ao criar") || m.includes("sugest") && m.includes("conjunto de anúncios")) return "#adv_idade_min";
+  if (m.includes("valor do lance") || m.includes("restrições de lance") || m.includes("bid value") || m.includes("bid restriction") || (m.includes("lance") && m.includes("obrigatório"))) return "#adv_bid_strategy";
+  if (/\bidade\b/.test(m) || m.includes("age_min") || m.includes("age_max") || m.includes("minimum age") || m.includes("sugestão ao criar") || m.includes("sugest") && m.includes("conjunto de anúncios")) return "#adv_idade_min";
   if (m.includes("daily_budget") || m.includes("budget") || m.includes("orçamento") || m.includes("mínimo") || m.includes("minimum amount")) return "#orcamento";
   if (m.includes("page_id") || (m.includes("page") && (m.includes("not found") || m.includes("invalid") || m.includes("não encontrada")))) return "#pagina_select";
   if (m.includes("bid_amount")) {
@@ -28179,7 +28180,10 @@ function traduzirErroMeta(mensagem) {
   if (m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios"))) {
     return "A Meta sugeriu ampliar o público. Tente publicar novamente — o sistema tentará automaticamente com público mais amplo. Mensagem: " + mensagem;
   }
-  if (m.includes("idade") || m.includes("age_min") || m.includes("age_max")) {
+  if (m.includes("valor do lance") || m.includes("restrições de lance") || m.includes("bid value") || m.includes("bid restriction") || (m.includes("lance") && m.includes("obrigatório"))) {
+    return "Controle de custo mal configurado: a estratégia de lance selecionada exige um valor de lance. Preencha o campo 'Valor do lance' nas configurações avançadas ou mude para 'Menor custo possível'.";
+  }
+  if (/\bidade\b/.test(m) || m.includes("age_min") || m.includes("age_max")) {
     const slugNicho =
       String(window._nichoAtivo?.slug || "").toLowerCase();
 

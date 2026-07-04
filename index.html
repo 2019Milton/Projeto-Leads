@@ -11578,6 +11578,14 @@ body.tema-claro .targeting-chip {
   padding: 14px 16px;
   background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(37,99,235,0.18));
   border-bottom: 1px solid rgba(34,197,94,0.18);
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+
+.chat-ia-leads-janela.arrastando {
+  transition: none;
+  opacity: 0.96;
 }
 
 .chat-ia-leads-header h4 {
@@ -11605,6 +11613,7 @@ body.tema-claro .targeting-chip {
   background: rgba(15,23,42,0.55);
   color: #cbd5e1;
   box-shadow: none;
+  cursor: pointer;
 }
 
 .chat-ia-leads-body {
@@ -11764,6 +11773,7 @@ body.tema-claro .targeting-chip {
     right: 12px;
     bottom: 76px;
     width: calc(100vw - 24px);
+    max-height: calc(100vh - 92px);
   }
 
   .chat-ia-leads-acoes {
@@ -22580,6 +22590,108 @@ const MAPA_CHAT_IA_LEADS = [
   }
 ];
 
+const CHAT_IA_LEADS_POS_KEY = "chat_ia_leads_posicao";
+
+function limitarPosicaoChatIALeads(left, top, janela) {
+  const margem = 8;
+  const largura = janela?.offsetWidth || 430;
+  const altura = janela?.offsetHeight || 520;
+
+  return {
+    left: Math.min(
+      Math.max(margem, left),
+      Math.max(margem, window.innerWidth - largura - margem)
+    ),
+    top: Math.min(
+      Math.max(margem, top),
+      Math.max(margem, window.innerHeight - altura - margem)
+    )
+  };
+}
+
+function posicionarChatIALeads(left, top, salvar = true) {
+  const janela = document.getElementById("chat_ia_leads_janela");
+  if (!janela) return;
+
+  const pos = limitarPosicaoChatIALeads(left, top, janela);
+
+  janela.style.left = `${pos.left}px`;
+  janela.style.top = `${pos.top}px`;
+  janela.style.right = "auto";
+  janela.style.bottom = "auto";
+
+  if (salvar) {
+    localStorage.setItem(CHAT_IA_LEADS_POS_KEY, JSON.stringify(pos));
+  }
+}
+
+function restaurarPosicaoChatIALeads() {
+  const janela = document.getElementById("chat_ia_leads_janela");
+  if (!janela) return;
+
+  try {
+    const salva = JSON.parse(localStorage.getItem(CHAT_IA_LEADS_POS_KEY) || "null");
+
+    if (Number.isFinite(salva?.left) && Number.isFinite(salva?.top)) {
+      posicionarChatIALeads(salva.left, salva.top, false);
+      return;
+    }
+  } catch (_) {}
+
+  const rect = janela.getBoundingClientRect();
+  posicionarChatIALeads(rect.left, rect.top, false);
+}
+
+function inicializarArrasteChatIALeads() {
+  const janela = document.getElementById("chat_ia_leads_janela");
+  const header = janela?.querySelector(".chat-ia-leads-header");
+
+  if (!janela || !header || header.dataset.dragInicializado) return;
+
+  header.dataset.dragInicializado = "1";
+
+  header.addEventListener("pointerdown", (event) => {
+    if (event.target?.closest?.("button")) return;
+
+    const rect = janela.getBoundingClientRect();
+    const offsetX = event.clientX - rect.left;
+    const offsetY = event.clientY - rect.top;
+
+    janela.classList.add("arrastando");
+    header.setPointerCapture?.(event.pointerId);
+
+    const mover = (moveEvent) => {
+      posicionarChatIALeads(
+        moveEvent.clientX - offsetX,
+        moveEvent.clientY - offsetY,
+        false
+      );
+    };
+
+    const soltar = (upEvent) => {
+      header.releasePointerCapture?.(event.pointerId);
+      janela.classList.remove("arrastando");
+      posicionarChatIALeads(
+        upEvent.clientX - offsetX,
+        upEvent.clientY - offsetY,
+        true
+      );
+      window.removeEventListener("pointermove", mover);
+      window.removeEventListener("pointerup", soltar);
+      window.removeEventListener("pointercancel", soltar);
+    };
+
+    window.addEventListener("pointermove", mover);
+    window.addEventListener("pointerup", soltar);
+    window.addEventListener("pointercancel", soltar);
+  });
+
+  window.addEventListener("resize", () => {
+    const rect = janela.getBoundingClientRect();
+    posicionarChatIALeads(rect.left, rect.top, true);
+  });
+}
+
 function toggleChatIALeads(forcar) {
   const janela = document.getElementById("chat_ia_leads_janela");
   if (!janela) return;
@@ -22592,6 +22704,8 @@ function toggleChatIALeads(forcar) {
   janela.style.display = abrir ? "flex" : "none";
 
   if (abrir) {
+    inicializarArrasteChatIALeads();
+    requestAnimationFrame(restaurarPosicaoChatIALeads);
     setTimeout(() => document.getElementById("chat_ia_leads_input")?.focus(), 80);
   }
 }

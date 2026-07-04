@@ -28159,6 +28159,8 @@ function mapearErroMetaParaCampo(mensagem) {
 
 function traduzirErroMeta(mensagem) {
   const m = (mensagem || "").toLowerCase();
+  if (m.includes("failed to fetch") || m.includes("networkerror") || m.includes("load failed"))
+    return "Não foi possível conectar ao servidor agora. Atualize a página e tente publicar novamente.";
   if (m.includes("idade") || m.includes("age_min") || m.includes("age_max") || m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios")))
     return "Para campanhas de Imóveis, o Meta não permite restrição de idade. Deixe Idade mínima em 18 e Idade máxima em 65, ou selecione 'HOUSING' em Categoria Especial nas configurações avançadas.";
   if (m.includes("daily_budget") || m.includes("budget") || m.includes("mínimo") || m.includes("minimum amount"))
@@ -28182,7 +28184,7 @@ function mostrarErroPublicacao(mensagem) {
     return;
   }
   const el = document.createElement("div");
-  el.textContent = "❌ " + mensagem;
+  el.textContent = "❌ " + mensagemFinal;
   Object.assign(el.style, {
     position:"fixed", bottom:"24px", right:"24px",
     background:"#7f1d1d", color:"#fca5a5",

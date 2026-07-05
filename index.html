@@ -393,18 +393,45 @@ body::after {
   animation-delay: .55s;
 }
 
+.login-comet {
+  position: absolute;
+  right: -160px;
+  top: 8%;
+  width: 170px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(147,197,253,0.24), rgba(255,255,255,0.95));
+  opacity: 0;
+  filter: drop-shadow(0 0 10px rgba(147,197,253,0.45));
+  transform: translate3d(0,0,0) rotate(-24deg) scaleX(.6);
+  animation: loginCometSweep 4.8s ease-out .55s forwards;
+  animation-play-state: paused;
+}
+
+.login-comet::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, rgba(147,197,253,0.8) 48%, transparent 72%);
+}
+
 .login-rocket-trail {
   position: absolute;
   left: -18%;
   top: 69%;
-  width: 280px;
+  width: 220px;
   height: 3px;
   border-radius: 999px;
   background: linear-gradient(90deg, transparent, rgba(96,165,250,0.12), rgba(251,146,60,0.7), transparent);
   opacity: 0;
-  transform: rotate(-18deg);
+  transform: translate3d(0,0,0) rotate(-18deg) scaleX(.25);
   filter: blur(.3px);
-  animation: loginRocketTrail 5.7s ease-in-out forwards;
+  animation: loginRocketTrail 8.4s cubic-bezier(.2,.72,.22,1) forwards;
+  animation-play-state: paused;
 }
 
 .login-scene-rocket {
@@ -417,29 +444,82 @@ body::after {
   opacity: 0;
   filter: drop-shadow(0 0 12px rgba(59,130,246,0.55)) drop-shadow(0 0 14px rgba(251,146,60,0.36));
   transform: translate3d(0,0,0) rotate(42deg);
-  animation: loginRocketFlyby 5.7s cubic-bezier(.18,.72,.18,1) forwards;
+  animation: loginRocketFlyby 8.4s cubic-bezier(.2,.72,.22,1) forwards;
+  animation-play-state: paused;
+}
+
+.login-animacoes-prontas .login-rocket-trail,
+.login-animacoes-prontas .login-comet,
+.login-animacoes-prontas .login-scene-rocket {
+  animation-play-state: running;
 }
 
 @keyframes loginRocketFlyby {
   0% {
     opacity: 0;
-    transform: translate3d(0,0,0) rotate(42deg) scale(.75);
+    transform: translate3d(0,0,0) rotate(42deg) scale(.72);
   }
-  12% { opacity: 1; }
+  8% {
+    opacity: 1;
+    transform: translate3d(18vw,-15vh,0) rotate(28deg) scale(.82);
+  }
+  21% {
+    opacity: 1;
+    transform: translate3d(7vw,-55vh,0) rotate(-38deg) scale(.9);
+  }
+  34% {
+    opacity: 1;
+    transform: translate3d(18vw,-72vh,0) rotate(42deg) scale(.86);
+  }
+  48% {
+    opacity: 1;
+    transform: translate3d(63vw,-66vh,0) rotate(78deg) scale(.96);
+  }
   62% {
     opacity: 1;
-    transform: translate3d(70vw,-44vh,0) rotate(42deg) scale(1);
+    transform: translate3d(94vw,-51vh,0) rotate(145deg) scale(.9);
+  }
+  75% {
+    opacity: 1;
+    transform: translate3d(78vw,-16vh,0) rotate(226deg) scale(.92);
+  }
+  88% {
+    opacity: 1;
+    transform: translate3d(20vw,-8vh,0) rotate(314deg) scale(.84);
   }
   100% {
     opacity: 0;
-    transform: translate3d(116vw,-72vh,0) rotate(42deg) scale(.92);
+    transform: translate3d(118vw,-78vh,0) rotate(42deg) scale(.9);
   }
 }
 
 @keyframes loginRocketTrail {
-  0%, 8% { opacity: 0; transform: translate3d(0,0,0) rotate(-18deg) scaleX(.35); }
-  18%, 58% { opacity: .72; }
-  100% { opacity: 0; transform: translate3d(104vw,-66vh,0) rotate(-18deg) scaleX(1); }
+  0% { opacity: 0; transform: translate3d(0,0,0) rotate(-18deg) scaleX(.22); }
+  10% { opacity: .72; transform: translate3d(14vw,-13vh,0) rotate(-26deg) scaleX(.82); }
+  24% { opacity: .7; transform: translate3d(4vw,-52vh,0) rotate(-84deg) scaleX(.72); }
+  39% { opacity: .64; transform: translate3d(24vw,-70vh,0) rotate(18deg) scaleX(.88); }
+  53% { opacity: .7; transform: translate3d(58vw,-63vh,0) rotate(42deg) scaleX(.9); }
+  68% { opacity: .66; transform: translate3d(86vw,-44vh,0) rotate(112deg) scaleX(.82); }
+  82% { opacity: .62; transform: translate3d(72vw,-13vh,0) rotate(190deg) scaleX(.74); }
+  92% { opacity: .48; transform: translate3d(18vw,-7vh,0) rotate(278deg) scaleX(.64); }
+  100% { opacity: 0; transform: translate3d(106vw,-72vh,0) rotate(-18deg) scaleX(.85); }
+}
+
+@keyframes loginCometSweep {
+  0% {
+    opacity: 0;
+    transform: translate3d(0,0,0) rotate(-24deg) scaleX(.45);
+  }
+  12% {
+    opacity: .9;
+  }
+  78% {
+    opacity: .82;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-118vw,54vh,0) rotate(-24deg) scaleX(1);
+  }
 }
 
 @keyframes loginPlanetDrift {
@@ -479,6 +559,7 @@ body::after {
   .login-ship,
   .login-black-hole,
   .login-planet,
+  .login-comet,
   .login-rocket-trail,
   .login-scene-rocket {
     animation: none !important;
@@ -495,6 +576,7 @@ body::after {
   }
 
   .login-rocket-trail,
+  .login-comet,
   .login-scene-rocket {
     display: none;
   }
@@ -15289,6 +15371,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
     <span class="login-planet login-planet-ring"></span>
     <span class="login-planet login-planet-ember"></span>
     <span class="login-planet login-planet-ice"></span>
+    <span class="login-comet"></span>
     <span class="login-rocket-trail"></span>
     <img class="login-scene-rocket" src="rocket-logo.png" alt="">
   </div>
@@ -18465,6 +18548,21 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
 
 <script>
+
+function iniciarAnimacoesLogin() {
+  const loginBox =
+    document.getElementById("loginBox");
+
+  if (loginBox) {
+    loginBox.classList.add("login-animacoes-prontas");
+  }
+}
+
+if (document.readyState === "complete") {
+  iniciarAnimacoesLogin();
+} else {
+  window.addEventListener("load", iniciarAnimacoesLogin, { once: true });
+}
 
 function abrirLead() {
 

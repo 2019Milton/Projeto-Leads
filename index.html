@@ -395,15 +395,16 @@ body::after {
 
 .login-comet {
   position: absolute;
-  left: -160px;
-  top: 8%;
-  width: 170px;
+  left: -180px;
+  top: 78%;
+  width: 200px;
   height: 4px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(147,197,253,0.24), transparent);
+  /* cauda à esquerda (transparente) → cabeça à direita (brilhante) */
+  background: linear-gradient(90deg, transparent, rgba(147,197,253,0.30), rgba(255,255,255,0.95));
   opacity: 0;
-  filter: drop-shadow(0 0 10px rgba(147,197,253,0.45));
-  transform: translate3d(0,0,0) rotate(24deg) scaleX(.6);
+  filter: drop-shadow(0 0 10px rgba(147,197,253,0.55));
+  transform: translate3d(0,0,0) rotate(-30deg) scaleX(.5);
   animation: loginCometSweep 4.8s ease-out .55s forwards;
   animation-play-state: paused;
 }
@@ -411,7 +412,8 @@ body::after {
 .login-comet::after {
   content: "";
   position: absolute;
-  left: -4px;
+  right: -4px;
+  left: auto;
   top: -3px;
   width: 10px;
   height: 10px;
@@ -480,17 +482,19 @@ body::after {
 @keyframes loginCometSweep {
   0% {
     opacity: 0;
-    transform: translate3d(0,0,0) rotate(24deg) scaleX(.45);
+    transform: translate3d(0,0,0) rotate(-30deg) scaleX(.5);
   }
   12% {
     opacity: .9;
+    transform: translate3d(22vw,-14vh,0) rotate(-30deg) scaleX(.75);
   }
   78% {
     opacity: .82;
+    transform: translate3d(88vw,-58vh,0) rotate(-30deg) scaleX(1);
   }
   100% {
     opacity: 0;
-    transform: translate3d(118vw,54vh,0) rotate(24deg) scaleX(1);
+    transform: translate3d(120vw,-76vh,0) rotate(-30deg) scaleX(1.1);
   }
 }
 

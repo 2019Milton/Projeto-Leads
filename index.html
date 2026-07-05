@@ -21302,7 +21302,7 @@ function exportarLeadsCSV() {
 
   const labelScore = s => ({ quente: "Quente", morno: "Morno", frio: "Frio" }[s] || s || "");
 
-  const labelOrigem = o => ({ meta: "Meta Ads", manual: "Manual", whatsapp: "WhatsApp", site: "Site" }[o] || o || "");
+  const labelOrigem = o => ({ meta: "Meta Ads", manual: "Manual", formulario: "Formulário", whatsapp: "WhatsApp", site: "Site", tiktok: "TikTok Ads", google: "Google Ads", linkedin: "LinkedIn Ads", pinterest: "Pinterest Ads", snapchat: "Snapchat Ads", microsoft: "Microsoft Ads", kwai: "Kwai Ads" }[o] || o || "");
 
   const sTitulo  = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 15 }, fill: { fgColor: { rgb: "7c3aed" } }, alignment: { horizontal: "center", vertical: "center" } };
   const sHeader  = { font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10 }, fill: { fgColor: { rgb: "1e40af" } }, alignment: { horizontal: "center" } };
@@ -29639,13 +29639,13 @@ const PLATAFORMA_META = {
 };
 
 function platBadge(plataforma) {
-  const id = (plataforma || "meta").toLowerCase();
+  const id = (plataforma || "formulario").toLowerCase();
   const p  = PLATAFORMA_META[id] || { nome: id, icone: "📣" };
   return `<span class="plat-badge ${id}">${p.icone} ${p.nome}</span>`;
 }
 
 function platNome(plataforma) {
-  const id = (plataforma || "meta").toLowerCase();
+  const id = (plataforma || "formulario").toLowerCase();
   return (PLATAFORMA_META[id] || { nome: id }).nome;
 }
 

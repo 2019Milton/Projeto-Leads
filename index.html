@@ -22820,6 +22820,13 @@ function toggleChatIALeads(forcar) {
     inicializarArrasteChatIALeads();
     requestAnimationFrame(restaurarPosicaoChatIALeads);
     setTimeout(() => document.getElementById("chat_ia_leads_input")?.focus(), 80);
+  } else {
+    const msgs = document.getElementById("chat_ia_leads_msgs");
+    if (msgs) {
+      msgs.innerHTML = `<div class="chat-ia-leads-msg bot">Oi! Posso ajudar com imagens da campanha, resumo do corretor, recuperação de leads e dúvidas sobre onde fazer cada coisa na plataforma.</div>`;
+    }
+    const input = document.getElementById("chat_ia_leads_input");
+    if (input) input.value = "";
   }
 }
 

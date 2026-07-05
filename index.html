@@ -19492,6 +19492,8 @@ function montarSidebar() {
   navegarPara("dashboard");
 }
 
+let _cfgClickFora = null;
+
 function fecharConfiguracoes() {
   const cfgCard =
     document.getElementById("card-configuracoes");
@@ -19513,6 +19515,11 @@ function fecharConfiguracoes() {
   document.querySelectorAll(".sidebar-item[data-secao]").forEach(btn => {
     btn.classList.toggle("ativa", btn.dataset.secao === secaoAtiva);
   });
+
+  if (_cfgClickFora) {
+    document.removeEventListener("mousedown", _cfgClickFora, true);
+    _cfgClickFora = null;
+  }
 }
 
 function abrirConfiguracoes() {
@@ -19536,6 +19543,21 @@ function abrirConfiguracoes() {
   if (cfgBtn) cfgBtn.setAttribute("aria-expanded", "true");
 
   _preencherPaginaConfiguracoes();
+
+  if (_cfgClickFora) {
+    document.removeEventListener("mousedown", _cfgClickFora, true);
+  }
+  _cfgClickFora = (e) => {
+    const card = document.getElementById("card-configuracoes");
+    const btn  = document.getElementById("sidebar-item-configuracoes");
+    if (
+      card && !card.contains(e.target) &&
+      btn  && !btn.contains(e.target)
+    ) {
+      fecharConfiguracoes();
+    }
+  };
+  setTimeout(() => document.addEventListener("mousedown", _cfgClickFora, true), 0);
 }
 
 function toggleConfiguracoes() {

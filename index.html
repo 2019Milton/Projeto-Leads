@@ -16581,6 +16581,10 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 <span class="slider"></span>
               </label>
             </div>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+              <button id="cfg-wpp-teste-btn" onclick="testarNotifWhatsapp()" class="cfg-btn-save" style="background:#16a34a;">Enviar mensagem de teste</button>
+              <span id="cfg-wpp-teste-msg" style="font-size:13px;"></span>
+            </div>
           </div>
 
           <!-- Aparência -->
@@ -34528,6 +34532,30 @@ async function salvarWhatsAppPerfil(inputId, btnId, msgId) {
     if (msg) { msg.textContent = "Erro ao salvar"; msg.style.color = "#ef4444"; }
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = "Salvar"; }
+  }
+}
+
+async function testarNotifWhatsapp() {
+  const btn = document.getElementById("cfg-wpp-teste-btn");
+  const msg = document.getElementById("cfg-wpp-teste-msg");
+  if (btn) { btn.disabled = true; btn.textContent = "Enviando..."; }
+  if (msg) { msg.textContent = ""; }
+  try {
+    const res = await fetch(`${API}/teste/notif-whatsapp`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if (msg) { msg.textContent = "✅ Mensagem enviada! Verifique seu WhatsApp."; msg.style.color = "#22c55e"; }
+    } else {
+      if (msg) { msg.textContent = `❌ ${data.erro || "Erro ao enviar"}`; msg.style.color = "#ef4444"; }
+    }
+  } catch (e) {
+    if (msg) { msg.textContent = "❌ Erro de conexão"; msg.style.color = "#ef4444"; }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Enviar mensagem de teste"; }
+    setTimeout(() => { if (msg) msg.textContent = ""; }, 6000);
   }
 }
 

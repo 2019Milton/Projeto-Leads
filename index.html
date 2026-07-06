@@ -453,7 +453,7 @@ body::after {
   opacity: 0;
   filter: drop-shadow(0 0 10px rgba(147,197,253,0.55));
   transform: translate3d(0,0,0) rotate(-30deg) scaleX(.5);
-  animation: loginCometSweep 4.8s ease-out .55s infinite forwards;
+  animation: loginCometSweep 4.8s linear .55s forwards;
   animation-play-state: paused;
 }
 
@@ -479,7 +479,7 @@ body::after {
   opacity: 0;
   filter: drop-shadow(0 0 12px rgba(59,130,246,0.55)) drop-shadow(0 0 14px rgba(251,146,60,0.36));
   transform: translate3d(0,0,0) rotate(350deg) scale(.78);
-  animation: loginRocketFlyby 13s linear 1.2s infinite forwards;
+  animation: loginRocketFlyby 13s linear 1.2s forwards;
   animation-play-state: paused;
 }
 
@@ -488,73 +488,59 @@ body::after {
   animation-play-state: running;
 }
 
-/* Trajetória: órbita elíptica em sentido horário ao redor da tela.
-   cubic-bezier ease-in-out em cada segmento cria curvatura suave entre waypoints. */
+/* Trajetória: órbita elíptica em sentido horário ao redor da tela, velocidade constante (linear) entre waypoints. */
 @keyframes loginRocketFlyby {
   0% {
     opacity: 0;
     transform: translate3d(-4vw, 2vh, 0) rotate(350deg) scale(.72);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   5% {
     opacity: .9;
     transform: translate3d(7vw, -14vh, 0) rotate(5deg) scale(.78);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   13% {
     opacity: 1;
     transform: translate3d(17vw, -36vh, 0) rotate(22deg) scale(.83);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   22% {
     opacity: 1;
     transform: translate3d(33vw, -56vh, 0) rotate(46deg) scale(.87);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   31% {
     opacity: 1;
     transform: translate3d(54vw, -69vh, 0) rotate(76deg) scale(.90);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   40% {
     opacity: 1;
     transform: translate3d(78vw, -65vh, 0) rotate(108deg) scale(.90);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   49% {
     opacity: 1;
     transform: translate3d(95vw, -46vh, 0) rotate(148deg) scale(.88);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   58% {
     opacity: 1;
     transform: translate3d(90vw, -22vh, 0) rotate(188deg) scale(.86);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   67% {
     opacity: 1;
     transform: translate3d(68vw, -8vh, 0) rotate(222deg) scale(.84);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   75% {
     opacity: 1;
     transform: translate3d(42vw, -4vh, 0) rotate(252deg) scale(.83);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   83% {
     opacity: 1;
     transform: translate3d(16vw, -18vh, 0) rotate(288deg) scale(.81);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   91% {
     opacity: 1;
     transform: translate3d(3vw, -44vh, 0) rotate(325deg) scale(.80);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   96% {
     opacity: .5;
     transform: translate3d(52vw, -76vh, 0) rotate(348deg) scale(.86);
-    animation-timing-function: cubic-bezier(.42,0,.58,1);
   }
   100% {
     opacity: 0;

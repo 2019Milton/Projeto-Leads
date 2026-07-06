@@ -286,7 +286,7 @@ body::after {
   height: 44px;
   --ship-rot: -11deg;
   --far-opacity: .65;
-  animation-delay: .55s;
+  animation: loginFarObjectReveal 7s ease-out .55s forwards, loginShipDriftA 14s ease-in-out .55s infinite;
 }
 
 .login-ship-b {
@@ -296,7 +296,7 @@ body::after {
   height: 34px;
   --ship-rot: 18deg;
   --far-opacity: .60;
-  animation-delay: .85s;
+  animation: loginFarObjectReveal 7s ease-out .85s forwards, loginShipDriftB 20s ease-in-out .85s infinite;
 }
 
 .login-black-hole {
@@ -576,6 +576,18 @@ body::after {
 @keyframes loginFarObjectReveal {
   0% { opacity: .08; }
   100% { opacity: var(--far-opacity, .34); transform: rotate(var(--galaxy-rot, var(--ship-rot, -18deg))) scale(1); }
+}
+
+@keyframes loginShipDriftA {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--ship-rot, -11deg)) scale(1); }
+  30% { transform: translate3d(12px, -9px, 0) rotate(calc(var(--ship-rot, -11deg) + 3deg)) scale(1.03); }
+  60% { transform: translate3d(-9px, 7px, 0) rotate(calc(var(--ship-rot, -11deg) - 3deg)) scale(.98); }
+}
+
+@keyframes loginShipDriftB {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--ship-rot, 18deg)) scale(1); }
+  35% { transform: translate3d(-6px, 5px, 0) rotate(calc(var(--ship-rot, 18deg) + 2deg)) scale(1.02); }
+  70% { transform: translate3d(5px, -4px, 0) rotate(calc(var(--ship-rot, 18deg) - 2deg)) scale(.99); }
 }
 
 @keyframes loginNebulaReveal {

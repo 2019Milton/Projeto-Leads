@@ -254,48 +254,31 @@ body::after {
 .login-ship {
   position: absolute;
   display: block;
-  border-radius: 50%;
+  object-fit: contain;
   opacity: 0;
-  mix-blend-mode: screen;
-  transform: rotate(var(--ship-rot, -12deg)) scale(.82);
-  background:
-    radial-gradient(ellipse 18% 100% at 50% 50%, rgba(255,255,255,0.95) 0 6%, rgba(220,235,255,0.78) 18%, rgba(147,197,253,0.36) 40%, transparent 56%),
-    radial-gradient(ellipse 65% 100% at 50% 50%, rgba(147,197,253,0.42) 0%, rgba(99,102,241,0.20) 48%, transparent 66%),
-    conic-gradient(from 8deg at 50% 50%,
-      transparent 0%,
-      rgba(147,197,253,0.38) 5%, transparent 12%,
-      rgba(167,139,250,0.30) 23%, transparent 32%,
-      rgba(125,211,252,0.34) 43%, transparent 52%,
-      rgba(167,139,250,0.26) 63%, transparent 72%,
-      rgba(147,197,253,0.32) 83%, transparent 92%,
-      transparent 100%
-    );
-  filter: blur(.5px) drop-shadow(0 0 14px rgba(147,197,253,0.55)) drop-shadow(0 0 32px rgba(99,102,241,0.28));
+  transform: rotate(var(--ship-rot, -12deg)) scale(1);
   animation: loginFarObjectReveal 7s ease-out forwards;
-}
-
-.login-ship::before,
-.login-ship::after {
-  display: none;
 }
 
 .login-ship-a {
   left: 22%;
   top: 13%;
-  width: 120px;
-  height: 44px;
+  width: 190px;
+  height: auto;
   --ship-rot: -11deg;
-  --far-opacity: .65;
+  --far-opacity: .8;
+  filter: drop-shadow(0 0 14px rgba(147,197,253,0.35));
   animation: loginFarObjectReveal 7s ease-out .55s forwards, loginShipDriftA 14s ease-in-out .55s infinite;
 }
 
 .login-ship-b {
   right: 17%;
   top: 52%;
-  width: 94px;
-  height: 34px;
+  width: 108px;
+  height: auto;
   --ship-rot: 18deg;
-  --far-opacity: .60;
+  --far-opacity: .55;
+  filter: drop-shadow(0 0 10px rgba(147,197,253,0.3)) blur(1.1px);
   animation: loginFarObjectReveal 7s ease-out .85s forwards, loginShipDriftB 20s ease-in-out .85s infinite;
 }
 
@@ -655,15 +638,15 @@ body::after {
   }
 
   .login-ship-a {
-    width: 80px;
-    height: 30px;
+    width: 120px;
+    height: auto;
     left: 10%;
     top: 12%;
   }
 
   .login-ship-b {
-    width: 64px;
-    height: 23px;
+    width: 74px;
+    height: auto;
     right: 8%;
     top: 56%;
   }
@@ -15442,8 +15425,8 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
     <span class="login-nebula login-nebula-c"></span>
     <span class="login-galaxy login-galaxy-a"></span>
     <span class="login-galaxy login-galaxy-b"></span>
-    <span class="login-ship login-ship-a"></span>
-    <span class="login-ship login-ship-b"></span>
+    <img class="login-ship login-ship-a" src="nave-espacial-a.jpg" alt="">
+    <img class="login-ship login-ship-b" src="nave-espacial-b.jpg" alt="">
     <span class="login-black-hole"></span>
     <span class="login-planet login-planet-terra"></span>
     <span class="login-planet login-planet-ring"></span>

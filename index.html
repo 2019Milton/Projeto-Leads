@@ -29856,13 +29856,18 @@ async function carregarStatusMeta() {
                   </div>
                 </div>
                 <div class="meta-status-tile">
-                  <span>${data.instagram?.username ? "🟢" : "🔴"} Instagram</span>
+                  <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : "🔴"} Instagram</span>
                   <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) : "Opcional para anunciar"}</small>
                   ${!instagramConectado ? `
                     <div style="margin-top:6px;">
                       <button type="button" onclick="conectarInstagram()"
                         style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:#e2e8f0;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
                       >📷 Conectar</button>
+                    </div>
+                  ` : instagramConectado && data.instagram_utilizavel_na_conta === false ? `
+                    <div style="margin-top:6px;font-size:11px;color:#facc15;line-height:1.5;">
+                      ⚠️ Esse Instagram ainda não está liberado pra essa conta de anúncios — os anúncios podem não usar ele.
+                      <a href="https://business.facebook.com/settings/instagram-accounts" target="_blank" style="color:#facc15;">Adicionar em Configurações de Negócios →</a>
                     </div>
                   ` : ""}
                 </div>

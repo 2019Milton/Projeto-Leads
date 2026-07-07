@@ -6996,6 +6996,48 @@ body.tema-claro .cal-nav span { color: #111827; }
   font-size: 12px;
 }
 
+.preview-anuncio-meta-box {
+  margin: 14px 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(30,41,59,0.68);
+  border: 1px solid rgba(96,165,250,0.32);
+}
+
+.preview-anuncio-meta-box h4 {
+  margin: 0 0 6px;
+  color: #93c5fd;
+}
+
+.preview-anuncio-meta-box p {
+  margin: 0 0 10px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.preview-anuncio-meta-resultado {
+  margin-top: 10px;
+}
+
+.preview-anuncio-meta-resultado:empty {
+  display: none;
+}
+
+.preview-anuncio-meta-resultado iframe {
+  max-width: 100%;
+  border: 0;
+  border-radius: 10px;
+}
+
+.preview-anuncio-meta-erro {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.35);
+  color: #fca5a5;
+  font-size: 12px;
+}
+
 .ia-resumo-panel {
   background: #161229;
   border-color: rgba(139,92,246,0.55);
@@ -31112,6 +31154,23 @@ function abrirCampanhaDrawer(campanhaEncoded) {
     campanha.nome || "Campanha";
 
   conteudo.innerHTML = `
+    <div class="preview-anuncio-meta-box">
+      <h4>Anúncio real na Meta</h4>
+      <p>
+        Veja o anúncio exatamente como a Meta exibe, com dados atualizados direto do Facebook/Instagram.
+      </p>
+      <button
+        class="btn-reanalisar-ia"
+        onclick="carregarPreviewAnuncioCampanha(${Number(campanha.id)}, this)"
+      >
+        Ver anúncio real
+      </button>
+      <div
+        id="preview_anuncio_meta_resultado"
+        class="preview-anuncio-meta-resultado"
+      ></div>
+    </div>
+
     <div class="ia-ouro-destaque">
       <h4>IA Ouro - Analise de campanha</h4>
       <p>
@@ -31208,6 +31267,50 @@ function fecharCampanhaDrawer() {
   document
     .getElementById("campanhaDrawer")
     ?.classList.remove("active");
+}
+
+async function carregarPreviewAnuncioCampanha(campanhaId, botao) {
+  const box =
+    document.getElementById("preview_anuncio_meta_resultado");
+
+  if (!box) return;
+
+  if (botao) {
+    botao.disabled = true;
+  }
+
+  box.innerHTML = "Carregando anúncio real na Meta...";
+
+  try {
+    const token =
+      localStorage.getItem("token");
+
+    const res =
+      await fetch(
+        `${API}/campanhas/${campanhaId}/preview-anuncio`,
+        {
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Erro ao carregar preview do anúncio");
+    }
+
+    box.innerHTML = data.preview_html;
+  } catch (err) {
+    box.innerHTML =
+      `<div class="preview-anuncio-meta-erro">${escaparHtml(err.message || "Erro ao carregar preview do anúncio.")}</div>`;
+  } finally {
+    if (botao) {
+      botao.disabled = false;
+    }
+  }
 }
 
 async function carregarCorretoresCampanha() {

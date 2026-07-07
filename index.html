@@ -1718,6 +1718,122 @@ body.tema-claro .passo-meta-step-text p {
   margin-top: 5px;
 }
 
+/* ── Split Facebook / Instagram ── */
+
+.meta-fbig-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .meta-fbig-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.meta-col {
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meta-col-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.meta-col-fb .meta-col-head {
+  background: rgba(59,130,246,0.16);
+  color: #93c5fd;
+}
+
+.meta-col-ig .meta-col-head {
+  background: linear-gradient(90deg, rgba(193,54,124,0.18), rgba(244,162,76,0.16));
+  color: #f0a8c8;
+}
+
+.meta-col-body {
+  padding: 0 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meta-col .meta-status-tile {
+  margin: 0;
+}
+
+.meta-acct-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.meta-acct-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 7px 9px;
+}
+
+.meta-acct-row.is-active {
+  border-color: rgba(74,222,128,0.55);
+  background: rgba(34,197,94,0.08);
+}
+
+.meta-acct-row .meta-acct-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.meta-acct-row .meta-acct-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta-acct-row .meta-acct-meta {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.meta-acct-row .meta-acct-actions {
+  display: flex;
+  gap: 5px;
+  flex: none;
+}
+
+.meta-warn-chip {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.25);
+  border-radius: 8px;
+  padding: 8px 9px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: #fde68a;
+  margin-top: 6px;
+}
+
 .pagamento-modos {
 
   display: grid;
@@ -11191,6 +11307,31 @@ body.tema-claro .pagamento-modo {
 body.tema-claro .meta-status-tile span { color: #1e293b; }
 body.tema-claro .meta-status-tile small,
 body.tema-claro .pagamento-modo small { color: #526174; }
+
+body.tema-claro .meta-col { border-color: rgba(71,85,105,0.22); }
+body.tema-claro .meta-col-fb .meta-col-head {
+  background: rgba(59,130,246,0.10);
+  color: #1d4ed8;
+}
+body.tema-claro .meta-col-ig .meta-col-head {
+  background: linear-gradient(90deg, rgba(193,54,124,0.10), rgba(244,162,76,0.10));
+  color: #b5306f;
+}
+body.tema-claro .meta-acct-row {
+  background: rgba(0,0,0,0.03);
+  border-color: rgba(71,85,105,0.22);
+}
+body.tema-claro .meta-acct-row.is-active {
+  border-color: rgba(22,163,74,0.5);
+  background: rgba(34,197,94,0.08);
+}
+body.tema-claro .meta-acct-row .meta-acct-name { color: #1e293b; }
+body.tema-claro .meta-acct-row .meta-acct-meta { color: #526174; }
+body.tema-claro .meta-warn-chip {
+  background: rgba(251,191,36,0.10);
+  border-color: rgba(217,119,6,0.3);
+  color: #92400e;
+}
 body.tema-claro .pagamento-modo strong { color: #1e293b; }
 body.tema-claro .pagamento-saldo { color: #1e293b; }
 body.tema-claro .pagamento-saldo.negativo { color: #b91c1c; }
@@ -21734,43 +21875,68 @@ function montarSeletorContaAnunciosMeta(data) {
   const contas = data.contas_anuncios || [];
   const conta = data.conta_anuncios;
   const contaSelecionadaId = conta?.id || "";
-  const contaAtiva = Boolean(conta?.id);
 
-  const avisoSemConta = !contaAtiva ? `
-    <div style="padding:9px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;font-size:12px;">
-      <span style="color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta de anúncios encontrada.</span>
-      <span style="color:#fde68a;"> Para criar campanhas é necessário ter uma conta de anúncios ativa na Meta.</span>
-    </div>
-  ` : "";
+  // select oculto: mantido só para o passo do tour guiado e chamadas antigas
+  // apontarem para algo; quem o usuário vê de fato é a lista abaixo.
+  const opcoesSelect = contas.map(c =>
+    `<option value="${escaparHtmlMeta(c.id)}" ${c.id === contaSelecionadaId ? "selected" : ""}>${escaparHtmlMeta(c.nome || c.id)}</option>`
+  ).join("");
 
-  const seletor = contas.length > 1 ? (() => {
-    const opcoes = contas.map(c => {
-      const moeda = c.moeda ? ` - ${c.moeda}` : "";
-      return `<option value="${escaparHtmlMeta(c.id)}" ${c.id === contaSelecionadaId ? "selected" : ""}>${escaparHtmlMeta(c.nome || c.id)}${escaparHtmlMeta(moeda)}</option>`;
-    }).join("");
+  const selectOculto = `
+    <select id="meta_conta_anuncios_select" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;">
+      <option value="">Selecione uma conta</option>
+      ${opcoesSelect}
+    </select>
+  `;
 
-    const aviso = data.selecao_conta_anuncios_pendente
-      ? "Escolha a conta que a plataforma deve usar antes de sincronizar ou criar campanhas."
-      : "Troque a conta ativa quando a conexao Meta tiver mais de uma conta disponivel.";
+  if (!contas.length) {
+    return `
+      <div style="padding:9px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;font-size:12px;">
+        <span style="color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta de anúncios encontrada.</span>
+        <span style="color:#fde68a;"> Para criar campanhas é necessário ter uma conta de anúncios ativa na Meta.</span>
+      </div>
+      ${selectOculto}
+    `;
+  }
+
+  const linhas = contas.map(c => {
+    const ativa = c.id === contaSelecionadaId;
+    const idLimpo = String(c.id || "").replace(/^act_/, "");
+    const moeda = c.moeda ? ` · ${escaparHtmlMeta(c.moeda)}` : "";
+    const gerenciarUrl = idLimpo
+      ? `https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=${encodeURIComponent(idLimpo)}`
+      : "https://www.facebook.com/adsmanager/manage/accounts";
 
     return `
-      <div style="padding-top:10px;border-top:1px solid rgba(59,130,246,0.15);">
-        <label for="meta_conta_anuncios_select" style="display:block;margin-bottom:7px;font-weight:700;">
-          Conta de anuncios usada pela plataforma
-        </label>
-        <div class="meta-conta-selector-actions">
-          <select id="meta_conta_anuncios_select">
-            <option value="">Selecione uma conta</option>
-            ${opcoes}
-          </select>
-          <button onclick="salvarContaAnunciosMeta()">Usar conta</button>
+      <div class="meta-acct-row ${ativa ? "is-active" : ""}">
+        <div class="meta-acct-info">
+          <div class="meta-acct-name">${escaparHtmlMeta(c.nome || c.id)}</div>
+          <div class="meta-acct-meta">${escaparHtmlMeta(idLimpo)}${moeda}</div>
         </div>
-        <small style="display:block;margin-top:7px;color:#bfdbfe;line-height:1.4;">${aviso}</small>
+        <div class="meta-acct-actions">
+          ${ativa
+            ? `<span style="font-size:10px;font-weight:700;color:#4ade80;padding:4px 2px;white-space:nowrap;">✓ Em uso</span>`
+            : `<button type="button" onclick="usarContaAnunciosMeta('${escaparHtmlMeta(c.id)}')" style="padding:4px 9px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Usar conta</button>`
+          }
+          <a href="${gerenciarUrl}" target="_blank" rel="noopener"
+            style="padding:4px 9px;background:rgba(24,119,242,0.12);border:1px solid rgba(24,119,242,0.3);color:#60a5fa;border-radius:6px;font-size:10.5px;font-weight:700;text-decoration:none;white-space:nowrap;"
+          >Gerenciar →</a>
+        </div>
       </div>
     `;
-  })() : "";
+  }).join("");
 
-  return `${avisoSemConta}${seletor}`;
+  const aviso = data.selecao_conta_anuncios_pendente
+    ? "Escolha a conta que a plataforma deve usar antes de sincronizar ou criar campanhas."
+    : contas.length > 1
+    ? "Troque a conta ativa quando a conexão Meta tiver mais de uma conta disponível."
+    : "";
+
+  return `
+    <div class="meta-acct-list">${linhas}</div>
+    ${aviso ? `<small style="display:block;margin-top:7px;color:#94a3b8;line-height:1.4;">${aviso}</small>` : ""}
+    ${selectOculto}
+  `;
 }
 
 function abrirModalPagamento(tipo) {
@@ -24712,18 +24878,10 @@ async function desconectarMeta() {
   }
 }
 
-async function salvarContaAnunciosMeta() {
+async function aplicarContaAnunciosMeta(contaAnunciosId) {
 
   const token =
     localStorage.getItem("token");
-
-  const select =
-    document.getElementById(
-      "meta_conta_anuncios_select"
-    );
-
-  const contaAnunciosId =
-    select?.value;
 
   if (!token) {
     alert("Usuario nao autenticado");
@@ -24769,6 +24927,21 @@ async function salvarContaAnunciosMeta() {
     console.error("SELECIONAR CONTA META:", err);
     alert("Erro ao selecionar conta Meta");
   }
+}
+
+async function salvarContaAnunciosMeta() {
+
+  const select =
+    document.getElementById(
+      "meta_conta_anuncios_select"
+    );
+
+  await aplicarContaAnunciosMeta(select?.value);
+}
+
+async function usarContaAnunciosMeta(contaAnunciosId) {
+
+  await aplicarContaAnunciosMeta(contaAnunciosId);
 }
 
 function atualizarBotaoMeta(conectado) {
@@ -25851,7 +26024,7 @@ function obterProximoPassoGuiaSecreto() {
   ) {
     return {
       id: "selecionar_conta",
-      seletor: "#meta_conta_anuncios_select",
+      seletor: ".meta-acct-list",
       titulo: "Escolha a conta de anúncios",
       texto:
         "Selecione qual conta de anúncios a plataforma deve usar. Isso evita criar ou sincronizar campanhas na conta errada."
@@ -29824,55 +29997,77 @@ async function carregarStatusMeta() {
                   <span>${data.conectado ? "🟢" : "🔴"} Meta</span>
                   <small>${data.conectado ? "Conectada" : "Não conectada"}</small>
                 </div>
-                <div class="meta-status-tile">
-                  <span>${data.conta_anuncios?.ativa ? "🟢" : data.conta_anuncios?.pendencia_pagamento ? "🟡" : "🔴"} Conta Ads / Conta de Anúncio</span>
-                  <small>${escaparHtml(data.conta_anuncios?.nome || (data.conta_anuncios?.ativa ? "Conta ativa" : "Sem conta vinculada"))}</small>
-                  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
-                    <a href="https://www.facebook.com/adsmanager/manage/accounts" target="_blank"
-                      style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(24,119,242,0.15);border:1px solid rgba(24,119,242,0.35);color:#60a5fa;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-                    >Gerenciar →</a>
-                    <a href="https://business.facebook.com/settings/ad-accounts" target="_blank"
-                      style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-                    >+ Criar conta →</a>
-                  </div>
-                  <div style="margin-top:8px;">${seletorContaAnuncios}</div>
-                </div>
-                <div class="meta-status-tile">
-                  <span>${data.paginas?.length > 0 ? "🟢" : "🔴"} Página</span>
-                  <small>${escaparHtml(data.paginas?.[0]?.name || "Sem página vinculada")}</small>
-                  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
-                    ${data.paginas?.[0]?.id ? `
-                      <a href="https://www.facebook.com/${escaparHtml(String(data.paginas[0].id))}" target="_blank"
-                        style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(24,119,242,0.15);border:1px solid rgba(24,119,242,0.35);color:#60a5fa;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-                      >Ver página →</a>
-                    ` : `
-                      <a href="https://www.facebook.com/pages/create" target="_blank"
-                        style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-                      >+ Criar página →</a>
-                    `}
-                    <button type="button" onclick="abrirPassoMetaAnuncios()"
-                      style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
-                    >📘 Tutorial</button>
-                  </div>
-                </div>
-                <div class="meta-status-tile">
-                  <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : "🔴"} Instagram</span>
-                  <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) : "Opcional para anunciar"}</small>
-                  ${!instagramConectado ? `
-                    <div style="margin-top:6px;">
-                      <button type="button" onclick="conectarInstagram()"
-                        style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:#e2e8f0;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
-                      >📷 Conectar</button>
-                    </div>
-                  ` : instagramConectado && data.instagram_utilizavel_na_conta === false ? `
-                    <div style="margin-top:6px;font-size:11px;color:#facc15;line-height:1.5;">
-                      ⚠️ Esse Instagram ainda não está liberado pra essa conta de anúncios — os anúncios podem não usar ele.
-                      <a href="https://business.facebook.com/settings/instagram-accounts" target="_blank" style="color:#facc15;">Adicionar em Configurações de Negócios →</a>
-                    </div>
-                  ` : ""}
-                </div>
-                ${tosAviso}
               </div>
+
+              <div class="meta-fbig-columns">
+
+                <div class="meta-col meta-col-fb">
+                  <div class="meta-col-head">📘 Facebook</div>
+                  <div class="meta-col-body">
+
+                    <div class="meta-status-tile">
+                      <span>${data.conta_anuncios?.ativa ? "🟢" : data.conta_anuncios?.pendencia_pagamento ? "🟡" : "🔴"} Conta de Anúncios</span>
+                      <small>${escaparHtml(data.conta_anuncios?.nome || (data.conta_anuncios?.ativa ? "Conta ativa" : "Sem conta vinculada"))}</small>
+                      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
+                        <a href="https://business.facebook.com/settings/ad-accounts" target="_blank"
+                          style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
+                        >+ Criar conta →</a>
+                      </div>
+                      <div style="margin-top:8px;">${seletorContaAnuncios}</div>
+                    </div>
+
+                    <div class="meta-status-tile">
+                      <span>${data.paginas?.length > 0 ? "🟢" : "🔴"} Página do Facebook</span>
+                      <small>${escaparHtml(data.paginas?.[0]?.name || "Sem página vinculada")}</small>
+                      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
+                        ${data.paginas?.[0]?.id ? `
+                          <a href="https://www.facebook.com/${escaparHtml(String(data.paginas[0].id))}" target="_blank"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(24,119,242,0.15);border:1px solid rgba(24,119,242,0.35);color:#60a5fa;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
+                          >Ver página →</a>
+                        ` : `
+                          <a href="https://www.facebook.com/pages/create" target="_blank"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
+                          >+ Criar página →</a>
+                        `}
+                        <button type="button" onclick="abrirPassoMetaAnuncios()"
+                          style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                        >📘 Tutorial</button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <div class="meta-col meta-col-ig">
+                  <div class="meta-col-head">📷 Instagram</div>
+                  <div class="meta-col-body">
+
+                    <div class="meta-status-tile">
+                      <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : "🔴"} Conta do Instagram</span>
+                      <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) + (data.paginas?.[0]?.instagram?.id === data.instagram?.id ? " · detectado pela Página" : "") : "Opcional — detectamos automaticamente pela Página do Facebook"}</small>
+                      ${!instagramConectado ? `
+                        <div style="margin-top:6px;">
+                          <button type="button" onclick="conectarInstagram()"
+                            style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:#e2e8f0;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                          >📷 Conectar conta separada</button>
+                        </div>
+                        <div class="meta-warn-chip">
+                          ⚠️ <span>Use só se essa conta não estiver vinculada à Página do Facebook ao lado. Ela também precisa estar liberada no mesmo Business Manager da conta de anúncios — senão a Meta pode recusar na hora de publicar.</span>
+                        </div>
+                      ` : data.instagram_utilizavel_na_conta === false ? `
+                        <div style="margin-top:6px;font-size:11px;color:#facc15;line-height:1.5;">
+                          ⚠️ Esse Instagram ainda não está liberado pra essa conta de anúncios — os anúncios podem não usar ele.
+                          <a href="https://business.facebook.com/settings/instagram-accounts" target="_blank" style="color:#facc15;">Adicionar em Configurações de Negócios →</a>
+                        </div>
+                      ` : ""}
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+              ${tosAviso}
 
               <div style="margin-bottom:10px;">
                 <button type="button" onclick="carregarStatusMeta()"

@@ -7029,6 +7029,26 @@ body.tema-claro .cal-nav span { color: #111827; }
   border-radius: 10px;
 }
 
+.preview-anuncio-meta-link {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(59,130,246,0.14);
+  border: 1px solid rgba(96,165,250,0.4);
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.preview-anuncio-meta-link:hover {
+  background: rgba(59,130,246,0.24);
+}
+
 .preview-anuncio-meta-erro {
   padding: 10px 12px;
   border-radius: 10px;
@@ -31302,7 +31322,21 @@ async function carregarPreviewAnuncioCampanha(campanhaId, botao) {
       throw new Error(data.error || "Erro ao carregar preview do anúncio");
     }
 
-    box.innerHTML = data.preview_html;
+    const linkHtml =
+      data.link_anuncio
+        ? `
+          <a
+            class="preview-anuncio-meta-link"
+            href="${escaparHtml(data.link_anuncio)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            🔗 Ver anúncio real na Meta →
+          </a>
+        `
+        : "";
+
+    box.innerHTML = linkHtml + data.preview_html;
   } catch (err) {
     box.innerHTML =
       `<div class="preview-anuncio-meta-erro">${escaparHtml(err.message || "Erro ao carregar preview do anúncio.")}</div>`;

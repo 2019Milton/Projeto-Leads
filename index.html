@@ -137,43 +137,6 @@ body::after {
   background: #030712 url('login-fundo-espaco.png') center / cover no-repeat;
 }
 
-.login-ship {
-  position: absolute;
-  display: block;
-  object-fit: contain;
-  opacity: 0;
-  transform: rotate(var(--ship-rot, -12deg)) scale(1);
-  animation: loginFarObjectReveal 7s ease-out forwards;
-}
-
-.login-ship-a {
-  left: 5%;
-  top: 40%;
-  width: 230px;
-  height: auto;
-  --ship-rot: -6deg;
-  --far-opacity: .92;
-  filter:
-    drop-shadow(0 0 5px rgba(191,219,254,0.9))
-    drop-shadow(0 0 16px rgba(96,165,250,0.6))
-    drop-shadow(0 0 34px rgba(59,130,246,0.35));
-  animation: loginFarObjectReveal 7s ease-out .55s forwards, loginShipDriftA 14s ease-in-out .55s infinite;
-}
-
-.login-ship-b {
-  right: 6%;
-  top: 60%;
-  width: 150px;
-  height: auto;
-  --ship-rot: 8deg;
-  --far-opacity: .7;
-  filter:
-    drop-shadow(0 0 4px rgba(191,219,254,0.7))
-    drop-shadow(0 0 12px rgba(96,165,250,0.45))
-    drop-shadow(0 0 24px rgba(59,130,246,0.25));
-  animation: loginFarObjectReveal 7s ease-out .85s forwards, loginShipDriftB 20s ease-in-out .85s infinite;
-}
-
 .login-comet {
   position: absolute;
   left: -180px;
@@ -300,33 +263,11 @@ body::after {
   }
 }
 
-@keyframes loginFarObjectReveal {
-  0% { opacity: .08; }
-  100% { opacity: var(--far-opacity, .34); transform: rotate(var(--galaxy-rot, var(--ship-rot, -18deg))) scale(1); }
-}
-
-@keyframes loginShipDriftA {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--ship-rot, -11deg)) scale(1); }
-  30% { transform: translate3d(12px, -9px, 0) rotate(calc(var(--ship-rot, -11deg) + 3deg)) scale(1.03); }
-  60% { transform: translate3d(-9px, 7px, 0) rotate(calc(var(--ship-rot, -11deg) - 3deg)) scale(.98); }
-}
-
-@keyframes loginShipDriftB {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--ship-rot, 18deg)) scale(1); }
-  35% { transform: translate3d(-6px, 5px, 0) rotate(calc(var(--ship-rot, 18deg) + 2deg)) scale(1.02); }
-  70% { transform: translate3d(5px, -4px, 0) rotate(calc(var(--ship-rot, 18deg) - 2deg)) scale(.99); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .stars,
-  .login-ship,
   .login-comet,
   .login-scene-rocket {
     animation: none !important;
-  }
-
-  .login-ship {
-    opacity: .45;
   }
 
   .login-comet,
@@ -336,20 +277,6 @@ body::after {
 }
 
 @media (max-width: 760px) {
-  .login-ship-a {
-    width: 100px;
-    height: auto;
-    left: 6%;
-    top: 30%;
-  }
-
-  .login-ship-b {
-    width: 70px;
-    height: auto;
-    right: 6%;
-    top: 60%;
-  }
-
   .login-scene-rocket {
     width: 48px;
     height: 60px;
@@ -15271,8 +15198,6 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 <!-- LOGIN -->
 <div class="container" id="loginBox">
   <div class="login-space-scene" aria-hidden="true">
-    <img class="login-ship login-ship-a" src="nave-espacial-esquerda.png" alt="">
-    <img class="login-ship login-ship-b" src="nave-espacial-direita.png" alt="">
     <span class="login-comet"></span>
     <img class="login-scene-rocket" src="rocket-logo.png" alt="">
   </div>

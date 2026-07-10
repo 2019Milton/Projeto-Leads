@@ -19810,6 +19810,8 @@ const campanhasRenderCache = {};
 
 let contaPagamentoAtual = null;
 
+let linkInstagramBusinessSettings = "https://business.facebook.com/settings/instagram-accounts";
+
 let usuarioLogado = null;
 
 let corretoresCampanha = [];
@@ -29910,6 +29912,10 @@ async function carregarStatusMeta() {
             data.instagram?.id ||
             data.instagram?.username
           );
+        linkInstagramBusinessSettings =
+          data.conta_anuncios?.business_id
+            ? `https://business.facebook.com/settings/instagram-accounts?business_id=${encodeURIComponent(data.conta_anuncios.business_id)}`
+            : "https://business.facebook.com/settings/instagram-accounts";
         const gastoHoje =
           data.metricas?.gasto_hoje_formatado ||
           data.metricas?.gasto_hoje ||
@@ -30057,7 +30063,17 @@ async function carregarStatusMeta() {
                       ` : data.instagram_utilizavel_na_conta === false ? `
                         <div style="margin-top:6px;font-size:11px;color:#facc15;line-height:1.5;">
                           ⚠️ Esse Instagram ainda não está liberado pra essa conta de anúncios — os anúncios podem não usar ele.
-                          <a href="https://business.facebook.com/settings/instagram-accounts" target="_blank" style="color:#facc15;">Adicionar em Configurações de Negócios →</a>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
+                          <a href="${linkInstagramBusinessSettings}" target="_blank"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(250,204,21,0.12);border:1px solid rgba(250,204,21,0.35);color:#facc15;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
+                          >Vincular na Meta →</a>
+                          <button type="button" onclick="abrirPassoMetaInstagram()"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                          >📘 Passo a passo</button>
+                          <button type="button" onclick="revalidarInstagramMeta(this)"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                          >✅ Já vinculei, verificar</button>
                         </div>
                       ` : ""}
                     </div>
@@ -37921,6 +37937,97 @@ async function enviarFeedback() {
   </div>
 </div>
 
+<!-- PASSO A PASSO INSTAGRAM NO BUSINESS MANAGER -->
+<div
+  id="modal_passo_meta_instagram"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoMetaInstagram()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_meta_instagram_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_meta_instagram_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Passo a passo para liberar o Instagram nos anúncios
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          Seu Instagram já está conectado, mas ainda precisa ser liberado dentro do
+          Gerenciador de Negócios da Meta para a conta de anúncios usada nesta plataforma.
+          Siga os passos abaixo e depois volte aqui para confirmar.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoMetaInstagram()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Abra as Configurações de Negócios da Meta</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Clique no botão abaixo para abrir a aba de contas do Instagram do Business Manager
+            usado pela sua conta de anúncios. Confirme que está logado com o mesmo usuário Meta
+            usado nesta plataforma.
+          </p>
+          <p style="margin:10px 0 0;">
+            <a id="passo_meta_instagram_link" href="https://business.facebook.com/settings/instagram-accounts" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir Configurações de Negócios →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Adicione a conta do Instagram</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            No menu à esquerda procure por <strong>Contas → Contas do Instagram</strong> e clique em
+            <strong>Adicionar</strong>. Escolha a opção de conectar fazendo login no Instagram e entre
+            com a conta que aparece no quadro de Status Meta (o @usuário do seu perfil profissional).
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Libere a conta de anúncios certa</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Depois que o Instagram aparecer na lista, clique nele e abra a aba
+            <strong>Contas de anúncios</strong> (ou <strong>Atribuir ativos</strong>). Marque a conta
+            de anúncios que você usa nesta plataforma para liberar o uso do Instagram nos anúncios dela.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Volte aqui e confirme</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Feche a guia do Facebook e clique em <strong>✅ Já vinculei, verificar</strong> no quadro de
+            Status Meta. Se estiver tudo certo, o aviso amarelo some e a bolinha do Instagram fica verde.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ✨ MODAL GERAR BANNER COM IA -->
 <div id="modal_banner_ia">
   <div class="modal-banner-ia-overlay" onclick="fecharModalGerarBanner()"></div>
@@ -38082,9 +38189,52 @@ function fecharPassoMetaAnuncios() {
   document.body.style.overflow = "";
 }
 
+function abrirPassoMetaInstagram() {
+  const modal = document.getElementById("modal_passo_meta_instagram");
+  if (!modal) return;
+
+  const link = document.getElementById("passo_meta_instagram_link");
+  if (link) link.href = linkInstagramBusinessSettings;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function fecharPassoMetaInstagram() {
+  const modal = document.getElementById("modal_passo_meta_instagram");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+async function revalidarInstagramMeta(botao) {
+  if (!botao) return;
+
+  const textoOriginal = botao.textContent;
+  botao.disabled = true;
+  botao.style.opacity = "0.6";
+  botao.style.cursor = "wait";
+  botao.textContent = "🔄 Verificando...";
+
+  try {
+    await carregarStatusMeta();
+  } finally {
+    if (document.body.contains(botao)) {
+      botao.disabled = false;
+      botao.style.opacity = "1";
+      botao.style.cursor = "pointer";
+      botao.textContent = textoOriginal;
+    }
+  }
+}
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     fecharPassoMetaAnuncios();
+    fecharPassoMetaInstagram();
   }
 });
 

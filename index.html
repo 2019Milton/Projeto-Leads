@@ -29676,6 +29676,16 @@ function renderIntegCard(p, conn, metaStatusCompleto = null) {
     </div>`;
 }
 
+function rolarParaIntegDetalhes(el) {
+  if (!el) return;
+  requestAnimationFrame(() => {
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  });
+}
+
 function toggleIntegDetalhes(plataforma) {
   const btn = document.getElementById(`btn-det-${plataforma}`);
 
@@ -29688,7 +29698,10 @@ function toggleIntegDetalhes(plataforma) {
     const visivel = cardMeta.offsetParent !== null && cardMeta.style.display !== "none";
     cardMeta.style.display = visivel ? "none" : "";
     if (btn) btn.textContent = visivel ? "Ver detalhes ▾" : "Ocultar ▴";
-    if (!visivel) carregarStatusMeta();
+    if (!visivel) {
+      carregarStatusMeta();
+      rolarParaIntegDetalhes(cardMeta);
+    }
     return;
   }
 
@@ -29697,6 +29710,7 @@ function toggleIntegDetalhes(plataforma) {
   const abrindo = el.style.display === "none";
   el.style.display = abrindo ? "" : "none";
   if (btn) btn.textContent = abrindo ? "Ocultar ▴" : "Ver detalhes ▾";
+  if (abrindo) rolarParaIntegDetalhes(el);
 }
 
 async function carregarDetalhesMetaHub() {
@@ -33139,7 +33153,25 @@ async function carregarPainelAdmin() {
               "
             >
 
-              <span>${labelTipoUsuario(u.tipo)}</span>
+              ${
+                ["admin_corretor", "corretor", "corretor_receptor"].includes(u.tipo)
+                  ? `
+                    <select
+                      class="tipo-select"
+                      onchange="alterarTipoUsuario(${u.id}, this.value)"
+                    >
+                      ${["admin_corretor", "corretor", "corretor_receptor"].map(tipo => `
+                        <option
+                          value="${tipo}"
+                          ${u.tipo === tipo ? "selected" : ""}
+                        >
+                          ${labelTipoUsuario(tipo)}
+                        </option>
+                      `).join("")}
+                    </select>
+                  `
+                  : `<span>${labelTipoUsuario(u.tipo)}</span>`
+              }
               ${u.tipo === "admin_corretor" ? `
                 <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
                   ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${escaparHtml(x.email)}</div>`).join("") || "<div>Nenhum corretor</div>"}
@@ -34602,6 +34634,37 @@ async function salvarNovaSenha() {
   }
 }
 
+
+
+async function alterarTipoUsuario(id, tipo) {
+
+  const token =
+    localStorage.getItem("token");
+
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/tipo`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        tipo
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok || data.error) {
+    alert(data.error || "Erro ao alterar tipo de usuário");
+    await carregarPainelAdmin();
+    return;
+  }
+
+  await carregarPainelAdmin();
+}
 
 
 async function alterarVinculo(id, admin_id) {

@@ -29441,7 +29441,7 @@ function platNome(plataforma) {
 const HUB_PLATAFORMAS = [
   { id: "meta",      nome: "Meta Ads",      icone: "🟦", disponivelConectar: true,  desc: "Facebook & Instagram Lead Ads" },
   { id: "google",    nome: "Google Ads",    icone: "🔴", disponivelConectar: false, desc: "Lead Form Extensions via Google" },
-  { id: "tiktok",    nome: "TikTok Ads",    icone: "🎵", disponivelConectar: false, desc: "TikTok Instant Form Leads" },
+  { id: "tiktok",    nome: "TikTok Ads",    icone: "🎵", disponivelConectar: true,  desc: "TikTok Instant Form Leads" },
   { id: "linkedin",  nome: "LinkedIn Ads",  icone: "💼", disponivelConectar: false, desc: "LinkedIn Lead Gen Forms" },
   { id: "kwai",      nome: "Kwai Ads",      icone: "🎬", disponivelConectar: false, desc: "Kwai Lead Form Ads" },
   { id: "pinterest", nome: "Pinterest Ads", icone: "📌", disponivelConectar: false, desc: "Pinterest Lead Ads Webhook" },
@@ -29573,6 +29573,52 @@ function renderResumoEmBreve(p) {
     </div>`;
 }
 
+function renderResumoTikTok(conn) {
+  const conectado = conn?.status === "conectado";
+
+  if (!conectado) {
+    return `
+      <div class="integ-card-resumo">
+        ${hubResumoAlerta("Conecte o TikTok Ads para importar leads e campanhas dos formulários instantâneos.")}
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Leads", "Pausados")}
+          ${hubResumoItem("Campanhas", "Sem sync")}
+          ${hubResumoItem("Conta de anúncios", "Não conectada")}
+          ${hubResumoItem("Próximo passo", "Conectar")}
+        </div>
+      </div>`;
+  }
+
+  const advertiserId = conn?.conta?.advertiser_id || "";
+  const advertiserIds = conn?.conta?.advertiser_ids || [];
+
+  if (!advertiserId) {
+    return `
+      <div class="integ-card-resumo">
+        ${hubResumoAlerta(
+          advertiserIds.length
+            ? "Conta conectada. Abra os detalhes para escolher a conta de anúncios."
+            : "Conta conectada, mas nenhuma conta de anúncios foi encontrada nesse login.",
+          "warn"
+        )}
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Contas disponíveis", advertiserIds.length || 0)}
+          ${hubResumoItem("Conta de anúncios", "A selecionar")}
+          ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="integ-card-resumo">
+      ${hubResumoAlerta("Conta de anúncios selecionada. Use \"Sincronizar agora\" nos detalhes para importar campanhas e leads.", "ok")}
+      <div class="integ-resumo-grid">
+        ${hubResumoItem("Conta de anúncios", advertiserId, "sucesso")}
+        ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
+      </div>
+    </div>`;
+}
+
 async function carregarHub() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -29648,7 +29694,7 @@ function renderIntegCard(p, conn, metaStatusCompleto = null) {
 
   const contaHtml = conectado ? renderResumoConexao(p, conn) : "";
 
-  const detalhesHtml = (p.id === "meta")
+  const detalhesHtml = (p.id === "meta" || p.id === "tiktok")
     ? `<div class="integ-card-detalhes" id="integ-detalhes-${p.id}" style="display:none;"></div>` : "";
 
   const cls = `integ-card${conectado ? " conectado" : ""}${sempre ? " formulario-ativo" : ""}${emBreve ? " em-breve" : ""}`;
@@ -29656,6 +29702,8 @@ function renderIntegCard(p, conn, metaStatusCompleto = null) {
   const descHtml = p.desc ? `<div class="integ-card-desc">${p.desc}</div>` : "";
   const resumoHtml = p.id === "meta"
     ? renderResumoMeta(conn, metaStatusCompleto)
+    : p.id === "tiktok"
+    ? renderResumoTikTok(conn)
     : emBreve
     ? renderResumoEmBreve(p)
     : "";
@@ -29710,7 +29758,10 @@ function toggleIntegDetalhes(plataforma) {
   const abrindo = el.style.display === "none";
   el.style.display = abrindo ? "" : "none";
   if (btn) btn.textContent = abrindo ? "Ocultar ▴" : "Ver detalhes ▾";
-  if (abrindo) rolarParaIntegDetalhes(el);
+  if (abrindo) {
+    rolarParaIntegDetalhes(el);
+    if (plataforma === "tiktok") carregarDetalhesTikTokHub();
+  }
 }
 
 async function carregarDetalhesMetaHub() {
@@ -29735,6 +29786,126 @@ async function carregarDetalhesMetaHub() {
       </div>`).join("");
   } catch (_) {
     el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar detalhes.</span>`;
+  }
+}
+
+// carregarHub() recria o card inteiro (o painel de detalhes volta a nascer fechado);
+// isso reabre o painel logo após o refresh para não fechar na cara do usuário.
+async function recarregarHubMantendoDetalhesTikTokAbertos() {
+  await carregarHub();
+  const el = document.getElementById("integ-detalhes-tiktok");
+  const btn = document.getElementById("btn-det-tiktok");
+  if (el) el.style.display = "";
+  if (btn) btn.textContent = "Ocultar ▴";
+  await carregarDetalhesTikTokHub();
+}
+
+async function carregarDetalhesTikTokHub() {
+  const el = document.getElementById("integ-detalhes-tiktok");
+  if (!el) return;
+  const token = localStorage.getItem("token");
+  el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas de anúncios...</span>`;
+  try {
+    const [resAnunciantes, resConexoes] = await Promise.all([
+      fetch(`${API}/tiktok/anunciantes`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } })
+    ]);
+    const dataAnunciantes = await resAnunciantes.json();
+    const dataConexoes = await resConexoes.json();
+    const conn = (dataConexoes?.conexoes || []).find(c => c.plataforma === "tiktok");
+    const advertiserIdAtual = conn?.conta?.advertiser_id || "";
+
+    if (!resAnunciantes.ok) {
+      el.innerHTML = `<span style="color:#f87171;">${escaparHtml(dataAnunciantes?.error || "Erro ao carregar contas de anúncios.")}</span>`;
+      return;
+    }
+
+    const anunciantes = dataAnunciantes.anunciantes || [];
+    if (!anunciantes.length) {
+      el.innerHTML = `<span style="color:#f87171;">Nenhuma conta de anúncios encontrada para esse login TikTok.</span>`;
+      return;
+    }
+
+    // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta)
+    if (!advertiserIdAtual && anunciantes.length === 1) {
+      await selecionarAnuncianteTikTok(String(anunciantes[0].advertiser_id), { silencioso: true });
+      await recarregarHubMantendoDetalhesTikTokAbertos();
+      return;
+    }
+
+    const opcoes = anunciantes.map(a => `
+      <option value="${escaparHtml(String(a.advertiser_id))}" ${String(a.advertiser_id) === String(advertiserIdAtual) ? "selected" : ""}>
+        ${escaparHtml(a.advertiser_name || String(a.advertiser_id))}
+      </option>`).join("");
+
+    el.innerHTML = `
+      <div class="integ-detalhe-linha">
+        <span class="integ-detalhe-label">Conta de anúncios</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
+        <select id="tiktok_anunciante_select" style="flex:1;min-width:180px;">${opcoes}</select>
+        <button type="button" onclick="selecionarAnuncianteTikTok(document.getElementById('tiktok_anunciante_select').value)">Usar esta conta</button>
+      </div>
+      <div class="integ-detalhe-linha">
+        <span class="integ-detalhe-label">Sincronização</span>
+        <span class="integ-detalhe-valor" id="tiktok_sync_status">${advertiserIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
+      </div>
+      <div style="margin-top:8px;">
+        <button type="button" id="btn_tiktok_sync" onclick="sincronizarTikTok()" ${advertiserIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
+      </div>
+    `;
+  } catch (_) {
+    el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar detalhes.</span>`;
+  }
+}
+
+async function selecionarAnuncianteTikTok(advertiserId, opts = {}) {
+  const token = localStorage.getItem("token");
+  if (!token || !advertiserId) return;
+  try {
+    const res = await fetch(`${API}/tiktok/selecionar-anunciante`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ advertiser_id: advertiserId })
+    });
+    if (!res.ok) {
+      if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+      return;
+    }
+    if (!opts.silencioso) {
+      await recarregarHubMantendoDetalhesTikTokAbertos();
+    }
+  } catch (_) {
+    if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+  }
+}
+
+async function sincronizarTikTok() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  const btn = document.getElementById("btn_tiktok_sync");
+  const status = document.getElementById("tiktok_sync_status");
+  if (btn) { btn.disabled = true; btn.textContent = "🔄 Sincronizando..."; }
+  try {
+    const res = await fetch(`${API}/tiktok/sincronizar-campanhas`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (status) status.textContent = data?.error || "Erro ao sincronizar.";
+      return;
+    }
+    // carregarHub() recria o card (e o painel de detalhes some) — reabre e só então
+    // grava a mensagem de resultado no elemento novo, não no nó antigo já desconectado do DOM.
+    await recarregarHubMantendoDetalhesTikTokAbertos();
+    const statusNovo = document.getElementById("tiktok_sync_status");
+    if (statusNovo) statusNovo.textContent = `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
+    return;
+  } catch (_) {
+    if (status) status.textContent = "Erro ao sincronizar.";
+  } finally {
+    if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = "🔄 Sincronizar agora"; }
   }
 }
 

@@ -23381,6 +23381,10 @@ async function gerarCampanhaComIA() {
       localStorage.getItem("token");
     const contexto =
       document.getElementById("ia_campanha_contexto")?.value || "";
+    const titulosAnteriores =
+      (sugestoesCampanhaIAAtual || [])
+        .map(s => s?.titulo)
+        .filter(Boolean);
     const res =
       await fetch(
         `${API}/ia/campanhas/criador`,
@@ -23392,7 +23396,8 @@ async function gerarCampanhaComIA() {
           },
           body: JSON.stringify({
             campanha: dadosCampanhaFormularioIA(),
-            contexto
+            contexto,
+            titulos_anteriores: titulosAnteriores
           })
         }
       );

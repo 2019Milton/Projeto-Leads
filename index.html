@@ -17245,6 +17245,28 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
         </select>
 
+        <input
+          type="date"
+          id="filtro_data_inicio"
+          onchange="carregarCampanhas()"
+          title="Criadas a partir de"
+        />
+
+        <input
+          type="date"
+          id="filtro_data_fim"
+          onchange="carregarCampanhas()"
+          title="Criadas até"
+        />
+
+        <select
+          id="filtro_corretor_receptor"
+          onchange="carregarCampanhas()"
+          style="display:none;"
+        >
+          <option value="">Todos os corretores</option>
+        </select>
+
         <span
           id="campanhas_contador"
           class="campanhas-contador"
@@ -19241,6 +19263,12 @@ function usuarioEhCriadorCampanha() {
 
 function usuarioUsaEnvioCriadorCampanha() {
   return ["admin_corretor", "super_admin", "criador_campanha"].includes(
+    usuarioLogado?.tipo
+  );
+}
+
+function usuarioPodeFiltrarPorCorretorReceptor() {
+  return ["super_admin", "criador_campanha"].includes(
     usuarioLogado?.tipo
   );
 }
@@ -30963,6 +30991,70 @@ async function carregarCampanhas() {
   const filtroNicho =
     selectNicho?.value || "";
 
+  const inputDataInicio =
+    document.getElementById("filtro_data_inicio");
+
+  const inputDataFim =
+    document.getElementById("filtro_data_fim");
+
+  const filtroDataInicio =
+    inputDataInicio?.value || "";
+
+  const filtroDataFim =
+    inputDataFim?.value || "";
+
+  // Filtro de corretor receptor: só disponível para Super Admin e Criador de Campanha
+  const selectCorretorReceptor =
+    document.getElementById("filtro_corretor_receptor");
+
+  if (selectCorretorReceptor) {
+    const podeFiltrarPorCorretor =
+      usuarioPodeFiltrarPorCorretorReceptor();
+
+    if (podeFiltrarPorCorretor) {
+      const valorAtualCorretor = selectCorretorReceptor.value;
+      const corretoresParaFiltro = [];
+      const corretoresVistos = new Set();
+
+      campanhasAtuais.forEach(c => {
+        (c.corretores_encaminhados || []).forEach(cor => {
+          const chave = String(cor.id ?? "");
+          if (chave && !corretoresVistos.has(chave)) {
+            corretoresVistos.add(chave);
+            corretoresParaFiltro.push(cor);
+          }
+        });
+      });
+
+      const opcoesCorretor = corretoresParaFiltro.map(cor => {
+        const val = String(cor.id);
+        const label = cor.nome || cor.email || `Corretor ${val}`;
+        const sel = valorAtualCorretor === val ? " selected" : "";
+        return `<option value="${escaparHtml(val)}"${sel}>${escaparHtml(label)}</option>`;
+      }).join("");
+
+      selectCorretorReceptor.innerHTML =
+        `<option value="">Todos os corretores</option>${opcoesCorretor}`;
+
+      if (
+        valorAtualCorretor &&
+        !corretoresParaFiltro.some(cor => String(cor.id) === valorAtualCorretor)
+      ) {
+        selectCorretorReceptor.value = "";
+      }
+
+      selectCorretorReceptor.style.display = "";
+    } else {
+      selectCorretorReceptor.style.display = "none";
+      selectCorretorReceptor.value = "";
+    }
+  }
+
+  const filtroCorretorReceptor =
+    (selectCorretorReceptor && usuarioPodeFiltrarPorCorretorReceptor())
+      ? (selectCorretorReceptor.value || "")
+      : "";
+
   let campanhasFiltradas = [...campanhasAtuais];
 
   if (filtro) {
@@ -30981,6 +31073,30 @@ async function carregarCampanhas() {
       const chave = nicho.slug || nicho.nome || String(nicho.id);
       return chave === filtroNicho;
     });
+  }
+
+  if (filtroDataInicio) {
+    const inicio = new Date(`${filtroDataInicio}T00:00:00`);
+    campanhasFiltradas = campanhasFiltradas.filter(c => {
+      const criado = c.criado_em ? new Date(c.criado_em) : null;
+      return criado && criado >= inicio;
+    });
+  }
+
+  if (filtroDataFim) {
+    const fim = new Date(`${filtroDataFim}T23:59:59`);
+    campanhasFiltradas = campanhasFiltradas.filter(c => {
+      const criado = c.criado_em ? new Date(c.criado_em) : null;
+      return criado && criado <= fim;
+    });
+  }
+
+  if (filtroCorretorReceptor) {
+    campanhasFiltradas = campanhasFiltradas.filter(c =>
+      (c.corretores_encaminhados || []).some(
+        cor => String(cor.id) === filtroCorretorReceptor
+      )
+    );
   }
 
   const contador =

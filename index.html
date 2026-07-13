@@ -15722,15 +15722,18 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                   onclick="selecionarPlataformaCampanha('meta')">
                   🟦 Meta Ads
                 </button>
+                <button type="button" class="plat-sel-btn" data-plat="tiktok"
+                  onclick="selecionarPlataformaCampanha('tiktok')">
+                  🎵 TikTok Ads
+                </button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">🔴 Google Ads</button>
-                <button type="button" class="plat-sel-btn" disabled title="Em breve">🎵 TikTok Ads</button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">🪟 Microsoft Ads</button>
               </div>
-              <input type="hidden" id="campanha_plataforma" value="meta">
+              <small style="display:block;margin-top:6px;color:#64748b;">Marque uma ou mais redes — o mesmo nome, imagens/vídeo e texto são reaproveitados em todas.</small>
             </div>
 
             <div class="advanced-full">
@@ -15742,7 +15745,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div class="advanced-full">
+            <div class="advanced-full" data-plat-only="meta">
               <label>Página Facebook <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione qual página do Facebook vai aparecer como anunciante. É a página que seus clientes vão ver quando o anúncio aparecer para eles.', event)">i</button></label>
               <select id="pagina_select" onchange="atualizarTosHint()">
                 <option>Carregando páginas...</option>
@@ -15760,9 +15763,17 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 </button>
               </div>
             </div>
+
+            <div class="advanced-full" data-plat-only="tiktok" style="display:none;">
+              <label>Identidade TikTok <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione qual perfil do TikTok vai aparecer como anunciante. Equivalente à Página do Facebook, mas é um cadastro próprio da TikTok Business.', event)">i</button></label>
+              <select id="campanha_tiktok_identidade_select" onchange="selecionarIdentidadeTikTokCampanha(this.value)">
+                <option value="">Carregando identidades...</option>
+              </select>
+              <div id="campanha_tiktok_identidade_feedback" class="channel-picker-status alerta" style="display:none;"></div>
+            </div>
           </div>
 
-          <section class="campaign-setup-section" id="bloco_onde_anunciar">
+          <section class="campaign-setup-section" id="bloco_onde_anunciar" data-plat-only="meta">
             <h4>Onde anunciar <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha se o anúncio vai aparecer no Facebook, no Instagram ou nos dois ao mesmo tempo. Quanto mais canais, mais pessoas podem ver.', event)">i</button></h4>
             <p>
               Escolha os canais disponiveis para a Pagina selecionada.
@@ -15919,7 +15930,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               </div>
             </div>
 
-            <div class="detailed-targeting-panel admin-only-targeting">
+            <div class="detailed-targeting-panel admin-only-targeting" data-plat-only="meta">
               <strong>Direcionamento detalhado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Digite palavras que descrevem o interesse do seu público ideal. O Facebook vai mostrar o anúncio para pessoas que curtem essas páginas ou assuntos. Ex: &quot;imóveis, financiamento&quot;.', event)">i</button></strong>
               <p>
                 Procure interesses que descrevem o perfil do público. Eles serão enviados à Meta junto com o público do conjunto de anúncios.
@@ -15945,6 +15956,29 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               <div id="adv_interesses_resultados" class="targeting-results"></div>
               <div id="adv_interesses_feedback" class="targeting-empty">
                 Busque e selecione um ou mais interesses.
+              </div>
+            </div>
+
+            <div class="detailed-targeting-panel admin-only-targeting" data-plat-only="tiktok" style="display:none;">
+              <strong>Localização (TikTok) <button type="button" class="info-icone" onclick="mostrarInfoCampo('A TikTok exige escolher pelo menos uma localização da lista (diferente do Meta, que aceita um país simples). Busque e selecione uma cidade, região ou país.', event)">i</button></strong>
+              <p>
+                Busque e selecione a localização que vai receber os anúncios no TikTok.
+              </p>
+
+              <div class="detailed-targeting-search">
+                <input
+                  type="search"
+                  id="tiktok_localidade_busca"
+                  placeholder="Ex: São Paulo, Brasil"
+                  oninput="agendarBuscaLocalidadeTikTok()"
+                >
+                <button type="button" onclick="buscarLocalidadeTikTok()">Procurar</button>
+              </div>
+
+              <div id="tiktok_localidade_selecionada_chip" class="targeting-selected"></div>
+              <div id="tiktok_localidade_resultados" class="targeting-results"></div>
+              <div id="tiktok_localidade_feedback" class="targeting-empty">
+                Busque e selecione uma localização (obrigatório para o TikTok).
               </div>
             </div>
           </section>
@@ -16204,12 +16238,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div class="advanced-subsection">
+            <div class="advanced-subsection" data-plat-only="meta">
               <h5>Formulário de leads</h5>
               <p>Perguntas e filtro de qualidade aplicados antes do envio do contato.</p>
             </div>
 
-            <div class="advanced-full">
+            <div class="advanced-full" data-plat-only="meta">
               <label>Perguntas qualificadoras <button type="button" class="info-icone" onclick="mostrarInfoCampo('Perguntas que o cliente responde antes de enviar os dados de contato. Ajudam a filtrar quem está mais interessado. Coloque uma pergunta por linha.', event)">i</button></label>
               <textarea
                 id="adv_perguntas"
@@ -16222,7 +16256,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               </small>
             </div>
 
-            <div class="advanced-full">
+            <div class="advanced-full" data-plat-only="meta">
               <label>Filtro de qualidade do formulário <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse ajuste é diferente do Público Advantage+. Aqui a Meta tenta priorizar pessoas com maior chance de preencher o formulário corretamente. Pode gerar menos leads, mas tende a melhorar a qualidade dos contatos.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
@@ -16232,12 +16266,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               </div>
             </div>
 
-            <div class="advanced-subsection">
+            <div class="advanced-subsection" data-plat-only="meta">
               <h5>Tela de obrigado</h5>
               <p>Mensagem exibida depois que o lead envia o formulário.</p>
             </div>
 
-            <div>
+            <div data-plat-only="meta">
               <label>Título do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Mensagem principal que aparece para o cliente depois que ele preenche e envia o formulário. Ex: \"Obrigado! Em breve entraremos em contato.\"', event)">i</button></label>
               <input
                 type="text"
@@ -16246,7 +16280,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div>
+            <div data-plat-only="meta">
               <label>Botão do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto do botão que aparece na tela de confirmação. Pode ser \"Ver mais\", \"Acessar site\" ou qualquer chamada para ação.', event)">i</button></label>
               <input
                 type="text"
@@ -16255,13 +16289,30 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div class="advanced-full">
+            <div class="advanced-full" data-plat-only="meta">
               <label>Mensagem de obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto completo que aparece na tela de confirmação. Aproveite para tranquilizar o cliente e dar um próximo passo, como \"Em breve nossa equipe vai entrar em contato\".', event)">i</button></label>
               <input
                 type="text"
                 id="adv_obrigado_texto"
                 placeholder="Recebemos seus dados. Em breve entraremos em contato."
               >
+            </div>
+
+            <div class="advanced-subsection" data-plat-only="tiktok" style="display:none;">
+              <h5>Formulário instantâneo (TikTok)</h5>
+              <p>A TikTok não cria formulário automaticamente — escolha um já existente no TikTok Ads Manager.</p>
+            </div>
+
+            <div class="advanced-full" data-plat-only="tiktok" style="display:none;">
+              <label>Formulário TikTok <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione um formulário instantâneo já criado no TikTok Ads Manager. Se a lista não aparecer, informe o ID manualmente.', event)">i</button></label>
+              <select id="campanha_tiktok_formulario_select" onchange="alternarFormularioTikTokManual()">
+                <option value="">Carregando formulários...</option>
+              </select>
+              <div id="campanha_tiktok_formulario_manual_wrap" style="display:none;margin-top:8px;">
+                <label>ID do formulário (manual)</label>
+                <input type="text" id="campanha_tiktok_formulario_manual" placeholder="Cole aqui o ID do Instant Form">
+              </div>
+              <div id="campanha_tiktok_formulario_feedback" class="channel-picker-status alerta" style="display:none;"></div>
             </div>
 
           </div>
@@ -23347,10 +23398,34 @@ function toggleCriarCampanha() {
   );
 }
 
+const redesSelecionadasCampanha = new Set(["meta"]);
+
 function selecionarPlataformaCampanha(plat) {
-  document.getElementById("campanha_plataforma").value = plat;
-  document.querySelectorAll(".plat-sel-btn[data-plat]").forEach(b => {
-    b.classList.toggle("ativa", b.dataset.plat === plat);
+  const btn = document.querySelector(`.plat-sel-btn[data-plat="${plat}"]`);
+  if (!btn) return;
+
+  if (redesSelecionadasCampanha.has(plat)) {
+    // não deixa desmarcar a última rede ativa — sempre precisa sobrar uma
+    if (redesSelecionadasCampanha.size === 1) return;
+    redesSelecionadasCampanha.delete(plat);
+  } else {
+    redesSelecionadasCampanha.add(plat);
+  }
+
+  btn.classList.toggle("ativa", redesSelecionadasCampanha.has(plat));
+  aplicarRedesCampanha();
+
+  if (plat === "tiktok" && redesSelecionadasCampanha.has("tiktok")) {
+    carregarIdentidadesTikTokCampanha();
+    carregarFormulariosTikTokCampanha();
+  }
+}
+
+function aplicarRedesCampanha() {
+  document.querySelectorAll("[data-plat-only]").forEach(el => {
+    const redes = el.dataset.platOnly.split(",");
+    const mostrar = redes.some(r => redesSelecionadasCampanha.has(r));
+    el.style.display = mostrar ? "" : "none";
   });
 }
 
@@ -25810,6 +25885,226 @@ let paginasMetaDisponiveis = [];
 let contasInstagramAnuncioDisponiveis = [];
 let instagramActorIdSelecionado = null;
 let sincronizacaoMetaAtiva = false;
+
+// ─── Campanha multi-plataforma: estado específico do TikTok ──────────────────
+let tiktokIdentidadeSelecionada = null;
+let tiktokLocalidadeSelecionada = null;
+let buscaLocalidadeTikTokTimer = null;
+let buscaLocalidadeTikTokSequencia = 0;
+
+function obterTokenEUsuarioIdCampanha() {
+  const token = localStorage.getItem("token");
+  if (!token) return { token: null, usuario_id: null };
+  const [usuario_id] = atob(token).split(":");
+  return { token, usuario_id };
+}
+
+async function carregarIdentidadesTikTokCampanha() {
+  const select = document.getElementById("campanha_tiktok_identidade_select");
+  const feedback = document.getElementById("campanha_tiktok_identidade_feedback");
+  if (!select) return;
+  const { token } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  select.innerHTML = `<option value="">Carregando identidades...</option>`;
+  if (feedback) feedback.style.display = "none";
+
+  try {
+    const res = await fetch(`${API}/tiktok/identidades`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      select.innerHTML = `<option value="">Erro ao carregar</option>`;
+      if (feedback) { feedback.style.display = ""; feedback.textContent = data?.error || "Conecte o TikTok antes de criar a campanha."; }
+      return;
+    }
+
+    const identidades = data.identidades || [];
+    if (!identidades.length) {
+      select.innerHTML = `<option value="">Nenhuma identidade encontrada</option>`;
+      if (feedback) { feedback.style.display = ""; feedback.textContent = "Nenhuma identidade encontrada para essa conta TikTok."; }
+      return;
+    }
+
+    select.innerHTML = identidades.map(id => `
+      <option value="${escaparHtml(String(id.identity_id))}|${escaparHtml(String(id.identity_type))}">
+        ${escaparHtml(id.display_name || String(id.identity_id))}
+      </option>`).join("");
+
+    // Auto-seleciona a primeira e já persiste, mesmo padrão do auto-select de conta de anúncios
+    if (identidades.length) {
+      select.value = `${identidades[0].identity_id}|${identidades[0].identity_type}`;
+      selecionarIdentidadeTikTokCampanha(select.value);
+    }
+  } catch (_) {
+    select.innerHTML = `<option value="">Erro ao carregar</option>`;
+    if (feedback) { feedback.style.display = ""; feedback.textContent = "Não foi possível carregar identidades do TikTok."; }
+  }
+}
+
+async function selecionarIdentidadeTikTokCampanha(valor) {
+  if (!valor) return;
+  const [identity_id, identity_type] = valor.split("|");
+  tiktokIdentidadeSelecionada = { identity_id, identity_type };
+
+  const { token } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+  try {
+    await fetch(`${API}/tiktok/selecionar-identidade`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ identity_id, identity_type })
+    });
+  } catch (_) {}
+}
+
+async function carregarFormulariosTikTokCampanha() {
+  const select = document.getElementById("campanha_tiktok_formulario_select");
+  const feedback = document.getElementById("campanha_tiktok_formulario_feedback");
+  if (!select) return;
+  const { token } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  select.innerHTML = `<option value="">Carregando formulários...</option>`;
+  if (feedback) feedback.style.display = "none";
+
+  try {
+    const res = await fetch(`${API}/tiktok/formularios`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const formularios = data.formularios || [];
+
+    if (!formularios.length) {
+      select.innerHTML = `<option value="">-- Nenhum formulário encontrado --</option>`;
+      if (feedback) {
+        feedback.style.display = "";
+        feedback.textContent = data.aviso || "Nenhum formulário encontrado. Informe o ID manualmente abaixo.";
+      }
+      ativarFormularioTikTokManual(true);
+      return;
+    }
+
+    select.innerHTML = formularios.map(f => `
+      <option value="${escaparHtml(String(f.page_id || f.id))}">${escaparHtml(f.page_name || f.name || String(f.page_id || f.id))}</option>`
+    ).join("") + `<option value="__manual__">Digitar ID manualmente...</option>`;
+  } catch (_) {
+    select.innerHTML = `<option value="">-- Erro ao carregar --</option><option value="__manual__">Digitar ID manualmente...</option>`;
+    if (feedback) { feedback.style.display = ""; feedback.textContent = "Não foi possível listar formulários. Informe o ID manualmente."; }
+    ativarFormularioTikTokManual(true);
+  }
+}
+
+function alternarFormularioTikTokManual() {
+  const select = document.getElementById("campanha_tiktok_formulario_select");
+  ativarFormularioTikTokManual(select?.value === "__manual__");
+}
+
+function ativarFormularioTikTokManual(mostrar) {
+  const wrap = document.getElementById("campanha_tiktok_formulario_manual_wrap");
+  if (wrap) wrap.style.display = mostrar ? "" : "none";
+}
+
+function obterFormularioTikTokEscolhido() {
+  const select = document.getElementById("campanha_tiktok_formulario_select");
+  if (select?.value === "__manual__") {
+    return document.getElementById("campanha_tiktok_formulario_manual")?.value?.trim() || "";
+  }
+  return select?.value?.trim() || "";
+}
+
+function agendarBuscaLocalidadeTikTok() {
+  clearTimeout(buscaLocalidadeTikTokTimer);
+  buscaLocalidadeTikTokTimer = setTimeout(buscarLocalidadeTikTok, 450);
+}
+
+async function buscarLocalidadeTikTok() {
+  const termo = document.getElementById("tiktok_localidade_busca")?.value?.trim() || "";
+  const resultadosEl = document.getElementById("tiktok_localidade_resultados");
+  const feedback = document.getElementById("tiktok_localidade_feedback");
+  if (!resultadosEl) return;
+
+  if (termo.length < 2) {
+    resultadosEl.innerHTML = "";
+    return;
+  }
+
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  const sequenciaAtual = ++buscaLocalidadeTikTokSequencia;
+
+  try {
+    const res = await fetch(`${API}/tiktok/direcionamento/localizacao`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ usuario_id, busca: termo })
+    });
+    const data = await res.json();
+
+    if (sequenciaAtual !== buscaLocalidadeTikTokSequencia) return;
+
+    const itens = Array.isArray(data.data) ? data.data : [];
+    if (!itens.length) {
+      resultadosEl.innerHTML = "";
+      if (feedback) feedback.textContent = "Nenhuma localização encontrada. Tente outro termo.";
+      return;
+    }
+
+    resultadosEl.innerHTML = itens.map((item, i) => `
+      <div class="geo-sugestao-item" onclick="selecionarLocalidadeTikTokPorIndice(${i})">
+        ${escaparHtml(item.nome)}
+        <span class="geo-sugestao-tipo">${escaparHtml(item.tipo || "")}</span>
+      </div>`
+    ).join("");
+
+    window._tiktokLocalidadeResultadosAtuais = itens;
+    if (feedback) feedback.textContent = "Selecione uma sugestão.";
+  } catch (_) {
+    if (sequenciaAtual !== buscaLocalidadeTikTokSequencia) return;
+    resultadosEl.innerHTML = "";
+    if (feedback) feedback.textContent = "Erro ao buscar localização.";
+  }
+}
+
+function selecionarLocalidadeTikTokPorIndice(indice) {
+  const item = (window._tiktokLocalidadeResultadosAtuais || [])[indice];
+  if (!item) return;
+
+  tiktokLocalidadeSelecionada = item;
+
+  const chip = document.getElementById("tiktok_localidade_selecionada_chip");
+  if (chip) {
+    chip.innerHTML = `<span class="targeting-chip">${escaparHtml(item.nome)} <button type="button" onclick="removerLocalidadeTikTok()">×</button></span>`;
+  }
+
+  const resultadosEl = document.getElementById("tiktok_localidade_resultados");
+  if (resultadosEl) resultadosEl.innerHTML = "";
+
+  const input = document.getElementById("tiktok_localidade_busca");
+  if (input) input.value = "";
+}
+
+function removerLocalidadeTikTok() {
+  tiktokLocalidadeSelecionada = null;
+  const chip = document.getElementById("tiktok_localidade_selecionada_chip");
+  if (chip) chip.innerHTML = "";
+}
+
+function validarPublicacaoCampanhaTikTok() {
+  if (!tiktokIdentidadeSelecionada?.identity_id) {
+    return "Selecione a identidade (perfil) do TikTok antes de publicar.";
+  }
+  if (!tiktokLocalidadeSelecionada) {
+    return "Busque e selecione ao menos uma localização para o TikTok antes de publicar.";
+  }
+  if (!obterFormularioTikTokEscolhido()) {
+    return "Escolha ou informe o ID de um formulário instantâneo do TikTok antes de publicar.";
+  }
+  return null;
+}
 
 function atualizarChipsPublicos() {
   const chips =
@@ -28658,106 +28953,159 @@ function validarPublicacaoCampanha({
   return true;
 }
 
-async function criarCampanhaCompleta() {
+// Validação que roda sempre, independente de quais redes estão marcadas — o que
+// é específico do Meta (Página, "onde anunciar") continua só em validarPublicacaoCampanha().
+function validarCamposCompartilhadosCampanha({
+  campanha_nome,
+  texto,
+  orcamento,
+  imagensArquivos,
+  videoArquivo
+}) {
+  limparValidacaoCampanha();
 
+  if (!campanha_nome?.trim()) {
+    return conduzirParaCampoCampanha(
+      "#campanha_nome",
+      "Informe o nome da campanha para identificar esse anúncio."
+    );
+  }
+
+  if (!imagensArquivos.length && !videoArquivo) {
+    return conduzirParaCampoCampanha(
+      "#btn-adicionar-imagem",
+      "Adicione ao menos uma imagem ou um vídeo para o anúncio."
+    );
+  }
+
+  if (videoArquivo && !validarArquivoVideoCampanha(videoArquivo)) {
+    return false;
+  }
+
+  if (!texto?.trim()) {
+    return conduzirParaCampoCampanha(
+      "#texto",
+      "Preencha o texto principal do anúncio."
+    );
+  }
+
+  if (!orcamento || Number(orcamento) < 15) {
+    return conduzirParaCampoCampanha(
+      "#orcamento",
+      "Informe um orçamento diário de pelo menos R$ 15,00."
+    );
+  }
+
+  limparValidacaoCampanha();
+  return true;
+}
+
+async function descartarCampanhaTikTokCriadaPorFalha(campaign_id, token) {
+  if (!campaign_id || !token) return;
+  try {
+    await fetch(`${API}/tiktok/excluir-campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ campaign_id })
+    });
+  } catch (err) {
+    console.warn("Não foi possível remover a campanha TikTok criada após falha:", err);
+  }
+}
+
+function mostrarToastSucessoCampanha() {
+  const el = document.createElement("div");
+  el.textContent = "🚀 Campanha criada com sucesso!";
+  Object.assign(el.style, {
+    position: "fixed", bottom: "24px", right: "24px",
+    background: "#14532d", color: "#86efac",
+    padding: "14px 18px", borderRadius: "10px",
+    fontSize: "13px", fontWeight: "600",
+    zIndex: "99999", boxShadow: "0 4px 20px rgba(0,0,0,.4)"
+  });
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function mostrarToastResumoCampanha(linhas, algumSucesso) {
+  const el = document.createElement("div");
+  el.innerHTML = linhas.map(l => `<div>${escaparHtml(l)}</div>`).join("");
+  Object.assign(el.style, {
+    position: "fixed", bottom: "24px", right: "24px",
+    background: algumSucesso ? "#14532d" : "#450a0a",
+    color: algumSucesso ? "#86efac" : "#fca5a5",
+    padding: "14px 18px", borderRadius: "10px",
+    fontSize: "13px", fontWeight: "600", lineHeight: "1.6",
+    zIndex: "99999", boxShadow: "0 4px 20px rgba(0,0,0,.4)", maxWidth: "320px"
+  });
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 7000);
+}
+
+// Mostra o resultado final — mantém o toast simples de sempre quando só o Meta foi
+// publicado sozinho (comportamento idêntico ao de antes do multi-rede existir).
+function mostrarResumoPublicacaoMultiRede(resultados) {
+  if (resultados.length === 1 && resultados[0].rede === "Facebook/Instagram") {
+    if (resultados[0].ok) {
+      mostrarToastSucessoCampanha();
+    } else {
+      mostrarErroPublicacao(resultados[0].mensagem || "Erro ao publicar campanha.");
+    }
+    return;
+  }
+
+  if (resultados.length === 1 && resultados[0].ok) {
+    mostrarToastSucessoCampanha();
+    return;
+  }
+
+  const linhas = resultados.map(r =>
+    r.ok
+      ? `✅ ${r.rede}: publicada com sucesso`
+      : `❌ ${r.rede}: ${r.mensagem || "erro ao publicar"}`
+  );
+  mostrarToastResumoCampanha(linhas, resultados.some(r => r.ok));
+}
+
+// ─── Publica no Meta (Facebook/Instagram) ─────────────────────────────────────
+// Mesma sequência de sempre (upload → campanha → formulário → adset → anúncio),
+// só que agora devolve {ok, mensagem} em vez de mexer direto no toast/erro global,
+// pra permitir publicar em mais de uma rede na mesma chamada.
+async function publicarCampanhaMeta(contexto, isMultiRede) {
   let campanhaCriadaId = null;
-  let token = null;
+  const {
+    token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
+    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
+  } = contexto;
+  const prefixo = isMultiRede ? "[Facebook/Instagram] " : "";
 
   try {
+    const objetivo = "OUTCOME_LEADS";
+    const configuracoes_avancadas = { ...configuracoesBase };
+    if (publicacaoGrupoId) configuracoes_avancadas.publicacao_grupo_id = publicacaoGrupoId;
 
-    token = localStorage.getItem("token");
-
-    if (!token) {
-      return;
-    }
-
-    const decoded = atob(token);
-    const [usuario_id] = decoded.split(":");
-
-    // 📝 CAMPOS
-    const campanha_nome =
-      document.getElementById("campanha_nome").value;
-
-    const objetivo =
-      "OUTCOME_LEADS";
-
-    const page_id =
-      document.getElementById("pagina_select").value;
-
-    const texto =
-      document.getElementById("texto").value;
-
-    const cta =
-      document.getElementById("cta").value;
-
-    const orcamento =
-      document.getElementById("orcamento").value;
-
-    const configuracoes_avancadas =
-      normalizarConfiguracoesAvancadasParaEnvio(
-        {
-          ...coletarConfiguracoesAvancadas(),
-          ...coletarDadosNichoAtivo(),
-          page_id,
-          texto,
-          cta
-        }
-      );
-
-    // 🔥 COLETAR IMAGENS DO CARROSSEL (na ordem definida pelo usuário)
-    const imagensArquivos = Array.from(
-      document.querySelectorAll(".imagem-input")
-    )
-      .map(input => input.files[0])
-      .filter(Boolean);
-
-    const videoArquivo =
-      obterArquivoVideoCampanha();
-
-    if (!validarPublicacaoCampanha({
-      campanha_nome,
-      page_id,
-      texto,
-      orcamento,
-      configuracoes_avancadas,
-      imagensArquivos,
-      videoArquivo
-    })) {
-      return;
-    }
-
-    // 🔥 UPLOAD DE TODAS AS IMAGENS
     const imageHashes = [];
     const imageUrls = [];
     const totalImagens = imagensArquivos.length;
 
     for (let i = 0; i < imagensArquivos.length; i++) {
       const file = imagensArquivos[i];
-      const pct = totalImagens
-        ? Math.round(5 + ((i + 1) / totalImagens) * 20)
-        : 20;
-      setPublishProgress(pct, `Enviando imagem ${i + 1} de ${totalImagens}...`);
+      const pct = totalImagens ? Math.round(5 + ((i + 1) / totalImagens) * 20) : 20;
+      setPublishProgress(pct, `${prefixo}Enviando imagem ${i + 1} de ${totalImagens}...`);
 
       const formData = new FormData();
       formData.append("imagem", file);
       formData.append("usuario_id", usuario_id);
 
-      const uploadRes = await fetch(
-        `${API}/meta/upload-imagem`,
-        {
-          method: "POST",
-          headers: { "Authorization": "Bearer " + token },
-          body: formData
-        }
-      );
-
+      const uploadRes = await fetch(`${API}/meta/upload-imagem`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token },
+        body: formData
+      });
       const upload = await uploadRes.json();
-      console.log("UPLOAD:", upload);
 
       if (upload.error) {
-        setPublishProgress(null);
-        mostrarErroPublicacao(upload.error?.message || upload.error || "Erro ao enviar imagem");
-        return;
+        return { ok: false, mensagem: upload.error?.message || upload.error || "Erro ao enviar imagem" };
       }
 
       imageHashes.push(upload.hash);
@@ -28765,7 +29113,6 @@ async function criarCampanhaCompleta() {
     }
 
     const imageHash = imageHashes[0];
-
     configuracoes_avancadas.imageHash = imageHash || null;
     configuracoes_avancadas.imageHashes = imageHashes;
     configuracoes_avancadas.imagens_urls = imageUrls.filter(Boolean);
@@ -28774,21 +29121,12 @@ async function criarCampanhaCompleta() {
     let videoUpload = null;
 
     if (videoArquivo) {
-      setPublishProgress(28, "Enviando vídeo...");
-
+      setPublishProgress(28, `${prefixo}Enviando vídeo...`);
       try {
-        videoUpload =
-          await uploadVideoCampanha({
-            arquivo: videoArquivo,
-            token,
-            usuario_id
-          });
+        videoUpload = await uploadVideoCampanha({ arquivo: videoArquivo, token, usuario_id });
       } catch (err) {
-        setPublishProgress(null);
-        mostrarErroPublicacao(err?.message || "Erro ao enviar vídeo");
-        return;
+        return { ok: false, mensagem: err?.message || "Erro ao enviar vídeo" };
       }
-
       configuracoes_avancadas.criativo_tipo = "video";
       configuracoes_avancadas.video_id = videoUpload.video_id;
       configuracoes_avancadas.videoId = videoUpload.video_id;
@@ -28798,213 +29136,349 @@ async function criarCampanhaCompleta() {
       configuracoes_avancadas.video_tipo = videoUpload.video_tipo;
       configuracoes_avancadas.video_tamanho = videoUpload.video_tamanho;
     } else {
-      configuracoes_avancadas.criativo_tipo = imageHashes.length > 1
-        ? "carrossel"
-        : "imagem";
+      configuracoes_avancadas.criativo_tipo = imageHashes.length > 1 ? "carrossel" : "imagem";
     }
 
-    setPublishProgress(35, "Criando campanha no Meta...");
+    setPublishProgress(35, `${prefixo}Criando campanha no Meta...`);
 
-    // 🔥 CAMPANHA
-    const campanhaRes = await fetch(
-      `${API}/meta/campanha`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-          usuario_id,
-          nome: campanha_nome,
-          objetivo,
-          configuracoes_avancadas,
-          nicho_id: window._nichoAtivo?.id || null,
-          cbo: configuracoes_avancadas.cbo ?? true,
-          daily_budget: configuracoes_avancadas.cbo ? (orcamento * 100) : undefined
-        })
-      }
-    );
-
+    const campanhaRes = await fetch(`${API}/meta/campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        nome: campanha_nome,
+        objetivo,
+        configuracoes_avancadas,
+        nicho_id: window._nichoAtivo?.id || null,
+        cbo: configuracoes_avancadas.cbo ?? true,
+        daily_budget: configuracoes_avancadas.cbo ? (orcamento * 100) : undefined
+      })
+    });
     const campanha = await campanhaRes.json();
 
-    console.log("CAMPANHA META:", campanha);
-    
     if (campanha.error) {
-      setPublishProgress(null);
-      const msgCampanha =
-        campanha.detalhe?.error?.error_user_msg ||
-        campanha.detalhe?.error?.message ||
-        campanha.error ||
-        "Erro ao criar campanha";
-      const msgOriginal =
-        campanha.detalhe?.error?.message &&
-        campanha.detalhe?.error?.message !== msgCampanha
-          ? ` [Meta: ${campanha.detalhe.error.message}]`
-          : "";
-      mostrarErroPublicacao(msgCampanha + msgOriginal);
-      return;
+      const msgCampanha = campanha.detalhe?.error?.error_user_msg || campanha.detalhe?.error?.message || campanha.error || "Erro ao criar campanha";
+      const msgOriginal = campanha.detalhe?.error?.message && campanha.detalhe?.error?.message !== msgCampanha
+        ? ` [Meta: ${campanha.detalhe.error.message}]`
+        : "";
+      return { ok: false, mensagem: msgCampanha + msgOriginal };
     }
 
     campanhaCriadaId = campanha.id;
+    setPublishProgress(55, `${prefixo}Criando formulário de leads...`);
 
-    setPublishProgress(55, "Criando formulário de leads...");
-
-    // 🔥 FORM
-    const formRes = await fetch(
-      `${API}/meta/formulario`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-          usuario_id,
-          page_id,
-          configuracoes_avancadas
-        })
-      }
-    );
-
+    const formRes = await fetch(`${API}/meta/formulario`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({ usuario_id, page_id, configuracoes_avancadas })
+    });
     const form = await formRes.json();
 
-    console.log("FORM META:", form);
-    
     if (form.error) {
-      setPublishProgress(null);
       await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
-      mostrarErroPublicacao(form.error?.message || form.error || "Erro ao criar formulário de leads");
-      return;
+      return { ok: false, mensagem: form.error?.message || form.error || "Erro ao criar formulário de leads" };
     }
 
-    setPublishProgress(72, "Criando conjunto de anúncios...");
+    setPublishProgress(72, `${prefixo}Criando conjunto de anúncios...`);
 
-    // 🔥 ADSET
-    const adsetRes = await fetch(
-      `${API}/meta/adset`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-          usuario_id,
-          campaign_id: campanha.id,
-          page_id,
-          form_id: form.id,
-          // Com CBO ativo o orçamento fica na campanha; sem CBO fica no adset
-          daily_budget: configuracoes_avancadas.cbo ? undefined : Number(orcamento) * 100,
-          configuracoes_avancadas
-        })
-      }
-    );
-
+    const adsetRes = await fetch(`${API}/meta/adset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanha.id,
+        page_id,
+        form_id: form.id,
+        daily_budget: configuracoes_avancadas.cbo ? undefined : Number(orcamento) * 100,
+        configuracoes_avancadas
+      })
+    });
     const adset = await adsetRes.json();
 
-    console.log("ADSET META:", adset);
-    
     if (adset.error) {
-      setPublishProgress(null);
       await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
       const msgAdset = adset.detalhe?.error?.error_user_msg || adset.detalhe?.error?.message || adset.error?.error_user_msg || adset.error?.message || adset.error || "Erro ao criar conjunto de anúncios";
       const msgOrigAdset = adset.detalhe?.error?.message && adset.detalhe?.error?.message !== msgAdset ? ` [Meta: ${adset.detalhe.error.message}]` : "";
-      mostrarErroPublicacao(msgAdset + msgOrigAdset);
-      return;
+      return { ok: false, mensagem: msgAdset + msgOrigAdset };
     }
 
-    setPublishProgress(88, "Publicando anúncio...");
+    setPublishProgress(88, `${prefixo}Publicando anúncio...`);
 
-    // 🔥 ANÚNCIO
-    const anuncioRes = await fetch(
-      `${API}/meta/anuncio`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-          usuario_id,
-    
-          // 🔥 CAMPANHA
-          campaign_id: campanha.id,
-    
-          // 🔥 CONJUNTO
-          adset_id: adset.id,
-    
-          // 🔥 META
-          page_id,
-          form_id: form.id,
-    
-          // 🔥 CONTEÚDO
-          texto,
-          cta,
-          campanha_nome,
-          configuracoes_avancadas,
-          daily_budget: Number(orcamento) * 100,
-    
-          // 🔥 IMAGEM
-          imageHash,
-          imageHashes,
-          imageUrls,
-
-          // 🔥 VIDEO
-          video_id: videoUpload?.video_id || null,
-          videoId: videoUpload?.video_id || null,
-          video_url: videoUpload?.video_url || null,
-          videoUrl: videoUpload?.video_url || null
-        })
-      }
-    );
-
+    const anuncioRes = await fetch(`${API}/meta/anuncio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanha.id,
+        adset_id: adset.id,
+        page_id,
+        form_id: form.id,
+        texto,
+        cta,
+        campanha_nome,
+        configuracoes_avancadas,
+        daily_budget: Number(orcamento) * 100,
+        imageHash,
+        imageHashes,
+        imageUrls,
+        video_id: videoUpload?.video_id || null,
+        videoId: videoUpload?.video_id || null,
+        video_url: videoUpload?.video_url || null,
+        videoUrl: videoUpload?.video_url || null
+      })
+    });
     const anuncio = await anuncioRes.json();
 
-    console.log("ANUNCIO:", JSON.stringify(anuncio, null, 2));
-
     if (anuncio.error) {
-
-      console.error(anuncio);
-      setPublishProgress(null);
       await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
-      mostrarErroPublicacao(
-        anuncio.detalhe?.error_user_msg ||
-        anuncio.detalhe?.message ||
-        anuncio.error ||
-        "Erro ao criar anúncio"
-      );
-
-      return;
+      return {
+        ok: false,
+        mensagem: anuncio.detalhe?.error_user_msg || anuncio.detalhe?.message || anuncio.error || "Erro ao criar anúncio"
+      };
     }
 
-    setPublishProgress(100, "Campanha publicada com sucesso!");
-
-    // 🔄 RELOAD
-    await sincronizarCampanhas();
-
-    setTimeout(() => {
-      setPublishProgress(null);
-      const elOk = document.createElement("div");
-      elOk.textContent = "🚀 Campanha criada com sucesso!";
-      Object.assign(elOk.style, {
-        position:"fixed", bottom:"24px", right:"24px",
-        background:"#14532d", color:"#86efac",
-        padding:"14px 18px", borderRadius:"10px",
-        fontSize:"13px", fontWeight:"600",
-        zIndex:"99999", boxShadow:"0 4px 20px rgba(0,0,0,.4)"
-      });
-      document.body.appendChild(elOk);
-      setTimeout(() => elOk.remove(), 4000);
-    }, 800);
-
+    setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
+    return { ok: true };
   } catch (err) {
-
-    console.error("ERRO publicarCampanha:", err);
-    setPublishProgress(null);
-    await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
-    mostrarErroPublicacao("Erro ao criar campanha: " + (err?.message || String(err) || "Erro desconhecido"));
+    console.error("ERRO publicarCampanhaMeta:", err);
+    if (campanhaCriadaId) {
+      await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
+    }
+    return { ok: false, mensagem: "Erro ao criar campanha: " + (err?.message || String(err) || "Erro desconhecido") };
   }
+}
+
+// ─── Publica no TikTok ─────────────────────────────────────────────────────────
+// Mesma orquestração do Meta, adaptada: sem etapa de criar formulário (usa um
+// Instant Form já existente, escolhido pelo usuário) e com upload/campanha/adgroup/
+// anuncio próprios da TikTok Business API.
+async function publicarCampanhaTikTok(contexto, isMultiRede) {
+  let campanhaCriadaId = null;
+  const {
+    token, usuario_id, campanha_nome, texto, cta, orcamento,
+    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
+  } = contexto;
+  const prefixo = isMultiRede ? "[TikTok] " : "";
+
+  try {
+    const configuracoes_avancadas = { ...configuracoesBase };
+    if (publicacaoGrupoId) configuracoes_avancadas.publicacao_grupo_id = publicacaoGrupoId;
+    if (tiktokLocalidadeSelecionada) configuracoes_avancadas.localidades = [tiktokLocalidadeSelecionada];
+
+    const imageIds = [];
+    const totalImagens = imagensArquivos.length;
+
+    for (let i = 0; i < imagensArquivos.length; i++) {
+      const file = imagensArquivos[i];
+      setPublishProgress(
+        totalImagens ? Math.round(5 + ((i + 1) / totalImagens) * 20) : 20,
+        `${prefixo}Enviando imagem ${i + 1} de ${totalImagens}...`
+      );
+
+      const formData = new FormData();
+      formData.append("imagem", file);
+      formData.append("usuario_id", usuario_id);
+
+      const uploadRes = await fetch(`${API}/tiktok/upload-imagem`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token },
+        body: formData
+      });
+      const upload = await uploadRes.json();
+
+      if (upload.error) {
+        return { ok: false, mensagem: upload.error || "Erro ao enviar imagem para o TikTok" };
+      }
+      imageIds.push(upload.image_id);
+    }
+
+    let videoId = null;
+    if (videoArquivo) {
+      setPublishProgress(28, `${prefixo}Enviando vídeo...`);
+      const formData = new FormData();
+      formData.append("video", videoArquivo);
+      formData.append("usuario_id", usuario_id);
+
+      const uploadRes = await fetch(`${API}/tiktok/upload-video`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token },
+        body: formData
+      });
+      const upload = await uploadRes.json();
+
+      if (upload.error) {
+        return { ok: false, mensagem: upload.error || "Erro ao enviar vídeo para o TikTok" };
+      }
+      videoId = upload.video_id;
+    }
+
+    setPublishProgress(35, `${prefixo}Criando campanha na TikTok...`);
+
+    const campanhaRes = await fetch(`${API}/tiktok/campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        nome: campanha_nome,
+        configuracoes_avancadas,
+        nicho_id: window._nichoAtivo?.id || null,
+        daily_budget: Number(orcamento) * 100,
+        publicacao_grupo_id: publicacaoGrupoId
+      })
+    });
+    const campanha = await campanhaRes.json();
+
+    if (campanha.error) {
+      return { ok: false, mensagem: campanha.error };
+    }
+
+    campanhaCriadaId = campanha.campaign_id || campanha.id;
+    setPublishProgress(65, `${prefixo}Criando grupo de anúncios...`);
+
+    const adgroupRes = await fetch(`${API}/tiktok/adgroup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanhaCriadaId,
+        daily_budget: Number(orcamento) * 100,
+        configuracoes_avancadas
+      })
+    });
+    const adgroup = await adgroupRes.json();
+
+    if (adgroup.error) {
+      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: adgroup.error };
+    }
+
+    setPublishProgress(88, `${prefixo}Publicando anúncio...`);
+
+    const formularioId = obterFormularioTikTokEscolhido();
+
+    const anuncioRes = await fetch(`${API}/tiktok/anuncio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanhaCriadaId,
+        adgroup_id: adgroup.adgroup_id,
+        form_id: formularioId,
+        texto,
+        cta,
+        configuracoes_avancadas,
+        daily_budget: Number(orcamento) * 100,
+        image_ids: imageIds,
+        video_id: videoId
+      })
+    });
+    const anuncio = await anuncioRes.json();
+
+    if (anuncio.error) {
+      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: anuncio.error };
+    }
+
+    setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
+    return { ok: true };
+  } catch (err) {
+    console.error("ERRO publicarCampanhaTikTok:", err);
+    if (campanhaCriadaId) {
+      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token);
+    }
+    return { ok: false, mensagem: "Erro ao criar campanha TikTok: " + (err?.message || String(err) || "Erro desconhecido") };
+  }
+}
+
+// ─── Orquestrador: publica em todas as redes marcadas (fan-out) ───────────────
+// Falha em uma rede não desfaz nem impede o sucesso das outras — cada rede
+// roda sua própria pipeline e o resultado final é reportado por rede.
+async function criarCampanhaCompleta() {
+
+  const redes = Array.from(redesSelecionadasCampanha);
+  if (!redes.length) {
+    mostrarErroPublicacao("Selecione ao menos uma plataforma para publicar.");
+    return;
+  }
+
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  const campanha_nome = document.getElementById("campanha_nome").value;
+  const page_id = document.getElementById("pagina_select")?.value || "";
+  const texto = document.getElementById("texto").value;
+  const cta = document.getElementById("cta").value;
+  const orcamento = document.getElementById("orcamento").value;
+
+  const configuracoesBase = normalizarConfiguracoesAvancadasParaEnvio({
+    ...coletarConfiguracoesAvancadas(),
+    ...coletarDadosNichoAtivo(),
+    page_id,
+    texto,
+    cta
+  });
+
+  const imagensArquivos = Array.from(document.querySelectorAll(".imagem-input"))
+    .map(input => input.files[0])
+    .filter(Boolean);
+
+  const videoArquivo = obterArquivoVideoCampanha();
+
+  if (!validarCamposCompartilhadosCampanha({
+    campanha_nome, texto, orcamento, imagensArquivos, videoArquivo
+  })) {
+    return;
+  }
+
+  // A validação específica do Meta (Página, "onde anunciar") só roda se o Meta
+  // estiver marcado — no caso comum (só Meta selecionado) o comportamento é
+  // idêntico ao de antes do multi-rede existir.
+  if (redes.includes("meta")) {
+    if (!validarPublicacaoCampanha({
+      campanha_nome, page_id, texto, orcamento,
+      configuracoes_avancadas: configuracoesBase, imagensArquivos, videoArquivo
+    })) {
+      return;
+    }
+  }
+
+  if (redes.includes("tiktok")) {
+    const erroTikTok = validarPublicacaoCampanhaTikTok();
+    if (erroTikTok) {
+      mostrarErroPublicacao(erroTikTok);
+      return;
+    }
+  }
+
+  const publicacaoGrupoId =
+    redes.length > 1
+      ? ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `grp_${Date.now()}_${Math.random().toString(36).slice(2)}`)
+      : null;
+
+  const contexto = {
+    token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
+    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
+  };
+
+  const resultados = [];
+
+  if (redes.includes("meta")) {
+    const r = await publicarCampanhaMeta(contexto, redes.length > 1);
+    resultados.push({ rede: "Facebook/Instagram", ...r });
+  }
+
+  if (redes.includes("tiktok")) {
+    const r = await publicarCampanhaTikTok(contexto, redes.length > 1);
+    resultados.push({ rede: "TikTok", ...r });
+  }
+
+  setPublishProgress(null);
+
+  if (resultados.some(r => r.ok)) {
+    await sincronizarCampanhas();
+  }
+
+  setTimeout(() => mostrarResumoPublicacaoMultiRede(resultados), 800);
 }
 
 // =============================================

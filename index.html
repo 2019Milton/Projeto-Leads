@@ -30661,7 +30661,7 @@ function montarSeletorContaAnunciosGoogle(contas, customerIdAtual) {
     return `
       <div style="padding:9px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;font-size:12px;">
         <span style="color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta do Google Ads encontrada.</span>
-        <span style="color:#fde68a;"> Verifique se o login usado na conexão tem acesso a alguma conta do Google Ads.</span>
+        <span style="color:#fde68a;"> Se você ainda não tem uma conta, use o botão "📘 Tutorial: criar conta" acima.</span>
       </div>
     `;
   }
@@ -30753,6 +30753,11 @@ async function carregarStatusGoogle() {
                 <div class="meta-col meta-col-google">
                   <div class="meta-col-head">🔴 Contas de anúncios</div>
                   <div class="meta-col-body">
+                    <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                      <button type="button" onclick="abrirPassoGoogleConta()"
+                        style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                      >📘 Tutorial: criar conta</button>
+                    </div>
                     ${montarSeletorContaAnunciosGoogle(contas, customerIdAtual)}
                   </div>
                 </div>
@@ -39285,6 +39290,122 @@ async function enviarFeedback() {
   </div>
 </div>
 
+<!-- PASSO A PASSO GOOGLE ADS — criar conta -->
+<div
+  id="modal_passo_google_conta"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoGoogleConta()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_google_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_google_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Passo a passo para criar uma conta do Google Ads
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          Abra o link em outra guia, execute a etapa no Google Ads e volte
+          para esta janela para continuar acompanhando o guia.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoGoogleConta()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Tenha uma Conta Google</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Você precisa de uma Conta Google (não precisa ser Gmail — pode usar qualquer e-mail já
+            cadastrado como conta Google). Se ainda não tiver uma, crie em
+            <a href="https://accounts.google.com/signup" target="_blank" rel="noopener noreferrer" style="color:#2563eb;font-weight:600;">accounts.google.com</a>
+            antes de continuar.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Abra o Google Ads e comece a criação</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Acesse o link abaixo logado com a Conta Google do passo 1 e clique em
+            <strong>"Começar agora"</strong> ou <strong>"Nova conta"</strong>.
+          </p>
+          <p style="margin:10px 0 0;">
+            <a href="https://ads.google.com/home/tools/manager-accounts/" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir Google Ads →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Se pedir para criar uma campanha, não se preocupe</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            O Google às vezes tenta te levar direto para criar uma campanha ("Modo Smart/Guiado").
+            Se aparecer essa tela, procure o link <strong>"Alternar para o Modo Especialista"</strong>
+            ou <strong>"Criar conta sem campanha"</strong> no rodapé da página — isso cria a conta sem
+            gastar orçamento à toa. Se não encontrar essa opção, pode preencher os dados básicos e pausar
+            a campanha depois; o importante nesta etapa é só ter a conta criada.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Preencha os dados da conta com atenção</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Informe país, fuso horário e moeda de faturamento.
+            <strong>Atenção: fuso horário e moeda não podem ser alterados depois</strong> — confira antes
+            de confirmar.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">5. Anote o ID da conta (Customer ID)</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Depois de criada, o número da conta aparece no canto superior direito do Google Ads, no
+            formato <strong>XXX-XXX-XXXX</strong>. Não precisa decorar, mas ajuda a confirmar depois se
+            é a conta certa.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">6. Volte para a Plataforma de Leads e conecte</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Feche esta janela, clique em <strong>"Conectar"</strong> no card do Google Ads e faça login
+            com a <strong>mesma Conta Google</strong> usada para criar a conta. Depois, em
+            <strong>"Ver detalhes" → "Contas de anúncios"</strong>, clique em <strong>"Usar conta"</strong>
+            na conta que você acabou de criar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ✨ MODAL GERAR BANNER COM IA -->
 <div id="modal_banner_ia">
   <div class="modal-banner-ia-overlay" onclick="fecharModalGerarBanner()"></div>
@@ -39460,6 +39581,41 @@ function abrirPassoMetaInstagram() {
 
 function fecharPassoMetaInstagram() {
   const modal = document.getElementById("modal_passo_meta_instagram");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function abrirPassoGoogleConta() {
+  const modal = document.getElementById("modal_passo_google_conta");
+  if (!modal) return;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  modal.querySelectorAll(".passo-meta-step-text h3").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+    el.style.setProperty("font-weight", "700", "important");
+  });
+  modal.querySelectorAll(".passo-meta-step-text p").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header h2").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header p").forEach(el => {
+    el.style.setProperty("color", "#374151", "important");
+  });
+  modal.querySelectorAll(".passo-meta-body").forEach(el => {
+    el.style.setProperty("background", "#ffffff", "important");
+  });
+}
+
+function fecharPassoGoogleConta() {
+  const modal = document.getElementById("modal_passo_google_conta");
   if (!modal) return;
 
   modal.classList.remove("active");

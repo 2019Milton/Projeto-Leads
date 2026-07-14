@@ -15792,7 +15792,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                   style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
                   Aceitar Termos agora →
                 </a>
-                <button type="button" onclick="confirmarTosAceito(document.getElementById('pagina_select').value)"
+                <button type="button" onclick="confirmarTosAceito(document.getElementById('pagina_select').value, this)"
                   style="display:inline-block;margin-top:6px;margin-left:6px;padding:5px 12px;background:transparent;border:1px solid #d97706;color:#fde68a;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;">
                   Já aceitei
                 </button>
@@ -21960,7 +21960,7 @@ function montarSeletorContaAnunciosMeta(data) {
         <div class="meta-acct-actions">
           ${ativa
             ? `<span style="font-size:10px;font-weight:700;color:#4ade80;padding:4px 2px;white-space:nowrap;">✓ Em uso</span>`
-            : `<button type="button" onclick="usarContaAnunciosMeta('${escaparHtmlMeta(c.id)}')" style="padding:4px 9px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Usar conta</button>`
+            : `<button type="button" onclick="usarContaAnunciosMeta('${escaparHtmlMeta(c.id)}', this)" style="padding:4px 9px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Usar conta</button>`
           }
           <a href="${gerenciarUrl}" target="_blank" rel="noopener"
             style="padding:4px 9px;background:rgba(24,119,242,0.12);border:1px solid rgba(24,119,242,0.3);color:#60a5fa;border-radius:6px;font-size:10.5px;font-weight:700;text-decoration:none;white-space:nowrap;"
@@ -24780,7 +24780,7 @@ async function excluirLeadDrawer() {
 
 
 // SIMULAÇÕES
-function conectarMeta() {
+function conectarMeta(btnEl) {
 
   const token = localStorage.getItem("token");
 
@@ -24789,11 +24789,29 @@ function conectarMeta() {
     return;
   }
 
+  const btnPanel = document.getElementById("btn_meta_conexao");
+  const btnsCarregando = [btnEl, btnPanel].filter(Boolean);
+  const estadosOriginais = btnsCarregando.map(b => ({ el: b, html: b.innerHTML, disabled: b.disabled }));
+
+  btnsCarregando.forEach(b => {
+    b.disabled = true;
+    b.innerHTML = '<span class="spinner-toggle"></span> Conectando...';
+  });
+
   const popup = window.open(
     `${API}/auth/meta/login?token=${encodeURIComponent(token)}`,
     "_blank",
     "width=600,height=700"
   );
+
+  if (!popup) {
+    estadosOriginais.forEach(({ el, html, disabled }) => {
+      el.innerHTML = html;
+      el.disabled = disabled;
+    });
+    alert("Não foi possível abrir a janela de conexão. Verifique se o navegador bloqueou o pop-up.");
+    return;
+  }
 
   let recarregado = false;
 
@@ -24909,6 +24927,23 @@ async function desconectarMeta() {
     return;
   }
 
+  const btnPanel = document.getElementById("btn_meta_conexao");
+  const estadoOriginal = btnPanel
+    ? { html: btnPanel.innerHTML, disabled: btnPanel.disabled }
+    : null;
+
+  if (btnPanel) {
+    btnPanel.disabled = true;
+    btnPanel.innerHTML = '<span class="spinner-toggle"></span> Desconectando...';
+  }
+
+  const restaurarBotao = () => {
+    if (btnPanel && estadoOriginal) {
+      btnPanel.disabled = estadoOriginal.disabled;
+      btnPanel.innerHTML = estadoOriginal.html;
+    }
+  };
+
   try {
     const res = await fetch(
       `${API}/meta/desconectar`,
@@ -24940,6 +24975,7 @@ async function desconectarMeta() {
         data.error ||
         "Erro ao desconectar Meta"
       );
+      restaurarBotao();
       return;
     }
 
@@ -24948,10 +24984,11 @@ async function desconectarMeta() {
   } catch (err) {
     console.error("DESCONECTAR META:", err);
     alert("Erro ao desconectar Meta");
+    restaurarBotao();
   }
 }
 
-async function aplicarContaAnunciosMeta(contaAnunciosId) {
+async function aplicarContaAnunciosMeta(contaAnunciosId, btnEl) {
 
   const token =
     localStorage.getItem("token");
@@ -24965,6 +25002,22 @@ async function aplicarContaAnunciosMeta(contaAnunciosId) {
     alert("Selecione a conta de anuncios Meta.");
     return;
   }
+
+  const estadoOriginal = btnEl
+    ? { html: btnEl.innerHTML, disabled: btnEl.disabled }
+    : null;
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Selecionando...';
+  }
+
+  const restaurarBotao = () => {
+    if (btnEl && estadoOriginal && document.body.contains(btnEl)) {
+      btnEl.disabled = estadoOriginal.disabled;
+      btnEl.innerHTML = estadoOriginal.html;
+    }
+  };
 
   try {
     const res = await fetch(
@@ -24988,6 +25041,7 @@ async function aplicarContaAnunciosMeta(contaAnunciosId) {
         data.error ||
         "Erro ao selecionar conta Meta"
       );
+      restaurarBotao();
       return;
     }
 
@@ -24999,6 +25053,7 @@ async function aplicarContaAnunciosMeta(contaAnunciosId) {
   } catch (err) {
     console.error("SELECIONAR CONTA META:", err);
     alert("Erro ao selecionar conta Meta");
+    restaurarBotao();
   }
 }
 
@@ -25012,9 +25067,9 @@ async function salvarContaAnunciosMeta() {
   await aplicarContaAnunciosMeta(select?.value);
 }
 
-async function usarContaAnunciosMeta(contaAnunciosId) {
+async function usarContaAnunciosMeta(contaAnunciosId, btnEl) {
 
-  await aplicarContaAnunciosMeta(contaAnunciosId);
+  await aplicarContaAnunciosMeta(contaAnunciosId, btnEl);
 }
 
 function atualizarBotaoMeta(conectado) {
@@ -25028,13 +25083,15 @@ function atualizarBotaoMeta(conectado) {
     return;
   }
 
+  btn.disabled = false;
+
   if (conectado) {
     btn.innerText = "Desconectar Meta";
-    btn.onclick = desconectarMeta;
+    btn.onclick = () => desconectarMeta();
     btn.classList.add("btn-meta-disconnect");
   } else {
     btn.innerText = "Conectar Meta";
-    btn.onclick = conectarMeta;
+    btn.onclick = () => conectarMeta();
     btn.classList.remove("btn-meta-disconnect");
   }
 }
@@ -28564,9 +28621,19 @@ function atualizarTosHint() {
   }
 }
 
-async function confirmarTosAceito(pageId) {
+async function confirmarTosAceito(pageId, btnEl) {
   const token = localStorage.getItem("token");
   if (!token || !pageId) return;
+
+  const estadoOriginal = btnEl
+    ? { html: btnEl.innerHTML, disabled: btnEl.disabled }
+    : null;
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Confirmando...';
+  }
+
   try {
     await fetch(`${API}/meta/tos-aceitar`, {
       method: "POST",
@@ -28581,6 +28648,11 @@ async function confirmarTosAceito(pageId) {
   }
   await carregarStatusMeta();
   atualizarTosHint();
+
+  if (btnEl && estadoOriginal && document.body.contains(btnEl)) {
+    btnEl.disabled = estadoOriginal.disabled;
+    btnEl.innerHTML = estadoOriginal.html;
+  }
 }
 
 function setPublishProgress(pct, label) {
@@ -29807,11 +29879,28 @@ async function carregarDashboard() {
         <div class="dashboard-empty-state">Carregando métricas executivas...</div>
       </div>
 
+      <div id="dashboard-status-plataformas" class="dashboard-intel-grid">
+        <div class="dashboard-panel">
+          <div class="dashboard-panel-head">
+            <div>
+              <h3>🟦 Status Meta</h3>
+              <small>Campanhas, gasto e leads de hoje na Meta, com sincronização manual.</small>
+            </div>
+          </div>
+          <div id="dashboard-status-meta">
+            <div class="dashboard-empty-state">Carregando status da Meta...</div>
+          </div>
+        </div>
+      </div>
+
       <div id="dashboard-analytics-grid" class="dashboard-intel-grid">
         <div class="dashboard-empty-state">Carregando inteligência por plataforma e campanha...</div>
       </div>
     </div>
   `;
+
+  // Preenche o card "Status Meta" (usa a mesma rotina do painel de conexões)
+  carregarStatusMeta();
 
   // Buscar KPIs reais
   try {
@@ -30267,13 +30356,13 @@ function renderIntegCard(p, conn, metaStatusCompleto = null) {
   } else if (conectado) {
     statusHtml = `<span class="integ-card-status conectado">● Conectado</span>`;
     acoesHtml  = `
-      <button class="btn-desconectar" onclick="desconectarPlataforma('${p.id}')">Desconectar</button>
-      <button class="btn-conectar"    onclick="conectarPlataforma('${p.id}')">Reconectar</button>
+      <button class="btn-desconectar" onclick="desconectarPlataforma('${p.id}', this)">Desconectar</button>
+      <button class="btn-conectar"    onclick="conectarPlataforma('${p.id}', this)">Reconectar</button>
       <button id="btn-det-${p.id}"   onclick="toggleIntegDetalhes('${p.id}')">Ver detalhes ▾</button>
     `;
   } else {
     statusHtml = `<span class="integ-card-status desconectado">○ Desconectado</span>`;
-    acoesHtml  = `<button class="btn-conectar" onclick="conectarPlataforma('${p.id}')">Conectar</button>`;
+    acoesHtml  = `<button class="btn-conectar" onclick="conectarPlataforma('${p.id}', this)">Conectar</button>`;
   }
 
   const contaHtml = conectado ? renderResumoConexao(p, conn) : "";
@@ -30431,7 +30520,7 @@ async function carregarDetalhesTikTokHub() {
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
         <select id="tiktok_anunciante_select" style="flex:1;min-width:180px;">${opcoes}</select>
-        <button type="button" onclick="selecionarAnuncianteTikTok(document.getElementById('tiktok_anunciante_select').value)">Usar esta conta</button>
+        <button type="button" onclick="selecionarAnuncianteTikTok(document.getElementById('tiktok_anunciante_select').value, {}, this)">Usar esta conta</button>
       </div>
       <div class="integ-detalhe-linha">
         <span class="integ-detalhe-label">Sincronização</span>
@@ -30446,9 +30535,26 @@ async function carregarDetalhesTikTokHub() {
   }
 }
 
-async function selecionarAnuncianteTikTok(advertiserId, opts = {}) {
+async function selecionarAnuncianteTikTok(advertiserId, opts = {}, btnEl) {
   const token = localStorage.getItem("token");
   if (!token || !advertiserId) return;
+
+  const estadoOriginal = btnEl
+    ? { html: btnEl.innerHTML, disabled: btnEl.disabled }
+    : null;
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Selecionando...';
+  }
+
+  const restaurarBotao = () => {
+    if (btnEl && estadoOriginal && document.body.contains(btnEl)) {
+      btnEl.disabled = estadoOriginal.disabled;
+      btnEl.innerHTML = estadoOriginal.html;
+    }
+  };
+
   try {
     const res = await fetch(`${API}/tiktok/selecionar-anunciante`, {
       method: "POST",
@@ -30457,6 +30563,7 @@ async function selecionarAnuncianteTikTok(advertiserId, opts = {}) {
     });
     if (!res.ok) {
       if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+      restaurarBotao();
       return;
     }
     if (!opts.silencioso) {
@@ -30464,6 +30571,7 @@ async function selecionarAnuncianteTikTok(advertiserId, opts = {}) {
     }
   } catch (_) {
     if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+    restaurarBotao();
   }
 }
 
@@ -30618,9 +30726,9 @@ async function sincronizarGoogle() {
 
 const PLATAFORMAS_OAUTH_GENERICO = ["google", "tiktok", "linkedin", "pinterest", "snapchat", "microsoft", "kwai"];
 
-function conectarPlataforma(plataforma) {
+function conectarPlataforma(plataforma, btnEl) {
   if (plataforma === "meta") {
-    conectarMeta();
+    conectarMeta(btnEl);
     return;
   }
   if (!PLATAFORMAS_OAUTH_GENERICO.includes(plataforma)) {
@@ -30634,11 +30742,29 @@ function conectarPlataforma(plataforma) {
     return;
   }
 
+  const estadoOriginal = btnEl
+    ? { html: btnEl.innerHTML, disabled: btnEl.disabled }
+    : null;
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Conectando...';
+  }
+
   const popup = window.open(
     `${API}/auth/${plataforma}/login?token=${encodeURIComponent(token)}`,
     "_blank",
     "width=600,height=700"
   );
+
+  if (!popup) {
+    if (btnEl && estadoOriginal) {
+      btnEl.disabled = estadoOriginal.disabled;
+      btnEl.innerHTML = estadoOriginal.html;
+    }
+    alert("Não foi possível abrir a janela de conexão. Verifique se o navegador bloqueou o pop-up.");
+    return;
+  }
 
   let recarregado = false;
 
@@ -30665,10 +30791,27 @@ function conectarPlataforma(plataforma) {
   }, 600);
 }
 
-async function desconectarPlataforma(plataforma) {
+async function desconectarPlataforma(plataforma, btnEl) {
   const token = localStorage.getItem("token");
   if (!token) return;
   if (!confirm(`Deseja desconectar ${plataforma}?`)) return;
+
+  const estadoOriginal = btnEl
+    ? { html: btnEl.innerHTML, disabled: btnEl.disabled }
+    : null;
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Desconectando...';
+  }
+
+  const restaurarBotao = () => {
+    if (btnEl && estadoOriginal) {
+      btnEl.disabled = estadoOriginal.disabled;
+      btnEl.innerHTML = estadoOriginal.html;
+    }
+  };
+
   try {
     const res = await fetch(`${API}/conexoes/${plataforma}`, {
       method: "DELETE",
@@ -30679,9 +30822,11 @@ async function desconectarPlataforma(plataforma) {
       if (plataforma === "meta") await carregarStatusMeta();
     } else {
       alert("Erro ao desconectar.");
+      restaurarBotao();
     }
   } catch (e) {
     alert("Erro ao desconectar.");
+    restaurarBotao();
   }
 }
 
@@ -30715,6 +30860,11 @@ async function carregarStatusMeta() {
 
     atualizarBotaoMeta(Boolean(data.conectado));
 
+    const gastoHoje =
+      data.metricas?.gasto_hoje_formatado ||
+      data.metricas?.gasto_hoje ||
+      "R$ 0,00";
+
     if (metaInfo) {
     
       if (data.conectado) {
@@ -30733,10 +30883,6 @@ async function carregarStatusMeta() {
           data.conta_anuncios?.business_id
             ? `https://business.facebook.com/settings/instagram-accounts?business_id=${encodeURIComponent(data.conta_anuncios.business_id)}`
             : "https://business.facebook.com/settings/instagram-accounts";
-        const gastoHoje =
-          data.metricas?.gasto_hoje_formatado ||
-          data.metricas?.gasto_hoje ||
-          "R$ 0,00";
         const pagamentoHabilitado =
           Boolean(
             conta?.pagamento_habilitado ||
@@ -30778,7 +30924,7 @@ async function carregarStatusMeta() {
                 style="display:inline-block;margin-top:6px;padding:5px 12px;background:#d97706;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;">
                 Aceitar Termos agora →
               </a>
-              <button type="button" onclick="confirmarTosAceito('${data.paginas[0].id}')"
+              <button type="button" onclick="confirmarTosAceito('${data.paginas[0].id}', this)"
                 style="display:inline-block;margin-top:6px;margin-left:6px;padding:5px 12px;background:transparent;border:1px solid #d97706;color:#fde68a;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;">
                 Já aceitei
               </button>
@@ -30974,46 +31120,6 @@ async function carregarStatusMeta() {
               </div>
             </div>
 
-            <!-- 📈 STATUS PLATAFORMA LEADS -->
-            <div class="meta-conta-selector" style="margin-top:10px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <b style="font-size:13px;">📈 Status Plataforma Leads</b>
-                <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
-              </div>
-              <div class="meta-sec-body">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-                  <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
-                    <span style="font-size:22px;font-weight:800;color:#c4b5fd;display:block;">${data.metricas?.campanhas || 0}</span>
-                    <small style="margin-top:4px;font-size:11px;">📢 Campanhas</small>
-                  </div>
-                  <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
-                    <span style="font-size:22px;font-weight:800;color:#4ade80;display:block;">${data.metricas?.campanhas_ativas || 0}</span>
-                    <small style="margin-top:4px;font-size:11px;">🟢 Ativas</small>
-                  </div>
-                  <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
-                    <span style="font-size:16px;font-weight:800;color:#fbbf24;display:block;line-height:1.4;">${gastoHoje}</span>
-                    <small style="margin-top:4px;font-size:11px;">💰 Gasto hoje</small>
-                  </div>
-                  <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
-                    <span style="font-size:22px;font-weight:800;color:#60a5fa;display:block;">${data.metricas?.leads_hoje || 0}</span>
-                    <small style="margin-top:4px;font-size:11px;">🧲 Leads hoje</small>
-                  </div>
-                </div>
-                <div class="sync-box" style="margin-top:0;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
-                  <div style="font-size:11px;color:#94a3b8;line-height:1.7;">
-                    🕒 <span style="color:#cbd5e1;">Último sync</span><br>
-                    <span id="ultimo_sync_texto" style="color:#e2e8f0;font-size:12px;">Nunca sincronizado</span>
-                    &nbsp;<small id="ultimo_sync_timer" style="color:#64748b;">-</small>
-                  </div>
-                  <button class="btn-sync-manual" onclick="sincronizarCampanhas()">🔄</button>
-                </div>
-                <div id="sync_progress" class="sync-progress">
-                  <div class="sync-progress-bar"><span></span></div>
-                  <small>Sincronizando campanhas, gasto e leads diretamente com a Meta...</small>
-                </div>
-              </div>
-            </div>
-
           </div>
         `;
     
@@ -31029,6 +31135,46 @@ async function carregarStatusMeta() {
       }
     }
 
+    // 📈 Status Meta no Dashboard (um card por plataforma conectada)
+    const dashboardStatusMeta =
+      document.getElementById("dashboard-status-meta");
+
+    if (dashboardStatusMeta) {
+      dashboardStatusMeta.innerHTML = data.conectado
+        ? `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+              <span style="font-size:22px;font-weight:800;color:#c4b5fd;display:block;">${data.metricas?.campanhas || 0}</span>
+              <small style="margin-top:4px;font-size:11px;">📢 Campanhas</small>
+            </div>
+            <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+              <span style="font-size:22px;font-weight:800;color:#4ade80;display:block;">${data.metricas?.campanhas_ativas || 0}</span>
+              <small style="margin-top:4px;font-size:11px;">🟢 Ativas</small>
+            </div>
+            <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+              <span style="font-size:16px;font-weight:800;color:#fbbf24;display:block;line-height:1.4;">${gastoHoje}</span>
+              <small style="margin-top:4px;font-size:11px;">💰 Gasto hoje</small>
+            </div>
+            <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+              <span style="font-size:22px;font-weight:800;color:#60a5fa;display:block;">${data.metricas?.leads_hoje || 0}</span>
+              <small style="margin-top:4px;font-size:11px;">🧲 Leads hoje</small>
+            </div>
+          </div>
+          <div class="sync-box" style="margin-top:0;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
+            <div style="font-size:11px;color:#94a3b8;line-height:1.7;">
+              🕒 <span style="color:#cbd5e1;">Último sync</span><br>
+              <span id="ultimo_sync_texto" style="color:#e2e8f0;font-size:12px;">Nunca sincronizado</span>
+              &nbsp;<small id="ultimo_sync_timer" style="color:#64748b;">-</small>
+            </div>
+            <button class="btn-sync-manual" onclick="sincronizarCampanhas()">🔄</button>
+          </div>
+          <div id="sync_progress" class="sync-progress">
+            <div class="sync-progress-bar"><span></span></div>
+            <small>Sincronizando campanhas, gasto e leads diretamente com a Meta...</small>
+          </div>
+        `
+        : `<div class="dashboard-empty-state">🔴 Meta não conectada. <a href="#" onclick="navegarPara('integracoes');return false;" style="color:#60a5fa;">Conectar agora →</a></div>`;
+    }
 
     const ultimoSyncTexto =
       document.getElementById("ultimo_sync_texto");

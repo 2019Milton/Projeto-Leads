@@ -28855,7 +28855,7 @@ function conduzirParaCampoCampanha(alvo, mensagem) {
 function mapearErroMetaParaCampo(mensagem) {
   const m = (mensagem || "").toLowerCase();
   if (m.includes("special_ad_categor") || m.includes("special ad categor") || m.includes("categoria especial") || m.includes("housing") || m.includes("credit") || m.includes("employment")) return "#adv_categoria_especial";
-  if (m.includes("valor do lance") || m.includes("restrições de lance") || m.includes("bid value") || m.includes("bid restriction") || (m.includes("lance") && m.includes("obrigatório"))) return "#adv_bid_strategy";
+  if (m.includes("valor do lance") || m.includes("restrições de lance") || m.includes("valor de licitação") || m.includes("restrições de licitação") || m.includes("bid value") || m.includes("bid restriction") || ((m.includes("lance") || m.includes("licitação")) && m.includes("obrigatório"))) return "#adv_bid_strategy";
   if (/\bidade\b/.test(m) || m.includes("age_min") || m.includes("age_max") || m.includes("minimum age") || m.includes("sugestão ao criar") || m.includes("sugest") && m.includes("conjunto de anúncios")) return "#adv_idade_min";
   if (m.includes("daily_budget") || m.includes("budget") || m.includes("orçamento") || m.includes("mínimo") || m.includes("minimum amount")) return "#orcamento";
   if (m.includes("page_id") || (m.includes("page") && (m.includes("not found") || m.includes("invalid") || m.includes("não encontrada")))) return "#pagina_select";
@@ -28885,7 +28885,7 @@ function traduzirErroMeta(mensagem) {
   if (m.includes("sugestão ao criar") || (m.includes("sugest") && m.includes("conjunto de anúncios"))) {
     return "A Meta sugeriu ampliar o público. Tente publicar novamente — o sistema tentará automaticamente com público mais amplo. Mensagem: " + mensagem;
   }
-  if (m.includes("valor do lance") || m.includes("restrições de lance") || m.includes("bid value") || m.includes("bid restriction") || (m.includes("lance") && m.includes("obrigatório"))) {
+  if (m.includes("valor do lance") || m.includes("restrições de lance") || m.includes("valor de licitação") || m.includes("restrições de licitação") || m.includes("bid value") || m.includes("bid restriction") || ((m.includes("lance") || m.includes("licitação")) && m.includes("obrigatório"))) {
     const estrategiaAtual = document.getElementById("adv_bid_strategy")?.value || "";
     if (estrategiaControleExigeValor(estrategiaAtual)) {
       return "Controle de custo: a estratégia selecionada exige um valor de lance. Preencha o campo 'Valor do controle (R$)' ou mude para 'Menor custo possível'.";

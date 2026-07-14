@@ -1720,6 +1720,11 @@ body.tema-claro .passo-meta-step-text p {
   color: #f0a8c8;
 }
 
+.meta-col-google .meta-col-head {
+  background: rgba(239,68,68,0.16);
+  color: #fca5a5;
+}
+
 .meta-col-body {
   padding: 0 10px 10px;
   display: flex;
@@ -11274,6 +11279,10 @@ body.tema-claro .meta-col-ig .meta-col-head {
   background: linear-gradient(90deg, rgba(193,54,124,0.10), rgba(244,162,76,0.10));
   color: #b5306f;
 }
+body.tema-claro .meta-col-google .meta-col-head {
+  background: rgba(239,68,68,0.10);
+  color: #b91c1c;
+}
 body.tema-claro .meta-acct-row {
   background: rgba(0,0,0,0.03);
   border-color: rgba(71,85,105,0.22);
@@ -15695,6 +15704,11 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         <div class="meta-card" id="card-meta" style="display:none;">
           <button id="btn_meta_conexao" class="btn" onclick="conectarMeta()">Conectar Meta</button>
           <div id="meta_info">Carregando conexão...</div>
+        </div>
+
+        <!-- 🔴 GOOGLE ADS — detalhes expandíveis; conteúdo gerenciado por carregarStatusGoogle() -->
+        <div class="meta-card" id="card-google" style="display:none;">
+          <div id="google_info">Carregando conexão...</div>
         </div>
       </div>
 
@@ -30393,7 +30407,7 @@ function renderIntegCard(p, conn, statusCompleto = null) {
 
   const contaHtml = conectado ? renderResumoConexao(p, conn) : "";
 
-  const detalhesHtml = (p.id === "meta" || p.id === "tiktok" || p.id === "google")
+  const detalhesHtml = (p.id === "meta" || p.id === "tiktok")
     ? `<div class="integ-card-detalhes" id="integ-detalhes-${p.id}" style="display:none;"></div>` : "";
 
   const cls = `integ-card${conectado ? " conectado" : ""}${sempre ? " formulario-ativo" : ""}${emBreve ? " em-breve" : ""}`;
@@ -30438,18 +30452,18 @@ function rolarParaIntegDetalhes(el) {
 function toggleIntegDetalhes(plataforma) {
   const btn = document.getElementById(`btn-det-${plataforma}`);
 
-  if (plataforma === "meta") {
-    // Para Meta mostramos o painel completo de conexão (card-meta)
-    const cardMeta = document.getElementById("card-meta");
-    if (!cardMeta) return;
-    const abrindo = cardMeta.style.display === "none" || cardMeta.style.display === "";
-    // card-meta starts display:none, "" means it was never shown yet
-    const visivel = cardMeta.offsetParent !== null && cardMeta.style.display !== "none";
-    cardMeta.style.display = visivel ? "none" : "";
+  if (plataforma === "meta" || plataforma === "google") {
+    // Para Meta e Google mostramos o painel completo de conexão (card-meta / card-google)
+    const card = document.getElementById(plataforma === "meta" ? "card-meta" : "card-google");
+    if (!card) return;
+    // o card comeca com display:none, "" significa que ja foi exibido antes
+    const visivel = card.offsetParent !== null && card.style.display !== "none";
+    card.style.display = visivel ? "none" : "";
     if (btn) btn.textContent = visivel ? "Ver detalhes ▾" : "Ocultar ▴";
     if (!visivel) {
-      carregarStatusMeta();
-      rolarParaIntegDetalhes(cardMeta);
+      if (plataforma === "meta") carregarStatusMeta();
+      else carregarStatusGoogle();
+      rolarParaIntegDetalhes(card);
     }
     return;
   }
@@ -30462,7 +30476,6 @@ function toggleIntegDetalhes(plataforma) {
   if (abrindo) {
     rolarParaIntegDetalhes(el);
     if (plataforma === "tiktok") carregarDetalhesTikTokHub();
-    if (plataforma === "google") carregarDetalhesGoogleHub();
   }
 }
 
@@ -30630,79 +30643,145 @@ async function sincronizarTikTok() {
   }
 }
 
-// carregarHub() recria o card inteiro (o painel de detalhes volta a nascer fechado);
-// isso reabre o painel logo após o refresh para não fechar na cara do usuário.
-async function recarregarHubMantendoDetalhesGoogleAbertos() {
-  await carregarHub();
-  const el = document.getElementById("integ-detalhes-google");
-  const btn = document.getElementById("btn-det-google");
-  if (el) el.style.display = "";
-  if (btn) btn.textContent = "Ocultar ▴";
-  await carregarDetalhesGoogleHub();
+function montarSeletorContaAnunciosGoogle(contas, customerIdAtual) {
+  if (!contas.length) {
+    return `
+      <div style="padding:9px 12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.25);border-radius:8px;font-size:12px;">
+        <span style="color:#fbbf24;font-weight:600;">⚠️ Nenhuma conta do Google Ads encontrada.</span>
+        <span style="color:#fde68a;"> Verifique se o login usado na conexão tem acesso a alguma conta do Google Ads.</span>
+      </div>
+    `;
+  }
+
+  const linhas = contas.map(c => {
+    const ativa = String(c.customer_id) === String(customerIdAtual);
+    return `
+      <div class="meta-acct-row ${ativa ? "is-active" : ""}">
+        <div class="meta-acct-info">
+          <div class="meta-acct-name">${escaparHtml(c.nome || String(c.customer_id))}</div>
+          <div class="meta-acct-meta">${escaparHtml(String(c.customer_id))}</div>
+        </div>
+        <div class="meta-acct-actions">
+          ${ativa
+            ? `<span style="font-size:10px;font-weight:700;color:#4ade80;padding:4px 2px;white-space:nowrap;">✓ Em uso</span>`
+            : `<button type="button" onclick="usarContaGoogle('${escaparHtml(String(c.customer_id))}', this)" style="padding:4px 9px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Usar conta</button>`
+          }
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const aviso = !customerIdAtual
+    ? "Escolha a conta que a plataforma deve usar antes de sincronizar."
+    : contas.length > 1
+    ? "Troque a conta ativa quando o login do Google tiver mais de uma conta disponível."
+    : "";
+
+  return `
+    <div class="meta-acct-list">${linhas}</div>
+    ${aviso ? `<small style="display:block;margin-top:7px;color:#94a3b8;line-height:1.4;">${aviso}</small>` : ""}
+  `;
 }
 
-async function carregarDetalhesGoogleHub() {
-  const el = document.getElementById("integ-detalhes-google");
-  if (!el) return;
+async function carregarStatusGoogle() {
   const token = localStorage.getItem("token");
-  el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas do Google Ads...</span>`;
-  try {
-    const [resContas, resConexoes] = await Promise.all([
-      fetch(`${API}/google/contas`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } })
-    ]);
-    const dataContas = await resContas.json();
-    const dataConexoes = await resConexoes.json();
-    const conn = (dataConexoes?.conexoes || []).find(c => c.plataforma === "google");
-    const customerIdAtual = conn?.conta?.customer_id || "";
+  if (!token) return;
+  const googleInfo = document.getElementById("google_info");
+  if (!googleInfo) return;
+  googleInfo.innerHTML = `<div style="color:#64748b;font-size:13px;padding:10px 0;">Carregando conexão...</div>`;
 
-    if (!resContas.ok) {
-      el.innerHTML = `<span style="color:#f87171;">${escaparHtml(dataContas?.error || "Erro ao carregar contas do Google Ads.")}</span>`;
+  try {
+    const [resContas, resStatus] = await Promise.all([
+      fetch(`${API}/google/contas`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/google/status-completo`, { headers: { Authorization: `Bearer ${token}` } })
+    ]);
+    const dataContas = resContas.ok ? await resContas.json() : {};
+    const dataStatus = resStatus.ok ? await resStatus.json() : { conectado: false };
+
+    if (!dataStatus.conectado) {
+      googleInfo.innerHTML = `<div style="color:#94a3b8;font-size:13px;padding:10px 0;">Google Ads não conectado.</div>`;
       return;
     }
 
     const contas = dataContas.contas || [];
-    if (!contas.length) {
-      el.innerHTML = `<span style="color:#f87171;">Nenhuma conta do Google Ads encontrada para esse login.</span>`;
-      return;
-    }
+    const customerIdAtual = dataStatus.customer_id || "";
+    const contaInfo = dataStatus.conta || null;
 
     // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta/TikTok)
     if (!customerIdAtual && contas.length === 1) {
-      await selecionarContaGoogle(String(contas[0].customer_id), { silencioso: true });
-      await recarregarHubMantendoDetalhesGoogleAbertos();
+      await usarContaGoogle(String(contas[0].customer_id), null, { silencioso: true });
+      await carregarStatusGoogle();
       return;
     }
 
-    const opcoes = contas.map(a => `
-      <option value="${escaparHtml(String(a.customer_id))}" ${String(a.customer_id) === String(customerIdAtual) ? "selected" : ""}>
-        ${escaparHtml(a.nome || String(a.customer_id))}
-      </option>`).join("");
+    const gastoFormatado = typeof dataStatus.gasto_hoje === "number"
+      ? dataStatus.gasto_hoje.toLocaleString("pt-BR", { style: "currency", currency: contaInfo?.moeda || "BRL" })
+      : "—";
 
-    el.innerHTML = `
-      <div class="integ-detalhe-linha">
-        <span class="integ-detalhe-label">Conta de anúncios</span>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
-        <select id="google_conta_select" style="flex:1;min-width:180px;">${opcoes}</select>
-        <button type="button" onclick="selecionarContaGoogle(document.getElementById('google_conta_select').value)">Usar esta conta</button>
-      </div>
-      <div class="integ-detalhe-linha">
-        <span class="integ-detalhe-label">Sincronização</span>
-        <span class="integ-detalhe-valor" id="google_sync_status">${customerIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
-      </div>
-      <div style="margin-top:8px;">
-        <button type="button" id="btn_google_sync" onclick="sincronizarGoogle()" ${customerIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
+    googleInfo.innerHTML = `
+      <div style="margin-top:15px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
+          <span style="font-size:32px;line-height:1;">🔴</span>
+          <div>
+            <div style="font-weight:bold;">Google Ads</div>
+            <div style="color:#22c55e;">🟢 Conectado</div>
+          </div>
+        </div>
+
+        <div class="meta-conta-selector" style="margin-top:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <b style="font-size:13px;">📊 Status Google Ads</b>
+            <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
+          </div>
+          <div class="meta-sec-body">
+            <div class="meta-fbig-columns">
+              <div class="meta-col meta-col-google">
+                <div class="meta-col-head">🔴 Contas de anúncios</div>
+                <div class="meta-col-body">
+                  ${montarSeletorContaAnunciosGoogle(contas, customerIdAtual)}
+                </div>
+              </div>
+
+              <div class="meta-col meta-col-google">
+                <div class="meta-col-head">📊 Resumo da conta</div>
+                <div class="meta-col-body">
+                  <div class="meta-status-tile">
+                    <span>${contaInfo?.status === "ENABLED" ? "🟢" : contaInfo ? "🟡" : "⚪"} Status da conta</span>
+                    <small>${escaparHtml(contaInfo?.status || "Selecione uma conta")}</small>
+                  </div>
+                  <div class="meta-status-tile">
+                    <span>📢 Campanhas</span>
+                    <small>${dataStatus.campanhas_ativas ?? 0}/${dataStatus.campanhas_total ?? 0} ativas</small>
+                  </div>
+                  <div class="meta-status-tile">
+                    <span>📥 Leads hoje</span>
+                    <small>${dataStatus.leads_hoje ?? 0}</small>
+                  </div>
+                  <div class="meta-status-tile">
+                    <span>💰 Gasto hoje</span>
+                    <small>${gastoFormatado}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button type="button" id="btn_google_sync_detalhe" class="btn" onclick="sincronizarGoogleDetalhe()" ${customerIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
+          <span id="google_sync_status_detalhe" style="font-size:12px;color:#94a3b8;">${customerIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
+        </div>
       </div>
     `;
   } catch (_) {
-    el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar detalhes.</span>`;
+    googleInfo.innerHTML = `<div style="color:#f87171;font-size:13px;padding:10px 0;">Não foi possível carregar os detalhes do Google Ads.</div>`;
   }
 }
 
-async function selecionarContaGoogle(customerId, opts = {}) {
+async function usarContaGoogle(customerId, btnEl, opts = {}) {
   const token = localStorage.getItem("token");
   if (!token || !customerId) return;
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = "Selecionando..."; }
   try {
     const res = await fetch(`${API}/google/selecionar-conta`, {
       method: "POST",
@@ -30714,18 +30793,19 @@ async function selecionarContaGoogle(customerId, opts = {}) {
       return;
     }
     if (!opts.silencioso) {
-      await recarregarHubMantendoDetalhesGoogleAbertos();
+      await carregarStatusGoogle();
+      await carregarHub();
     }
   } catch (_) {
     if (!opts.silencioso) alert("Erro ao selecionar a conta do Google Ads.");
   }
 }
 
-async function sincronizarGoogle() {
+async function sincronizarGoogleDetalhe() {
   const token = localStorage.getItem("token");
   if (!token) return;
-  const btn = document.getElementById("btn_google_sync");
-  const status = document.getElementById("google_sync_status");
+  const btn = document.getElementById("btn_google_sync_detalhe");
+  const status = document.getElementById("google_sync_status_detalhe");
   if (btn) { btn.disabled = true; btn.textContent = "🔄 Sincronizando..."; }
   try {
     const res = await fetch(`${API}/google/sincronizar-campanhas`, {
@@ -30737,10 +30817,11 @@ async function sincronizarGoogle() {
       if (status) status.textContent = data?.error || "Erro ao sincronizar.";
       return;
     }
-    // carregarHub() recria o card (e o painel de detalhes some) — reabre e só então
-    // grava a mensagem de resultado no elemento novo, não no nó antigo já desconectado do DOM.
-    await recarregarHubMantendoDetalhesGoogleAbertos();
-    const statusNovo = document.getElementById("google_sync_status");
+    // carregarStatusGoogle() recria o painel — reconsulta os elementos depois,
+    // ja que os nos antigos ficam desconectados do DOM apos o innerHTML ser trocado.
+    await carregarStatusGoogle();
+    await carregarHub();
+    const statusNovo = document.getElementById("google_sync_status_detalhe");
     if (statusNovo) statusNovo.textContent = `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
     return;
   } catch (_) {

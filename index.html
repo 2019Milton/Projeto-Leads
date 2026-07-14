@@ -30253,7 +30253,7 @@ function renderResumoTikTok(conn) {
     </div>`;
 }
 
-function renderResumoGoogle(conn) {
+function renderResumoGoogle(conn, googleStatusCompleto) {
   const conectado = conn?.status === "conectado";
 
   if (!conectado) {
@@ -30282,11 +30282,24 @@ function renderResumoGoogle(conn) {
       </div>`;
   }
 
+  const contaInfo = googleStatusCompleto?.conta || null;
+  const gastoHoje = googleStatusCompleto?.gasto_hoje;
+  const gastoFormatado = typeof gastoHoje === "number"
+    ? gastoHoje.toLocaleString("pt-BR", { style: "currency", currency: contaInfo?.moeda || "BRL" })
+    : "—";
+  const campanhasAtivas = googleStatusCompleto?.campanhas_ativas ?? 0;
+  const campanhasTotal = googleStatusCompleto?.campanhas_total ?? 0;
+  const leadsHoje = googleStatusCompleto?.leads_hoje ?? 0;
+
   return `
     <div class="integ-card-resumo">
       ${hubResumoAlerta("Conta de anúncios selecionada. Use \"Sincronizar agora\" nos detalhes para importar campanhas e leads.", "ok")}
       <div class="integ-resumo-grid">
-        ${hubResumoItem("Conta de anúncios", customerId, "sucesso")}
+        ${hubResumoItem("Conta Ads", contaInfo?.nome || customerId, "sucesso")}
+        ${hubResumoItem("Status da conta", contaInfo?.status || "—")}
+        ${hubResumoItem("Campanhas", `${campanhasAtivas}/${campanhasTotal} ativas`)}
+        ${hubResumoItem("Leads hoje", leadsHoje)}
+        ${hubResumoItem("Gasto hoje", gastoFormatado)}
         ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
       </div>
     </div>`;
@@ -30300,6 +30313,7 @@ async function carregarHub() {
 
   let mapa = {};
   let metaStatusCompleto = null;
+  let googleStatusCompleto = null;
   try {
     const res = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) {
@@ -30317,7 +30331,19 @@ async function carregarHub() {
     } catch (_) {}
   }
 
-  grid.innerHTML = HUB_PLATAFORMAS.map(p => renderIntegCard(p, mapa[p.id], p.id === "meta" ? metaStatusCompleto : null)).join("");
+  if (mapa.google?.status === "conectado" && mapa.google?.conta?.customer_id) {
+    try {
+      const resGoogle = await fetch(`${API}/google/status-completo`, { headers: { Authorization: `Bearer ${token}` } });
+      if (resGoogle.ok) {
+        googleStatusCompleto = await resGoogle.json();
+      }
+    } catch (_) {}
+  }
+
+  grid.innerHTML = HUB_PLATAFORMAS.map(p => renderIntegCard(
+    p, mapa[p.id],
+    p.id === "meta" ? metaStatusCompleto : p.id === "google" ? googleStatusCompleto : null
+  )).join("");
 }
 
 function renderResumoConexao(p, conn) {
@@ -30341,7 +30367,7 @@ function renderResumoConexao(p, conn) {
     </div>`).join("")}</div>`;
 }
 
-function renderIntegCard(p, conn, metaStatusCompleto = null) {
+function renderIntegCard(p, conn, statusCompleto = null) {
   const conectado = conn?.status === "conectado";
   const sempre    = p.id === "formulario";
   const emBreve   = !p.disponivelConectar && !sempre;
@@ -30374,11 +30400,11 @@ function renderIntegCard(p, conn, metaStatusCompleto = null) {
 
   const descHtml = p.desc ? `<div class="integ-card-desc">${p.desc}</div>` : "";
   const resumoHtml = p.id === "meta"
-    ? renderResumoMeta(conn, metaStatusCompleto)
+    ? renderResumoMeta(conn, statusCompleto)
     : p.id === "tiktok"
     ? renderResumoTikTok(conn)
     : p.id === "google"
-    ? renderResumoGoogle(conn)
+    ? renderResumoGoogle(conn, statusCompleto)
     : emBreve
     ? renderResumoEmBreve(p)
     : "";

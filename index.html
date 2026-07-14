@@ -29905,6 +29905,17 @@ async function carregarDashboard() {
             <div class="dashboard-empty-state">Carregando status da Meta...</div>
           </div>
         </div>
+        <div class="dashboard-panel">
+          <div class="dashboard-panel-head">
+            <div>
+              <h3>🔴 Status Google Ads</h3>
+              <small>Campanhas, gasto e leads de hoje no Google Ads, com sincronização manual.</small>
+            </div>
+          </div>
+          <div id="dashboard-status-google">
+            <div class="dashboard-empty-state">Carregando status do Google Ads...</div>
+          </div>
+        </div>
       </div>
 
       <div id="dashboard-analytics-grid" class="dashboard-intel-grid">
@@ -29915,6 +29926,8 @@ async function carregarDashboard() {
 
   // Preenche o card "Status Meta" (usa a mesma rotina do painel de conexões)
   carregarStatusMeta();
+  // Preenche o card "Status Google Ads" (usa a mesma rotina do painel de conexões)
+  carregarStatusGoogle();
 
   // Buscar KPIs reais
   try {
@@ -30687,8 +30700,10 @@ async function carregarStatusGoogle() {
   const token = localStorage.getItem("token");
   if (!token) return;
   const googleInfo = document.getElementById("google_info");
-  if (!googleInfo) return;
-  googleInfo.innerHTML = `<div style="color:#64748b;font-size:13px;padding:10px 0;">Carregando conexão...</div>`;
+  const dashboardStatusGoogle = document.getElementById("dashboard-status-google");
+  if (!googleInfo && !dashboardStatusGoogle) return;
+
+  if (googleInfo) googleInfo.innerHTML = `<div style="color:#64748b;font-size:13px;padding:10px 0;">Carregando conexão...</div>`;
 
   try {
     const [resContas, resStatus] = await Promise.all([
@@ -30699,13 +30714,15 @@ async function carregarStatusGoogle() {
     const dataStatus = resStatus.ok ? await resStatus.json() : { conectado: false };
 
     if (!dataStatus.conectado) {
-      googleInfo.innerHTML = `<div style="color:#94a3b8;font-size:13px;padding:10px 0;">Google Ads não conectado.</div>`;
+      if (googleInfo) googleInfo.innerHTML = `<div style="color:#94a3b8;font-size:13px;padding:10px 0;">Google Ads não conectado.</div>`;
+      if (dashboardStatusGoogle) dashboardStatusGoogle.innerHTML = `<div class="dashboard-empty-state">🔴 Google Ads não conectado. <a href="#" onclick="navegarPara('integracoes');return false;" style="color:#60a5fa;">Conectar agora →</a></div>`;
       return;
     }
 
     const contas = dataContas.contas || [];
     const customerIdAtual = dataStatus.customer_id || "";
     const contaInfo = dataStatus.conta || null;
+    const pagamento = dataStatus.pagamento || null;
 
     // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta/TikTok)
     if (!customerIdAtual && contas.length === 1) {
@@ -30714,67 +30731,90 @@ async function carregarStatusGoogle() {
       return;
     }
 
-    const gastoFormatado = typeof dataStatus.gasto_hoje === "number"
-      ? dataStatus.gasto_hoje.toLocaleString("pt-BR", { style: "currency", currency: contaInfo?.moeda || "BRL" })
-      : "—";
-
-    googleInfo.innerHTML = `
-      <div style="margin-top:15px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
-          <span style="font-size:32px;line-height:1;">🔴</span>
-          <div>
-            <div style="font-weight:bold;">Google Ads</div>
-            <div style="color:#22c55e;">🟢 Conectado</div>
+    // 🔗 Painel de Integrações: conexão + contas + pagamento (sem métricas, que ficam no Dashboard)
+    if (googleInfo) {
+      googleInfo.innerHTML = `
+        <div style="margin-top:15px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
+            <span style="font-size:32px;line-height:1;">🔴</span>
+            <div>
+              <div style="font-weight:bold;">Google Ads</div>
+              <div style="color:#22c55e;">🟢 Conectado</div>
+            </div>
           </div>
-        </div>
 
-        <div class="meta-conta-selector" style="margin-top:0;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <b style="font-size:13px;">📊 Status Google Ads</b>
-            <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
-          </div>
-          <div class="meta-sec-body">
-            <div class="meta-fbig-columns">
-              <div class="meta-col meta-col-google">
-                <div class="meta-col-head">🔴 Contas de anúncios</div>
-                <div class="meta-col-body">
-                  ${montarSeletorContaAnunciosGoogle(contas, customerIdAtual)}
+          <div class="meta-conta-selector" style="margin-top:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <b style="font-size:13px;">📊 Status Google Ads</b>
+              <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
+            </div>
+            <div class="meta-sec-body">
+              <div class="meta-fbig-columns">
+                <div class="meta-col meta-col-google">
+                  <div class="meta-col-head">🔴 Contas de anúncios</div>
+                  <div class="meta-col-body">
+                    ${montarSeletorContaAnunciosGoogle(contas, customerIdAtual)}
+                  </div>
                 </div>
-              </div>
 
-              <div class="meta-col meta-col-google">
-                <div class="meta-col-head">📊 Resumo da conta</div>
-                <div class="meta-col-body">
-                  <div class="meta-status-tile">
-                    <span>${contaInfo?.status === "ENABLED" ? "🟢" : contaInfo ? "🟡" : "⚪"} Status da conta</span>
-                    <small>${escaparHtml(contaInfo?.status || "Selecione uma conta")}</small>
-                  </div>
-                  <div class="meta-status-tile">
-                    <span>📢 Campanhas</span>
-                    <small>${dataStatus.campanhas_ativas ?? 0}/${dataStatus.campanhas_total ?? 0} ativas</small>
-                  </div>
-                  <div class="meta-status-tile">
-                    <span>📥 Leads hoje</span>
-                    <small>${dataStatus.leads_hoje ?? 0}</small>
-                  </div>
-                  <div class="meta-status-tile">
-                    <span>💰 Gasto hoje</span>
-                    <small>${gastoFormatado}</small>
+                <div class="meta-col meta-col-google">
+                  <div class="meta-col-head">💳 Status</div>
+                  <div class="meta-col-body">
+                    <div class="meta-status-tile">
+                      <span>${contaInfo?.status === "ENABLED" ? "🟢" : contaInfo ? "🟡" : "⚪"} Status da conta</span>
+                      <small>${escaparHtml(contaInfo?.status || "Selecione uma conta")}</small>
+                    </div>
+                    <div class="meta-status-tile">
+                      <span>${pagamento?.status === "APPROVED" ? "🟢" : pagamento?.status ? "🟡" : "⚪"} Status de pagamento</span>
+                      <small>${escaparHtml(pagamento?.texto || "Não identificado")}</small>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      `;
+    }
 
-        <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <button type="button" id="btn_google_sync_detalhe" class="btn" onclick="sincronizarGoogleDetalhe()" ${customerIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
-          <span id="google_sync_status_detalhe" style="font-size:12px;color:#94a3b8;">${customerIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
+    // 📊 Dashboard: métricas do dia + sincronização manual (mesmo padrão do card Meta)
+    if (dashboardStatusGoogle) {
+      const gastoFormatado = typeof dataStatus.gasto_hoje === "number"
+        ? dataStatus.gasto_hoje.toLocaleString("pt-BR", { style: "currency", currency: contaInfo?.moeda || "BRL" })
+        : "—";
+
+      dashboardStatusGoogle.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+            <span style="font-size:22px;font-weight:800;color:#c4b5fd;display:block;">${dataStatus.campanhas_total ?? 0}</span>
+            <small style="margin-top:4px;font-size:11px;">📢 Campanhas</small>
+          </div>
+          <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+            <span style="font-size:22px;font-weight:800;color:#4ade80;display:block;">${dataStatus.campanhas_ativas ?? 0}</span>
+            <small style="margin-top:4px;font-size:11px;">🟢 Ativas</small>
+          </div>
+          <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+            <span style="font-size:16px;font-weight:800;color:#fbbf24;display:block;line-height:1.4;">${gastoFormatado}</span>
+            <small style="margin-top:4px;font-size:11px;">💰 Gasto hoje</small>
+          </div>
+          <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+            <span style="font-size:22px;font-weight:800;color:#60a5fa;display:block;">${dataStatus.leads_hoje ?? 0}</span>
+            <small style="margin-top:4px;font-size:11px;">🧲 Leads hoje</small>
+          </div>
         </div>
-      </div>
-    `;
+        <div class="sync-box" style="margin-top:0;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
+          <div style="font-size:11px;color:#94a3b8;line-height:1.7;">
+            🕒 <span style="color:#cbd5e1;">Último sync</span><br>
+            <span id="google_ultimo_sync_texto" style="color:#e2e8f0;font-size:12px;">${dataStatus.ultimo_sync ? new Date(dataStatus.ultimo_sync).toLocaleString() : "Nunca sincronizado"}</span>
+          </div>
+          <button class="btn-sync-manual" id="btn_google_sync_dashboard" onclick="sincronizarGoogleDetalhe()" ${customerIdAtual ? "" : "disabled"}>🔄</button>
+        </div>
+        <div id="google_sync_status_detalhe" style="font-size:11px;color:#94a3b8;margin-top:6px;">${customerIdAtual ? "" : "Selecione uma conta em Plataformas antes de sincronizar."}</div>
+      `;
+    }
   } catch (_) {
-    googleInfo.innerHTML = `<div style="color:#f87171;font-size:13px;padding:10px 0;">Não foi possível carregar os detalhes do Google Ads.</div>`;
+    if (googleInfo) googleInfo.innerHTML = `<div style="color:#f87171;font-size:13px;padding:10px 0;">Não foi possível carregar os detalhes do Google Ads.</div>`;
+    if (dashboardStatusGoogle) dashboardStatusGoogle.innerHTML = `<div class="dashboard-empty-state">Não foi possível carregar o status do Google Ads.</div>`;
   }
 }
 
@@ -30804,9 +30844,10 @@ async function usarContaGoogle(customerId, btnEl, opts = {}) {
 async function sincronizarGoogleDetalhe() {
   const token = localStorage.getItem("token");
   if (!token) return;
-  const btn = document.getElementById("btn_google_sync_detalhe");
+  const btn = document.getElementById("btn_google_sync_dashboard");
   const status = document.getElementById("google_sync_status_detalhe");
-  if (btn) { btn.disabled = true; btn.textContent = "🔄 Sincronizando..."; }
+  if (btn) { btn.disabled = true; }
+  if (status) status.textContent = "🔄 Sincronizando...";
   try {
     const res = await fetch(`${API}/google/sincronizar-campanhas`, {
       method: "POST",
@@ -30827,7 +30868,7 @@ async function sincronizarGoogleDetalhe() {
   } catch (_) {
     if (status) status.textContent = "Erro ao sincronizar.";
   } finally {
-    if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = "🔄 Sincronizar agora"; }
+    if (btn && document.body.contains(btn)) { btn.disabled = false; }
   }
 }
 

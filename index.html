@@ -31013,24 +31013,33 @@ async function carregarStatusMeta() {
 
                     <div class="meta-status-tile">
                       <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : "🔴"} Conta do Instagram</span>
-                      <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) + (data.paginas?.[0]?.instagram?.id === data.instagram?.id ? " · detectado pela Página" : "") : "Opcional — detectamos automaticamente pela Página do Facebook"}</small>
+                      <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) + (data.paginas?.[0]?.instagram?.id === data.instagram?.id ? " · detectado pela Página" : "") : "Nenhum Instagram detectado ainda"}</small>
                       ${!instagramConectado ? `
+                        <div style="margin-top:6px;font-size:10.5px;color:#94a3b8;line-height:1.5;">
+                          Isso é <strong>opcional</strong>: só é necessário se você quiser que os anúncios rodem também usando um perfil do Instagram como anunciante.
+                        </div>
                         <div style="margin-top:6px;">
                           <button type="button" onclick="conectarInstagram()"
                             style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:#e2e8f0;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
                           >📷 Conectar conta separada</button>
                         </div>
                         <div class="meta-warn-chip">
-                          ⚠️ <span>Use só se essa conta não estiver vinculada à Página do Facebook ao lado. Ela também precisa estar liberada no mesmo Business Manager da conta de anúncios — senão a Meta pode recusar na hora de publicar.</span>
+                          ⚠️ <span>Use só se essa conta <strong>não</strong> estiver vinculada à Página do Facebook ao lado. Ela também precisa estar liberada no mesmo Business Manager da conta de anúncios "${escaparHtml(conta?.nome || conta?.name || "")}" — senão a Meta pode recusar na hora de publicar.</span>
                         </div>
                       ` : data.instagram_utilizavel_na_conta === false ? `
-                        <div style="margin-top:6px;font-size:11px;color:#facc15;line-height:1.5;">
-                          ⚠️ Esse Instagram ainda não está liberado pra essa conta de anúncios — os anúncios podem não usar ele.
+                        <div style="margin-top:6px;padding:8px 9px;background:rgba(250,204,21,0.08);border:1px solid rgba(250,204,21,0.3);border-radius:8px;">
+                          <div style="font-size:11px;font-weight:700;color:#facc15;margin-bottom:3px;">⚠️ Encontrado, mas ainda não liberado para anunciar</div>
+                          <div style="font-size:10.5px;color:#fde68a;line-height:1.6;">
+                            Detectamos o Instagram <strong>@${escaparHtml(data.instagram.username)}</strong> vinculado à sua Página do Facebook, mas ele ainda <strong>não foi autorizado</strong> no Business Manager da Meta a anunciar através da conta de anúncios "<strong>${escaparHtml(conta?.nome || conta?.name || "")}</strong>". Enquanto isso não for feito, os anúncios podem não conseguir usar esse Instagram como anunciante — use os botões abaixo para resolver.
+                          </div>
                         </div>
                         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
+                          <button type="button" onclick="tentarVincularInstagramBusiness(this)"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(129,140,248,0.15);border:1px solid rgba(129,140,248,0.4);color:#a5b4fc;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                          >⚡ Tentar vincular automaticamente</button>
                           <a href="${linkInstagramBusinessSettings}" target="_blank"
                             style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(250,204,21,0.12);border:1px solid rgba(250,204,21,0.35);color:#facc15;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
-                          >Vincular na Meta →</a>
+                          >🔗 Liberar no Business Manager →</a>
                           <button type="button" onclick="abrirPassoMetaInstagram()"
                             style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
                           >📘 Passo a passo</button>
@@ -39327,6 +39336,56 @@ async function revalidarInstagramMeta(botao) {
       botao.style.opacity = "1";
       botao.style.cursor = "pointer";
       botao.textContent = textoOriginal;
+    }
+  }
+}
+
+// Tenta vincular a Página (com Instagram) ao Business Manager da conta de
+// anúncios em uso, via API — sem precisar o usuário fazer isso manualmente
+// no Gerenciador de Negócios. A Meta pode recusar (ex: Página já pertence a
+// outro Business, permissão insuficiente); nesse caso sugerimos o passo manual.
+async function tentarVincularInstagramBusiness(botao) {
+  if (!botao) return;
+
+  const textoOriginal = botao.innerHTML;
+  botao.disabled = true;
+  botao.innerHTML = '<span class="spinner-toggle"></span> Vinculando...';
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/meta/instagram/vincular-business`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({})
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      alert(
+        (data.error || "Não conseguimos vincular automaticamente.") +
+        (data.precisa_manual ? "\n\nUse o botão \"Liberar no Business Manager\" para fazer manualmente." : "")
+      );
+      return;
+    }
+
+    await carregarStatusMeta();
+
+    alert(
+      data.instagram_utilizavel_na_conta
+        ? "Pronto! O Instagram já está liberado para essa conta de anúncios."
+        : "A Página foi adicionada ao Business Manager. A liberação do Instagram pode levar alguns minutos — clique em \"Já vinculei, verificar\" daqui a pouco."
+    );
+  } catch (err) {
+    console.error("ERRO VINCULAR INSTAGRAM BUSINESS:", err);
+    alert("Erro ao tentar vincular automaticamente. Use o passo manual.");
+  } finally {
+    if (document.body.contains(botao)) {
+      botao.disabled = false;
+      botao.innerHTML = textoOriginal;
     }
   }
 }

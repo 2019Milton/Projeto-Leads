@@ -15939,7 +15939,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </p>
 
             <div class="campaign-setup-grid">
-              <div>
+              <div data-plat-only="meta">
                 <label>País do público <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o país onde as pessoas que verão o anúncio estão. Para o Brasil, deixe BR.', event)">i</button></label>
                 <input
                   type="text"
@@ -15950,7 +15950,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 >
               </div>
 
-              <div>
+              <div data-plat-only="meta,tiktok">
                 <label>Gênero <button type="button" class="info-icone" onclick="mostrarInfoCampo('Filtre o público por gênero. Se seu produto é para todo mundo, deixe em Todos.', event)">i</button></label>
                 <select id="adv_genero">
                   <option value="">Todos</option>
@@ -15959,7 +15959,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 </select>
               </div>
 
-              <div>
+              <div data-plat-only="meta,tiktok">
                 <label>Idade mínima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade mínima das pessoas que vão ver o anúncio. O Facebook não permite anunciar para menores de 18 anos.', event)">i</button></label>
                 <input
                   type="number"
@@ -15970,7 +15970,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 >
               </div>
 
-              <div>
+              <div data-plat-only="meta,tiktok">
                 <label>Idade máxima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade máxima das pessoas que vão ver o anúncio. Deixe em 65 se não quiser limitar a faixa etária superior.', event)">i</button></label>
                 <input
                   type="number"
@@ -16047,7 +16047,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </p>
 
             <!-- CONTROLE DE CUSTO -->
-            <div>
+            <div data-plat-only="meta">
               <label>Controle de custo</label>
               <select id="adv_bid_strategy" onchange="atualizarDescricaoCusto()">
                 <option value="">Automático da Meta</option>
@@ -16059,7 +16059,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
 
             <!-- VALOR DE CONTROLE -->
-            <div>
+            <div data-plat-only="meta">
               <label>Valor de controle (R$)</label>
               <input
                 type="number"
@@ -16075,7 +16075,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
 
             <!-- CBO -->
-            <div class="advanced-full">
+            <div class="advanced-full" data-plat-only="meta">
               <label>Otimização de orçamento da campanha (CBO) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Com CBO ativado, você define o orçamento total na campanha e a Meta distribui automaticamente entre os conjuntos de anúncios conforme a performance de cada um. Ideal quando você quer testar múltiplos públicos sem precisar gerenciar o budget de cada adset manualmente. Sem CBO, cada conjunto de anúncios recebe um orçamento fixo independente.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
@@ -16089,7 +16089,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
 
             <!-- JANELA DE ATRIBUIÇÃO -->
-            <div class="advanced-full">
+            <div class="advanced-full" data-plat-only="meta">
               <label>Janela de atribuição <button type="button" class="info-icone" onclick="mostrarInfoCampo('Define por quantos dias após uma ação a Meta considera que um lead veio do seu anúncio. Exemplo: com &quot;7 dias após clique&quot;, se alguém clicar no anúncio hoje e preencher o formulário em até 7 dias, isso é contado como conversão desse anúncio. Janelas menores são mais conservadoras e precisas para medir custo por lead real; janelas maiores capturam mais eventos mas podem inflar os números.', event)">i</button></label>
               <select id="adv_attribution_spec" onchange="atualizarDescricaoAtribuicao()">
                 <option value="">Padrão da Meta</option>
@@ -16103,7 +16103,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
 
             <!-- DATA DE INÍCIO -->
-            <div>
+            <div data-plat-only="meta,tiktok">
               <label>Data de início</label>
               <input type="hidden" id="adv_inicio">
               <button type="button" class="cal-picker-btn" id="adv_inicio_btn" onclick="abrirCalendario('inicio')">
@@ -16113,7 +16113,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
 
             <!-- DATA DE TÉRMINO -->
-            <div>
+            <div data-plat-only="meta,tiktok">
               <label>Data de término <small style="color:#64748b;">(opcional)</small></label>
               <input type="hidden" id="adv_fim">
               <button type="button" class="cal-picker-btn" id="adv_fim_btn" onclick="abrirCalendario('fim')">
@@ -16123,7 +16123,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
 
             <!-- ÁREA DA CAMPANHA -->
-            <div class="advanced-full">
+            <div class="advanced-full" data-plat-only="meta">
               <label>Área da campanha</label>
               <div class="geo-busca-wrap">
                 <input
@@ -16142,7 +16142,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           </div>
         </details>
 
-        <details class="advanced-campaign" id="bloco_segmentacao_adicional">
+        <details class="advanced-campaign" id="bloco_segmentacao_adicional" data-plat-only="meta">
 
           <summary>
             🎯 Segmentação adicional

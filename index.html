@@ -29201,6 +29201,20 @@ function mostrarToastSucessoCampanha() {
   setTimeout(() => el.remove(), 4000);
 }
 
+function mostrarToastAvisoCampanha(mensagem) {
+  const el = document.createElement("div");
+  el.textContent = `⚠️ ${mensagem}`;
+  Object.assign(el.style, {
+    position: "fixed", bottom: "24px", right: "24px",
+    background: "#78350f", color: "#fcd34d",
+    padding: "14px 18px", borderRadius: "10px",
+    fontSize: "13px", fontWeight: "600", lineHeight: "1.5",
+    zIndex: "99999", boxShadow: "0 4px 20px rgba(0,0,0,.4)", maxWidth: "360px"
+  });
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 9000);
+}
+
 function mostrarToastResumoCampanha(linhas, algumSucesso) {
   const el = document.createElement("div");
   el.innerHTML = linhas.map(l => `<div>${escaparHtml(l)}</div>`).join("");
@@ -29220,7 +29234,9 @@ function mostrarToastResumoCampanha(linhas, algumSucesso) {
 // publicado sozinho (comportamento idêntico ao de antes do multi-rede existir).
 function mostrarResumoPublicacaoMultiRede(resultados) {
   if (resultados.length === 1 && resultados[0].rede === "Facebook/Instagram") {
-    if (resultados[0].ok) {
+    if (resultados[0].semFormaPagamento) {
+      mostrarToastAvisoCampanha(resultados[0].mensagem);
+    } else if (resultados[0].ok) {
       mostrarToastSucessoCampanha();
     } else {
       mostrarErroPublicacao(resultados[0].mensagem || "Erro ao publicar campanha.");
@@ -29229,7 +29245,11 @@ function mostrarResumoPublicacaoMultiRede(resultados) {
   }
 
   if (resultados.length === 1 && resultados[0].ok) {
-    mostrarToastSucessoCampanha();
+    if (resultados[0].semFormaPagamento) {
+      mostrarToastAvisoCampanha(resultados[0].mensagem);
+    } else {
+      mostrarToastSucessoCampanha();
+    }
     return;
   }
 
@@ -29402,6 +29422,11 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
       })
     });
     const anuncio = await anuncioRes.json();
+
+    if (anuncio.sem_forma_pagamento) {
+      setPublishProgress(100, `${prefixo}Campanha pronta (falta forma de pagamento na Meta)`);
+      return { ok: true, semFormaPagamento: true, mensagem: anuncio.mensagem };
+    }
 
     if (anuncio.error) {
       await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);

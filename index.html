@@ -32289,7 +32289,8 @@ async function carregarCampanhas() {
                   🗑️ definitivo
                 </button>
               `
-              : `
+              : c.campaign_id
+              ? `
                 <button
                   class="btn-danger"
                   type="button"
@@ -32299,6 +32300,22 @@ async function carregarCampanhas() {
                   onclick="
                     excluirCampanha(
                       '${c.campaign_id}'
+                    )
+                  "
+                >
+                  🗑️
+                </button>
+              `
+              : `
+                <button
+                  class="btn-danger"
+                  type="button"
+                  data-campanha-action="excluir"
+                  data-campanha-key="${campanhaCacheKey}"
+                  title="Excluir"
+                  onclick="
+                    excluirCampanhaDefinitiva(
+                      ${Number(c.id)}
                     )
                   "
                 >

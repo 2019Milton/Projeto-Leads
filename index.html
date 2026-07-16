@@ -15775,7 +15775,10 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                   onclick="selecionarPlataformaCampanha('tiktok')">
                   🎵 TikTok Ads
                 </button>
-                <button type="button" class="plat-sel-btn" disabled title="Em breve">🔴 Google Ads</button>
+                <button type="button" class="plat-sel-btn" data-plat="google"
+                  onclick="selecionarPlataformaCampanha('google')">
+                  🔴 Google Ads
+                </button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
                 <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
@@ -16362,6 +16365,61 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 <input type="text" id="campanha_tiktok_formulario_manual" placeholder="Cole aqui o ID do Instant Form">
               </div>
               <div id="campanha_tiktok_formulario_feedback" class="channel-picker-status alerta" style="display:none;"></div>
+            </div>
+
+            <div class="advanced-subsection" data-plat-only="google" style="display:none;">
+              <h5>Anúncio Display (Google Ads)</h5>
+              <p>A paisagem e a imagem quadrada usam as 2 primeiras imagens já enviadas no carrossel acima (a primeira como paisagem, a segunda como quadrada — envie pelo menos 2 imagens).</p>
+            </div>
+
+            <div data-plat-only="google" style="display:none;">
+              <label>Título 1 (Google)</label>
+              <input type="text" id="campanha_google_titulo_1" maxlength="30" placeholder="Até 30 caracteres">
+            </div>
+            <div data-plat-only="google" style="display:none;">
+              <label>Título 2 (Google)</label>
+              <input type="text" id="campanha_google_titulo_2" maxlength="30" placeholder="Até 30 caracteres">
+            </div>
+            <div data-plat-only="google" style="display:none;">
+              <label>Título 3 (Google)</label>
+              <input type="text" id="campanha_google_titulo_3" maxlength="30" placeholder="Até 30 caracteres">
+            </div>
+            <div class="advanced-full" data-plat-only="google" style="display:none;">
+              <label>Título longo (Google) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Título mais completo, usado quando o Google mostra o anúncio em formatos maiores.', event)">i</button></label>
+              <input type="text" id="campanha_google_titulo_longo" maxlength="90" placeholder="Até 90 caracteres">
+            </div>
+            <div data-plat-only="google" style="display:none;">
+              <label>Descrição 1 (Google)</label>
+              <input type="text" id="campanha_google_descricao_1" maxlength="90" placeholder="Até 90 caracteres">
+            </div>
+            <div data-plat-only="google" style="display:none;">
+              <label>Descrição 2 (Google)</label>
+              <input type="text" id="campanha_google_descricao_2" maxlength="90" placeholder="Até 90 caracteres">
+            </div>
+            <div data-plat-only="google" style="display:none;">
+              <label>Nome do anunciante (Google)</label>
+              <input type="text" id="campanha_google_nome_anunciante" maxlength="25" placeholder="Até 25 caracteres">
+            </div>
+            <div class="advanced-full" data-plat-only="google" style="display:none;">
+              <label>URL de destino (Google)</label>
+              <input type="text" id="campanha_google_url" placeholder="https://plataformadeleads.com.br" value="https://plataformadeleads.com.br">
+            </div>
+
+            <div class="advanced-subsection" data-plat-only="google" style="display:none;">
+              <h5>Formulário de lead (Google)</h5>
+              <p>O Google não cria formulário automaticamente — escolha um Lead Form já existente na conta do Google Ads.</p>
+            </div>
+
+            <div class="advanced-full" data-plat-only="google" style="display:none;">
+              <label>Formulário Google <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione um Lead Form já criado no Google Ads Manager. Se a lista não aparecer, informe o resource name manualmente.', event)">i</button></label>
+              <select id="campanha_google_formulario_select" onchange="alternarFormularioGoogleManual()">
+                <option value="">Carregando formulários...</option>
+              </select>
+              <div id="campanha_google_formulario_manual_wrap" style="display:none;margin-top:8px;">
+                <label>Resource name do formulário (manual)</label>
+                <input type="text" id="campanha_google_formulario_manual" placeholder="customers/123.../assets/456...">
+              </div>
+              <div id="campanha_google_formulario_feedback" class="channel-picker-status alerta" style="display:none;"></div>
             </div>
 
           </div>
@@ -23498,6 +23556,10 @@ function selecionarPlataformaCampanha(plat) {
     carregarIdentidadesTikTokCampanha();
     carregarFormulariosTikTokCampanha();
   }
+
+  if (plat === "google" && redesSelecionadasCampanha.has("google")) {
+    carregarFormulariosGoogleCampanha();
+  }
 }
 
 function aplicarRedesCampanha() {
@@ -26149,6 +26211,92 @@ function obterFormularioTikTokEscolhido() {
     return document.getElementById("campanha_tiktok_formulario_manual")?.value?.trim() || "";
   }
   return select?.value?.trim() || "";
+}
+
+async function carregarFormulariosGoogleCampanha() {
+  const select = document.getElementById("campanha_google_formulario_select");
+  const feedback = document.getElementById("campanha_google_formulario_feedback");
+  if (!select) return;
+  const { token } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  select.innerHTML = `<option value="">Carregando formulários...</option>`;
+  if (feedback) feedback.style.display = "none";
+
+  try {
+    const res = await fetch(`${API}/google/formularios`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const formularios = data.formularios || [];
+
+    if (!formularios.length) {
+      select.innerHTML = `<option value="">-- Nenhum formulário encontrado --</option>`;
+      if (feedback) {
+        feedback.style.display = "";
+        feedback.textContent = data.aviso || "Nenhum formulário encontrado. Informe o resource name manualmente abaixo.";
+      }
+      ativarFormularioGoogleManual(true);
+      return;
+    }
+
+    select.innerHTML = formularios.map(f => `
+      <option value="${escaparHtml(String(f.resource_name))}">${escaparHtml(f.nome || String(f.resource_name))}</option>`
+    ).join("") + `<option value="__manual__">Digitar resource name manualmente...</option>`;
+  } catch (_) {
+    select.innerHTML = `<option value="">-- Erro ao carregar --</option><option value="__manual__">Digitar resource name manualmente...</option>`;
+    if (feedback) { feedback.style.display = ""; feedback.textContent = "Não foi possível listar formulários. Informe o resource name manualmente."; }
+    ativarFormularioGoogleManual(true);
+  }
+}
+
+function alternarFormularioGoogleManual() {
+  const select = document.getElementById("campanha_google_formulario_select");
+  ativarFormularioGoogleManual(select?.value === "__manual__");
+}
+
+function ativarFormularioGoogleManual(mostrar) {
+  const wrap = document.getElementById("campanha_google_formulario_manual_wrap");
+  if (wrap) wrap.style.display = mostrar ? "" : "none";
+}
+
+function obterFormularioGoogleEscolhido() {
+  const select = document.getElementById("campanha_google_formulario_select");
+  if (select?.value === "__manual__") {
+    return document.getElementById("campanha_google_formulario_manual")?.value?.trim() || "";
+  }
+  return select?.value?.trim() || "";
+}
+
+function validarPublicacaoCampanhaGoogle(imagensArquivos) {
+  const titulos = [
+    document.getElementById("campanha_google_titulo_1")?.value?.trim(),
+    document.getElementById("campanha_google_titulo_2")?.value?.trim(),
+    document.getElementById("campanha_google_titulo_3")?.value?.trim()
+  ].filter(Boolean);
+  if (!titulos.length) {
+    return "Informe ao menos um título para o anúncio do Google Ads.";
+  }
+  if (!document.getElementById("campanha_google_titulo_longo")?.value?.trim()) {
+    return "Informe o título longo do anúncio do Google Ads.";
+  }
+  const descricoes = [
+    document.getElementById("campanha_google_descricao_1")?.value?.trim(),
+    document.getElementById("campanha_google_descricao_2")?.value?.trim()
+  ].filter(Boolean);
+  if (!descricoes.length) {
+    return "Informe ao menos uma descrição para o anúncio do Google Ads.";
+  }
+  if (!document.getElementById("campanha_google_nome_anunciante")?.value?.trim()) {
+    return "Informe o nome do anunciante para o anúncio do Google Ads.";
+  }
+  if (!obterFormularioGoogleEscolhido()) {
+    return "Escolha ou informe o resource name de um Lead Form do Google Ads antes de publicar.";
+  }
+  if (!imagensArquivos?.length) {
+    return "Envie ao menos uma imagem para o anúncio do Google Ads (idealmente 2: paisagem e quadrada).";
+  }
+  return null;
 }
 
 function agendarBuscaLocalidadeTikTok() {
@@ -29589,6 +29737,146 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
   }
 }
 
+async function descartarCampanhaGoogleCriadaPorFalha(campaign_id, token) {
+  if (!campaign_id || !token) return;
+  try {
+    await fetch(`${API}/google/excluir-campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ campaign_id })
+    });
+  } catch (err) {
+    console.warn("Não foi possível remover a campanha Google Ads criada após falha:", err);
+  }
+}
+
+// Mesma orquestração do Meta/TikTok, adaptada: sem etapa de criar formulário (usa um
+// Lead Form já existente, escolhido pelo usuário) e com upload de 2 imagens (paisagem
+// e quadrada) exigidas pelo Responsive Display Ad — a segunda imagem do carrossel vira
+// a quadrada; se só houver uma, a mesma imagem é reaproveitada nos dois slots.
+async function publicarCampanhaGoogle(contexto, isMultiRede) {
+  let campanhaCriadaId = null;
+  const {
+    token, usuario_id, campanha_nome, orcamento,
+    imagensArquivos, publicacaoGrupoId
+  } = contexto;
+  const prefixo = isMultiRede ? "[Google Ads] " : "";
+
+  try {
+    const uploadImagemGoogle = async (file, tipo) => {
+      const formData = new FormData();
+      formData.append("imagem", file);
+      formData.append("usuario_id", usuario_id);
+      formData.append("tipo", tipo);
+      const res = await fetch(`${API}/google/upload-imagem`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token },
+        body: formData
+      });
+      return res.json();
+    };
+
+    const imagemPaisagem = imagensArquivos[0];
+    const imagemQuadrada = imagensArquivos[1] || imagensArquivos[0];
+
+    setPublishProgress(10, `${prefixo}Enviando imagem paisagem...`);
+    const uploadPaisagem = await uploadImagemGoogle(imagemPaisagem, "paisagem");
+    if (uploadPaisagem.error) {
+      return { ok: false, mensagem: uploadPaisagem.error || "Erro ao enviar imagem paisagem para o Google Ads" };
+    }
+
+    setPublishProgress(22, `${prefixo}Enviando imagem quadrada...`);
+    const uploadQuadrada = await uploadImagemGoogle(imagemQuadrada, "quadrada");
+    if (uploadQuadrada.error) {
+      return { ok: false, mensagem: uploadQuadrada.error || "Erro ao enviar imagem quadrada para o Google Ads" };
+    }
+
+    setPublishProgress(35, `${prefixo}Criando campanha no Google Ads...`);
+
+    const campanhaRes = await fetch(`${API}/google/campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        nome: campanha_nome,
+        orcamento: Number(orcamento),
+        publicacao_grupo_id: publicacaoGrupoId
+      })
+    });
+    const campanha = await campanhaRes.json();
+
+    if (campanha.error) {
+      return { ok: false, mensagem: campanha.error };
+    }
+
+    campanhaCriadaId = campanha.campaign_id || campanha.id;
+    setPublishProgress(60, `${prefixo}Criando grupo de anúncios...`);
+
+    const adgroupRes = await fetch(`${API}/google/adgroup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanhaCriadaId,
+        orcamento: Number(orcamento)
+      })
+    });
+    const adgroup = await adgroupRes.json();
+
+    if (adgroup.error) {
+      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: adgroup.error };
+    }
+
+    setPublishProgress(88, `${prefixo}Publicando anúncio...`);
+
+    const formularioId = obterFormularioGoogleEscolhido();
+    const titulos = [
+      document.getElementById("campanha_google_titulo_1")?.value?.trim(),
+      document.getElementById("campanha_google_titulo_2")?.value?.trim(),
+      document.getElementById("campanha_google_titulo_3")?.value?.trim()
+    ].filter(Boolean);
+    const descricoes = [
+      document.getElementById("campanha_google_descricao_1")?.value?.trim(),
+      document.getElementById("campanha_google_descricao_2")?.value?.trim()
+    ].filter(Boolean);
+
+    const anuncioRes = await fetch(`${API}/google/anuncio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanhaCriadaId,
+        adgroup_id: adgroup.adgroup_id,
+        form_id: formularioId,
+        titulos,
+        titulo_longo: document.getElementById("campanha_google_titulo_longo")?.value?.trim(),
+        descricoes,
+        nome_anunciante: document.getElementById("campanha_google_nome_anunciante")?.value?.trim(),
+        url_destino: document.getElementById("campanha_google_url")?.value?.trim(),
+        imagem_paisagem_resource: uploadPaisagem.resource_name,
+        imagem_quadrada_resource: uploadQuadrada.resource_name,
+        daily_budget: Number(orcamento)
+      })
+    });
+    const anuncio = await anuncioRes.json();
+
+    if (anuncio.error) {
+      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: anuncio.error };
+    }
+
+    setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
+    return { ok: true };
+  } catch (err) {
+    console.error("ERRO publicarCampanhaGoogle:", err);
+    if (campanhaCriadaId) {
+      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+    }
+    return { ok: false, mensagem: "Erro ao criar campanha Google Ads: " + (err?.message || String(err) || "Erro desconhecido") };
+  }
+}
+
 // ─── Orquestrador: publica em todas as redes marcadas (fan-out) ───────────────
 // Falha em uma rede não desfaz nem impede o sucesso das outras — cada rede
 // roda sua própria pipeline e o resultado final é reportado por rede.
@@ -29641,6 +29929,14 @@ async function criarCampanhaCompleta() {
     }
   }
 
+  if (redes.includes("google")) {
+    const erroGoogle = validarPublicacaoCampanhaGoogle(imagensArquivos);
+    if (erroGoogle) {
+      mostrarErroPublicacao(erroGoogle);
+      return;
+    }
+  }
+
   if (redes.includes("tiktok")) {
     const erroTikTok = validarPublicacaoCampanhaTikTok();
     if (erroTikTok) {
@@ -29669,6 +29965,11 @@ async function criarCampanhaCompleta() {
   if (redes.includes("tiktok")) {
     const r = await publicarCampanhaTikTok(contexto, redes.length > 1);
     resultados.push({ rede: "TikTok", ...r });
+  }
+
+  if (redes.includes("google")) {
+    const r = await publicarCampanhaGoogle(contexto, redes.length > 1);
+    resultados.push({ rede: "Google Ads", ...r });
   }
 
   setPublishProgress(null);

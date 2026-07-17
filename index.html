@@ -28055,8 +28055,13 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       orcamento: valorCampo("orcamento"),
       imagensAssinatura: assinaturaImagensCampanha(),
       videoAssinatura: assinaturaVideoCampanha(),
-      videoArquivo: obterArquivoVideoCampanha()
+      videoArquivo: obterArquivoVideoCampanha(),
+      redes: Array.from(redesSelecionadasCampanha)
     };
+
+    redesSelecionadasCampanha.clear();
+    redesSelecionadasCampanha.add(campanha.plataforma || "meta");
+    aplicarRedesCampanha();
 
     BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
       moverBloco(blocoId, "editar_campanha_campos");
@@ -28116,6 +28121,10 @@ function fecharEdicaoCampanha() {
     }
 
     if (_snapshotCriarCampanha) {
+      redesSelecionadasCampanha.clear();
+      (_snapshotCriarCampanha.redes || []).forEach(plat => redesSelecionadasCampanha.add(plat));
+      aplicarRedesCampanha();
+
       definirValorCampo("campanha_nome", _snapshotCriarCampanha.basicos?.nome || "");
       definirValorCampo("pagina_select", _snapshotCriarCampanha.basicos?.page_id || "");
       definirValorCampo("texto", _snapshotCriarCampanha.basicos?.texto || "");

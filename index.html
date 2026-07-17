@@ -16290,12 +16290,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div class="advanced-subsection" data-plat-only="meta">
+            <div class="advanced-subsection" data-plat-only="meta,google">
               <h5>Formulário de leads</h5>
               <p>Perguntas e filtro de qualidade aplicados antes do envio do contato.</p>
             </div>
 
-            <div class="advanced-full" data-plat-only="meta">
+            <div class="advanced-full" data-plat-only="meta,google">
               <label>Perguntas qualificadoras <button type="button" class="info-icone" onclick="mostrarInfoCampo('Perguntas que o cliente responde antes de enviar os dados de contato. Ajudam a filtrar quem está mais interessado. Coloque uma pergunta por linha.', event)">i</button></label>
               <textarea
                 id="adv_perguntas"
@@ -16407,13 +16407,13 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
             <div class="advanced-subsection" data-plat-only="google" style="display:none;">
               <h5>Formulário de lead (Google)</h5>
-              <p>O Google não cria formulário automaticamente — escolha um Lead Form já existente na conta do Google Ads.</p>
+              <p>Opcional: escolha um Lead Form já existente na conta do Google Ads para reaproveitar. Se deixar em branco, a plataforma cria um novo automaticamente usando o título, a descrição, o nome do anunciante e as perguntas qualificadoras já preenchidos acima.</p>
             </div>
 
             <div class="advanced-full" data-plat-only="google" style="display:none;">
-              <label>Formulário Google <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione um Lead Form já criado no Google Ads Manager. Se a lista não aparecer, informe o resource name manualmente.', event)">i</button></label>
+              <label>Formulário Google (opcional) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Deixe em branco para a plataforma criar um Lead Form novo automaticamente. Ou selecione um Lead Form já criado no Google Ads Manager para reaproveitar. Se a lista não aparecer, informe o resource name manualmente.', event)">i</button></label>
               <select id="campanha_google_formulario_select" onchange="alternarFormularioGoogleManual()">
-                <option value="">Carregando formulários...</option>
+                <option value="">Criar um novo automaticamente</option>
               </select>
               <div id="campanha_google_formulario_manual_wrap" style="display:none;margin-top:8px;">
                 <label>Resource name do formulário (manual)</label>
@@ -26220,7 +26220,8 @@ async function carregarFormulariosGoogleCampanha() {
   const { token } = obterTokenEUsuarioIdCampanha();
   if (!token) return;
 
-  select.innerHTML = `<option value="">Carregando formulários...</option>`;
+  const opcaoAutomatica = `<option value="">Criar um novo automaticamente</option>`;
+  select.innerHTML = opcaoAutomatica + `<option value="" disabled>Carregando formulários existentes...</option>`;
   if (feedback) feedback.style.display = "none";
 
   try {
@@ -26231,22 +26232,16 @@ async function carregarFormulariosGoogleCampanha() {
     const formularios = data.formularios || [];
 
     if (!formularios.length) {
-      select.innerHTML = `<option value="">-- Nenhum formulário encontrado --</option>`;
-      if (feedback) {
-        feedback.style.display = "";
-        feedback.textContent = data.aviso || "Nenhum formulário encontrado. Informe o resource name manualmente abaixo.";
-      }
-      ativarFormularioGoogleManual(true);
+      select.innerHTML = opcaoAutomatica + `<option value="__manual__">Digitar resource name manualmente...</option>`;
       return;
     }
 
-    select.innerHTML = formularios.map(f => `
+    select.innerHTML = opcaoAutomatica + formularios.map(f => `
       <option value="${escaparHtml(String(f.resource_name))}">${escaparHtml(f.nome || String(f.resource_name))}</option>`
     ).join("") + `<option value="__manual__">Digitar resource name manualmente...</option>`;
   } catch (_) {
-    select.innerHTML = `<option value="">-- Erro ao carregar --</option><option value="__manual__">Digitar resource name manualmente...</option>`;
-    if (feedback) { feedback.style.display = ""; feedback.textContent = "Não foi possível listar formulários. Informe o resource name manualmente."; }
-    ativarFormularioGoogleManual(true);
+    select.innerHTML = opcaoAutomatica + `<option value="__manual__">Digitar resource name manualmente...</option>`;
+    if (feedback) { feedback.style.display = ""; feedback.textContent = "Não foi possível listar formulários existentes — um novo será criado automaticamente, ou informe o resource name manualmente."; }
   }
 }
 
@@ -26290,13 +26285,41 @@ function validarPublicacaoCampanhaGoogle(imagensArquivos) {
   if (!document.getElementById("campanha_google_nome_anunciante")?.value?.trim()) {
     return "Informe o nome do anunciante para o anúncio do Google Ads.";
   }
-  if (!obterFormularioGoogleEscolhido()) {
-    return "Escolha ou informe o resource name de um Lead Form do Google Ads antes de publicar.";
-  }
   if (!imagensArquivos?.length) {
     return "Envie ao menos uma imagem para o anúncio do Google Ads (idealmente 2: paisagem e quadrada).";
   }
   return null;
+}
+
+// Cria um Lead Form novo no Google Ads reaproveitando os campos já preenchidos no
+// formulário (compartilhados com a Meta): título/descrição do anúncio, perguntas
+// qualificadoras e a tela de "obrigado". Chamado quando o usuário não escolhe um
+// Lead Form já existente em "Formulário Google".
+async function criarFormularioGoogleAutomatico(usuario_id, token, campanhaNome) {
+  const perguntas = (document.getElementById("adv_perguntas")?.value || "")
+    .split("\n")
+    .map(p => p.trim())
+    .filter(Boolean);
+
+  try {
+    const res = await fetch(`${API}/google/formulario`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        nome_negocio: document.getElementById("campanha_google_nome_anunciante")?.value?.trim(),
+        headline: document.getElementById("adv_titulo")?.value?.trim() || campanhaNome,
+        descricao: document.getElementById("adv_descricao")?.value?.trim(),
+        perguntas,
+        obrigado_titulo: document.getElementById("adv_obrigado_titulo")?.value?.trim(),
+        obrigado_texto: document.getElementById("adv_obrigado_texto")?.value?.trim(),
+        url_destino: document.getElementById("campanha_google_url")?.value?.trim()
+      })
+    });
+    return await res.json();
+  } catch (err) {
+    return { error: "Erro ao criar formulário automático no Google Ads: " + (err?.message || String(err)) };
+  }
 }
 
 function agendarBuscaLocalidadeTikTok() {
@@ -29828,9 +29851,20 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
       return { ok: false, mensagem: adgroup.error };
     }
 
+    setPublishProgress(75, `${prefixo}Preparando formulário de lead...`);
+
+    let formularioId = obterFormularioGoogleEscolhido();
+    if (!formularioId) {
+      const formularioAuto = await criarFormularioGoogleAutomatico(usuario_id, token, campanha_nome);
+      if (formularioAuto.error) {
+        await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+        return { ok: false, mensagem: formularioAuto.error };
+      }
+      formularioId = formularioAuto.resource_name;
+    }
+
     setPublishProgress(88, `${prefixo}Publicando anúncio...`);
 
-    const formularioId = obterFormularioGoogleEscolhido();
     const titulos = [
       document.getElementById("campanha_google_titulo_1")?.value?.trim(),
       document.getElementById("campanha_google_titulo_2")?.value?.trim(),

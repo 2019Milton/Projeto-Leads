@@ -24892,6 +24892,49 @@ async function excluirLeadDrawer() {
 
 
 // SIMULAÇÕES
+// accounts.google.com (e outras contas OAuth) enviam Cross-Origin-Opener-Policy:
+// same-origin, que corta a referência window.opener dentro do popup assim que ele
+// navega pra lá — depois disso nem popup.closed nem postMessage(window.opener) do
+// popup chegam de volta ao pai, e o botão de conectar fica preso em "Conectando..."
+// pra sempre. Por isso, além dos dois sinais originais, sondamos GET /conexoes no
+// backend como um terceiro sinal que não depende de referência nenhuma ao popup.
+function observarConexaoPopup(plataforma, popup, aoDetectar) {
+  const desde = Date.now();
+  const token = localStorage.getItem("token");
+  let concluido = false;
+
+  function concluir() {
+    if (concluido) return;
+    concluido = true;
+    clearInterval(fechamentoInterval);
+    clearInterval(pollInterval);
+    clearTimeout(timeoutId);
+    aoDetectar();
+  }
+
+  const fechamentoInterval = setInterval(() => {
+    try {
+      if (popup && popup.closed) concluir();
+    } catch (_) {}
+  }, 600);
+
+  const pollInterval = setInterval(async () => {
+    try {
+      const res = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      const conexao = (data.conexoes || []).find((cx) => cx.plataforma === plataforma);
+      const conectadoAgora = conexao?.status === "conectado" &&
+        (!conexao.conectado_em || new Date(conexao.conectado_em).getTime() >= desde - 5000);
+      if (conectadoAgora) concluir();
+    } catch (_) {}
+  }, 2000);
+
+  const timeoutId = setTimeout(concluir, 120000);
+
+  return concluir;
+}
+
 function conectarMeta(btnEl) {
 
   const token = localStorage.getItem("token");
@@ -24925,30 +24968,19 @@ function conectarMeta(btnEl) {
     return;
   }
 
-  let recarregado = false;
-
-  async function aoConectar() {
-    if (recarregado) return;
-    recarregado = true;
-    clearInterval(pollInterval);
+  const concluir = observarConexaoPopup("meta", popup, async () => {
     window.removeEventListener("message", msgHandler);
     await carregarStatusMeta();
     await carregarHub();
-  }
+  });
 
   function msgHandler(event) {
     if (event.data?.type === "meta_conectado") {
-      aoConectar();
+      concluir();
     }
   }
 
   window.addEventListener("message", msgHandler);
-
-  const pollInterval = setInterval(() => {
-    if (popup && popup.closed) {
-      aoConectar();
-    }
-  }, 600);
 }
 
 function conectarInstagram() {
@@ -24966,25 +24998,23 @@ function conectarInstagram() {
     "width=600,height=700"
   );
 
-  let recarregado = false;
+  let erroCapturado = null;
 
-  async function aoConectar(erro) {
-    if (recarregado) return;
-    recarregado = true;
-    clearInterval(pollInterval);
+  const concluir = observarConexaoPopup("instagram", popup, async () => {
     window.removeEventListener("message", msgHandler);
-    if (erro) {
-      alert(erro);
+    if (erroCapturado) {
+      alert(erroCapturado);
     }
     await carregarStatusMeta();
-  }
+  });
 
   function msgHandler(event) {
     if (event.data?.type === "instagram_conectado") {
-      aoConectar();
+      concluir();
     }
     if (event.data?.type === "instagram_erro") {
-      aoConectar(event.data.erro || "Erro ao conectar Instagram");
+      erroCapturado = event.data.erro || "Erro ao conectar Instagram";
+      concluir();
     }
   }
 
@@ -31338,29 +31368,18 @@ function conectarPlataforma(plataforma, btnEl) {
     return;
   }
 
-  let recarregado = false;
-
-  async function aoConectar() {
-    if (recarregado) return;
-    recarregado = true;
-    clearInterval(pollInterval);
+  const concluir = observarConexaoPopup(plataforma, popup, async () => {
     window.removeEventListener("message", msgHandler);
     await carregarHub();
-  }
+  });
 
   function msgHandler(event) {
     if (event.data?.type === "plataforma_conectada" && event.data?.plataforma === plataforma) {
-      aoConectar();
+      concluir();
     }
   }
 
   window.addEventListener("message", msgHandler);
-
-  const pollInterval = setInterval(() => {
-    if (popup && popup.closed) {
-      aoConectar();
-    }
-  }, 600);
 }
 
 async function desconectarPlataforma(plataforma, btnEl) {

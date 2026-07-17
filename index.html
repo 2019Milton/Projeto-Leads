@@ -15732,6 +15732,30 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           >▲</button>
         </h3>
 
+        <div class="advanced-full" style="margin-bottom:16px;">
+          <label>Plataforma de anúncio</label>
+          <div class="campanha-plat-selector" id="campanha_plat_selector">
+            <button type="button" class="plat-sel-btn" data-plat="meta"
+              onclick="selecionarPlataformaCampanha('meta')">
+              🟦 Meta Ads
+            </button>
+            <button type="button" class="plat-sel-btn" data-plat="tiktok"
+              onclick="selecionarPlataformaCampanha('tiktok')">
+              🎵 TikTok Ads
+            </button>
+            <button type="button" class="plat-sel-btn" data-plat="google"
+              onclick="selecionarPlataformaCampanha('google')">
+              🔴 Google Ads
+            </button>
+            <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
+            <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
+            <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
+            <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
+            <button type="button" class="plat-sel-btn" disabled title="Em breve">🪟 Microsoft Ads</button>
+          </div>
+          <small style="display:block;margin-top:6px;color:#64748b;">Marque uma ou mais redes antes de gerar com IA — o mesmo nome, imagens/vídeo e texto são reaproveitados em todas.</small>
+        </div>
+
         <div
           id="ia_criador_campanha_box"
           class="ia-ouro-destaque"
@@ -15747,6 +15771,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           ></textarea>
           <button
             type="button"
+            id="btn_gerar_campanha_ia"
             class="btn-reanalisar-ia"
             onclick="gerarCampanhaComIA()"
           >
@@ -15763,30 +15788,6 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           <summary>📋 Configuração da campanha</summary>
 
           <div class="advanced-grid">
-
-            <div class="advanced-full">
-              <label>Plataforma de anúncio</label>
-              <div class="campanha-plat-selector" id="campanha_plat_selector">
-                <button type="button" class="plat-sel-btn ativa" data-plat="meta"
-                  onclick="selecionarPlataformaCampanha('meta')">
-                  🟦 Meta Ads
-                </button>
-                <button type="button" class="plat-sel-btn" data-plat="tiktok"
-                  onclick="selecionarPlataformaCampanha('tiktok')">
-                  🎵 TikTok Ads
-                </button>
-                <button type="button" class="plat-sel-btn" data-plat="google"
-                  onclick="selecionarPlataformaCampanha('google')">
-                  🔴 Google Ads
-                </button>
-                <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
-                <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
-                <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
-                <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
-                <button type="button" class="plat-sel-btn" disabled title="Em breve">🪟 Microsoft Ads</button>
-              </div>
-              <small style="display:block;margin-top:6px;color:#64748b;">Marque uma ou mais redes — o mesmo nome, imagens/vídeo e texto são reaproveitados em todas.</small>
-            </div>
 
             <div class="advanced-full">
               <label>Nome da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Um nome para você identificar sua campanha dentro da plataforma. Use algo que faça sentido para você, como o produto anunciado ou o público-alvo.', event)">i</button></label>
@@ -23535,15 +23536,13 @@ function toggleCriarCampanha() {
   );
 }
 
-const redesSelecionadasCampanha = new Set(["meta"]);
+const redesSelecionadasCampanha = new Set();
 
 function selecionarPlataformaCampanha(plat) {
   const btn = document.querySelector(`.plat-sel-btn[data-plat="${plat}"]`);
   if (!btn) return;
 
   if (redesSelecionadasCampanha.has(plat)) {
-    // não deixa desmarcar a última rede ativa — sempre precisa sobrar uma
-    if (redesSelecionadasCampanha.size === 1) return;
     redesSelecionadasCampanha.delete(plat);
   } else {
     redesSelecionadasCampanha.add(plat);
@@ -23551,6 +23550,7 @@ function selecionarPlataformaCampanha(plat) {
 
   btn.classList.toggle("ativa", redesSelecionadasCampanha.has(plat));
   aplicarRedesCampanha();
+  atualizarEstadoBotaoGerarIA();
 
   if (plat === "tiktok" && redesSelecionadasCampanha.has("tiktok")) {
     carregarIdentidadesTikTokCampanha();
@@ -23570,6 +23570,16 @@ function aplicarRedesCampanha() {
   });
 }
 
+function atualizarEstadoBotaoGerarIA() {
+  const btn = document.getElementById("btn_gerar_campanha_ia");
+  if (!btn) return;
+  const semPlataforma = redesSelecionadasCampanha.size === 0;
+  btn.disabled = semPlataforma;
+  btn.style.opacity = semPlataforma ? "0.5" : "";
+  btn.style.cursor = semPlataforma ? "not-allowed" : "";
+  btn.title = semPlataforma ? "Selecione ao menos uma plataforma de anúncio acima" : "";
+}
+
 function inicializarEstadoCriarCampanha() {
   let recolhido = false;
 
@@ -23581,6 +23591,8 @@ function inicializarEstadoCriarCampanha() {
   } catch (_) {}
 
   aplicarEstadoCriarCampanha(recolhido, false);
+  aplicarRedesCampanha();
+  atualizarEstadoBotaoGerarIA();
 }
 
 async function gerarCampanhaComIA() {
@@ -23588,6 +23600,12 @@ async function gerarCampanhaComIA() {
     document.getElementById("ia_campanha_criador_resultado");
 
   if (!box) return;
+
+  if (redesSelecionadasCampanha.size === 0) {
+    box.style.display = "block";
+    box.innerHTML = "Selecione ao menos uma plataforma de anúncio acima antes de gerar campanha com IA.";
+    return;
+  }
 
   box.style.display = "block";
   box.innerHTML = "Gerando 3 opcoes com IA...";
@@ -23613,7 +23631,8 @@ async function gerarCampanhaComIA() {
           body: JSON.stringify({
             campanha: dadosCampanhaFormularioIA(),
             contexto,
-            titulos_anteriores: titulosAnteriores
+            titulos_anteriores: titulosAnteriores,
+            plataformas: Array.from(redesSelecionadasCampanha)
           })
         }
       );
@@ -23769,7 +23788,14 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_marca", "marca"],
     ["#nicho_publico_alvo", "público-alvo"],
     ["#adv_cbo", "CBO (otimização de orçamento)"],
-    ["#adv_attribution_spec", "janela de atribuição"]
+    ["#adv_attribution_spec", "janela de atribuição"],
+    ["#campanha_google_titulo_1", "título 1 (Google)"],
+    ["#campanha_google_titulo_2", "título 2 (Google)"],
+    ["#campanha_google_titulo_3", "título 3 (Google)"],
+    ["#campanha_google_titulo_longo", "título longo (Google)"],
+    ["#campanha_google_descricao_1", "descrição 1 (Google)"],
+    ["#campanha_google_descricao_2", "descrição 2 (Google)"],
+    ["#campanha_google_nome_anunciante", "nome do anunciante (Google)"]
   ].forEach(([seletor, texto]) => {
     if (preenchidos.has(seletor)) {
       marcarCampoIA(seletor, "preenchido", texto);
@@ -23795,7 +23821,10 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_publico_alvo", "público-alvo"],
     ["#adv_platform_facebook", "Facebook/Instagram"],
     ["#adv_inicio_btn", "data de início"],
-    ["#adv_device_mobile", "dispositivos"]
+    ["#adv_device_mobile", "dispositivos"],
+    ["#campanha_tiktok_identidade_select", "identidade TikTok"],
+    ["#tiktok_localidade_busca", "localização TikTok"],
+    ["#campanha_tiktok_formulario_select", "formulário TikTok"]
   ].forEach(([seletor, texto]) => {
     if (!preenchidos.has(seletor)) {
       marcarCampoIA(seletor, "pendente", texto);
@@ -24029,6 +24058,14 @@ function aplicarCampanhaIA(indice) {
     preencherSelectIA("#adv_attribution_spec", s.attribution_spec);
     atualizarDescricaoAtribuicao();
   }
+
+  preencherCampoIA("#campanha_google_titulo_1", s.google_titulo_1);
+  preencherCampoIA("#campanha_google_titulo_2", s.google_titulo_2);
+  preencherCampoIA("#campanha_google_titulo_3", s.google_titulo_3);
+  preencherCampoIA("#campanha_google_titulo_longo", s.google_titulo_longo);
+  preencherCampoIA("#campanha_google_descricao_1", s.google_descricao_1);
+  preencherCampoIA("#campanha_google_descricao_2", s.google_descricao_2);
+  preencherCampoIA("#campanha_google_nome_anunciante", s.google_nome_anunciante);
 
   marcarCamposAposAplicarIA(camposPreenchidosIA);
 }

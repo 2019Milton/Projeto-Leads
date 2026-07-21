@@ -15746,6 +15746,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
             <input type="checkbox" id="whatsapp_bot_ativo" checked>
             <label for="whatsapp_bot_ativo" style="font-size:13px;">Bot ativo</label>
+            <span id="whatsapp_bot_ativo_hint" style="font-size:12px;color:#94a3b8;display:none;">— conecte seu WhatsApp pra poder ativar</span>
           </div>
 
           <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
@@ -31658,22 +31659,27 @@ async function carregarWhatsappBot() {
           <button class="btn-desconectar" onclick="desconectarPlataforma('whatsapp', this)">Desconectar</button>
         </div>
       `;
-      if (editorEl) editorEl.style.display = "";
     } else {
       statusEl.innerHTML = `
         <button class="btn" onclick="conectarWhatsapp(this)">Conectar meu WhatsApp</button>
+        <div style="font-size:12px;color:#94a3b8;margin-top:8px;">Sem conexão, você já pode rascunhar e gerar o roteiro com IA — só não dá pra ativar o bot até conectar o número.</div>
       `;
-      if (editorEl) editorEl.style.display = "none";
     }
+    // Editor fica sempre visível — corretor pode rascunhar/gerar com IA mesmo sem
+    // conectar ainda; só a ativação (`ativo`) exige conexão (checada aqui e no backend).
+    if (editorEl) editorEl.style.display = "";
 
-    if (conectado) {
-      const resBot = await fetch(`${API}/whatsapp/bot`, { headers: { Authorization: `Bearer ${token}` } });
-      const dataBot = resBot.ok ? await resBot.json() : { ativo: true, passos: [] };
-      const textarea = document.getElementById("whatsapp_bot_passos");
-      const ativoBox = document.getElementById("whatsapp_bot_ativo");
-      if (textarea) textarea.value = serializarPassosWhatsappBot(dataBot.passos);
-      if (ativoBox) ativoBox.checked = dataBot.ativo !== false;
+    const resBot = await fetch(`${API}/whatsapp/bot`, { headers: { Authorization: `Bearer ${token}` } });
+    const dataBot = resBot.ok ? await resBot.json() : { ativo: true, passos: [] };
+    const textarea = document.getElementById("whatsapp_bot_passos");
+    const ativoBox = document.getElementById("whatsapp_bot_ativo");
+    const ativoHint = document.getElementById("whatsapp_bot_ativo_hint");
+    if (textarea) textarea.value = serializarPassosWhatsappBot(dataBot.passos);
+    if (ativoBox) {
+      ativoBox.disabled = !conectado;
+      ativoBox.checked = conectado && dataBot.ativo !== false;
     }
+    if (ativoHint) ativoHint.style.display = conectado ? "none" : "";
   } catch (e) {
     statusEl.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar a conexão do WhatsApp.</div>`;
   }

@@ -28356,11 +28356,13 @@ async function salvarEdicaoCampanha() {
 
     if (!res.ok || data.error) {
 
-      const mensagem =
+      const mensagemBruta =
         data.error?.error_user_msg ||
         data.error?.message ||
         (typeof data.error === "string" ? data.error : null) ||
         "Erro ao salvar alterações";
+
+      const mensagem = traduzirErroMeta(mensagemBruta);
 
       if (feedback) {
         feedback.textContent = mensagem;

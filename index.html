@@ -15712,6 +15712,38 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         </div>
       </div>
 
+      <!-- 🤖 WHATSAPP BOT — conexão do número oficial (Embedded Signup) + roteiro de atendimento -->
+      <div class="card" id="card-whatsapp-bot">
+        <h3>🤖 Whatsapp Bot</h3>
+        <p class="integ-desc">Conecte seu número oficial do WhatsApp e configure as mensagens automáticas do primeiro atendimento.</p>
+
+        <div id="whatsapp_conexao_status" style="margin-bottom:20px;">
+          <div style="color:#64748b;font-size:13px;">Carregando conexão...</div>
+        </div>
+
+        <div id="whatsapp_bot_editor" style="display:none;">
+          <h4 style="margin-bottom:6px;">Roteiro do bot</h4>
+          <p style="color:#94a3b8;font-size:12px;margin-bottom:10px;">
+            Uma linha por passo. <code>MSG:</code> manda a mensagem e segue pro próximo passo sozinho.
+            <code>PERGUNTA:</code> manda a mensagem e espera o cliente responder antes de seguir.
+            Marque <code>[HANDOFF]</code> no fim de um passo pra transferir a conversa pra você
+            naquele ponto (sem marcar nenhum, a transferência acontece automaticamente após o último passo).
+          </p>
+          <textarea id="whatsapp_bot_passos" rows="8" style="width:100%;font-family:monospace;font-size:13px;"
+            placeholder="MSG: Olá! Tudo bem?&#10;PERGUNTA: Qual seu nome?&#10;MSG: Perfeito, já vou te conectar com um corretor. [HANDOFF]"></textarea>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+            <input type="checkbox" id="whatsapp_bot_ativo" checked>
+            <label for="whatsapp_bot_ativo" style="font-size:13px;">Bot ativo</label>
+          </div>
+
+          <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+            <button class="btn" id="btn_whatsapp_bot_salvar" onclick="salvarWhatsappBot()">Salvar roteiro</button>
+            <span id="whatsapp_bot_salvar_status" style="font-size:12px;color:#94a3b8;"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="card card-criar-campanha" id="card-criar-campanha">
 
         <h3
@@ -19326,6 +19358,7 @@ async function login() {
 const SIDEBAR_SECOES = {
   dashboard:      { ids: ["card-dashboard"],                                  icone: "📊", label: "Dashboard" },
   integracoes:    { ids: ["card-hub-conexoes"],                               icone: "🔌", label: "Plataformas" },
+  whatsappbot:    { ids: ["card-whatsapp-bot"],                               icone: "🤖", label: "Whatsapp Bot" },
   campanhas:      { ids: ["card-criar-campanha", "card-campanhas"],            icone: "📢", label: "Campanhas" },
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Central de Leads" },
   suporte:        { ids: ["suporte-page-wrap"],                                icone: "💬", label: "Suporte" },
@@ -19628,6 +19661,9 @@ function navegarPara(secao) {
 
   // Ao navegar para Dashboard, recarregar performance
   if (secao === "dashboard" || secao === "desempenho") carregarPerformanceMeta();
+
+  // Ao navegar para Whatsapp Bot, recarregar status da conexão + roteiro salvo
+  if (secao === "whatsappbot") carregarWhatsappBot();
 
   // Ao navegar para Suporte, carregar/pausar chat inline
   if (secao === "suporte") {
@@ -31427,6 +31463,226 @@ async function desconectarPlataforma(plataforma, btnEl) {
   } catch (e) {
     alert("Erro ao desconectar.");
     restaurarBotao();
+  }
+}
+
+/* =========================
+   🤖 WHATSAPP BOT — Embedded Signup + roteiro configurável por corretor
+========================= */
+
+let _fbSdkPromise = null;
+
+// Carrega o SDK JS do Facebook uma única vez e chama FB.init com o app_id/config_id
+// vindos do backend (não são segredos, o Meta espera isso no client).
+function garantirFacebookSDK() {
+  if (_fbSdkPromise) return _fbSdkPromise;
+
+  _fbSdkPromise = (async () => {
+    const res = await fetch(`${API}/config/whatsapp-embedded-signup`);
+    const cfg = await res.json();
+    if (!cfg?.app_id || !cfg?.config_id) {
+      throw new Error("Integração de WhatsApp ainda não configurada no servidor.");
+    }
+
+    await new Promise((resolve) => {
+      if (window.FB) return resolve();
+      window.fbAsyncInit = function () {
+        window.FB.init({ appId: cfg.app_id, xfbml: false, version: "v24.0" });
+        resolve();
+      };
+      const script = document.createElement("script");
+      script.src = "https://connect.facebook.net/pt_BR/sdk.js";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    });
+
+    return cfg;
+  })();
+
+  return _fbSdkPromise;
+}
+
+async function conectarWhatsapp(btnEl) {
+  const token = localStorage.getItem("token");
+  if (!token) { alert("Usuário não autenticado"); return; }
+
+  const estadoOriginal = btnEl ? { html: btnEl.innerHTML, disabled: btnEl.disabled } : null;
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Conectando...';
+  }
+  const restaurarBotao = () => {
+    if (btnEl && estadoOriginal) { btnEl.disabled = estadoOriginal.disabled; btnEl.innerHTML = estadoOriginal.html; }
+  };
+
+  try {
+    const cfg = await garantirFacebookSDK();
+
+    let concluido = false;
+    // ⚠️ Formato do evento de conclusão do Embedded Signup — verificar contra a doc
+    // atual da Meta antes de ir pra produção (nomes de campo podem mudar de versão).
+    function msgHandler(event) {
+      if (!event.data || event.data.type !== "WA_EMBEDDED_SIGNUP") return;
+      if (event.data.event === "FINISH" && event.data.data?.phone_number_id && event.data.data?.waba_id) {
+        concluido = true;
+        window.removeEventListener("message", msgHandler);
+        finalizarConexaoWhatsapp(event.data.data.waba_id, event.data.data.phone_number_id, restaurarBotao);
+      } else if (event.data.event === "CANCEL" || event.data.event === "ERROR") {
+        window.removeEventListener("message", msgHandler);
+        restaurarBotao();
+      }
+    }
+    window.addEventListener("message", msgHandler);
+
+    window.FB.login(
+      (response) => {
+        setTimeout(() => {
+          if (!concluido) {
+            window.removeEventListener("message", msgHandler);
+            restaurarBotao();
+          }
+        }, 1500);
+      },
+      {
+        config_id: cfg.config_id,
+        response_type: "code",
+        override_default_response_type: true,
+        extras: { featureType: "whatsapp_embedded_signup", sessionInfoVersion: "3" },
+      }
+    );
+  } catch (e) {
+    alert(e.message || "Erro ao iniciar conexão com o WhatsApp.");
+    restaurarBotao();
+  }
+}
+
+async function finalizarConexaoWhatsapp(wabaId, phoneNumberId, restaurarBotao) {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${API}/whatsapp/conectar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ waba_id: wabaId, phone_number_id: phoneNumberId }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data?.error || "Erro ao concluir a conexão do WhatsApp.");
+      restaurarBotao();
+      return;
+    }
+    await carregarWhatsappBot();
+    await carregarHub();
+  } catch (e) {
+    alert("Erro ao concluir a conexão do WhatsApp.");
+    restaurarBotao();
+  }
+}
+
+function serializarPassosWhatsappBot(passos) {
+  return (passos || [])
+    .map((p) => {
+      const prefixo = p.tipo === "pergunta" ? "PERGUNTA:" : "MSG:";
+      return `${prefixo} ${p.texto}${p.handoff_apos ? " [HANDOFF]" : ""}`;
+    })
+    .join("\n");
+}
+
+function parsearPassosWhatsappBot(texto) {
+  return (texto || "")
+    .split("\n")
+    .map((linha) => linha.trim())
+    .filter(Boolean)
+    .map((linha, i) => {
+      const handoff_apos = /\[HANDOFF\]\s*$/i.test(linha);
+      const semHandoff = linha.replace(/\[HANDOFF\]\s*$/i, "").trim();
+      const ehPergunta = /^PERGUNTA:/i.test(semHandoff);
+      const tipo = ehPergunta ? "pergunta" : "mensagem";
+      const texto = semHandoff.replace(/^(PERGUNTA|MSG):\s*/i, "").trim();
+      return { ordem: i + 1, tipo, texto, handoff_apos };
+    })
+    .filter((p) => p.texto);
+}
+
+async function carregarWhatsappBot() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  const statusEl = document.getElementById("whatsapp_conexao_status");
+  const editorEl = document.getElementById("whatsapp_bot_editor");
+  if (!statusEl) return;
+
+  try {
+    const resConexoes = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
+    const dataConexoes = resConexoes.ok ? await resConexoes.json() : { conexoes: [] };
+    const conexao = (dataConexoes.conexoes || []).find((cx) => cx.plataforma === "whatsapp");
+    const conectado = conexao?.status === "conectado";
+
+    if (conectado) {
+      const conta = conexao.conta || {};
+      statusEl.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="color:#22c55e;font-weight:bold;">🟢 Conectado</div>
+            <div style="font-size:13px;color:#cbd5e1;margin-top:4px;">${escaparHtml(conta.numero || "")} ${conta.display_name ? `— ${escaparHtml(conta.display_name)}` : ""}</div>
+          </div>
+          <button class="btn-desconectar" onclick="desconectarPlataforma('whatsapp', this)">Desconectar</button>
+        </div>
+      `;
+      if (editorEl) editorEl.style.display = "";
+    } else {
+      statusEl.innerHTML = `
+        <button class="btn" onclick="conectarWhatsapp(this)">Conectar meu WhatsApp</button>
+      `;
+      if (editorEl) editorEl.style.display = "none";
+    }
+
+    if (conectado) {
+      const resBot = await fetch(`${API}/whatsapp/bot`, { headers: { Authorization: `Bearer ${token}` } });
+      const dataBot = resBot.ok ? await resBot.json() : { ativo: true, passos: [] };
+      const textarea = document.getElementById("whatsapp_bot_passos");
+      const ativoBox = document.getElementById("whatsapp_bot_ativo");
+      if (textarea) textarea.value = serializarPassosWhatsappBot(dataBot.passos);
+      if (ativoBox) ativoBox.checked = dataBot.ativo !== false;
+    }
+  } catch (e) {
+    statusEl.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar a conexão do WhatsApp.</div>`;
+  }
+}
+
+async function salvarWhatsappBot() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  const textarea = document.getElementById("whatsapp_bot_passos");
+  const ativoBox = document.getElementById("whatsapp_bot_ativo");
+  const statusSpan = document.getElementById("whatsapp_bot_salvar_status");
+  const btn = document.getElementById("btn_whatsapp_bot_salvar");
+
+  const passos = parsearPassosWhatsappBot(textarea?.value || "");
+  if (!passos.length) {
+    if (statusSpan) statusSpan.textContent = "Adicione pelo menos um passo antes de salvar.";
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  if (statusSpan) statusSpan.textContent = "Salvando...";
+
+  try {
+    const res = await fetch(`${API}/whatsapp/bot`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ ativo: ativoBox ? ativoBox.checked : true, passos }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (statusSpan) statusSpan.textContent = data?.error || "Erro ao salvar.";
+      return;
+    }
+    if (statusSpan) statusSpan.textContent = "Roteiro salvo!";
+  } catch (e) {
+    if (statusSpan) statusSpan.textContent = "Erro ao salvar.";
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 

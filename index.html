@@ -23860,7 +23860,14 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#adv_device_mobile", "dispositivos"],
     ["#campanha_tiktok_identidade_select", "identidade TikTok"],
     ["#tiktok_localidade_busca", "localização TikTok"],
-    ["#campanha_tiktok_formulario_select", "formulário TikTok"]
+    ["#campanha_tiktok_formulario_select", "formulário TikTok"],
+    ["#campanha_google_titulo_1", "título 1 (Google)"],
+    ["#campanha_google_titulo_2", "título 2 (Google)"],
+    ["#campanha_google_titulo_3", "título 3 (Google)"],
+    ["#campanha_google_titulo_longo", "título longo (Google)"],
+    ["#campanha_google_descricao_1", "descrição 1 (Google)"],
+    ["#campanha_google_descricao_2", "descrição 2 (Google)"],
+    ["#campanha_google_nome_anunciante", "nome do anunciante (Google)"]
   ].forEach(([seletor, texto]) => {
     if (!preenchidos.has(seletor)) {
       marcarCampoIA(seletor, "pendente", texto);
@@ -29179,7 +29186,16 @@ function mapearErroMetaParaCampo(mensagem) {
   if (m.includes("message") || m.includes("primary text") || m.includes("ad text") || m.includes("corpo")) return "#texto";
   if (m.includes("targeting") || m.includes("audience") || m.includes("segmentação") || m.includes("público")) return "#adv_pais";
   if (m.includes("name") && m.includes("invalid")) return "#campanha_nome";
-  if (m.includes("perguntas") || m.includes("question") || m.includes("formulário") || m.includes("formulario") || m.includes("form")) return "#adv_perguntas";
+  // Específicos do anúncio Google Ads — checados antes do genérico "perguntas/formulário"
+  // abaixo, porque toda mensagem de validação do Google começa com "Informe..." e a
+  // palavra "informe" contém a substring "form", o que antes disparava por engano a
+  // regra de perguntas/formulário pra qualquer erro do Google (ex: "Informe ao menos
+  // um título..." acabava apontando pro campo de Perguntas qualificadoras da Meta).
+  if (m.includes("google") && m.includes("título longo")) return "#campanha_google_titulo_longo";
+  if (m.includes("google") && m.includes("título")) return "#campanha_google_titulo_1";
+  if (m.includes("google") && m.includes("descri")) return "#campanha_google_descricao_1";
+  if (m.includes("google") && m.includes("anunciante")) return "#campanha_google_nome_anunciante";
+  if (m.includes("perguntas") || m.includes("question") || m.includes("formulário") || m.includes("formulario")) return "#adv_perguntas";
   return null;
 }
 

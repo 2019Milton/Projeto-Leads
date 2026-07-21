@@ -15723,6 +15723,17 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
         <div id="whatsapp_bot_editor" style="display:none;">
           <h4 style="margin-bottom:6px;">Roteiro do bot</h4>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:13px;font-weight:600;">Gerar roteiro com IA</label>
+            <textarea id="whatsapp_bot_ia_contexto" rows="2" style="width:100%;font-size:13px;margin-top:6px;"
+              placeholder="Descreva seu negócio e o que o bot deve perguntar (ex: corretor de seguro auto, quero saber nome, se já tem carro e quando pretende comprar)"></textarea>
+            <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+              <button class="btn" id="btn_whatsapp_bot_ia" onclick="gerarRoteiroWhatsappBotIA()">✨ Gerar com IA</button>
+              <span id="whatsapp_bot_ia_status" style="font-size:12px;color:#94a3b8;"></span>
+            </div>
+          </div>
+
           <p style="color:#94a3b8;font-size:12px;margin-bottom:10px;">
             Uma linha por passo. <code>MSG:</code> manda a mensagem e segue pro próximo passo sozinho.
             <code>PERGUNTA:</code> manda a mensagem e espera o cliente responder antes de seguir.
@@ -31665,6 +31676,42 @@ async function carregarWhatsappBot() {
     }
   } catch (e) {
     statusEl.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar a conexão do WhatsApp.</div>`;
+  }
+}
+
+async function gerarRoteiroWhatsappBotIA() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  const contexto = document.getElementById("whatsapp_bot_ia_contexto")?.value.trim();
+  const statusSpan = document.getElementById("whatsapp_bot_ia_status");
+  const btn = document.getElementById("btn_whatsapp_bot_ia");
+
+  if (!contexto) {
+    if (statusSpan) statusSpan.textContent = "Descreva seu negócio antes de gerar.";
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  if (statusSpan) statusSpan.textContent = "Gerando roteiro com IA...";
+
+  try {
+    const res = await fetch(`${API}/ia/whatsapp-bot/gerar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ contexto }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (statusSpan) statusSpan.textContent = data?.error || "Erro ao gerar roteiro com IA.";
+      return;
+    }
+    const textarea = document.getElementById("whatsapp_bot_passos");
+    if (textarea) textarea.value = serializarPassosWhatsappBot(data.passos);
+    if (statusSpan) statusSpan.textContent = "IA preencheu o roteiro abaixo — revise antes de salvar.";
+  } catch (e) {
+    if (statusSpan) statusSpan.textContent = "Erro ao gerar roteiro com IA.";
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 

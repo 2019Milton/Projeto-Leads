@@ -31195,7 +31195,7 @@ function montarSeletorContaAnunciosGoogle(contas, customerIdAtual) {
     return `
       <div class="meta-acct-row ${ativa ? "is-active" : ""}">
         <div class="meta-acct-info">
-          <div class="meta-acct-name">${escaparHtml(c.nome || String(c.customer_id))}</div>
+          <div class="meta-acct-name">${escaparHtml(c.nome || String(c.customer_id))}${c.gerenciadora ? ` <span style="font-size:9.5px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);border-radius:4px;padding:1px 5px;margin-left:4px;white-space:nowrap;">GERENCIADORA (MCC)</span>` : ""}</div>
           <div class="meta-acct-meta">${escaparHtml(String(c.customer_id))}</div>
         </div>
         <div class="meta-acct-actions">
@@ -31208,7 +31208,11 @@ function montarSeletorContaAnunciosGoogle(contas, customerIdAtual) {
     `;
   }).join("");
 
-  const aviso = !customerIdAtual
+  const contaAtivaGerenciadora = contas.find(c => String(c.customer_id) === String(customerIdAtual))?.gerenciadora;
+
+  const aviso = contaAtivaGerenciadora
+    ? "⚠️ A conta em uso é uma conta gerenciadora (MCC) — não é possível criar campanhas nela. Crie ou vincule uma conta de cliente no Google Ads Manager e selecione ela aqui."
+    : !customerIdAtual
     ? "Escolha a conta que a plataforma deve usar antes de sincronizar."
     : contas.length > 1
     ? "Troque a conta ativa quando o login do Google tiver mais de uma conta disponível."

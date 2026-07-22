@@ -15722,7 +15722,14 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         </div>
 
         <div id="whatsapp_bot_editor" style="display:none;">
-          <h4 style="margin-bottom:6px;">Roteiro do bot</h4>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <h4 style="margin-bottom:6px;" id="whatsapp_bot_editor_titulo">Novo roteiro</h4>
+            <button class="btn-desconectar" onclick="novoRoteiroWhatsappBot()">+ Novo roteiro</button>
+          </div>
+
+          <label style="font-size:13px;font-weight:600;">Nome do roteiro</label>
+          <input type="text" id="whatsapp_bot_nome" style="width:100%;font-size:13px;margin-top:6px;margin-bottom:14px;"
+            placeholder="Ex: Seguro auto, Saúde corporativo...">
 
           <div style="margin-bottom:14px;">
             <label style="font-size:13px;font-weight:600;">Gerar roteiro com IA</label>
@@ -15743,15 +15750,14 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           <textarea id="whatsapp_bot_passos" rows="8" style="width:100%;font-family:monospace;font-size:13px;"
             placeholder="MSG: Olá! Tudo bem?&#10;PERGUNTA: Qual seu nome?&#10;MSG: Perfeito, já vou te conectar com um corretor. [HANDOFF]"></textarea>
 
-          <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
-            <input type="checkbox" id="whatsapp_bot_ativo" checked>
-            <label for="whatsapp_bot_ativo" style="font-size:13px;">Bot ativo</label>
-            <span id="whatsapp_bot_ativo_hint" style="font-size:12px;color:#94a3b8;display:none;">— conecte seu WhatsApp pra poder ativar</span>
-          </div>
-
           <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
             <button class="btn" id="btn_whatsapp_bot_salvar" onclick="salvarWhatsappBot()">Salvar roteiro</button>
             <span id="whatsapp_bot_salvar_status" style="font-size:12px;color:#94a3b8;"></span>
+          </div>
+
+          <h4 style="margin-top:24px;margin-bottom:10px;">Roteiros salvos</h4>
+          <div id="whatsapp_bot_lista">
+            <div style="color:#64748b;font-size:13px;">Nenhum roteiro salvo ainda.</div>
           </div>
         </div>
       </div>
@@ -31638,6 +31644,44 @@ function parsearPassosWhatsappBot(texto) {
     .filter((p) => p.texto);
 }
 
+let whatsappBotEditandoId = null;
+let _whatsappBotRoteiros = [];
+let _whatsappBotConectado = false;
+
+function renderRoteiroWhatsappBotCard(r) {
+  const ativoBadge = r.ativo
+    ? `<span style="color:#22c55e;font-weight:600;">🟢 Ativo</span>`
+    : `<span style="color:#64748b;">Inativo</span>`;
+  const acaoAtivar = r.ativo
+    ? `<button class="btn-desconectar" onclick="desativarRoteiroWhatsappBot(${r.id})">Desativar</button>`
+    : _whatsappBotConectado
+      ? `<button class="btn" onclick="ativarRoteiroWhatsappBot(${r.id})">Ativar</button>`
+      : `<span style="font-size:12px;color:#94a3b8;">conecte o WhatsApp pra ativar</span>`;
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-bottom:8px;">
+      <div>
+        <div style="font-weight:600;">${escaparHtml(r.nome)}</div>
+        <div style="font-size:12px;margin-top:2px;">${ativoBadge}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="btn" onclick="editarRoteiroWhatsappBot(${r.id})">Editar</button>
+        ${acaoAtivar}
+        <button class="btn-desconectar" onclick="excluirRoteiroWhatsappBot(${r.id})">Excluir</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderListaWhatsappBot() {
+  const listaEl = document.getElementById("whatsapp_bot_lista");
+  if (!listaEl) return;
+  if (!_whatsappBotRoteiros.length) {
+    listaEl.innerHTML = `<div style="color:#64748b;font-size:13px;">Nenhum roteiro salvo ainda.</div>`;
+    return;
+  }
+  listaEl.innerHTML = _whatsappBotRoteiros.map(renderRoteiroWhatsappBotCard).join("");
+}
+
 async function carregarWhatsappBot() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -31650,9 +31694,9 @@ async function carregarWhatsappBot() {
     const resConexoes = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
     const dataConexoes = resConexoes.ok ? await resConexoes.json() : { conexoes: [] };
     const conexao = (dataConexoes.conexoes || []).find((cx) => cx.plataforma === "whatsapp");
-    const conectado = conexao?.status === "conectado";
+    _whatsappBotConectado = conexao?.status === "conectado";
 
-    if (conectado) {
+    if (_whatsappBotConectado) {
       const conta = conexao.conta || {};
       statusEl.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
@@ -31666,26 +31710,94 @@ async function carregarWhatsappBot() {
     } else {
       statusEl.innerHTML = `
         <button class="btn" onclick="conectarWhatsapp(this)">Conectar meu WhatsApp</button>
-        <div style="font-size:12px;color:#94a3b8;margin-top:8px;">Sem conexão, você já pode rascunhar e gerar o roteiro com IA — só não dá pra ativar o bot até conectar o número.</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:8px;">Sem conexão, você já pode rascunhar, gerar com IA e salvar roteiros — só não dá pra ativar nenhum até conectar o número.</div>
       `;
     }
-    // Editor fica sempre visível — corretor pode rascunhar/gerar com IA mesmo sem
-    // conectar ainda; só a ativação (`ativo`) exige conexão (checada aqui e no backend).
+    // Editor fica sempre visível — corretor pode rascunhar/gerar com IA e salvar
+    // roteiros mesmo sem conectar ainda; só a ativação exige conexão (checada
+    // aqui pro botão "Ativar" de cada item e também no backend).
     if (editorEl) editorEl.style.display = "";
 
     const resBot = await fetch(`${API}/whatsapp/bot`, { headers: { Authorization: `Bearer ${token}` } });
-    const dataBot = resBot.ok ? await resBot.json() : { ativo: true, passos: [] };
-    const textarea = document.getElementById("whatsapp_bot_passos");
-    const ativoBox = document.getElementById("whatsapp_bot_ativo");
-    const ativoHint = document.getElementById("whatsapp_bot_ativo_hint");
-    if (textarea) textarea.value = serializarPassosWhatsappBot(dataBot.passos);
-    if (ativoBox) {
-      ativoBox.disabled = !conectado;
-      ativoBox.checked = conectado && dataBot.ativo !== false;
-    }
-    if (ativoHint) ativoHint.style.display = conectado ? "none" : "";
+    const dataBot = resBot.ok ? await resBot.json() : { roteiros: [] };
+    _whatsappBotRoteiros = dataBot.roteiros || [];
+    renderListaWhatsappBot();
   } catch (e) {
     statusEl.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar a conexão do WhatsApp.</div>`;
+  }
+}
+
+function novoRoteiroWhatsappBot() {
+  whatsappBotEditandoId = null;
+  const titulo = document.getElementById("whatsapp_bot_editor_titulo");
+  const nomeInput = document.getElementById("whatsapp_bot_nome");
+  const textarea = document.getElementById("whatsapp_bot_passos");
+  const statusSpan = document.getElementById("whatsapp_bot_salvar_status");
+  if (titulo) titulo.textContent = "Novo roteiro";
+  if (nomeInput) nomeInput.value = "";
+  if (textarea) textarea.value = "";
+  if (statusSpan) statusSpan.textContent = "";
+}
+
+function editarRoteiroWhatsappBot(id) {
+  const roteiro = _whatsappBotRoteiros.find((r) => r.id === id);
+  if (!roteiro) return;
+  whatsappBotEditandoId = id;
+  const titulo = document.getElementById("whatsapp_bot_editor_titulo");
+  const nomeInput = document.getElementById("whatsapp_bot_nome");
+  const textarea = document.getElementById("whatsapp_bot_passos");
+  const statusSpan = document.getElementById("whatsapp_bot_salvar_status");
+  if (titulo) titulo.textContent = `Editando: ${roteiro.nome}`;
+  if (nomeInput) nomeInput.value = roteiro.nome;
+  if (textarea) textarea.value = serializarPassosWhatsappBot(roteiro.passos);
+  if (statusSpan) statusSpan.textContent = "";
+}
+
+async function ativarRoteiroWhatsappBot(id) {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/whatsapp/bot/${id}/ativar`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data?.error || "Erro ao ativar roteiro."); return; }
+    await carregarWhatsappBot();
+  } catch (e) {
+    alert("Erro ao ativar roteiro.");
+  }
+}
+
+async function desativarRoteiroWhatsappBot(id) {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const res = await fetch(`${API}/whatsapp/bot/${id}/desativar`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) { const data = await res.json(); alert(data?.error || "Erro ao desativar roteiro."); return; }
+    await carregarWhatsappBot();
+  } catch (e) {
+    alert("Erro ao desativar roteiro.");
+  }
+}
+
+async function excluirRoteiroWhatsappBot(id) {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  if (!confirm("Excluir este roteiro?")) return;
+  try {
+    const res = await fetch(`${API}/whatsapp/bot/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) { const data = await res.json(); alert(data?.error || "Erro ao excluir roteiro."); return; }
+    if (whatsappBotEditandoId === id) novoRoteiroWhatsappBot();
+    await carregarWhatsappBot();
+  } catch (e) {
+    alert("Erro ao excluir roteiro.");
   }
 }
 
@@ -31728,10 +31840,16 @@ async function gerarRoteiroWhatsappBotIA() {
 async function salvarWhatsappBot() {
   const token = localStorage.getItem("token");
   if (!token) return;
+  const nomeInput = document.getElementById("whatsapp_bot_nome");
   const textarea = document.getElementById("whatsapp_bot_passos");
-  const ativoBox = document.getElementById("whatsapp_bot_ativo");
   const statusSpan = document.getElementById("whatsapp_bot_salvar_status");
   const btn = document.getElementById("btn_whatsapp_bot_salvar");
+
+  const nome = nomeInput?.value.trim();
+  if (!nome) {
+    if (statusSpan) statusSpan.textContent = "Dê um nome ao roteiro antes de salvar.";
+    return;
+  }
 
   const passos = parsearPassosWhatsappBot(textarea?.value || "");
   if (!passos.length) {
@@ -31743,17 +31861,20 @@ async function salvarWhatsappBot() {
   if (statusSpan) statusSpan.textContent = "Salvando...";
 
   try {
-    const res = await fetch(`${API}/whatsapp/bot`, {
-      method: "PUT",
+    const url = whatsappBotEditandoId ? `${API}/whatsapp/bot/${whatsappBotEditandoId}` : `${API}/whatsapp/bot`;
+    const res = await fetch(url, {
+      method: whatsappBotEditandoId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ativo: ativoBox ? ativoBox.checked : true, passos }),
+      body: JSON.stringify({ nome, passos }),
     });
     const data = await res.json();
     if (!res.ok) {
       if (statusSpan) statusSpan.textContent = data?.error || "Erro ao salvar.";
       return;
     }
+    if (data.roteiro) whatsappBotEditandoId = data.roteiro.id;
     if (statusSpan) statusSpan.textContent = "Roteiro salvo!";
+    await carregarWhatsappBot();
   } catch (e) {
     if (statusSpan) statusSpan.textContent = "Erro ao salvar.";
   } finally {

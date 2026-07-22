@@ -40475,20 +40475,20 @@ async function enviarFeedback() {
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Se pedir para criar uma campanha, não se preocupe</h3>
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Conclua a ativação inicial da conta</h3>
           <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
-            O Google às vezes tenta te levar direto para criar uma campanha ("Modo Smart/Guiado").
-            Se aparecer essa tela, procure o link <strong>"Alternar para o Modo Especialista"</strong>
-            ou <strong>"Criar conta sem campanha"</strong> no rodapé da página — isso cria a conta sem
-            gastar orçamento à toa. Se não encontrar essa opção, pode preencher os dados básicos e pausar
-            a campanha depois; o importante nesta etapa é só ter a conta criada.
+            A conta precisa estar totalmente ativada para funcionar com a API. Primeiro procure
+            <strong>"Criar conta sem campanha"</strong> ou uma opção equivalente. Se o Google obrigar a
+            criação da primeira campanha, conclua o fluxo guiado com os dados mínimos solicitados.
+            <strong>Não é o anúncio que a Plataforma de Leads exige</strong>; é a conclusão do cadastro
+            inicial exigida pelo próprio Google Ads.
           </p>
         </div>
       </div>
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Preencha os dados da conta com atenção</h3>
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Confira país, fuso horário e moeda</h3>
           <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
             Informe país, fuso horário e moeda de faturamento.
             <strong>Atenção: fuso horário e moeda não podem ser alterados depois</strong> — confira antes
@@ -40499,23 +40499,47 @@ async function enviarFeedback() {
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">5. Anote o ID da conta (Customer ID)</h3>
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">5. Conclua os dados de pagamento</h3>
           <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
-            Depois de criada, o número da conta aparece no canto superior direito do Google Ads, no
-            formato <strong>XXX-XXX-XXXX</strong>. Não precisa decorar, mas ajuda a confirmar depois se
-            é a conta certa.
+            Preencha o faturamento quando o Google solicitar. A conta pode continuar inacessível pela API
+            enquanto o cadastro ou o pagamento estiver pendente. Confira cuidadosamente os dados antes de
+            confirmar.
           </p>
         </div>
       </div>
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">6. Volte para a Plataforma de Leads e conecte</h3>
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">6. Pause imediatamente a campanha inicial</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Se o Google obrigou você a criar uma campanha, abra <strong>Campanhas</strong>, clique no
+            status verde <strong>"Ativada"</strong> e selecione <strong>"Pausar"</strong>. Confirme que o
+            status ficou cinza como <strong>"Pausada"</strong>, evitando qualquer gasto. As campanhas
+            definitivas serão criadas depois pela Plataforma de Leads.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">7. Localize o ID da conta anunciante</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Clique no nome da conta no canto superior esquerdo. No seletor, copie o número exibido ao lado
+            da <strong>conta anunciante</strong>, no formato <strong>XXX-XXX-XXXX</strong>. Não use o ID da
+            conta gerenciadora (MCC).
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">8. Conecte e selecione a conta na Plataforma de Leads</h3>
           <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
             Feche esta janela, clique em <strong>"Conectar"</strong> no card do Google Ads e faça login
             com a <strong>mesma Conta Google</strong> usada para criar a conta. Depois, em
             <strong>"Ver detalhes" → "Contas de anúncios"</strong>, clique em <strong>"Usar conta"</strong>
-            na conta que você acabou de criar.
+            na conta criada. Se ela ainda não aparecer, aguarde alguns minutos e use
+            <strong>"Adicionar pelo ID"</strong> com o número copiado no passo 7.
           </p>
         </div>
       </div>

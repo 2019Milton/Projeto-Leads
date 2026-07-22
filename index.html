@@ -31347,8 +31347,25 @@ function montarSeletorContaAnunciosGoogle(contas, customerIdAtual) {
     <div style="display:flex;gap:6px;align-items:center;margin-top:9px;flex-wrap:wrap;">
       <input id="google_customer_id_manual" type="text" inputmode="numeric" placeholder="ID da conta: 123-456-7890" style="flex:1;min-width:190px;padding:7px 9px;border-radius:6px;border:1px solid rgba(148,163,184,.3);background:rgba(15,23,42,.7);color:#e2e8f0;font-size:11px;">
       <button type="button" onclick="usarContaGoogleManual(this)" style="padding:7px 10px;background:rgba(59,130,246,.16);border:1px solid rgba(59,130,246,.45);color:#93c5fd;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Adicionar pelo ID</button>
+      <button type="button" onclick="toggleAjudaIdGoogle()" style="padding:7px 10px;background:rgba(148,163,184,.10);border:1px solid rgba(148,163,184,.3);color:#cbd5e1;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">❓ Onde encontrar o ID?</button>
+    </div>
+    <div id="ajuda_google_customer_id" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;background:rgba(15,23,42,.72);border:1px solid rgba(96,165,250,.28);color:#cbd5e1;font-size:11px;line-height:1.55;">
+      <b style="color:#93c5fd;">Como encontrar o ID da conta de anúncios</b>
+      <ol style="margin:6px 0 4px;padding-left:18px;">
+        <li>Acesse o <b>Google Ads</b> com a mesma Conta Google conectada à plataforma.</li>
+        <li>No canto superior esquerdo, clique no nome da conta ou na seta ao lado dele.</li>
+        <li>No seletor, localize a <b>conta anunciante</b> que será usada nas campanhas.</li>
+        <li>Copie o número exibido ao lado do nome, no formato <b>123-456-7890</b>.</li>
+        <li>Cole o número no campo acima e clique em <b>Adicionar pelo ID</b>.</li>
+      </ol>
+      <span style="color:#fbbf24;">⚠️ Use o ID da conta anunciante, não o ID da conta gerenciadora (MCC).</span>
     </div>
   `;
+}
+
+function toggleAjudaIdGoogle() {
+  const ajuda = document.getElementById("ajuda_google_customer_id");
+  if (ajuda) ajuda.style.display = ajuda.style.display === "none" ? "block" : "none";
 }
 
 async function usarContaGoogleManual(btnEl) {
@@ -31504,7 +31521,10 @@ async function usarContaGoogle(customerId, btnEl, opts = {}) {
     });
     if (!res.ok) {
       const dataErro = await res.json().catch(() => ({}));
-      if (!opts.silencioso) alert(dataErro.error || "Erro ao selecionar a conta do Google Ads.");
+      if (!opts.silencioso) {
+        const mensagem = [dataErro.error, dataErro.detalhe].filter(Boolean).join("\n\n");
+        alert(mensagem || "Erro ao selecionar a conta do Google Ads.");
+      }
       return;
     }
     if (!opts.silencioso) {

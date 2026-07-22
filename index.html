@@ -31344,7 +31344,22 @@ function montarSeletorContaAnunciosGoogle(contas, customerIdAtual) {
   return `
     <div class="meta-acct-list">${linhas}</div>
     ${aviso ? `<small style="display:block;margin-top:7px;color:#94a3b8;line-height:1.4;">${aviso}</small>` : ""}
+    <div style="display:flex;gap:6px;align-items:center;margin-top:9px;flex-wrap:wrap;">
+      <input id="google_customer_id_manual" type="text" inputmode="numeric" placeholder="ID da conta: 123-456-7890" style="flex:1;min-width:190px;padding:7px 9px;border-radius:6px;border:1px solid rgba(148,163,184,.3);background:rgba(15,23,42,.7);color:#e2e8f0;font-size:11px;">
+      <button type="button" onclick="usarContaGoogleManual(this)" style="padding:7px 10px;background:rgba(59,130,246,.16);border:1px solid rgba(59,130,246,.45);color:#93c5fd;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">Adicionar pelo ID</button>
+    </div>
   `;
+}
+
+async function usarContaGoogleManual(btnEl) {
+  const input = document.getElementById("google_customer_id_manual");
+  const customerId = String(input?.value || "").replace(/\D/g, "");
+  if (!customerId) {
+    alert("Informe o ID da conta do Google Ads.");
+    input?.focus();
+    return;
+  }
+  await usarContaGoogle(customerId, btnEl);
 }
 
 async function carregarStatusGoogle() {
@@ -31479,6 +31494,7 @@ async function carregarStatusGoogle() {
 async function usarContaGoogle(customerId, btnEl, opts = {}) {
   const token = localStorage.getItem("token");
   if (!token || !customerId) return;
+  const textoOriginalBtn = btnEl?.textContent || "Usar conta";
   if (btnEl) { btnEl.disabled = true; btnEl.textContent = "Selecionando..."; }
   try {
     const res = await fetch(`${API}/google/selecionar-conta`, {
@@ -31487,7 +31503,8 @@ async function usarContaGoogle(customerId, btnEl, opts = {}) {
       body: JSON.stringify({ customer_id: customerId })
     });
     if (!res.ok) {
-      if (!opts.silencioso) alert("Erro ao selecionar a conta do Google Ads.");
+      const dataErro = await res.json().catch(() => ({}));
+      if (!opts.silencioso) alert(dataErro.error || "Erro ao selecionar a conta do Google Ads.");
       return;
     }
     if (!opts.silencioso) {
@@ -31496,6 +31513,11 @@ async function usarContaGoogle(customerId, btnEl, opts = {}) {
     }
   } catch (_) {
     if (!opts.silencioso) alert("Erro ao selecionar a conta do Google Ads.");
+  } finally {
+    if (btnEl && document.body.contains(btnEl)) {
+      btnEl.disabled = false;
+      btnEl.textContent = textoOriginalBtn;
+    }
   }
 }
 

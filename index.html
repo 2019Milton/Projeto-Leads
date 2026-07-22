@@ -15713,49 +15713,140 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
       </div>
 
       <!-- 🤖 WHATSAPP BOT — conexão do número oficial (Embedded Signup) + roteiro de atendimento -->
-      <div class="card" id="card-whatsapp-bot">
-        <h3>🤖 Whatsapp Bot</h3>
-        <p class="integ-desc">Conecte seu número oficial do WhatsApp e configure as mensagens automáticas do primeiro atendimento.</p>
+      <style>
+        #card-whatsapp-bot .wpp-header { display:flex; align-items:center; gap:12px; margin-bottom:2px; }
+        #card-whatsapp-bot .wpp-icon {
+          width:42px; height:42px; border-radius:12px; flex-shrink:0;
+          background:linear-gradient(135deg,#25d366,#128c7e);
+          display:flex; align-items:center; justify-content:center;
+          font-size:20px; box-shadow:0 0 14px rgba(37,211,102,.35);
+        }
+        #card-whatsapp-bot h3 { margin:0; }
 
-        <div id="whatsapp_conexao_status" style="margin-bottom:20px;">
+        #whatsapp_conexao_status.wpp-status-card {
+          display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+          border-left:3px solid #475569; border-radius:10px; padding:14px 16px;
+        }
+        #whatsapp_conexao_status.wpp-status-card.conectado { border-left-color:#25d366; }
+
+        #card-whatsapp-bot .wpp-section-titulo {
+          font-size:12px; text-transform:uppercase; letter-spacing:.06em;
+          color:#94a3b8; font-weight:700; margin:22px 0 10px;
+        }
+
+        #card-whatsapp-bot .wpp-ia-box {
+          border:1px solid rgba(124,58,237,0.35);
+          background:linear-gradient(180deg, rgba(124,58,237,0.10), rgba(37,99,235,0.04));
+          border-radius:12px; padding:14px; margin-bottom:18px;
+        }
+
+        #card-whatsapp-bot textarea, #card-whatsapp-bot input[type=text] {
+          background:#0b1220 !important; border:1px solid rgba(255,255,255,0.14) !important;
+          border-radius:8px !important; color:#e2e8f0 !important; padding:9px 11px !important;
+        }
+        #card-whatsapp-bot textarea:focus, #card-whatsapp-bot input[type=text]:focus {
+          outline:none; border-color:#7c3aed !important;
+        }
+
+        .wpp-editor-grid { display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start; }
+        @media (max-width:860px) { .wpp-editor-grid { grid-template-columns:1fr; } }
+
+        .wpp-legenda { display:flex; flex-wrap:wrap; gap:14px; font-size:12px; color:#94a3b8; margin-bottom:10px; }
+
+        #whatsapp_bot_preview_fone {
+          background:#0b141a; border-radius:14px; border:1px solid rgba(255,255,255,0.08);
+          padding:14px 10px; min-height:220px; max-height:360px; overflow-y:auto;
+          background-image:radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+          background-size:14px 14px;
+        }
+        .wpp-bubble {
+          max-width:92%; margin-bottom:10px; padding:8px 10px 5px;
+          border-radius:10px 10px 10px 2px; background:#005c4b; color:#e9edef;
+          font-size:12.5px; line-height:1.4; box-shadow:0 1px 1px rgba(0,0,0,.3);
+        }
+        .wpp-bubble.wpp-pergunta { background:#00473a; border:1px dashed rgba(255,255,255,.2); }
+        .wpp-bubble .wpp-hora { display:block; text-align:right; font-size:10px; color:#8fa79c; margin-top:3px; }
+        .wpp-tag-espera { display:block; text-align:right; font-size:10px; color:#facc15; }
+        .wpp-system {
+          text-align:center; margin:10px auto; max-width:92%; background:rgba(255,255,255,0.08);
+          color:#cbd5e1; font-size:11px; padding:5px 10px; border-radius:8px;
+        }
+        .wpp-preview-vazio { color:#54655d; font-size:12px; text-align:center; margin-top:40px; }
+
+        #card-whatsapp-bot .wpp-btn { width:auto; min-width:0; margin-top:0; padding:8px 14px; font-size:13px; border-radius:9px; }
+        #card-whatsapp-bot .wpp-btn-ghost { background:transparent; border:1px solid rgba(255,255,255,.2); color:#cbd5e1; box-shadow:none; }
+        #card-whatsapp-bot .wpp-btn-ghost:hover { background:rgba(255,255,255,.06); box-shadow:none; transform:none; }
+        #card-whatsapp-bot .wpp-btn-success { background:linear-gradient(135deg,#25d366,#128c7e); box-shadow:0 0 12px rgba(37,211,102,.3); }
+        #card-whatsapp-bot .wpp-btn-danger { background:linear-gradient(135deg,#dc2626,#991b1b); box-shadow:0 0 12px rgba(220,38,38,.25); }
+        #card-whatsapp-bot .wpp-btn-neutro { background:rgba(255,255,255,.08); box-shadow:none; }
+        #card-whatsapp-bot .wpp-btn-neutro:hover { box-shadow:none; }
+
+        .wpp-roteiro-card {
+          display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+          border-left:3px solid #475569; border-radius:10px; padding:12px 14px; margin-bottom:10px;
+        }
+        .wpp-roteiro-card.ativo { border-left-color:#25d366; }
+        .wpp-roteiro-nome { font-weight:700; font-size:14px; }
+        .wpp-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; display:inline-block; margin-top:3px; }
+        .wpp-badge-ativo { background:rgba(37,211,102,0.15); color:#25d366; }
+        .wpp-badge-inativo { background:rgba(148,163,184,0.15); color:#94a3b8; }
+      </style>
+
+      <div class="card" id="card-whatsapp-bot">
+        <div class="wpp-header">
+          <div class="wpp-icon">🤖</div>
+          <div>
+            <h3>Whatsapp Bot</h3>
+            <p class="integ-desc" style="margin:2px 0 0;">Conecte seu número oficial e configure o atendimento automático de primeiro contato.</p>
+          </div>
+        </div>
+
+        <div id="whatsapp_conexao_status" class="wpp-status-card" style="margin-top:18px;margin-bottom:20px;">
           <div style="color:#64748b;font-size:13px;">Carregando conexão...</div>
         </div>
 
         <div id="whatsapp_bot_editor" style="display:none;">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
             <h4 style="margin-bottom:6px;" id="whatsapp_bot_editor_titulo">Novo roteiro</h4>
-            <button class="btn-desconectar" onclick="novoRoteiroWhatsappBot()">+ Novo roteiro</button>
+            <button class="btn wpp-btn wpp-btn-ghost" onclick="novoRoteiroWhatsappBot()">+ Novo roteiro</button>
           </div>
 
           <label style="font-size:13px;font-weight:600;">Nome do roteiro</label>
           <input type="text" id="whatsapp_bot_nome" style="width:100%;font-size:13px;margin-top:6px;margin-bottom:14px;"
             placeholder="Ex: Seguro auto, Saúde corporativo...">
 
-          <div style="margin-bottom:14px;">
-            <label style="font-size:13px;font-weight:600;">Gerar roteiro com IA</label>
+          <div class="wpp-ia-box">
+            <label style="font-size:13px;font-weight:600;">✨ Gerar roteiro com IA</label>
             <textarea id="whatsapp_bot_ia_contexto" rows="2" style="width:100%;font-size:13px;margin-top:6px;"
               placeholder="Descreva seu negócio e o que o bot deve perguntar (ex: corretor de seguro auto, quero saber nome, se já tem carro e quando pretende comprar)"></textarea>
             <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
-              <button class="btn" id="btn_whatsapp_bot_ia" onclick="gerarRoteiroWhatsappBotIA()">✨ Gerar com IA</button>
+              <button class="btn wpp-btn" id="btn_whatsapp_bot_ia" onclick="gerarRoteiroWhatsappBotIA()">✨ Gerar com IA</button>
               <span id="whatsapp_bot_ia_status" style="font-size:12px;color:#94a3b8;"></span>
             </div>
           </div>
 
-          <p style="color:#94a3b8;font-size:12px;margin-bottom:10px;">
-            Uma linha por passo. <code>MSG:</code> manda a mensagem e segue pro próximo passo sozinho.
-            <code>PERGUNTA:</code> manda a mensagem e espera o cliente responder antes de seguir.
-            Marque <code>[HANDOFF]</code> no fim de um passo pra transferir a conversa pra você
-            naquele ponto (sem marcar nenhum, a transferência acontece automaticamente após o último passo).
-          </p>
-          <textarea id="whatsapp_bot_passos" rows="8" style="width:100%;font-family:monospace;font-size:13px;"
-            placeholder="MSG: Olá! Tudo bem?&#10;PERGUNTA: Qual seu nome?&#10;MSG: Perfeito, já vou te conectar com um corretor. [HANDOFF]"></textarea>
+          <div class="wpp-legenda">
+            <span><b style="color:#25d366;">MSG:</b> mensagem, segue sozinho</span>
+            <span><b style="color:#facc15;">PERGUNTA:</b> espera o cliente responder</span>
+            <span><b style="color:#93c5fd;">[HANDOFF]</b> transfere pra você</span>
+          </div>
+
+          <div class="wpp-editor-grid">
+            <textarea id="whatsapp_bot_passos" rows="9" oninput="renderWhatsappBotPreview()" style="width:100%;font-family:monospace;font-size:13px;"
+              placeholder="MSG: Olá! Tudo bem?&#10;PERGUNTA: Qual seu nome?&#10;MSG: Perfeito, já vou te conectar com um corretor. [HANDOFF]"></textarea>
+            <div id="whatsapp_bot_preview_fone">
+              <div class="wpp-preview-vazio">O preview do bot aparece aqui conforme você escreve o roteiro 💬</div>
+            </div>
+          </div>
 
           <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
-            <button class="btn" id="btn_whatsapp_bot_salvar" onclick="salvarWhatsappBot()">Salvar roteiro</button>
+            <button class="btn wpp-btn" id="btn_whatsapp_bot_salvar" onclick="salvarWhatsappBot()">Salvar roteiro</button>
             <span id="whatsapp_bot_salvar_status" style="font-size:12px;color:#94a3b8;"></span>
           </div>
 
-          <h4 style="margin-top:24px;margin-bottom:10px;">Roteiros salvos</h4>
+          <div class="wpp-section-titulo">Roteiros salvos</div>
           <div id="whatsapp_bot_lista">
             <div style="color:#64748b;font-size:13px;">Nenhum roteiro salvo ainda.</div>
           </div>
@@ -31650,26 +31741,57 @@ let _whatsappBotConectado = false;
 
 function renderRoteiroWhatsappBotCard(r) {
   const ativoBadge = r.ativo
-    ? `<span style="color:#22c55e;font-weight:600;">🟢 Ativo</span>`
-    : `<span style="color:#64748b;">Inativo</span>`;
+    ? `<span class="wpp-badge wpp-badge-ativo">🟢 Ativo</span>`
+    : `<span class="wpp-badge wpp-badge-inativo">Inativo</span>`;
   const acaoAtivar = r.ativo
-    ? `<button class="btn-desconectar" onclick="desativarRoteiroWhatsappBot(${r.id})">Desativar</button>`
+    ? `<button class="btn wpp-btn wpp-btn-ghost" onclick="desativarRoteiroWhatsappBot(${r.id})">Desativar</button>`
     : _whatsappBotConectado
-      ? `<button class="btn" onclick="ativarRoteiroWhatsappBot(${r.id})">Ativar</button>`
+      ? `<button class="btn wpp-btn wpp-btn-success" onclick="ativarRoteiroWhatsappBot(${r.id})">Ativar</button>`
       : `<span style="font-size:12px;color:#94a3b8;">conecte o WhatsApp pra ativar</span>`;
   return `
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-bottom:8px;">
+    <div class="wpp-roteiro-card ${r.ativo ? "ativo" : ""}">
       <div>
-        <div style="font-weight:600;">${escaparHtml(r.nome)}</div>
-        <div style="font-size:12px;margin-top:2px;">${ativoBadge}</div>
+        <div class="wpp-roteiro-nome">${escaparHtml(r.nome)}</div>
+        <div>${ativoBadge}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button class="btn" onclick="editarRoteiroWhatsappBot(${r.id})">Editar</button>
+        <button class="btn wpp-btn wpp-btn-neutro" onclick="editarRoteiroWhatsappBot(${r.id})">Editar</button>
         ${acaoAtivar}
-        <button class="btn-desconectar" onclick="excluirRoteiroWhatsappBot(${r.id})">Excluir</button>
+        <button class="btn wpp-btn wpp-btn-danger" onclick="excluirRoteiroWhatsappBot(${r.id})">Excluir</button>
       </div>
     </div>
   `;
+}
+
+// Live preview estilo WhatsApp — reflete o textarea de passos a cada digitação.
+function renderWhatsappBotPreview() {
+  const container = document.getElementById("whatsapp_bot_preview_fone");
+  if (!container) return;
+  const textarea = document.getElementById("whatsapp_bot_passos");
+  const passos = parsearPassosWhatsappBot(textarea?.value || "");
+
+  if (!passos.length) {
+    container.innerHTML = `<div class="wpp-preview-vazio">O preview do bot aparece aqui conforme você escreve o roteiro 💬</div>`;
+    return;
+  }
+
+  const hora = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  let html = "";
+  passos.forEach((p) => {
+    const classe = p.tipo === "pergunta" ? "wpp-bubble wpp-pergunta" : "wpp-bubble";
+    const tagEspera = p.tipo === "pergunta" ? `<span class="wpp-tag-espera">⏳ aguarda resposta</span>` : "";
+    html += `
+      <div class="${classe}">
+        ${escaparHtml(p.texto)}
+        <span class="wpp-hora">${hora} ✓✓</span>
+        ${tagEspera}
+      </div>
+    `;
+    if (p.handoff_apos) {
+      html += `<div class="wpp-system">🤝 Conversa transferida para o corretor</div>`;
+    }
+  });
+  container.innerHTML = html;
 }
 
 function renderListaWhatsappBot() {
@@ -31696,21 +31818,22 @@ async function carregarWhatsappBot() {
     const conexao = (dataConexoes.conexoes || []).find((cx) => cx.plataforma === "whatsapp");
     _whatsappBotConectado = conexao?.status === "conectado";
 
+    statusEl.classList.toggle("conectado", _whatsappBotConectado);
     if (_whatsappBotConectado) {
       const conta = conexao.conta || {};
       statusEl.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-          <div>
-            <div style="color:#22c55e;font-weight:bold;">🟢 Conectado</div>
-            <div style="font-size:13px;color:#cbd5e1;margin-top:4px;">${escaparHtml(conta.numero || "")} ${conta.display_name ? `— ${escaparHtml(conta.display_name)}` : ""}</div>
-          </div>
-          <button class="btn-desconectar" onclick="desconectarPlataforma('whatsapp', this)">Desconectar</button>
+        <div>
+          <div style="color:#25d366;font-weight:bold;">🟢 Conectado</div>
+          <div style="font-size:13px;color:#cbd5e1;margin-top:4px;">${escaparHtml(conta.numero || "")} ${conta.display_name ? `— ${escaparHtml(conta.display_name)}` : ""}</div>
         </div>
+        <button class="btn wpp-btn wpp-btn-danger" onclick="desconectarPlataforma('whatsapp', this)">Desconectar</button>
       `;
     } else {
       statusEl.innerHTML = `
-        <button class="btn" onclick="conectarWhatsapp(this)">Conectar meu WhatsApp</button>
-        <div style="font-size:12px;color:#94a3b8;margin-top:8px;">Sem conexão, você já pode rascunhar, gerar com IA e salvar roteiros — só não dá pra ativar nenhum até conectar o número.</div>
+        <div>
+          <button class="btn wpp-btn wpp-btn-success" onclick="conectarWhatsapp(this)">📱 Conectar meu WhatsApp</button>
+          <div style="font-size:12px;color:#94a3b8;margin-top:8px;">Sem conexão, você já pode rascunhar, gerar com IA e salvar roteiros — só não dá pra ativar nenhum até conectar o número.</div>
+        </div>
       `;
     }
     // Editor fica sempre visível — corretor pode rascunhar/gerar com IA e salvar
@@ -31722,6 +31845,7 @@ async function carregarWhatsappBot() {
     const dataBot = resBot.ok ? await resBot.json() : { roteiros: [] };
     _whatsappBotRoteiros = dataBot.roteiros || [];
     renderListaWhatsappBot();
+    renderWhatsappBotPreview();
   } catch (e) {
     statusEl.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar a conexão do WhatsApp.</div>`;
   }
@@ -31737,6 +31861,7 @@ function novoRoteiroWhatsappBot() {
   if (nomeInput) nomeInput.value = "";
   if (textarea) textarea.value = "";
   if (statusSpan) statusSpan.textContent = "";
+  renderWhatsappBotPreview();
 }
 
 function editarRoteiroWhatsappBot(id) {
@@ -31751,6 +31876,7 @@ function editarRoteiroWhatsappBot(id) {
   if (nomeInput) nomeInput.value = roteiro.nome;
   if (textarea) textarea.value = serializarPassosWhatsappBot(roteiro.passos);
   if (statusSpan) statusSpan.textContent = "";
+  renderWhatsappBotPreview();
 }
 
 async function ativarRoteiroWhatsappBot(id) {
@@ -31829,6 +31955,7 @@ async function gerarRoteiroWhatsappBotIA() {
     }
     const textarea = document.getElementById("whatsapp_bot_passos");
     if (textarea) textarea.value = serializarPassosWhatsappBot(data.passos);
+    renderWhatsappBotPreview();
     if (statusSpan) statusSpan.textContent = "IA preencheu o roteiro abaixo — revise antes de salvar.";
   } catch (e) {
     if (statusSpan) statusSpan.textContent = "Erro ao gerar roteiro com IA.";

@@ -15694,8 +15694,15 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
       <!-- 🔌 HUB DE CONEXÕES -->
       <div class="card hub-conexoes-card" id="card-hub-conexoes">
-        <h3>🔌 Integrações</h3>
-        <p class="integ-desc">Gerencie as conexões com plataformas de anúncio e captação de leads.</p>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div>
+            <h3 style="margin-bottom:4px;">🔌 Integrações</h3>
+            <p class="integ-desc">Gerencie as conexões com plataformas de anúncio e captação de leads.</p>
+          </div>
+          <button id="btn_atualizar_plataformas" class="btn-sync" type="button" onclick="atualizarTodasPlataformas(this)" title="Atualizar o status de todas as integrações">
+            🔄 Atualizar plataformas
+          </button>
+        </div>
         <div id="hub_conexoes_grid">
           <div style="color:#64748b;font-size:13px;">Carregando...</div>
         </div>
@@ -30994,6 +31001,25 @@ async function carregarHub() {
   )).join("");
 }
 
+async function atualizarTodasPlataformas(btn) {
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ Atualizando...";
+  }
+  try {
+    await Promise.all([
+      carregarHub(),
+      carregarStatusMeta(),
+      carregarStatusGoogle()
+    ]);
+  } finally {
+    if (btn && document.body.contains(btn)) {
+      btn.disabled = false;
+      btn.textContent = "🔄 Atualizar plataformas";
+    }
+  }
+}
+
 function renderResumoConexao(p, conn) {
   if (!conn) return "";
   const conta = conn.conta || {};
@@ -31345,6 +31371,7 @@ async function carregarStatusGoogle() {
     }
 
     const contas = dataContas.contas || [];
+    const avisosContas = dataContas.avisos || [];
     const customerIdAtual = dataStatus.customer_id || "";
     const contaInfo = dataStatus.conta || null;
     const pagamento = dataStatus.pagamento || null;
@@ -31384,6 +31411,7 @@ async function carregarStatusGoogle() {
                       >📘 Tutorial: criar conta</button>
                     </div>
                     ${montarSeletorContaAnunciosGoogle(contas, customerIdAtual)}
+                    ${avisosContas.length ? `<div style="margin-top:8px;padding:8px 10px;border-radius:7px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;font-size:11px;line-height:1.4;">Não foi possível carregar as contas vinculadas à MCC. Tente reconectar o Google Ads. Detalhe: ${escaparHtml(avisosContas.join(" | "))}</div>` : ""}
                   </div>
                 </div>
 

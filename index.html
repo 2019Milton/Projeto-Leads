@@ -16671,40 +16671,18 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
       <!-- 📋 GUIA DOS PLANOS -->
       <div class="info-painel" id="card-informacoes">
 
-        <span class="info-painel-titulo">📋 Planos e Recursos</span>
+        <span class="info-painel-titulo">🚀 IA & Performance Meta</span>
 
         <div class="planos-guia">
           <div class="planos-hero">
             <div>
-              <span class="planos-kicker">Guia dos níveis</span>
-              <h3>Entenda o que cada plano libera na plataforma</h3>
+              <span class="planos-kicker">Inteligência de leads</span>
+              <h3>Como a plataforma qualifica seus leads — em toda a conta</h3>
               <p>
-                Bronze organiza a inteligência do lead, Prata adiciona previsão por Machine Learning
-                e Ouro libera a IA para apoiar atendimento, recuperação e campanhas.
+                Pontuação automática, previsão por Machine Learning e IA generativa funcionam juntas
+                para todo mundo, sem diferença por plano. O que a IA descobre sobre cada lead também é
+                enviado de volta para a Meta, para ela priorizar entrega para quem realmente converte.
               </p>
-            </div>
-            <div class="planos-resumo-lista">
-              <div class="plano-resumo-card">
-                <span class="plano-badge plano-badge--bronze">Bronze</span>
-                <div>
-                  <strong>Score e classificação</strong>
-                  <p>Pontua dados, intenção, urgência e status do funil.</p>
-                </div>
-              </div>
-              <div class="plano-resumo-card">
-                <span class="plano-badge plano-badge--prata">Prata</span>
-                <div>
-                  <strong>Bronze + ML</strong>
-                  <p>Usa histórico para prever tendência e conversão.</p>
-                </div>
-              </div>
-              <div class="plano-resumo-card">
-                <span class="plano-badge plano-badge--ouro">Ouro</span>
-                <div>
-                  <strong>Prata + IA</strong>
-                  <p>Gera prioridades, mensagens, perguntas e campanhas.</p>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -16714,9 +16692,8 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 <span class="plano-numero">01</span>
                 <div>
                   <h4>Inteligência do Lead</h4>
-                  <span>Base disponível nos planos Bronze, Prata e Ouro.</span>
+                  <span>Pontuação automática ativa em toda a conta.</span>
                 </div>
-                <span class="plano-badge plano-badge--bronze">Bronze</span>
               </div>
               <div class="plano-bloco-body">
                 <div class="score-lista">
@@ -16775,12 +16752,10 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 <span class="plano-numero">02</span>
                 <div>
                   <h4>Machine Learning dos Leads</h4>
-                  <span>Camada preditiva disponível nos planos Prata e Ouro.</span>
+                  <span>Camada preditiva ativa em toda a conta.</span>
                 </div>
-                <span class="plano-badge plano-badge--prata">Prata</span>
               </div>
               <div class="plano-bloco-body">
-                <span class="plano-disponibilidade">Disponível em Prata e Ouro</span>
                 <div class="plano-info-grid">
                   <div class="plano-info-card">
                     <strong>Aprendizado</strong>
@@ -16806,13 +16781,11 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               <div class="plano-bloco-head">
                 <span class="plano-numero">03</span>
                 <div>
-                  <h4>IA Ouro em toda a jornada</h4>
-                  <span>Assistência completa disponível somente no plano Ouro.</span>
+                  <h4>IA em toda a jornada</h4>
+                  <span>Assistência completa ativa em toda a conta.</span>
                 </div>
-                <span class="plano-badge plano-badge--ouro">Ouro</span>
               </div>
               <div class="plano-bloco-body">
-                <span class="plano-disponibilidade">Disponível no Ouro</span>
                 <p>
                   A IA usa dados do lead, status, classificação Frio/Morno/Quente, observações,
                   respostas do formulário, tempo parado, histórico, campanha e previsão do ML quando existir.
@@ -16857,6 +16830,78 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 </div>
               </div>
             </section>
+          </div>
+        </div>
+
+        <div class="planos-guia" style="margin-top:28px;">
+          <div class="planos-hero">
+            <div>
+              <span class="planos-kicker">Tempo real</span>
+              <h3>O que já foi enviado para a Meta</h3>
+              <p>
+                Toda vez que um lead vira "quente" pela IA/ML ou é marcado como fechado, a plataforma
+                manda esse sinal para a Meta (Conversion Leads), para ela aprender a priorizar leads
+                parecidos. Atualiza sozinho a cada 30 segundos.
+              </p>
+            </div>
+          </div>
+
+          <div id="meta-conversao-kpis" class="dashboard-stat-grid" style="margin-bottom:16px;">
+            <div class="dashboard-empty-state">Carregando dados enviados para a Meta...</div>
+          </div>
+
+          <div class="plano-blocos">
+            <section class="plano-bloco">
+              <div class="plano-bloco-head">
+                <div>
+                  <h4>Ganho projetado</h4>
+                  <span>Estimativa — a otimização automática do Ad Set com esse sinal ainda não está ativa.</span>
+                </div>
+              </div>
+              <div class="plano-bloco-body" id="meta-conversao-ganho">
+                <div class="plano-nota">Carregando...</div>
+              </div>
+            </section>
+
+            <section class="plano-bloco">
+              <div class="plano-bloco-head">
+                <div>
+                  <h4>Últimos eventos enviados</h4>
+                </div>
+              </div>
+              <div class="plano-bloco-body" id="meta-conversao-eventos">
+                <div class="plano-nota">Carregando...</div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="planos-guia" style="margin-top:28px;">
+          <div class="planos-hero">
+            <div>
+              <span class="planos-kicker">Em breve</span>
+              <h3>A mesma inteligência, em outras plataformas</h3>
+              <p>
+                O mesmo sinal de qualificação e fechamento que já vai para a Meta está planejado para
+                Google Ads e TikTok — ainda não envia dados reais.
+              </p>
+            </div>
+            <div class="planos-resumo-lista">
+              <div class="plano-resumo-card" style="opacity:.6;">
+                <span class="plano-badge" style="background:rgba(148,163,184,.16);color:#cbd5e1;">Em breve</span>
+                <div>
+                  <strong>Google Ads</strong>
+                  <p>Enhanced Conversions for Leads — planejado, ainda não enviando dados.</p>
+                </div>
+              </div>
+              <div class="plano-resumo-card" style="opacity:.6;">
+                <span class="plano-badge" style="background:rgba(148,163,184,.16);color:#cbd5e1;">Em breve</span>
+                <div>
+                  <strong>TikTok Ads</strong>
+                  <p>Events API — planejado, ainda não enviando dados.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -19478,7 +19523,7 @@ const SIDEBAR_SECOES = {
   leads:          { ids: ["card-leads-central"],                              icone: "📥", label: "Central de Leads" },
   whatsappbot:    { ids: ["card-whatsapp-bot"],                               icone: "🤖", label: "Whatsapp Bot" },
   suporte:        { ids: ["suporte-page-wrap"],                                icone: "💬", label: "Suporte" },
-  informacoes:    { ids: ["card-informacoes"],                                icone: "ℹ️",  label: "Planos e Recursos" },
+  informacoes:    { ids: ["card-informacoes"],                                icone: "🚀", label: "IA & Performance Meta" },
   admin:          { ids: ["painel_admin"],                                    icone: "🛡️", label: "Admin", condicional: true },
   "suporte-chat": { ids: ["painel_suporte_chat"],                             icone: "🎧", label: "Painel Suporte", condicional: true },
   parceiro:       { ids: ["painel_parceiro"],                                 icone: "🤝", label: "Parceiro", condicional: true },
@@ -19790,6 +19835,17 @@ function navegarPara(secao) {
   } else {
     clearInterval(window._chatPagePollInterval);
     window._chatPagePollInterval = null;
+  }
+
+  // Ao navegar para IA & Performance Meta, carregar/pausar o dashboard de Conversion Leads
+  if (secao === "informacoes") {
+    carregarDashboardConversionLeadsMeta();
+    if (!window._metaConversaoPollInterval) {
+      window._metaConversaoPollInterval = setInterval(carregarDashboardConversionLeadsMeta, 30000);
+    }
+  } else {
+    clearInterval(window._metaConversaoPollInterval);
+    window._metaConversaoPollInterval = null;
   }
 }
 
@@ -20522,11 +20578,11 @@ function mensagemCampanhasVazias(filtro) {
   return "Nenhuma campanha criada ainda.";
 }
 
+// IA deixou de ser exclusiva de um plano — ativa pra toda conta (ver
+// RECURSOS_POR_PLANO no backend). Mantida como função (em vez de inline nos
+// ~5 call sites) só pra não precisar tocar em cada um se isso mudar de novo.
 function usuarioTemIAOuro() {
-  return Boolean(
-    usuarioLogado?.acesso_total ||
-    usuarioLogado?.plano === "ouro"
-  );
+  return true;
 }
 
 function idadeLeadDias(lead) {
@@ -20756,46 +20812,6 @@ function forcarFiltrosDoDiaAoAutenticar() {
   filtroKPI = null;
 }
 
-function atualizarInformacoesPorPlano(
-  plano,
-  acessoTotal = false
-) {
-  const mlInfo =
-    document.getElementById(
-      "ml_explicacao_lead"
-    );
-
-  const iaInfo =
-    document.getElementById(
-      "ia_explicacao_ouro"
-    );
-
-  const temML =
-    acessoTotal ||
-    plano === "prata" ||
-    plano === "ouro";
-
-  const temIA =
-    acessoTotal ||
-    plano === "ouro";
-
-  if (mlInfo) {
-    mlInfo.style.display = "";
-    mlInfo.classList.toggle(
-      "plano-indisponivel",
-      !temML
-    );
-  }
-
-  if (iaInfo) {
-    iaInfo.style.display = "";
-    iaInfo.classList.toggle(
-      "plano-indisponivel",
-      !temIA
-    );
-  }
-}
-
 async function carregarPlanoAtual() {
 
   const token =
@@ -20812,10 +20828,6 @@ async function carregarPlanoAtual() {
     );
 
   if (!token || !topo || !nome) {
-    atualizarInformacoesPorPlano(
-      "bronze",
-      false
-    );
     return;
   }
 
@@ -20852,17 +20864,137 @@ async function carregarPlanoAtual() {
         Boolean(data.acesso_total);
     }
 
-    atualizarInformacoesPorPlano(
-      plano,
-      Boolean(data.acesso_total)
-    );
-
   } catch (err) {
     console.error("PLANO ATUAL:", err);
-    atualizarInformacoesPorPlano(
-      "bronze",
-      false
-    );
+  }
+}
+
+// Dashboard "tempo real" da aba IA & Performance Meta: o que já foi mandado
+// pro Conversion Leads da Meta + o ganho projetado (ver avaliarEEnviarQualificacaoMeta
+// no backend). Chamado ao entrar na aba e a cada 30s enquanto ela estiver ativa
+// (ver navegarPara).
+async function carregarDashboardConversionLeadsMeta() {
+
+  const token = localStorage.getItem("token");
+  const kpisEl = document.getElementById("meta-conversao-kpis");
+  const ganhoEl = document.getElementById("meta-conversao-ganho");
+  const eventosEl = document.getElementById("meta-conversao-eventos");
+
+  if (!token || !kpisEl) {
+    return;
+  }
+
+  try {
+
+    const [resEstatisticas, resPerformance] = await Promise.all([
+      fetch(`${API}/leads/meta-conversao/estatisticas`, {
+        headers: { "Authorization": "Bearer " + token }
+      }),
+      fetch(`${API}/meta/performance-diaria?periodo=mensal`, {
+        headers: { "Authorization": "Bearer " + token }
+      })
+    ]);
+
+    const estatisticas = await resEstatisticas.json();
+    const performance = await resPerformance.json().catch(() => ({}));
+
+    if (!resEstatisticas.ok || estatisticas.error) {
+      kpisEl.innerHTML = `<div class="dashboard-empty-state">Não foi possível carregar os dados enviados para a Meta.</div>`;
+      return;
+    }
+
+    const kpis = [
+      {
+        label: "Leads da Meta",
+        valor: String(estatisticas.total_leads_meta || 0),
+        detalhe: "Leads com origem Meta nesta conta",
+        cor: "#60a5fa"
+      },
+      {
+        label: "Qualificados enviados",
+        valor: String(estatisticas.qualificados_enviados || 0),
+        detalhe:
+          estatisticas.taxa_qualificacao != null
+            ? `${estatisticas.taxa_qualificacao.toFixed(1)}% dos leads da Meta`
+            : "Aguardando leads quentes",
+        cor: "#facc15"
+      },
+      {
+        label: "Fechados enviados",
+        valor: String(estatisticas.fechados_enviados || 0),
+        detalhe:
+          estatisticas.taxa_fechamento != null
+            ? `${estatisticas.taxa_fechamento.toFixed(1)}% dos leads da Meta`
+            : "Aguardando negócios fechados",
+        cor: "#22c55e"
+      }
+    ];
+
+    kpisEl.innerHTML = kpis.map(kpi => `
+      <div class="dashboard-stat-card" style="--dash-accent:${kpi.cor};">
+        <span>${kpi.label}</span>
+        <strong>${kpi.valor}</strong>
+        <small>${kpi.detalhe}</small>
+      </div>
+    `).join("");
+
+    if (ganhoEl) {
+
+      const cplAtual = performance?.resumo?.custo_por_lead_medio;
+
+      if (!resPerformance.ok || performance.error || !cplAtual) {
+
+        ganhoEl.innerHTML = `
+          <div class="plano-nota">
+            Conecte e sincronize sua conta Meta para ver o CPL atual e a projeção de economia.
+          </div>
+        `;
+
+      } else {
+
+        const economiaMin = cplAtual * 0.15;
+        const economiaMax = cplAtual * 0.21;
+
+        ganhoEl.innerHTML = `
+          <div class="plano-info-grid">
+            <div class="plano-info-card">
+              <strong>CPL médio atual</strong>
+              <p>${formatarMoeda(cplAtual)}</p>
+            </div>
+            <div class="plano-info-card">
+              <strong>Faixa projetada com Conversion Leads</strong>
+              <p>${formatarMoeda(cplAtual - economiaMax)} a ${formatarMoeda(cplAtual - economiaMin)}</p>
+            </div>
+            <div class="plano-info-card">
+              <strong>Economia estimada</strong>
+              <p>15% a 21% por lead qualificado, conforme dados publicados pela própria Meta para Conversion Leads.</p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    if (eventosEl) {
+
+      const eventos = estatisticas.ultimos_eventos || [];
+
+      eventosEl.innerHTML = eventos.length
+        ? eventos.map(ev => `
+            <div class="dashboard-live-row">
+              <span>${ev.tipo === "fechado" ? "✅" : "🔥"} ${escaparHtml(ev.nome || "Lead")}</span>
+              <strong>${ev.tipo === "fechado" ? "Fechamento enviado" : "Qualificação enviada"}</strong>
+            </div>
+          `).join("")
+        : `<div class="plano-nota">Nenhum evento enviado ainda. Assim que um lead virar quente ou fechar, aparece aqui.</div>`;
+    }
+
+  } catch (err) {
+
+    console.error("META CONVERSAO DASHBOARD:", err);
+
+    if (kpisEl) {
+      kpisEl.innerHTML = `<div class="dashboard-empty-state">Erro ao carregar os dados enviados para a Meta.</div>`;
+    }
   }
 }
   
@@ -22950,7 +23082,7 @@ const MAPA_CHAT_IA_LEADS = [
   {
     termos: ["plano", "recurso", "recursos", "assinatura"],
     secao: "informacoes",
-    resposta: "No menu lateral, clique em Planos e Recursos para ver os recursos disponiveis no seu plano e o que esta liberado na conta."
+    resposta: "No menu lateral, clique em IA & Performance Meta para ver como a inteligencia de leads funciona e o que ja foi enviado para a Meta."
   }
 ];
 

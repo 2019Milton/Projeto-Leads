@@ -16888,14 +16888,14 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
             <div class="planos-resumo-lista">
               <div class="plano-resumo-card" style="opacity:.6;">
-                <span class="plano-badge" style="background:rgba(148,163,184,.16);color:#cbd5e1;">Em breve</span>
+                <span class="plano-badge plano-badge--prata">Em breve</span>
                 <div>
                   <strong>Google Ads</strong>
                   <p>Enhanced Conversions for Leads — planejado, ainda não enviando dados.</p>
                 </div>
               </div>
               <div class="plano-resumo-card" style="opacity:.6;">
-                <span class="plano-badge" style="background:rgba(148,163,184,.16);color:#cbd5e1;">Em breve</span>
+                <span class="plano-badge plano-badge--prata">Em breve</span>
                 <div>
                   <strong>TikTok Ads</strong>
                   <p>Events API — planejado, ainda não enviando dados.</p>
@@ -20873,33 +20873,43 @@ async function carregarPlanoAtual() {
 // pro Conversion Leads da Meta + o ganho projetado (ver avaliarEEnviarQualificacaoMeta
 // no backend). Chamado ao entrar na aba e a cada 30s enquanto ela estiver ativa
 // (ver navegarPara).
-async function carregarDashboardConversionLeadsMeta() {
+function carregarDashboardConversionLeadsMeta() {
 
   const token = localStorage.getItem("token");
+
+  if (!token) {
+    return;
+  }
+
+  // As duas seções dependem de fontes diferentes (stats locais vs. Graph API
+  // da Meta) — carregadas em paralelo, cada uma com seu próprio erro, pra uma
+  // resposta lenta/falha de uma não travar a outra em "Carregando...".
+  carregarEstatisticasMetaConversao(token);
+  carregarGanhoProjetadoMeta(token);
+}
+
+async function carregarEstatisticasMetaConversao(token) {
+
   const kpisEl = document.getElementById("meta-conversao-kpis");
-  const ganhoEl = document.getElementById("meta-conversao-ganho");
   const eventosEl = document.getElementById("meta-conversao-eventos");
 
-  if (!token || !kpisEl) {
+  if (!kpisEl) {
     return;
   }
 
   try {
 
-    const [resEstatisticas, resPerformance] = await Promise.all([
-      fetch(`${API}/leads/meta-conversao/estatisticas`, {
-        headers: { "Authorization": "Bearer " + token }
-      }),
-      fetch(`${API}/meta/performance-diaria?periodo=mensal`, {
-        headers: { "Authorization": "Bearer " + token }
-      })
-    ]);
+    const res = await fetch(`${API}/leads/meta-conversao/estatisticas`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
 
-    const estatisticas = await resEstatisticas.json();
-    const performance = await resPerformance.json().catch(() => ({}));
+    const estatisticas = await res.json();
 
-    if (!resEstatisticas.ok || estatisticas.error) {
+    if (!res.ok || estatisticas.error) {
       kpisEl.innerHTML = `<div class="dashboard-empty-state">Não foi possível carregar os dados enviados para a Meta.</div>`;
+      if (eventosEl) {
+        eventosEl.innerHTML = `<div class="plano-nota">Não foi possível carregar os últimos eventos.</div>`;
+      }
       return;
     }
 
@@ -20938,42 +20948,6 @@ async function carregarDashboardConversionLeadsMeta() {
       </div>
     `).join("");
 
-    if (ganhoEl) {
-
-      const cplAtual = performance?.resumo?.custo_por_lead_medio;
-
-      if (!resPerformance.ok || performance.error || !cplAtual) {
-
-        ganhoEl.innerHTML = `
-          <div class="plano-nota">
-            Conecte e sincronize sua conta Meta para ver o CPL atual e a projeção de economia.
-          </div>
-        `;
-
-      } else {
-
-        const economiaMin = cplAtual * 0.15;
-        const economiaMax = cplAtual * 0.21;
-
-        ganhoEl.innerHTML = `
-          <div class="plano-info-grid">
-            <div class="plano-info-card">
-              <strong>CPL médio atual</strong>
-              <p>${formatarMoeda(cplAtual)}</p>
-            </div>
-            <div class="plano-info-card">
-              <strong>Faixa projetada com Conversion Leads</strong>
-              <p>${formatarMoeda(cplAtual - economiaMax)} a ${formatarMoeda(cplAtual - economiaMin)}</p>
-            </div>
-            <div class="plano-info-card">
-              <strong>Economia estimada</strong>
-              <p>15% a 21% por lead qualificado, conforme dados publicados pela própria Meta para Conversion Leads.</p>
-            </div>
-          </div>
-        `;
-      }
-    }
-
     if (eventosEl) {
 
       const eventos = estatisticas.ultimos_eventos || [];
@@ -20990,11 +20964,86 @@ async function carregarDashboardConversionLeadsMeta() {
 
   } catch (err) {
 
-    console.error("META CONVERSAO DASHBOARD:", err);
+    console.error("META CONVERSAO ESTATISTICAS:", err);
 
-    if (kpisEl) {
-      kpisEl.innerHTML = `<div class="dashboard-empty-state">Erro ao carregar os dados enviados para a Meta.</div>`;
+    kpisEl.innerHTML = `<div class="dashboard-empty-state">Erro ao carregar os dados enviados para a Meta.</div>`;
+
+    if (eventosEl) {
+      eventosEl.innerHTML = `<div class="plano-nota">Erro ao carregar os últimos eventos.</div>`;
     }
+  }
+}
+
+async function carregarGanhoProjetadoMeta(token) {
+
+  const ganhoEl = document.getElementById("meta-conversao-ganho");
+
+  if (!ganhoEl) {
+    return;
+  }
+
+  try {
+
+    const res = await fetch(`${API}/meta/performance-diaria?periodo=mensal`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    const performance = await res.json().catch(() => ({}));
+
+    const cplAtual = performance?.resumo?.custo_por_lead_medio;
+
+    if (!res.ok || performance.error || cplAtual == null) {
+      ganhoEl.innerHTML = `
+        <div class="plano-nota">
+          Conecte e sincronize sua conta Meta para ver o CPL atual e a projeção de economia.
+        </div>
+      `;
+      return;
+    }
+
+    const economiaMin = cplAtual * 0.15;
+    const economiaMax = cplAtual * 0.21;
+
+    // Tendência real (dia atual vs. média dos dias anteriores no período) já
+    // vem pronta do /meta/performance-diaria — mostrada à parte, sem misturar
+    // com a faixa documentada pela Meta pro Conversion Leads (não é a mesma
+    // coisa: essa tendência não é efeito do Conversion Leads, que ainda nem
+    // está otimizando o Ad Set).
+    const economiaReal = performance?.resumo?.economia_percentual;
+
+    const cardTendencia =
+      economiaReal != null
+        ? `
+          <div class="plano-info-card">
+            <strong>Tendência recente de CPL</strong>
+            <p>Hoje está ${Math.abs(economiaReal).toFixed(1)}% ${economiaReal >= 0 ? "melhor" : "pior"} que a média dos dias anteriores no período (ainda não é efeito do Conversion Leads).</p>
+          </div>
+        `
+        : "";
+
+    ganhoEl.innerHTML = `
+      <div class="plano-info-grid">
+        <div class="plano-info-card">
+          <strong>CPL médio atual</strong>
+          <p>${formatarMoeda(cplAtual)}</p>
+        </div>
+        ${cardTendencia}
+        <div class="plano-info-card">
+          <strong>Faixa projetada com Conversion Leads</strong>
+          <p>${formatarMoeda(cplAtual - economiaMax)} a ${formatarMoeda(cplAtual - economiaMin)}</p>
+        </div>
+        <div class="plano-info-card">
+          <strong>Economia estimada</strong>
+          <p>15% a 21% por lead qualificado, conforme dados publicados pela própria Meta para Conversion Leads.</p>
+        </div>
+      </div>
+    `;
+
+  } catch (err) {
+
+    console.error("META CONVERSAO GANHO:", err);
+
+    ganhoEl.innerHTML = `<div class="plano-nota">Erro ao carregar o CPL e a projeção de economia.</div>`;
   }
 }
   
@@ -22508,9 +22557,9 @@ function renderizarBadgeIALead(lead) {
   return `
     <span
       class="lead-ia-badge"
-      title="Este card tem analise da IA Ouro. Ao abrir os detalhes, a API da OpenAI pode ser acionada."
+      title="Este card tem analise da IA. Ao abrir os detalhes, a API da OpenAI pode ser acionada."
     >
-      IA Ouro usa IA - ${prioridade}
+      IA - ${prioridade}
     </span>
   `;
 }
@@ -22520,7 +22569,7 @@ function renderizarDetalhesIALead(analise) {
   if (!analise?.disponivel) {
     return `
       <div class="timeline-empty">
-        IA disponivel somente no plano Ouro.
+        Analise de IA ainda nao disponivel para este lead.
       </div>
     `;
   }
@@ -24476,7 +24525,7 @@ function renderizarDetalhesRecuperacaoLead(lead) {
         usuarioTemIAOuro()
           ? `
             <div class="ia-uso-alerta">
-              No plano Ouro, abra o bloco IA Ouro deste lead para gerar uma analise e mensagem com a API de IA.
+              Abra o bloco de IA deste lead para gerar uma analise e mensagem com a API de IA.
             </div>
           `
           : ""
@@ -39860,7 +39909,7 @@ async function enviarFeedback() {
         style="display:none;"
       >
         <div class="drawer-box-topo">
-          <h4>IA Ouro - usa IA</h4>
+          <h4>IA - usa IA</h4>
           <button
             id="btn_reanalisar_ia_lead"
             class="btn-reanalisar-ia"
@@ -39871,7 +39920,7 @@ async function enviarFeedback() {
         </div>
 
         <div class="ia-uso-alerta">
-          Ao carregar esta analise, a plataforma usa a IA do plano Ouro.
+          Ao carregar esta analise, a plataforma usa IA generativa.
           Com a chave configurada, a resposta vem da API da OpenAI.
         </div>
 

@@ -27978,13 +27978,13 @@ function coletarCamposBasicosCampanha() {
 
 function assinaturaImagensCampanha() {
   return Array.from(
-    document.querySelectorAll(".imagem-input")
+    document.querySelectorAll("#imagens-container .imagem-item")
   )
-    .map(input => {
-      const file = input.files?.[0];
-      return file
-        ? `${file.name}:${file.size}:${file.lastModified}`
-        : "";
+    .map(item => {
+      const file = item.querySelector(".imagem-input")?.files?.[0];
+      if (file) return `novo:${file.name}:${file.size}:${file.lastModified}`;
+      if (item.dataset.hashExistente) return `existente:${item.dataset.hashExistente}`;
+      return "";
     })
     .join("|");
 }
@@ -28212,7 +28212,14 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       basicos: coletarCamposBasicosCampanha(),
       avancadas: coletarConfiguracoesAvancadas(),
       orcamento: valorCampo("orcamento"),
-      imagensAssinatura: assinaturaImagensCampanha(),
+      // Imagens que já estavam no formulário de "Criar Campanha" antes de entrar
+      // na edição — usadas só para restaurar o carrossel ao fechar (o baseline
+      // de comparação "mudou ou não" é definido depois, já com as imagens da
+      // campanha carregadas no carrossel).
+      imagensArquivos: Array.from(document.querySelectorAll(".imagem-input"))
+        .map(input => input.files?.[0])
+        .filter(Boolean),
+      imagensAssinatura: "",
       videoAssinatura: assinaturaVideoCampanha(),
       videoArquivo: obterArquivoVideoCampanha(),
       redes: Array.from(redesSelecionadasCampanha)
@@ -28244,6 +28251,8 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       campanha.daily_budget
     );
     preencherCamposBasicosCampanha(campanha);
+    preencherImagensCampanhaSalva(campanha.configuracoes_avancadas || {});
+    _snapshotCriarCampanha.imagensAssinatura = assinaturaImagensCampanha();
 
     const feedback = document.getElementById("editar_campanha_feedback");
 
@@ -28291,6 +28300,21 @@ function fecharEdicaoCampanha() {
       atualizarTosHint();
       preencherConfiguracoesAvancadas(_snapshotCriarCampanha.avancadas, null);
       definirValorCampo("orcamento", _snapshotCriarCampanha.orcamento);
+
+      const containerImagens = document.getElementById("imagens-container");
+      if (containerImagens) {
+        containerImagens.innerHTML = "";
+        const arquivosSalvos = _snapshotCriarCampanha.imagensArquivos || [];
+        if (arquivosSalvos.length) {
+          arquivosSalvos.forEach(arquivo => {
+            containerImagens.appendChild(criarItemImagem(arquivo));
+          });
+        } else {
+          containerImagens.appendChild(criarItemImagem());
+        }
+        atualizarPosicoes();
+      }
+
       if (_snapshotCriarCampanha.videoArquivo) {
         try {
           const inputVideo = document.getElementById("video_anuncio_input");
@@ -28347,12 +28371,10 @@ async function salvarEdicaoCampanha() {
     assinaturaImagensCampanha() !==
     (_snapshotCriarCampanha?.imagensAssinatura || "");
 
-  const imagensArquivos = imagensForamAlteradas
+  const itensImagem = imagensForamAlteradas
     ? Array.from(
-        document.querySelectorAll(".imagem-input")
+        document.querySelectorAll("#imagens-container .imagem-item")
       )
-        .map(input => input.files?.[0])
-        .filter(Boolean)
     : [];
 
   const videoFoiAlterado =
@@ -28385,6 +28407,22 @@ async function salvarEdicaoCampanha() {
     return;
   }
 
+  if (
+    imagensForamAlteradas &&
+    !itensImagem.some(item =>
+      item.querySelector(".imagem-input")?.files?.[0] || item.dataset.hashExistente
+    ) &&
+    !videoArquivo &&
+    !configuracoes_avancadas.video_id
+  ) {
+    if (feedback) {
+      feedback.textContent =
+        "Adicione ao menos uma imagem ou um vídeo para o anúncio.";
+      feedback.style.display = "block";
+    }
+    return;
+  }
+
   if (btn) {
     btn.disabled = true;
     btn.textContent = "Salvando...";
@@ -28394,31 +28432,37 @@ async function salvarEdicaoCampanha() {
 
     const imageHashes = [];
 
-    for (const file of imagensArquivos) {
-      const formData = new FormData();
-      formData.append("imagem", file);
-      formData.append("usuario_id", usuario_id);
+    for (const item of itensImagem) {
+      const file = item.querySelector(".imagem-input")?.files?.[0];
 
-      const uploadRes = await fetch(
-        `${API}/meta/upload-imagem`,
-        {
-          method: "POST",
-          headers: { "Authorization": "Bearer " + token },
-          body: formData
-        }
-      );
+      if (file) {
+        const formData = new FormData();
+        formData.append("imagem", file);
+        formData.append("usuario_id", usuario_id);
 
-      const upload = await uploadRes.json();
-
-      if (!uploadRes.ok || upload.error) {
-        throw new Error(
-          upload.error?.message ||
-          upload.error ||
-          "Erro ao enviar imagem"
+        const uploadRes = await fetch(
+          `${API}/meta/upload-imagem`,
+          {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token },
+            body: formData
+          }
         );
-      }
 
-      imageHashes.push(upload.hash);
+        const upload = await uploadRes.json();
+
+        if (!uploadRes.ok || upload.error) {
+          throw new Error(
+            upload.error?.message ||
+            upload.error ||
+            "Erro ao enviar imagem"
+          );
+        }
+
+        imageHashes.push(upload.hash);
+      } else if (item.dataset.hashExistente) {
+        imageHashes.push(item.dataset.hashExistente);
+      }
     }
 
     if (videoArquivo) {
@@ -28451,8 +28495,8 @@ async function salvarEdicaoCampanha() {
       configuracoes_avancadas
     };
 
-    if (imageHashes.length) {
-      payloadEdicao.imageHash = imageHashes[0];
+    if (imagensForamAlteradas) {
+      payloadEdicao.imageHash = imageHashes[0] || null;
       payloadEdicao.imageHashes = imageHashes;
     }
 
@@ -28640,6 +28684,7 @@ function criarItemImagem(arquivoInicial) {
 
   function aplicarArquivo(arquivo) {
     if (!arquivo) return;
+    delete item.dataset.hashExistente;
     const dt = new DataTransfer();
     dt.items.add(arquivo);
     fileInput.files = dt.files;
@@ -28655,8 +28700,33 @@ function criarItemImagem(arquivoInicial) {
   }
   item.aplicarArquivo = aplicarArquivo;
 
+  // Mostra uma imagem já salva na campanha (Meta), sem exigir um File local —
+  // usada ao abrir a edição, para o carrossel refletir o que já está publicado.
+  function aplicarImagemExistente(hash, url) {
+    fileInput.value = "";
+    item.dataset.hashExistente = hash || "";
+    nomeSpan.textContent = "Imagem salva na campanha";
+    nomeSpan.classList.add("preenchido");
+    if (thumb.dataset.objectUrl) {
+      URL.revokeObjectURL(thumb.dataset.objectUrl);
+      delete thumb.dataset.objectUrl;
+    }
+    if (url) {
+      thumb.src = url;
+      thumb.style.display = "block";
+      placeholder.style.display = "none";
+    } else {
+      thumb.removeAttribute("src");
+      thumb.style.display = "none";
+      placeholder.style.display = "";
+    }
+    thumbWrap.classList.add("preenchido");
+  }
+  item.aplicarImagemExistente = aplicarImagemExistente;
+
   function limparArquivo() {
     fileInput.value = "";
+    delete item.dataset.hashExistente;
     if (thumb.dataset.objectUrl) {
       URL.revokeObjectURL(thumb.dataset.objectUrl);
       delete thumb.dataset.objectUrl;
@@ -28936,6 +29006,48 @@ function preencherVideoCampanhaSalvo(cfg = {}) {
   if (status) status.textContent = videoId ? `Vídeo Meta: ${videoId}` : "Vídeo salvo nos dados da campanha.";
   if (remover) remover.style.display = "";
   if (card) card.classList.add("preenchido");
+}
+
+// Repopula o carrossel de imagens com o que já está salvo/publicado na campanha
+// (usado ao abrir a edição — sem isso o carrossel sempre aparecia vazio, mesmo
+// com imagens já ativas no anúncio no Meta).
+function preencherImagensCampanhaSalva(cfg = {}) {
+  const container = document.getElementById("imagens-container");
+  if (!container) return;
+
+  const hashes = (
+    Array.isArray(cfg.imageHashes) && cfg.imageHashes.length
+      ? cfg.imageHashes
+      : Array.isArray(cfg.image_hashes) && cfg.image_hashes.length
+      ? cfg.image_hashes
+      : [cfg.imageHash || cfg.image_hash].filter(Boolean)
+  ).filter(Boolean);
+
+  const urls = (
+    Array.isArray(cfg.imagens_urls) && cfg.imagens_urls.length
+      ? cfg.imagens_urls
+      : Array.isArray(cfg.image_urls) && cfg.image_urls.length
+      ? cfg.image_urls
+      : [cfg.imagem_url || cfg.image_url].filter(Boolean)
+  ).filter(Boolean);
+
+  container.innerHTML = "";
+
+  const total = Math.max(hashes.length, urls.length);
+
+  if (!total) {
+    container.appendChild(criarItemImagem());
+    atualizarPosicoes();
+    return;
+  }
+
+  for (let i = 0; i < total; i++) {
+    const item = criarItemImagem();
+    item.aplicarImagemExistente(hashes[i] || "", urls[i] || "");
+    container.appendChild(item);
+  }
+
+  atualizarPosicoes();
 }
 
 function assinaturaVideoCampanha() {

@@ -21732,6 +21732,8 @@ function criarLeadCard(lead) {
 
           ${renderizarBadgeRecuperacaoLead(lead)}
 
+          ${renderizarBadgeConversionLeadsMeta(lead)}
+
         </div>
 
       </div>
@@ -22293,6 +22295,35 @@ function renderizarRespostasLead(lead, limite = 2) {
         `)
         .join("")}
     </div>
+  `;
+}
+
+function renderizarBadgeConversionLeadsMeta(lead) {
+
+  const fechadoEm =
+    lead.meta_evento_fechado_enviado_em;
+  const qualificadoEm =
+    lead.meta_evento_qualificado_enviado_em;
+
+  if (!fechadoEm && !qualificadoEm) {
+    return "";
+  }
+
+  const texto =
+    fechadoEm
+      ? "✓ Fechamento enviado à Meta"
+      : "✓ Qualificação enviada à Meta";
+
+  const dataReferencia =
+    formatarDataHoraLabel(fechadoEm || qualificadoEm);
+
+  return `
+    <span
+      class="lead-ml-badge alta"
+      title="Meta foi avisada para priorizar leads parecidos com este (evento enviado em ${escaparHtml(dataReferencia)})"
+    >
+      ${texto}
+    </span>
   `;
 }
 

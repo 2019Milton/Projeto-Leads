@@ -3087,8 +3087,8 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
 .geo-chip {
 
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
 
   padding: 8px 10px;
 
@@ -3106,13 +3106,27 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   border-color: rgba(34,197,94,0.4);
 }
 
+.geo-chip-linha1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.geo-chip-linha2 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .geo-chip-nome {
   flex: 1;
-  min-width: 100px;
+  min-width: 60px;
 
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 600;
 }
 
 .geo-chip-tipo {
@@ -3152,8 +3166,8 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
 
 #adv_localidades_chips .geo-chip-raio button {
 
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
 
   display: flex;
   align-items: center;
@@ -3168,7 +3182,7 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   background: transparent;
   color: #cbd5e1;
 
-  font-size: 12px;
+  font-size: 11px;
   font-weight: normal;
   cursor: pointer;
   box-shadow: none;
@@ -3192,7 +3206,7 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
 
 .geo-chip-raio-valor {
 
-  min-width: 58px;
+  min-width: 44px;
 
   text-align: center;
   font-size: 11px;
@@ -3207,8 +3221,8 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
 
 #adv_localidades_chips .geo-chip-remove {
 
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
 
   flex-shrink: 0;
 
@@ -3225,7 +3239,7 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   background: transparent;
   color: #cbd5e1;
 
-  font-size: 14px;
+  font-size: 13px;
   font-weight: normal;
   cursor: pointer;
   box-shadow: none;
@@ -27973,10 +27987,14 @@ function renderizarLocalidadesChips() {
 
         return `
           <span class="geo-chip">
-            <span class="geo-chip-nome">${escaparHtml(local.nome)}</span>
-            <span class="geo-chip-tipo">${escaparHtml(rotulo)}</span>
-            ${controleRaio}
-            <button type="button" class="geo-chip-remove" onclick="removerLocalidade(${indice})" title="Remover">×</button>
+            <span class="geo-chip-linha1">
+              <span class="geo-chip-nome" title="${escaparHtml(local.nome)}">${escaparHtml(local.nome)}</span>
+              <button type="button" class="geo-chip-remove" onclick="removerLocalidade(${indice})" title="Remover">×</button>
+            </span>
+            <span class="geo-chip-linha2">
+              <span class="geo-chip-tipo">${escaparHtml(rotulo)}</span>
+              ${controleRaio}
+            </span>
           </span>
         `;
       })

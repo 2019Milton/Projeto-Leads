@@ -24639,6 +24639,8 @@ function abrirLeadDrawer(lead) {
     }
   }
 
+  carregarMensagensWhatsappLead(lead.id);
+
   // 🔥 CARREGA HISTÓRICO
   const recuperacaoBox =
     document.getElementById(
@@ -24666,6 +24668,56 @@ function abrirLeadDrawer(lead) {
 
   // 🔥 ABRE
   drawer.classList.add("active");
+}
+
+// Transcript da conversa de WhatsApp vinculada a este lead (ver
+// vincularConversaAoLead no backend) — reaproveita as mesmas bolhas do chat
+// de suporte (.chat-msg/.chat-msg.usuario/.chat-msg.suporte).
+async function carregarMensagensWhatsappLead(leadId) {
+
+  const box = document.getElementById("drawer_whatsapp_box");
+  const msgsEl = document.getElementById("drawer_whatsapp_msgs");
+
+  if (!box || !msgsEl) {
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    box.style.display = "none";
+    return;
+  }
+
+  try {
+
+    const res = await fetch(`${API}/leads/${leadId}/whatsapp`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    const data = await res.json();
+    const mensagens = Array.isArray(data.mensagens) ? data.mensagens : [];
+
+    if (!res.ok || !mensagens.length) {
+      box.style.display = "none";
+      return;
+    }
+
+    box.style.display = "block";
+
+    msgsEl.innerHTML = mensagens.map(msg => `
+      <div class="chat-msg ${msg.direcao === "entrada" ? "suporte" : "usuario"}">
+        <div class="chat-msg-remetente">${msg.direcao === "entrada" ? "Cliente" : "Você"}</div>
+        ${escaparHtml(msg.conteudo || "")}
+        <div class="chat-msg-hora">${formatarData(msg.criado_em)}</div>
+      </div>
+    `).join("");
+
+  } catch (err) {
+
+    console.error("MENSAGENS WHATSAPP LEAD:", err);
+    box.style.display = "none";
+  }
 }
 
 
@@ -39949,6 +40001,19 @@ async function enviarFeedback() {
           </div>
 
         </div>
+
+      </div>
+
+      <!-- WHATSAPP -->
+      <div
+        class="drawer-box"
+        id="drawer_whatsapp_box"
+        style="display:none;"
+      >
+
+        <h4>Conversa do WhatsApp</h4>
+
+        <div id="drawer_whatsapp_msgs" class="chat-page-msgs" style="max-height:280px;"></div>
 
       </div>
 

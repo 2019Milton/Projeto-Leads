@@ -16791,6 +16791,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 <li><span>Intenção forte: visita, financiamento, valor ou parcela</span><b>+30</b></li>
                 <li><span>Urgência: hoje, rápido ou essa semana</span><b>+20</b></li>
                 <li><span>Preparo financeiro: renda, crédito, FGTS</span><b>+15</b></li>
+                <li><span>Sinal do nicho do lead: financiamento, cobertura, whey...</span><b>+20</b></li>
                 <li><span>Baixo interesse: curioso, desistiu, pesquisando</span><b>−30</b></li>
                 <li><span>Lead marcado como perdido</span><b>−40</b></li>
               </ul>
@@ -16805,8 +16806,9 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 <li><span>Leads de histórico para sair do "aprendendo"</span><b>10</b></li>
                 <li><span>Mínimo de fechados / perdidos</span><b>4 / 4</b></li>
                 <li><span>Pode ajustar o rótulo do lead</span><b>Frio → Quente</b></li>
+                <li><span>Nicho do lead entra como sinal a mais na previsão</span></li>
               </ul>
-              <p class="iapm-how-note">Quanto mais histórico a conta acumula, mais precisa fica a previsão.</p>
+              <p class="iapm-how-note">Quanto mais histórico a conta acumula, mais precisa fica a previsão. Um único modelo por conta — o nicho ajuda a previsão sem exigir histórico separado por nicho.</p>
             </div>
 
             <div class="iapm-how-col" style="--iapm-accent:#8b7cf6;">
@@ -16817,6 +16819,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 <li><span>Resumo, próxima ação e mensagem pronta</span></li>
                 <li><span>Perguntas de qualificação e sinais de risco</span></li>
                 <li><span>Reativação de perdidos e textos de campanha</span></li>
+                <li><span>Vocabulário, perguntas e mensagens adaptados ao nicho</span></li>
               </ul>
               <p class="iapm-how-note">Ativa para toda a conta — sem diferença por plano.</p>
             </div>
@@ -28614,6 +28617,7 @@ async function salvarEdicaoCampanha() {
   try {
 
     const imageHashes = [];
+    const imageUrls = [];
 
     for (const item of itensImagem) {
       const file = item.querySelector(".imagem-input")?.files?.[0];
@@ -28643,8 +28647,10 @@ async function salvarEdicaoCampanha() {
         }
 
         imageHashes.push(upload.hash);
+        imageUrls.push(upload.url || null);
       } else if (item.dataset.hashExistente) {
         imageHashes.push(item.dataset.hashExistente);
+        imageUrls.push(item.dataset.urlExistente || null);
       }
     }
 
@@ -28681,6 +28687,7 @@ async function salvarEdicaoCampanha() {
     if (imagensForamAlteradas) {
       payloadEdicao.imageHash = imageHashes[0] || null;
       payloadEdicao.imageHashes = imageHashes;
+      payloadEdicao.imageUrls = imageUrls;
     }
 
     if (videoArquivo && configuracoes_avancadas.video_id) {
@@ -28868,6 +28875,7 @@ function criarItemImagem(arquivoInicial) {
   function aplicarArquivo(arquivo) {
     if (!arquivo) return;
     delete item.dataset.hashExistente;
+    delete item.dataset.urlExistente;
     const dt = new DataTransfer();
     dt.items.add(arquivo);
     fileInput.files = dt.files;
@@ -28888,6 +28896,7 @@ function criarItemImagem(arquivoInicial) {
   function aplicarImagemExistente(hash, url) {
     fileInput.value = "";
     item.dataset.hashExistente = hash || "";
+    item.dataset.urlExistente = url || "";
     nomeSpan.textContent = "Imagem salva na campanha";
     nomeSpan.classList.add("preenchido");
     if (thumb.dataset.objectUrl) {
@@ -28910,6 +28919,7 @@ function criarItemImagem(arquivoInicial) {
   function limparArquivo() {
     fileInput.value = "";
     delete item.dataset.hashExistente;
+    delete item.dataset.urlExistente;
     if (thumb.dataset.objectUrl) {
       URL.revokeObjectURL(thumb.dataset.objectUrl);
       delete thumb.dataset.objectUrl;

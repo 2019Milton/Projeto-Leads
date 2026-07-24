@@ -9751,320 +9751,403 @@ body.tema-claro .info-tooltip-popup {
   font-size: 13px;
 }
 
-.planos-guia {
+/* ===== IA & PERFORMANCE META (iapm-*) ===== */
+
+.iapm-page {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 22px;
 }
 
-.planos-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
-  gap: 14px;
-  padding: 18px;
-  border-radius: 14px;
-  border: 1px solid rgba(99,102,241,0.34);
-  background:
-    radial-gradient(circle at 12% 16%, rgba(34,211,238,0.14), transparent 34%),
-    linear-gradient(135deg, rgba(30,41,59,0.78), rgba(15,23,42,0.92));
-}
-
-.planos-kicker {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  margin-bottom: 8px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid rgba(125,211,252,0.32);
-  color: #93c5fd;
+.iapm-eyebrow {
+  display: block;
+  margin-bottom: 6px;
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
+  color: #4ade80;
 }
 
-.planos-hero h3,
-.plano-bloco h4 {
+.iapm-masthead h3 {
   margin: 0;
-  color: #f8fafc;
-  letter-spacing: 0;
-}
-
-.planos-hero h3 {
   font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: #f8fafc;
 }
 
-.planos-hero p,
-.plano-bloco p,
-.plano-info-card p,
-.plano-resumo-card p {
-  margin: 0;
-  color: #bfd3e8;
-  line-height: 1.55;
+.iapm-masthead p {
+  margin: 10px 0 0;
+  max-width: 68ch;
+  color: #a9c0d6;
+  line-height: 1.6;
+  font-size: 13px;
 }
 
-.planos-resumo-lista {
+.iapm-how {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid rgba(148,163,184,0.16);
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(15,23,42,0.72), rgba(8,17,34,0.6));
+}
+
+.iapm-how-col {
+  padding: 20px 20px 22px;
+  position: relative;
+  border-left: 1px solid rgba(148,163,184,0.14);
+}
+
+.iapm-how-col:first-child {
+  border-left: none;
+}
+
+.iapm-how-col::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--iapm-accent, #60a5fa);
+}
+
+.iapm-how-tag {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--iapm-accent, #60a5fa);
+}
+
+.iapm-how-col h4 {
+  margin: 0 0 6px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.iapm-how-col > p {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #a9c0d6;
+}
+
+.iapm-how-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.plano-resumo-card {
-  display: grid;
-  grid-template-columns: auto 1fr;
+.iapm-how-list li {
+  display: flex;
+  justify-content: space-between;
   gap: 10px;
-  align-items: center;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(148,163,184,0.22);
-  background: rgba(15,23,42,0.58);
+  padding: 7px 0;
+  border-bottom: 1px dashed rgba(148,163,184,0.16);
+  font-size: 12.5px;
+  color: #f1f5f9;
 }
 
-.plano-resumo-card strong {
-  color: #f8fafc;
-  font-size: 13px;
+.iapm-how-list li:last-child {
+  border-bottom: none;
 }
 
-.plano-resumo-card p {
-  font-size: 12px;
+.iapm-how-list b {
+  color: var(--iapm-accent, #60a5fa);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.plano-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  min-width: 62px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 800;
+.iapm-how-note {
+  margin-top: 14px;
+  font-size: 11.5px;
+  color: #7c93ab;
+  line-height: 1.5;
 }
 
-.plano-badge--bronze {
-  color: #f6c088;
-  border: 1px solid rgba(217,119,6,0.46);
-  background: rgba(146,64,14,0.20);
-}
+/* ---- painel "tempo real" ---- */
 
-.plano-badge--prata {
-  color: #dbeafe;
-  border: 1px solid rgba(148,163,184,0.52);
-  background: rgba(148,163,184,0.18);
-}
-
-.plano-badge--ouro {
-  color: #fcd34d;
-  border: 1px solid rgba(245,158,11,0.56);
-  background: rgba(245,158,11,0.18);
-}
-
-.plano-blocos {
-  display: grid;
-  gap: 12px;
-}
-
-.plano-bloco {
-  --plano-accent: #94a3b8;
-  --plano-accent-rgb: 148,163,184;
-  --plano-bg-a: rgba(8,17,34,0.74);
-  --plano-bg-b: rgba(15,23,42,0.82);
-  --plano-head-bg: rgba(30,41,59,0.58);
-  --plano-item-bg: rgba(15,23,42,0.56);
-  --plano-border: rgba(148,163,184,0.18);
-  overflow: hidden;
-  border-radius: 14px;
-  border: 1px solid var(--plano-border);
+.iapm-live {
+  border-radius: 20px;
+  border: 1px solid rgba(34,197,94,0.26);
   background:
-    radial-gradient(circle at 0% 0%, rgba(var(--plano-accent-rgb),0.16), transparent 28%),
-    linear-gradient(145deg, var(--plano-bg-a), var(--plano-bg-b));
+    radial-gradient(480px 220px at 0% 0%, rgba(34,197,94,0.14), transparent 60%),
+    linear-gradient(180deg, rgba(15,23,42,0.78), rgba(8,17,34,0.66));
+  padding: 24px 24px 20px;
 }
 
-.plano-bloco--bronze {
-  --plano-accent: #d97706;
-  --plano-accent-rgb: 217,119,6;
-  --plano-bg-a: rgba(54,39,27,0.78);
-  --plano-bg-b: rgba(18,24,33,0.90);
-  --plano-head-bg: rgba(72,52,32,0.60);
-  --plano-item-bg: rgba(40,33,27,0.62);
-  --plano-border: rgba(217,119,6,0.50);
+.iapm-live-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
 }
 
-.plano-bloco--prata {
-  --plano-accent: #cbd5e1;
-  --plano-accent-rgb: 203,213,225;
-  --plano-bg-a: rgba(45,55,72,0.78);
-  --plano-bg-b: rgba(13,23,36,0.90);
-  --plano-head-bg: rgba(71,85,105,0.58);
-  --plano-item-bg: rgba(28,38,53,0.64);
-  --plano-border: rgba(203,213,225,0.46);
+.iapm-live-head h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 750;
+  color: #f8fafc;
 }
 
-.plano-bloco--ouro {
-  --plano-accent: #f59e0b;
-  --plano-accent-rgb: 245,158,11;
-  --plano-bg-a: rgba(74,50,10,0.78);
-  --plano-bg-b: rgba(16,25,29,0.92);
-  --plano-head-bg: rgba(92,64,15,0.62);
-  --plano-item-bg: rgba(52,38,18,0.62);
-  --plano-border: rgba(245,158,11,0.54);
-}
-
-.plano-bloco-head {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 14px;
-  border-bottom: 1px solid rgba(var(--plano-accent-rgb),0.20);
-  background: var(--plano-head-bg);
-}
-
-.plano-numero {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: rgba(var(--plano-accent-rgb),0.20);
-  color: var(--plano-accent);
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.plano-bloco-head span:not(.plano-badge):not(.plano-numero) {
-  display: block;
-  margin-top: 3px;
-  color: #94a3b8;
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.plano-bloco-body {
-  display: grid;
-  gap: 12px;
-  padding: 14px;
-}
-
-.score-lista {
-  display: grid;
-  gap: 7px;
-}
-
-.score-linha {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: center;
-  padding: 10px 12px;
-  border-radius: 9px;
-  border: 1px solid rgba(var(--plano-accent-rgb),0.16);
-  background: var(--plano-item-bg);
-  color: #f8fbff;
-  font-size: 13px;
-}
-
-.score-pontos {
-  min-width: 74px;
-  text-align: right;
-  color: #4ade80;
-  font-weight: 900;
-}
-
-.score-pontos--negativo {
-  color: #fb7185;
-}
-
-.plano-nota {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--plano-accent-rgb),0.24);
-  background: rgba(var(--plano-accent-rgb),0.10);
-  color: #f8fbff;
+.iapm-live-head p {
+  margin: 0;
+  max-width: 54ch;
+  font-size: 12.5px;
+  color: #a9c0d6;
   line-height: 1.55;
 }
 
-.plano-nota strong {
-  display: block;
-  margin-bottom: 4px;
-  color: #e0f2fe;
-}
-
-.plano-info-grid,
-.ouro-feature-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.ouro-feature-grid {
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-}
-
-.plano-info-card,
-.ouro-feature-card {
-  min-height: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--plano-accent-rgb),0.17);
-  background: var(--plano-item-bg);
-}
-
-.plano-info-card strong,
-.ouro-feature-card strong {
-  display: block;
-  margin-bottom: 6px;
-  color: #f8fafc;
-}
-
-.plano-disponibilidade {
+.iapm-live-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  width: fit-content;
-  padding: 6px 10px;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4ade80;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
+  padding: 5px 11px 5px 9px;
   border-radius: 999px;
-  border: 1px solid rgba(34,197,94,0.26);
-  background: rgba(22,163,74,0.12);
-  color: #bbf7d0;
-  font-size: 12px;
+  white-space: nowrap;
+}
+
+.iapm-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: iapmPulse 2.2s infinite;
+}
+
+@keyframes iapmPulse {
+  0% { box-shadow: 0 0 0 0 rgba(74,222,128,0.55); }
+  70% { box-shadow: 0 0 0 7px rgba(74,222,128,0); }
+  100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iapm-live-dot { animation: none; }
+}
+
+.iapm-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 4px;
+}
+
+.iapm-stat {
+  padding: 4px 20px;
+  border-left: 1px solid rgba(148,163,184,0.16);
+}
+
+.iapm-stat:first-child {
+  border-left: none;
+  padding-left: 2px;
+}
+
+.iapm-stat .n {
+  font-size: 32px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--iapm-stat-color, #f8fafc);
 }
 
-.plano-indisponivel {
-  opacity: 0.76;
+.iapm-stat .l {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #a9c0d6;
 }
 
-.plano-indisponivel .plano-disponibilidade {
-  border-color: rgba(245,158,11,0.34);
-  background: rgba(245,158,11,0.12);
-  color: #fde68a;
+.iapm-stat .d {
+  margin-top: 3px;
+  font-size: 11px;
+  color: #7c93ab;
+}
+
+.iapm-live-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.iapm-feed,
+.iapm-gain {
+  border-top: 1px solid rgba(148,163,184,0.16);
+  padding-top: 14px;
+}
+
+.iapm-feed h4,
+.iapm-gain h4 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #a9c0d6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.iapm-feed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 12.5px;
+  border-bottom: 1px solid rgba(148,163,184,0.12);
+}
+
+.iapm-feed-row:last-child {
+  border-bottom: none;
+}
+
+.iapm-feed-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex: none;
+}
+
+.iapm-feed-icon.hot {
+  background: rgba(245,185,66,0.16);
+  color: #f5b942;
+}
+
+.iapm-feed-icon.won {
+  background: rgba(34,197,94,0.16);
+  color: #4ade80;
+}
+
+.iapm-feed-name {
+  flex: 1;
+  color: #f1f5f9;
+}
+
+.iapm-feed-when {
+  color: #7c93ab;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.iapm-gain-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 7px 0;
+  font-size: 12.5px;
+}
+
+.iapm-gain-row span:first-child {
+  color: #a9c0d6;
+}
+
+.iapm-gain-row b {
+  font-variant-numeric: tabular-nums;
+  color: #f1f5f9;
+}
+
+.iapm-gain-range {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: rgba(139,124,246,0.09);
+  border: 1px solid rgba(139,124,246,0.22);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: #a9c0d6;
+}
+
+.iapm-gain-range b {
+  color: #8b7cf6;
+}
+
+.iapm-empty {
+  padding: 16px 4px;
+  color: #7c93ab;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* ---- em breve: linha discreta ---- */
+
+.iapm-soon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px dashed rgba(148,163,184,0.26);
+  color: #7c93ab;
+  font-size: 12.5px;
+}
+
+.iapm-soon b {
+  color: #a9c0d6;
+  font-weight: 700;
+}
+
+.iapm-soon-chip {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.26);
 }
 
 @media (max-width: 900px) {
-  .planos-hero,
-  .plano-info-grid {
+  .iapm-how {
     grid-template-columns: 1fr;
   }
 
-  .plano-bloco-head {
-    grid-template-columns: 38px minmax(0, 1fr);
+  .iapm-how-col {
+    border-left: none;
+    border-top: 1px solid rgba(148,163,184,0.14);
   }
 
-  .plano-bloco-head .plano-badge {
-    grid-column: 2;
+  .iapm-how-col:first-child {
+    border-top: none;
+  }
+
+  .iapm-live-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 620px) {
-  .score-linha {
+  .iapm-stat-strip {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 
-  .score-pontos {
-    min-width: 0;
-    text-align: left;
+  .iapm-stat {
+    border-left: none;
+    padding-left: 2px;
+    border-top: 1px solid rgba(148,163,184,0.16);
+    padding-top: 12px;
+  }
+
+  .iapm-stat:first-child {
+    border-top: none;
+    padding-top: 4px;
   }
 }
 
@@ -12875,144 +12958,114 @@ body:not(.tema-claro) .ia-resumo-periodo:hover {
   color: #ddd6fe !important;
 }
 
-body.tema-claro .planos-hero {
-  background:
-    radial-gradient(circle at 12% 16%, rgba(37,99,235,0.10), transparent 34%),
-    linear-gradient(135deg, #f8fbff, #eaf2ff);
-  border-color: rgba(37,99,235,0.22);
+body.tema-claro .iapm-eyebrow {
+  color: #16a34a;
 }
 
-body.tema-claro .planos-kicker {
-  border-color: rgba(37,99,235,0.24);
-  color: #2563eb;
-  background: rgba(37,99,235,0.07);
-}
-
-body.tema-claro .planos-hero h3,
-body.tema-claro .plano-bloco h4,
-body.tema-claro .plano-resumo-card strong,
-body.tema-claro .plano-info-card strong,
-body.tema-claro .ouro-feature-card strong,
-body.tema-claro .plano-nota strong {
+body.tema-claro .iapm-masthead h3,
+body.tema-claro .iapm-how-col h4,
+body.tema-claro .iapm-live-head h3 {
   color: #0f172a;
 }
 
-body.tema-claro .planos-hero p,
-body.tema-claro .plano-bloco p,
-body.tema-claro .plano-info-card p,
-body.tema-claro .plano-resumo-card p {
+body.tema-claro .iapm-masthead p,
+body.tema-claro .iapm-how-col > p,
+body.tema-claro .iapm-live-head p {
   color: #475569;
 }
 
-body.tema-claro .plano-resumo-card,
-body.tema-claro .score-linha,
-body.tema-claro .plano-info-card,
-body.tema-claro .ouro-feature-card {
-  background: rgba(255,255,255,0.78);
+body.tema-claro .iapm-how {
+  background: linear-gradient(180deg, #ffffff, #f3f6fb);
   border-color: rgba(15,23,42,0.10);
-  color: #1e293b;
 }
 
-body.tema-claro .plano-bloco {
-  background: rgba(255,255,255,0.70);
-  color: #1e293b;
+body.tema-claro .iapm-how-col {
+  border-left-color: rgba(15,23,42,0.08);
 }
 
-body.tema-claro .plano-bloco-head {
-  background: rgba(226,232,240,0.72);
+body.tema-claro .iapm-how-list li {
+  color: #1e293b;
   border-bottom-color: rgba(15,23,42,0.10);
 }
 
-body.tema-claro .plano-bloco-head span:not(.plano-badge):not(.plano-numero) {
+body.tema-claro .iapm-how-note {
   color: #64748b;
 }
 
-body.tema-claro .plano-nota {
-  background: rgba(14,165,233,0.08);
-  border-color: rgba(14,165,233,0.22);
-  color: #334155;
-}
-
-body.tema-claro .plano-disponibilidade {
-  background: rgba(22,163,74,0.10);
-  color: #166534;
-}
-
-body.tema-claro .plano-indisponivel .plano-disponibilidade {
-  background: rgba(245,158,11,0.12);
-  color: #92400e;
-}
-
-body.tema-claro .plano-badge--bronze {
-  color: #92400e;
-  border-color: rgba(146,64,14,0.38);
-  background: rgba(217,119,6,0.12);
-}
-
-body.tema-claro .plano-badge--prata {
-  color: #334155;
-  border-color: rgba(100,116,139,0.34);
-  background: rgba(148,163,184,0.18);
-}
-
-body.tema-claro .plano-badge--ouro {
-  color: #a16207;
-  border-color: rgba(202,138,4,0.42);
-  background: rgba(245,158,11,0.14);
-}
-
-body.tema-claro .plano-bloco--bronze {
+body.tema-claro .iapm-live {
   background:
-    radial-gradient(circle at 0% 0%, rgba(217,119,6,0.16), transparent 30%),
-    linear-gradient(145deg, #fff7ed, #f8efe4);
-  border-color: rgba(146,64,14,0.36);
+    radial-gradient(480px 220px at 0% 0%, rgba(22,163,74,0.10), transparent 60%),
+    linear-gradient(180deg, #ffffff, #f3f6fb);
+  border-color: rgba(22,163,74,0.24);
 }
 
-body.tema-claro .plano-bloco--prata {
-  background:
-    radial-gradient(circle at 0% 0%, rgba(100,116,139,0.16), transparent 30%),
-    linear-gradient(145deg, #f8fafc, #e8edf4);
-  border-color: rgba(100,116,139,0.34);
+body.tema-claro .iapm-stat {
+  border-left-color: rgba(15,23,42,0.10);
 }
 
-body.tema-claro .plano-bloco--ouro {
-  background:
-    radial-gradient(circle at 0% 0%, rgba(245,158,11,0.18), transparent 30%),
-    linear-gradient(145deg, #fffbeb, #f6ecd0);
-  border-color: rgba(202,138,4,0.42);
+body.tema-claro .iapm-stat .n {
+  color: var(--iapm-stat-color, #0f172a);
 }
 
-body.tema-claro .plano-bloco--bronze .plano-bloco-head {
-  background: rgba(254,215,170,0.48);
-  border-bottom-color: rgba(146,64,14,0.20);
+body.tema-claro .iapm-stat .l {
+  color: #475569;
 }
 
-body.tema-claro .plano-bloco--prata .plano-bloco-head {
-  background: rgba(203,213,225,0.52);
-  border-bottom-color: rgba(100,116,139,0.18);
+body.tema-claro .iapm-stat .d {
+  color: #94a3b8;
 }
 
-body.tema-claro .plano-bloco--ouro .plano-bloco-head {
-  background: rgba(253,230,138,0.48);
-  border-bottom-color: rgba(202,138,4,0.22);
+body.tema-claro .iapm-feed,
+body.tema-claro .iapm-gain {
+  border-top-color: rgba(15,23,42,0.10);
 }
 
-body.tema-claro .plano-bloco--bronze .score-linha,
-body.tema-claro .plano-bloco--bronze .plano-nota {
-  background: rgba(255,247,237,0.82);
-  border-color: rgba(146,64,14,0.16);
+body.tema-claro .iapm-feed h4,
+body.tema-claro .iapm-gain h4 {
+  color: #64748b;
 }
 
-body.tema-claro .plano-bloco--prata .plano-info-card,
-body.tema-claro .plano-bloco--prata .plano-nota {
-  background: rgba(248,250,252,0.82);
-  border-color: rgba(100,116,139,0.16);
+body.tema-claro .iapm-feed-row {
+  border-bottom-color: rgba(15,23,42,0.08);
 }
 
-body.tema-claro .plano-bloco--ouro .ouro-feature-card,
-body.tema-claro .plano-bloco--ouro .plano-nota {
-  background: rgba(255,251,235,0.82);
-  border-color: rgba(202,138,4,0.16);
+body.tema-claro .iapm-feed-name {
+  color: #1e293b;
+}
+
+body.tema-claro .iapm-gain-row span:first-child {
+  color: #64748b;
+}
+
+body.tema-claro .iapm-gain-row b {
+  color: #1e293b;
+}
+
+body.tema-claro .iapm-gain-range {
+  background: rgba(109,40,217,0.06);
+  border-color: rgba(109,40,217,0.18);
+  color: #475569;
+}
+
+body.tema-claro .iapm-gain-range b {
+  color: #6d28d9;
+}
+
+body.tema-claro .iapm-empty {
+  color: #94a3b8;
+}
+
+body.tema-claro .iapm-soon {
+  border-color: rgba(15,23,42,0.16);
+  color: #94a3b8;
+}
+
+body.tema-claro .iapm-soon b {
+  color: #475569;
+}
+
+body.tema-claro .iapm-soon-chip {
+  border-color: rgba(15,23,42,0.16);
 }
 
 body:not(.tema-claro) input,
@@ -16673,236 +16726,101 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
         <span class="info-painel-titulo">🚀 IA & Performance Meta</span>
 
-        <div class="planos-guia">
-          <div class="planos-hero">
-            <div>
-              <span class="planos-kicker">Inteligência de leads</span>
-              <h3>Como a plataforma qualifica seus leads — em toda a conta</h3>
-              <p>
-                Pontuação automática, previsão por Machine Learning e IA generativa funcionam juntas
-                para todo mundo, sem diferença por plano. O que a IA descobre sobre cada lead também é
-                enviado de volta para a Meta, para ela priorizar entrega para quem realmente converte.
-              </p>
+        <div class="iapm-page">
+
+          <div class="iapm-masthead">
+            <span class="iapm-eyebrow">Inteligência de leads</span>
+            <h3>Como a plataforma qualifica seus leads — e o que já está mudando na Meta</h3>
+            <p>
+              Pontuação automática, previsão por Machine Learning e IA generativa funcionam juntas para
+              toda a conta. O que a IA descobre sobre cada lead também é enviado de volta para a Meta,
+              para ela priorizar entrega para quem realmente converte.
+            </p>
+          </div>
+
+          <div class="iapm-how">
+            <div class="iapm-how-col" style="--iapm-accent:#60a5fa;">
+              <span class="iapm-how-tag">Inteligência do lead</span>
+              <h4>Pontuação automática</h4>
+              <p>Cada lead recebe pontos por sinais reais — soma tudo e classifica Frio, Morno ou Quente.</p>
+              <ul class="iapm-how-list">
+                <li><span>Telefone informado</span><b>+10</b></li>
+                <li><span>E-mail informado</span><b>+5</b></li>
+                <li><span>Intenção forte: visita, financiamento, valor ou parcela</span><b>+30</b></li>
+                <li><span>Urgência: hoje, rápido ou essa semana</span><b>+20</b></li>
+                <li><span>Preparo financeiro: renda, crédito, FGTS</span><b>+15</b></li>
+                <li><span>Baixo interesse: curioso, desistiu, pesquisando</span><b>−30</b></li>
+                <li><span>Lead marcado como perdido</span><b>−40</b></li>
+              </ul>
+              <p class="iapm-how-note">Quente a partir de 70 pontos · morno de 35 a 69 · score manual sempre prevalece.</p>
+            </div>
+
+            <div class="iapm-how-col" style="--iapm-accent:#f5b942;">
+              <span class="iapm-how-tag">Machine Learning</span>
+              <h4>Aprende com o histórico</h4>
+              <p>Usa os leads fechados e perdidos da própria conta para calcular a probabilidade real de conversão.</p>
+              <ul class="iapm-how-list">
+                <li><span>Leads de histórico para sair do "aprendendo"</span><b>10</b></li>
+                <li><span>Mínimo de fechados / perdidos</span><b>4 / 4</b></li>
+                <li><span>Pode ajustar o rótulo do lead</span><b>Frio → Quente</b></li>
+              </ul>
+              <p class="iapm-how-note">Quanto mais histórico a conta acumula, mais precisa fica a previsão.</p>
+            </div>
+
+            <div class="iapm-how-col" style="--iapm-accent:#8b7cf6;">
+              <span class="iapm-how-tag">IA generativa</span>
+              <h4>Assistência na jornada</h4>
+              <p>Lê status, score, respostas e histórico do lead para sugerir o próximo passo certo.</p>
+              <ul class="iapm-how-list">
+                <li><span>Resumo, próxima ação e mensagem pronta</span></li>
+                <li><span>Perguntas de qualificação e sinais de risco</span></li>
+                <li><span>Reativação de perdidos e textos de campanha</span></li>
+              </ul>
+              <p class="iapm-how-note">Ativa para toda a conta — sem diferença por plano.</p>
             </div>
           </div>
 
-          <div class="plano-blocos">
-            <section class="plano-bloco plano-bloco--bronze">
-              <div class="plano-bloco-head">
-                <span class="plano-numero">01</span>
-                <div>
-                  <h4>Inteligência do Lead</h4>
-                  <span>Pontuação automática ativa em toda a conta.</span>
-                </div>
-              </div>
-              <div class="plano-bloco-body">
-                <div class="score-lista">
-                  <div class="score-linha">
-                    <span>Lead recém capturado</span>
-                    <strong class="score-pontos">+10</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>Telefone informado</span>
-                    <strong class="score-pontos">+10</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>E-mail informado</span>
-                    <strong class="score-pontos">+5</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>Intenção forte: visita, financiamento, valor, compra ou parcela</span>
-                    <strong class="score-pontos">+30</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>Urgência: hoje, rápido, urgente ou essa semana</span>
-                    <strong class="score-pontos">+20</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>Preparo financeiro: renda, crédito, FGTS ou pré-aprovado</span>
-                    <strong class="score-pontos">+15</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>Contato recorrente: mesmo telefone ou e-mail apareceu em outro lead</span>
-                    <strong class="score-pontos">+20</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>Status do funil: primeiro contato, em conversa ou fechado</span>
-                    <strong class="score-pontos">+15/+30/+60</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>Baixo interesse: sem interesse, desistiu, curioso ou pesquisando</span>
-                    <strong class="score-pontos score-pontos--negativo">-30</strong>
-                  </div>
-                  <div class="score-linha">
-                    <span>Lead marcado como perdido</span>
-                    <strong class="score-pontos score-pontos--negativo">-40</strong>
-                  </div>
-                </div>
-
-                <div class="plano-nota">
-                  <strong>Resultado visual</strong>
-                  Frio fica abaixo de 35 pontos, Morno de 35 a 69 pontos e Quente a partir de 70 pontos.
-                  O status do funil também influencia a pontuação. Se houver score manual, o manual prevalece.
-                </div>
-              </div>
-            </section>
-
-            <section id="ml_explicacao_lead" class="plano-bloco plano-bloco--prata">
-              <div class="plano-bloco-head">
-                <span class="plano-numero">02</span>
-                <div>
-                  <h4>Machine Learning dos Leads</h4>
-                  <span>Camada preditiva ativa em toda a conta.</span>
-                </div>
-              </div>
-              <div class="plano-bloco-body">
-                <div class="plano-info-grid">
-                  <div class="plano-info-card">
-                    <strong>Aprendizado</strong>
-                    <p>Usa o histórico de leads fechados e perdidos da conta para entender padrões reais.</p>
-                  </div>
-                  <div class="plano-info-card">
-                    <strong>Previsão</strong>
-                    <p>Calcula probabilidade de conversão e tendência do lead conforme os sinais disponíveis.</p>
-                  </div>
-                  <div class="plano-info-card">
-                    <strong>Ajuste visual</strong>
-                    <p>Quando a previsão fica forte, pode ajustar o rótulo Frio, Morno ou Quente.</p>
-                  </div>
-                </div>
-                <div class="plano-nota">
-                  <strong>Requisito para sair do modo aprendendo</strong>
-                  O sistema precisa de pelo menos 10 leads de histórico, com no mínimo 4 fechados e 4 perdidos.
-                </div>
-              </div>
-            </section>
-
-            <section id="ia_explicacao_ouro" class="plano-bloco plano-bloco--ouro">
-              <div class="plano-bloco-head">
-                <span class="plano-numero">03</span>
-                <div>
-                  <h4>IA em toda a jornada</h4>
-                  <span>Assistência completa ativa em toda a conta.</span>
-                </div>
-              </div>
-              <div class="plano-bloco-body">
+          <div class="iapm-live">
+            <div class="iapm-live-head">
+              <div>
+                <h3>Enviado para a Meta agora</h3>
                 <p>
-                  A IA usa dados do lead, status, classificação Frio/Morno/Quente, observações,
-                  respostas do formulário, tempo parado, histórico, campanha e previsão do ML quando existir.
+                  Toda vez que um lead vira "quente" pela IA/ML ou é marcado como fechado, esse sinal
+                  vai para a Meta (Conversion Leads), para ela priorizar leads parecidos.
                 </p>
-                <div class="ouro-feature-grid">
-                  <div class="ouro-feature-card">
-                    <strong>Resumo do lead</strong>
-                    <p>Explica rapidamente quem é o lead e o que ele parece buscar.</p>
-                  </div>
-                  <div class="ouro-feature-card">
-                    <strong>Próxima ação</strong>
-                    <p>Recomenda ligar, chamar no WhatsApp, nutrir ou qualificar melhor.</p>
-                  </div>
-                  <div class="ouro-feature-card">
-                    <strong>Mensagem pronta</strong>
-                    <p>Sugere uma abordagem personalizada para WhatsApp.</p>
-                  </div>
-                  <div class="ouro-feature-card">
-                    <strong>Perguntas de qualificação</strong>
-                    <p>Ajuda o corretor a descobrir valor, região, financiamento e prazo.</p>
-                  </div>
-                  <div class="ouro-feature-card">
-                    <strong>Sinais e riscos</strong>
-                    <p>Identifica urgência, intenção, preparo financeiro e possíveis objeções.</p>
-                  </div>
-                  <div class="ouro-feature-card">
-                    <strong>Resposta e follow-up</strong>
-                    <p>Gera mensagem para atendimento e retomada conforme o tempo parado.</p>
-                  </div>
-                  <div class="ouro-feature-card">
-                    <strong>Perdidos e reativação</strong>
-                    <p>Sugere motivo de perda e campanhas de recuperação em lote.</p>
-                  </div>
-                  <div class="ouro-feature-card">
-                    <strong>Campanhas</strong>
-                    <p>Cria textos de anúncio e analisa CPL, leads, público e criativo.</p>
-                  </div>
-                  <div class="ouro-feature-card">
-                    <strong>Resumo diário</strong>
-                    <p>Prioriza os leads que merecem atenção hoje.</p>
-                  </div>
+              </div>
+              <span class="iapm-live-pill"><span class="iapm-live-dot"></span>Atualiza a cada 30s</span>
+            </div>
+
+            <div id="meta-conversao-kpis" class="iapm-stat-strip">
+              <div class="iapm-empty">Carregando dados enviados para a Meta...</div>
+            </div>
+
+            <div class="iapm-live-grid">
+              <div class="iapm-feed">
+                <h4>Últimos eventos</h4>
+                <div id="meta-conversao-eventos">
+                  <div class="iapm-empty">Carregando...</div>
                 </div>
               </div>
-            </section>
-          </div>
-        </div>
 
-        <div class="planos-guia" style="margin-top:28px;">
-          <div class="planos-hero">
+              <div class="iapm-gain">
+                <h4>Ganho projetado</h4>
+                <div id="meta-conversao-ganho">
+                  <div class="iapm-empty">Carregando...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="iapm-soon">
+            <span class="iapm-soon-chip">Em breve</span>
             <div>
-              <span class="planos-kicker">Tempo real</span>
-              <h3>O que já foi enviado para a Meta</h3>
-              <p>
-                Toda vez que um lead vira "quente" pela IA/ML ou é marcado como fechado, a plataforma
-                manda esse sinal para a Meta (Conversion Leads), para ela aprender a priorizar leads
-                parecidos. Atualiza sozinho a cada 30 segundos.
-              </p>
+              <b>Google Ads e TikTok</b> vão receber o mesmo sinal de qualificação e fechamento que já
+              vai para a Meta — ainda não enviam dados reais.
             </div>
           </div>
 
-          <div id="meta-conversao-kpis" class="dashboard-stat-grid" style="margin-bottom:16px;">
-            <div class="dashboard-empty-state">Carregando dados enviados para a Meta...</div>
-          </div>
-
-          <div class="plano-blocos">
-            <section class="plano-bloco">
-              <div class="plano-bloco-head">
-                <div>
-                  <h4>Ganho projetado</h4>
-                  <span>Estimativa — a otimização automática do Ad Set com esse sinal ainda não está ativa.</span>
-                </div>
-              </div>
-              <div class="plano-bloco-body" id="meta-conversao-ganho">
-                <div class="plano-nota">Carregando...</div>
-              </div>
-            </section>
-
-            <section class="plano-bloco">
-              <div class="plano-bloco-head">
-                <div>
-                  <h4>Últimos eventos enviados</h4>
-                </div>
-              </div>
-              <div class="plano-bloco-body" id="meta-conversao-eventos">
-                <div class="plano-nota">Carregando...</div>
-              </div>
-            </section>
-          </div>
-        </div>
-
-        <div class="planos-guia" style="margin-top:28px;">
-          <div class="planos-hero">
-            <div>
-              <span class="planos-kicker">Em breve</span>
-              <h3>A mesma inteligência, em outras plataformas</h3>
-              <p>
-                O mesmo sinal de qualificação e fechamento que já vai para a Meta está planejado para
-                Google Ads e TikTok — ainda não envia dados reais.
-              </p>
-            </div>
-            <div class="planos-resumo-lista">
-              <div class="plano-resumo-card" style="opacity:.6;">
-                <span class="plano-badge plano-badge--prata">Em breve</span>
-                <div>
-                  <strong>Google Ads</strong>
-                  <p>Enhanced Conversions for Leads — planejado, ainda não enviando dados.</p>
-                </div>
-              </div>
-              <div class="plano-resumo-card" style="opacity:.6;">
-                <span class="plano-badge plano-badge--prata">Em breve</span>
-                <div>
-                  <strong>TikTok Ads</strong>
-                  <p>Events API — planejado, ainda não enviando dados.</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
       </div>
@@ -20906,9 +20824,9 @@ async function carregarEstatisticasMetaConversao(token) {
     const estatisticas = await res.json();
 
     if (!res.ok || estatisticas.error) {
-      kpisEl.innerHTML = `<div class="dashboard-empty-state">Não foi possível carregar os dados enviados para a Meta.</div>`;
+      kpisEl.innerHTML = `<div class="iapm-empty">Não foi possível carregar os dados enviados para a Meta.</div>`;
       if (eventosEl) {
-        eventosEl.innerHTML = `<div class="plano-nota">Não foi possível carregar os últimos eventos.</div>`;
+        eventosEl.innerHTML = `<div class="iapm-empty">Não foi possível carregar os últimos eventos.</div>`;
       }
       return;
     }
@@ -20917,7 +20835,7 @@ async function carregarEstatisticasMetaConversao(token) {
       {
         label: "Leads da Meta",
         valor: String(estatisticas.total_leads_meta || 0),
-        detalhe: "Leads com origem Meta nesta conta",
+        detalhe: "nesta conta",
         cor: "#60a5fa"
       },
       {
@@ -20927,7 +20845,7 @@ async function carregarEstatisticasMetaConversao(token) {
           estatisticas.taxa_qualificacao != null
             ? `${estatisticas.taxa_qualificacao.toFixed(1)}% dos leads da Meta`
             : "Aguardando leads quentes",
-        cor: "#facc15"
+        cor: "#f5b942"
       },
       {
         label: "Fechados enviados",
@@ -20936,15 +20854,15 @@ async function carregarEstatisticasMetaConversao(token) {
           estatisticas.taxa_fechamento != null
             ? `${estatisticas.taxa_fechamento.toFixed(1)}% dos leads da Meta`
             : "Aguardando negócios fechados",
-        cor: "#22c55e"
+        cor: "#4ade80"
       }
     ];
 
     kpisEl.innerHTML = kpis.map(kpi => `
-      <div class="dashboard-stat-card" style="--dash-accent:${kpi.cor};">
-        <span>${kpi.label}</span>
-        <strong>${kpi.valor}</strong>
-        <small>${kpi.detalhe}</small>
+      <div class="iapm-stat" style="--iapm-stat-color:${kpi.cor};">
+        <div class="n">${kpi.valor}</div>
+        <div class="l">${kpi.label}</div>
+        <div class="d">${kpi.detalhe}</div>
       </div>
     `).join("");
 
@@ -20954,22 +20872,23 @@ async function carregarEstatisticasMetaConversao(token) {
 
       eventosEl.innerHTML = eventos.length
         ? eventos.map(ev => `
-            <div class="dashboard-live-row">
-              <span>${ev.tipo === "fechado" ? "✅" : "🔥"} ${escaparHtml(ev.nome || "Lead")}</span>
-              <strong>${ev.tipo === "fechado" ? "Fechamento enviado" : "Qualificação enviada"}</strong>
+            <div class="iapm-feed-row">
+              <span class="iapm-feed-icon ${ev.tipo === "fechado" ? "won" : "hot"}">${ev.tipo === "fechado" ? "✓" : "🔥"}</span>
+              <span class="iapm-feed-name">${escaparHtml(ev.nome || "Lead")}</span>
+              <span class="iapm-feed-when">${ev.tipo === "fechado" ? "Fechamento" : "Qualificação"}</span>
             </div>
           `).join("")
-        : `<div class="plano-nota">Nenhum evento enviado ainda. Assim que um lead virar quente ou fechar, aparece aqui.</div>`;
+        : `<div class="iapm-empty">Nenhum evento enviado ainda. Assim que um lead virar quente ou fechar, aparece aqui.</div>`;
     }
 
   } catch (err) {
 
     console.error("META CONVERSAO ESTATISTICAS:", err);
 
-    kpisEl.innerHTML = `<div class="dashboard-empty-state">Erro ao carregar os dados enviados para a Meta.</div>`;
+    kpisEl.innerHTML = `<div class="iapm-empty">Erro ao carregar os dados enviados para a Meta.</div>`;
 
     if (eventosEl) {
-      eventosEl.innerHTML = `<div class="plano-nota">Erro ao carregar os últimos eventos.</div>`;
+      eventosEl.innerHTML = `<div class="iapm-empty">Erro ao carregar os últimos eventos.</div>`;
     }
   }
 }
@@ -20994,7 +20913,7 @@ async function carregarGanhoProjetadoMeta(token) {
 
     if (!res.ok || performance.error || cplAtual == null) {
       ganhoEl.innerHTML = `
-        <div class="plano-nota">
+        <div class="iapm-empty">
           Conecte e sincronize sua conta Meta para ver o CPL atual e a projeção de economia.
         </div>
       `;
@@ -21011,31 +20930,29 @@ async function carregarGanhoProjetadoMeta(token) {
     // está otimizando o Ad Set).
     const economiaReal = performance?.resumo?.economia_percentual;
 
-    const cardTendencia =
+    const linhaTendencia =
       economiaReal != null
         ? `
-          <div class="plano-info-card">
-            <strong>Tendência recente de CPL</strong>
-            <p>Hoje está ${Math.abs(economiaReal).toFixed(1)}% ${economiaReal >= 0 ? "melhor" : "pior"} que a média dos dias anteriores no período (ainda não é efeito do Conversion Leads).</p>
+          <div class="iapm-gain-row">
+            <span>Tendência recente</span>
+            <b style="color:${economiaReal >= 0 ? '#4ade80' : '#fb7185'};">${Math.abs(economiaReal).toFixed(1)}% ${economiaReal >= 0 ? "melhor" : "pior"}</b>
           </div>
         `
         : "";
 
     ganhoEl.innerHTML = `
-      <div class="plano-info-grid">
-        <div class="plano-info-card">
-          <strong>CPL médio atual</strong>
-          <p>${formatarMoeda(cplAtual)}</p>
-        </div>
-        ${cardTendencia}
-        <div class="plano-info-card">
-          <strong>Faixa projetada com Conversion Leads</strong>
-          <p>${formatarMoeda(cplAtual - economiaMax)} a ${formatarMoeda(cplAtual - economiaMin)}</p>
-        </div>
-        <div class="plano-info-card">
-          <strong>Economia estimada</strong>
-          <p>15% a 21% por lead qualificado, conforme dados publicados pela própria Meta para Conversion Leads.</p>
-        </div>
+      <div class="iapm-gain-row">
+        <span>CPL médio atual</span>
+        <b>${formatarMoeda(cplAtual)}</b>
+      </div>
+      ${linhaTendencia}
+      <div class="iapm-gain-row">
+        <span>Faixa projetada com Conversion Leads</span>
+        <b>${formatarMoeda(cplAtual - economiaMax)} a ${formatarMoeda(cplAtual - economiaMin)}</b>
+      </div>
+      <div class="iapm-gain-range">
+        <b>15% a 21%</b> de economia por lead qualificado é a faixa documentada pela própria Meta para
+        Conversion Leads. Estimativa — a otimização automática do Ad Set ainda não está ativa.
       </div>
     `;
 
@@ -21043,7 +20960,7 @@ async function carregarGanhoProjetadoMeta(token) {
 
     console.error("META CONVERSAO GANHO:", err);
 
-    ganhoEl.innerHTML = `<div class="plano-nota">Erro ao carregar o CPL e a projeção de economia.</div>`;
+    ganhoEl.innerHTML = `<div class="iapm-empty">Erro ao carregar o CPL e a projeção de economia.</div>`;
   }
 }
   

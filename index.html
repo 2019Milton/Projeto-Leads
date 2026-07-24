@@ -29891,6 +29891,16 @@ function mostrarToastResumoCampanha(linhas, algumSucesso) {
 // Mostra o resultado final — mantém o toast simples de sempre quando só o Meta foi
 // publicado sozinho (comportamento idêntico ao de antes do multi-rede existir).
 function mostrarResumoPublicacaoMultiRede(resultados) {
+  // Erro específico do Google Ads que só tem solução manual (aceitar os Termos de
+  // Serviço de Lead Form na interface deles) — abre o passo a passo dedicado em vez
+  // de deixar o usuário só com um toast de erro genérico que ele não sabe como agir.
+  const erroTermosLeadForm = resultados.find(r =>
+    !r.ok && String(r.mensagem || "").includes("Termos de Serviço de Lead Forms")
+  );
+  if (erroTermosLeadForm) {
+    abrirPassoGoogleLeadFormTermos();
+  }
+
   if (resultados.length === 1 && resultados[0].rede === "Facebook/Instagram") {
     if (resultados[0].semFormaPagamento) {
       mostrarToastAvisoCampanha(resultados[0].mensagem);
@@ -40788,6 +40798,98 @@ async function enviarFeedback() {
   </div>
 </div>
 
+<!-- PASSO A PASSO GOOGLE ADS — aceitar Termos de Serviço de Lead Form -->
+<div
+  id="modal_passo_google_leadform_termos"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoGoogleLeadFormTermos()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_google_leadform_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_google_leadform_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Aceitar os Termos de Serviço de Lead Form
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          O Google exige esse aceite manualmente, uma única vez por conta — não existe forma de fazer isso
+          pela API. Depois de aceitar, a conta fica liberada permanentemente.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoGoogleLeadFormTermos()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Abra o Google Ads na conta de anúncios em uso</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Entre logado com a mesma Conta Google usada na Plataforma de Leads, na
+            <strong>conta de anúncios</strong> selecionada (não a gerenciadora).
+          </p>
+          <p style="margin:10px 0 0;">
+            <a href="https://ads.google.com/aw/overview" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir Google Ads →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Vá em Campanhas → Ativos</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            No menu lateral, clique em <strong>"Campanhas"</strong> e depois em <strong>"Ativos"</strong>
+            (em contas mais novas pode aparecer como <strong>"Anúncios e recursos" → "Recursos"</strong>).
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Clique em "+" e escolha "Formulário de lead"</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Preencha um formulário de exemplo: nome do negócio, título, descrição, uma pergunta de contato e
+            a URL da política de privacidade. Não precisa ser o formulário definitivo — qualquer conteúdo
+            válido serve, é só pra chegar até o final do fluxo.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Revise e aceite os Termos de Serviço</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Na última etapa do assistente, o Google mostra os <strong>Termos de Serviço de Lead Forms</strong>
+            para revisão. Aceite e clique em <strong>"Salvar"</strong>.
+          </p>
+          <p style="margin:10px 0 0;background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:8px 12px;color:#166534!important;font-size:13px;font-weight:600;">
+            ✅ Pronto — não precisa manter esse formulário de exemplo. O que importa é o aceite ter ficado
+            registrado na conta. Volte na Plataforma de Leads e tente criar a campanha novamente.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ✨ MODAL GERAR BANNER COM IA -->
 <div id="modal_banner_ia">
   <div class="modal-banner-ia-overlay" onclick="fecharModalGerarBanner()"></div>
@@ -40998,6 +41100,41 @@ function abrirPassoGoogleConta() {
 
 function fecharPassoGoogleConta() {
   const modal = document.getElementById("modal_passo_google_conta");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function abrirPassoGoogleLeadFormTermos() {
+  const modal = document.getElementById("modal_passo_google_leadform_termos");
+  if (!modal) return;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  modal.querySelectorAll(".passo-meta-step-text h3").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+    el.style.setProperty("font-weight", "700", "important");
+  });
+  modal.querySelectorAll(".passo-meta-step-text p").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header h2").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header p").forEach(el => {
+    el.style.setProperty("color", "#374151", "important");
+  });
+  modal.querySelectorAll(".passo-meta-body").forEach(el => {
+    el.style.setProperty("background", "#ffffff", "important");
+  });
+}
+
+function fecharPassoGoogleLeadFormTermos() {
+  const modal = document.getElementById("modal_passo_google_leadform_termos");
   if (!modal) return;
 
   modal.classList.remove("active");

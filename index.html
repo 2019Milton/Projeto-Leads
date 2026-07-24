@@ -23804,9 +23804,7 @@ function dadosCampanhaFormularioIA() {
   };
 }
 
-const CHAVE_CRIAR_CAMPANHA_RECOLHIDA = "criar_campanha_recolhida";
-
-function aplicarEstadoCriarCampanha(recolhido, salvar = true) {
+function aplicarEstadoCriarCampanha(recolhido) {
   const card = document.getElementById("card-criar-campanha");
   const btn = document.getElementById("btn-recolher-campanha");
   const container = document.getElementById("nicho_campanha_container");
@@ -23833,15 +23831,6 @@ function aplicarEstadoCriarCampanha(recolhido, salvar = true) {
       "aria-expanded",
       recolhido ? "false" : "true"
     );
-  }
-
-  if (salvar) {
-    try {
-      localStorage.setItem(
-        CHAVE_CRIAR_CAMPANHA_RECOLHIDA,
-        recolhido ? "1" : "0"
-      );
-    } catch (_) {}
   }
 }
 
@@ -23923,16 +23912,9 @@ function atualizarEstadoBotaoGerarIA() {
 }
 
 function inicializarEstadoCriarCampanha() {
-  let recolhido = false;
-
-  try {
-    recolhido =
-      localStorage.getItem(
-        CHAVE_CRIAR_CAMPANHA_RECOLHIDA
-      ) === "1";
-  } catch (_) {}
-
-  aplicarEstadoCriarCampanha(recolhido, false);
+  // Sempre comeca recolhido ao entrar em Campanhas — nao guarda/le mais a
+  // preferencia da sessao anterior, pra nunca abrir expandido por padrao.
+  aplicarEstadoCriarCampanha(true);
   aplicarRedesCampanha();
   atualizarEstadoBotaoGerarIA();
 }
@@ -28159,6 +28141,17 @@ const BLOCOS_SEGMENTACAO_EDITAVEL = [
   "bloco_titulo_formulario"
 ];
 
+// Estado aberto/fechado de cada bloco quando ele pertence ao formulario
+// "Criar Campanha" (mesmo padrao definido no HTML original de cada <details>).
+const BLOCOS_SEGMENTACAO_ABERTO_PADRAO = {
+  bloco_configuracao_campanha: true,
+  bloco_imagens_texto: true,
+  bloco_publico_orcamento: true,
+  bloco_agendamento_custo: true,
+  bloco_segmentacao_adicional: false,
+  bloco_titulo_formulario: false
+};
+
 let campanhaEmEdicao = null;
 let _snapshotCriarCampanha = null;
 
@@ -28473,6 +28466,8 @@ function abrirEdicaoCampanha(campanhaEncoded) {
 
     BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
       moverBloco(blocoId, "editar_campanha_campos");
+      const bloco = document.getElementById(blocoId);
+      if (bloco) bloco.open = false;
     });
 
     const instagramFeedback =
@@ -28521,6 +28516,8 @@ function fecharEdicaoCampanha() {
 
     BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
       restaurarBloco(blocoId);
+      const bloco = document.getElementById(blocoId);
+      if (bloco) bloco.open = BLOCOS_SEGMENTACAO_ABERTO_PADRAO[blocoId] ?? false;
     });
 
     const instagramFeedback =

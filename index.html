@@ -20084,6 +20084,15 @@ async function init() {
   inicializarEstadoCriarCampanha();
   atualizarDescricaoCusto();
   inicializarKanbanTopScrollbar();
+
+  // Rede de seguranca: configurarCliquesDinamicos() (delegação de clique dos botões
+  // de campanha) e inicializarCarrosselImagens() (botão "+ Adicionar imagens") normalmente
+  // já rodam sozinhas, uma única vez, em scripts soltos no meio da página — se por
+  // qualquer motivo (ordem/tempo de carregamento) isso não "pegar" na primeira vez,
+  // esses botões ficam mortos até a página ser recarregada. Chamar de novo aqui é
+  // seguro: as duas têm proteção própria contra rodar em dobro.
+  try { configurarCliquesDinamicos(); } catch (e) { console.error("configurarCliquesDinamicos:", e); }
+  try { inicializarCarrosselImagens(); } catch (e) { console.error("inicializarCarrosselImagens:", e); }
 }
 
 function inicializarKanbanTopScrollbar() {

@@ -7111,6 +7111,26 @@ body.tema-claro .cal-nav span { color: #111827; }
   padding-left: 18px;
 }
 
+.ia-analise-bloco + .ia-analise-bloco {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(148,163,184,0.35);
+}
+
+.ia-analise-bloco-titulo {
+  display: block;
+  margin-bottom: 6px;
+  color: #c4b5fd;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ia-analise-segunda-opiniao .ia-resultado-box,
+.ia-analise-segunda-opiniao {
+  opacity: 0.96;
+}
+
 .ia-ouro-destaque {
   margin: 14px 0;
   padding: 14px;
@@ -22912,6 +22932,10 @@ function renderizarSugestaoIA(sugestao, opcoes = {}) {
     return "IA nao retornou sugestao.";
   }
 
+  const diagnostico =
+    (sugestao.diagnostico || [])
+      .map(item => `<li>${escaparHtml(item)}</li>`)
+      .join("");
   const mensagens =
     (sugestao.mensagens || [])
       .map(item => `<li>${escaparHtml(item)}</li>`)
@@ -22934,6 +22958,7 @@ function renderizarSugestaoIA(sugestao, opcoes = {}) {
   return `
     <strong>${escaparHtml(sugestao.titulo || "Sugestao IA")}</strong>
     <div>${escaparHtml(sugestao.resumo || "")}</div>
+    ${diagnostico ? `<div style="margin-top:8px;"><strong>Diagnostico tecnico:</strong><ul>${diagnostico}</ul></div>` : ""}
     <div style="margin-top:8px;">
       <strong>Acao principal:</strong>
       ${escaparHtml(sugestao.acao_principal || "-")}
@@ -24504,8 +24529,24 @@ async function analisarCampanhaIA(campanha) {
       throw new Error(data.error || "Erro ao analisar campanha");
     }
 
-    box.innerHTML =
-      renderizarSugestaoIA(data.sugestao);
+    const analisePrincipal = `
+      <div class="ia-analise-bloco">
+        <strong class="ia-analise-bloco-titulo">Analise 1 — ${escaparHtml(labelOrigemSugestaoIA(data.sugestao?.origem))}</strong>
+        ${renderizarSugestaoIA(data.sugestao)}
+      </div>
+    `;
+
+    const segundaOpiniao =
+      data.segunda_opiniao
+        ? `
+          <div class="ia-analise-bloco ia-analise-segunda-opiniao">
+            <strong class="ia-analise-bloco-titulo">Analise 2 (segunda opiniao) — ${escaparHtml(labelOrigemSugestaoIA(data.segunda_opiniao?.origem))}</strong>
+            ${renderizarSugestaoIA(data.segunda_opiniao)}
+          </div>
+        `
+        : "";
+
+    box.innerHTML = analisePrincipal + segundaOpiniao;
   } catch (err) {
     box.innerHTML =
       escaparHtml(err.message || "Erro ao analisar campanha.");
@@ -34179,7 +34220,7 @@ function abrirCampanhaDrawer(campanhaEncoded) {
     <div class="ia-ouro-destaque">
       <h4>IA Ouro - Analise de campanha</h4>
       <p>
-        A IA avalia CPL, leads, status e configuracoes para sugerir proxima acao.
+        Auditoria completa como um gestor de trafego pago senior: CPL, CTR, CPC, pacing de orcamento, segmentacao, criativo, lance/CBO e formulario — com segunda opiniao de outra IA quando disponivel.
       </p>
       <button
         class="btn-reanalisar-ia"

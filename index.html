@@ -5850,7 +5850,7 @@ body.tema-claro .perguntas-rapidas-ajuda {
 .performance-meta-table {
 
   width:100%;
-  min-width:640px;
+  min-width:720px;
 
   border-collapse:collapse;
 
@@ -5893,10 +5893,12 @@ body.tema-claro .perguntas-rapidas-ajuda {
 .performance-meta-table td:nth-child(3),
 .performance-meta-table td:nth-child(4),
 .performance-meta-table td:nth-child(5),
+.performance-meta-table td:nth-child(6),
 .performance-meta-table th:nth-child(2),
 .performance-meta-table th:nth-child(3),
 .performance-meta-table th:nth-child(4),
-.performance-meta-table th:nth-child(5) {
+.performance-meta-table th:nth-child(5),
+.performance-meta-table th:nth-child(6) {
 
   text-align:right;
 }
@@ -25870,6 +25872,7 @@ function renderizarPainelPerformanceMeta(data) {
         </td>
         <td>${formatarMoeda(registro.gasto)}</td>
         <td>${registro.leads || 0}</td>
+        <td>${registro.leads_plataforma ?? 0}</td>
         <td>${
           registro.custo_por_lead === null || registro.custo_por_lead === undefined
             ? "-"
@@ -25881,7 +25884,7 @@ function renderizarPainelPerformanceMeta(data) {
         podeDetalhar
           ? `
             <tr class="perf-detalhe-row" id="${detalheId}" style="display:none;">
-              <td colspan="5">
+              <td colspan="6">
                 <div class="perf-detalhe-inner">
                   <span class="perf-detalhe-loading">Carregando campanhas...</span>
                 </div>
@@ -25937,6 +25940,7 @@ function renderizarPainelPerformanceMeta(data) {
       <div class="performance-meta-card">
         <span>Leads no periodo</span>
         <strong>${resumo.leads_total || 0}</strong>
+        <small>Na plataforma: ${resumo.leads_total_plataforma ?? 0}</small>
       </div>
       <div class="performance-meta-card">
         <span>CPL hoje</span>
@@ -25978,7 +25982,8 @@ function renderizarPainelPerformanceMeta(data) {
           <tr>
             <th>${agrupamento === "mensal" ? "Mes" : "Dia"}</th>
             <th>Gasto</th>
-            <th>Leads</th>
+            <th title="Leads que a Meta registrou na propria plataforma de anuncios">Leads (Meta)</th>
+            <th title="Leads que realmente chegaram e foram salvos na Central de Leads">Leads (Plataforma)</th>
             <th>CPL</th>
             <th>Cliques</th>
           </tr>
@@ -25986,7 +25991,7 @@ function renderizarPainelPerformanceMeta(data) {
         <tbody>
           ${linhas || `
             <tr>
-              <td colspan="5">Sem dados de performance no periodo.</td>
+              <td colspan="6">Sem dados de performance no periodo.</td>
             </tr>
           `}
         </tbody>
@@ -25996,6 +26001,10 @@ function renderizarPainelPerformanceMeta(data) {
     <div class="performance-meta-note">
       <strong>CPL</strong> e o custo medio por lead. A Meta cobra por impressoes; nem todo clique vira lead.
       Use a linha expandida para ver quais campanhas puxaram o gasto de cada dia.
+      <br>
+      <strong>Leads (Meta)</strong> e o que a Meta registrou na propria plataforma de anuncios;
+      <strong>Leads (Plataforma)</strong> e o que realmente chegou e foi salvo na Central de Leads.
+      Diferencas acontecem por atraso ou falha de webhook, fuso horario ou leads de teste no Gerenciador de Anuncios.
     </div>
   `;
 
@@ -26058,7 +26067,7 @@ async function exportarPerformanceMetaXLSX() {
     ["Período",      periodoTexto,"", "Moeda",             conta.moeda || "BRL"],      // A4
     [""],
     ["RESUMO GERAL"],                                                                   // A6
-    ["Gasto Total (período)",    Number(resumo.gasto_total || 0),          "", "Leads no Período",   Number(resumo.leads_total || 0)],
+    ["Gasto Total (período)",    Number(resumo.gasto_total || 0),          "", "Leads no Período (Meta)",   Number(resumo.leads_total || 0), "", "Leads no Período (Plataforma)", Number(resumo.leads_total_plataforma || 0)],
     ["CPL Médio (período)",      valorPerformanceValido(resumo.custo_por_lead_medio) ? Number(resumo.custo_por_lead_medio) : "-", "", "CPL Hoje",  hoje.custo_por_lead != null ? Number(hoje.custo_por_lead) : "-"],
     ["Gasto Hoje",               Number(hoje.gasto || 0),                  "", "Leads Hoje",         Number(hoje.leads || 0)],
     ["CPL Médio Dias Anteriores",valorPerformanceValido(resumo.media_cpl_anterior) ? Number(resumo.media_cpl_anterior) : "-", "", "Tendência vs Média", tendenciaTexto],
@@ -26074,7 +26083,7 @@ async function exportarPerformanceMetaXLSX() {
       valorPerformanceValido(insights.taxaLeadClique) ? Number(insights.taxaLeadClique.toFixed(2)) : "-"],
   ]);
 
-  wsResumo["!cols"] = [{ wch: 28 }, { wch: 22 }, { wch: 4 }, { wch: 22 }, { wch: 30 }];
+  wsResumo["!cols"] = [{ wch: 28 }, { wch: 22 }, { wch: 4 }, { wch: 22 }, { wch: 30 }, { wch: 4 }, { wch: 28 }, { wch: 12 }];
   wsResumo["!merges"] = [XLSX.utils.decode_range("A1:E1")];
   wsResumo["A1"].s = sTitulo;
   aplicarEstilo(wsResumo, "A6:E6", sSectionHeader);

@@ -5903,6 +5903,46 @@ body.tema-claro .perguntas-rapidas-ajuda {
   text-align:right;
 }
 
+.performance-meta-alerta {
+
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+
+  padding:10px 14px;
+  margin-bottom:14px;
+
+  border-radius:10px;
+  border:1px solid rgba(245,158,11,0.32);
+  background:rgba(245,158,11,0.08);
+
+  color:#fde68a;
+  font-size:12px;
+  line-height:1.6;
+}
+
+.performance-meta-alerta-icone {
+
+  flex:none;
+  width:18px;
+  height:18px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:50%;
+  background:rgba(245,158,11,0.22);
+  color:#fbbf24;
+
+  font-size:11px;
+  font-weight:800;
+}
+
+.performance-meta-alerta b {
+  color:#fef3c7;
+}
+
 .performance-meta-insights {
 
   display:grid;
@@ -11382,6 +11422,9 @@ body.tema-claro .performance-meta-table tbody tr:hover { background: rgba(22,163
 body.tema-claro .performance-meta-insight { background: rgba(255,255,255,0.58); border-color: rgba(71,85,105,0.18); color: #526174; }
 body.tema-claro .performance-meta-insight strong { color: #1e293b; }
 body.tema-claro .performance-meta-note { color: #526174; }
+body.tema-claro .performance-meta-alerta { background: rgba(217,119,6,0.08); border-color: rgba(217,119,6,0.30); color: #7c4a03; }
+body.tema-claro .performance-meta-alerta-icone { background: rgba(217,119,6,0.18); color: #b45309; }
+body.tema-claro .performance-meta-alerta b { color: #451a03; }
 
 /* ── Meta conta selector — tema claro ── */
 body.tema-claro .meta-conta-selector {
@@ -25841,6 +25884,26 @@ function renderizarPainelPerformanceMeta(data) {
         }
       );
 
+  const diffLeadsMetaPlataforma =
+    Number(resumo.leads_total || 0) - Number(resumo.leads_total_plataforma || 0);
+
+  const avisoDivergenciaLeadsHtml =
+    diffLeadsMetaPlataforma === 0
+      ? ""
+      : `
+        <div class="performance-meta-alerta">
+          <span class="performance-meta-alerta-icone">!</span>
+          <span>
+            ${
+              diffLeadsMetaPlataforma > 0
+                ? `A Meta registrou <b>${diffLeadsMetaPlataforma} lead${diffLeadsMetaPlataforma > 1 ? "s" : ""} a mais</b> do que chegou na Central de Leads neste período (<b>${resumo.leads_total || 0}</b> na Meta vs. <b>${resumo.leads_total_plataforma || 0}</b> salvos aqui).`
+                : `A Central de Leads tem <b>${Math.abs(diffLeadsMetaPlataforma)} lead${Math.abs(diffLeadsMetaPlataforma) > 1 ? "s" : ""} a mais</b> do que a Meta reportou neste período (<b>${resumo.leads_total_plataforma || 0}</b> salvos aqui vs. <b>${resumo.leads_total || 0}</b> na Meta).`
+            }
+            Motivos mais comuns: atraso ou falha no webhook, fuso horário (o lead cai em outro dia na contagem) ou leads de teste no Gerenciador de Anúncios.
+          </span>
+        </div>
+      `;
+
   const registrosOrdenados =
     (data.registros || data.dias || [])
       .slice()
@@ -25961,6 +26024,8 @@ function renderizarPainelPerformanceMeta(data) {
       </div>
     </div>
 
+    ${avisoDivergenciaLeadsHtml}
+
     <div class="performance-meta-insights">
       <div class="performance-meta-insight">
         <strong>Melhor CPL</strong>
@@ -26004,7 +26069,6 @@ function renderizarPainelPerformanceMeta(data) {
       <br>
       <strong>Leads (Meta)</strong> e o que a Meta registrou na propria plataforma de anuncios;
       <strong>Leads (Plataforma)</strong> e o que realmente chegou e foi salvo na Central de Leads.
-      Diferencas acontecem por atraso ou falha de webhook, fuso horario ou leads de teste no Gerenciador de Anuncios.
     </div>
   `;
 

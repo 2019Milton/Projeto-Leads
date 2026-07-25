@@ -16137,8 +16137,8 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >✨ Gerar Banner com IA</button>
               <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
               <p data-plat-only="google" style="font-size:11px;opacity:.55;margin:6px 0 0">
-                ℹ️ Para o Google Ads, a plataforma recorta automaticamente suas imagens nos
-                formatos exigidos (paisagem e quadrada) — não precisa se preocupar com proporção.
+                ℹ️ O anúncio do Google Ads é só texto (títulos e descrições) — as imagens acima
+                não são usadas nele, só em Meta/TikTok.
               </p>
 
               <label style="margin-top:14px;">Vídeo do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(opcional)</span></label>
@@ -16630,8 +16630,8 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
 
             <div class="advanced-subsection" data-plat-only="google" style="display:none;">
-              <h5>Anúncio Display (Google Ads)</h5>
-              <p>A paisagem e a imagem quadrada usam as 2 primeiras imagens já enviadas no carrossel acima (a primeira como paisagem, a segunda como quadrada — envie pelo menos 2 imagens).</p>
+              <h5>Anúncio de Pesquisa (Google Ads)</h5>
+              <p>Anúncio de texto (Responsive Search Ad) exibido nas buscas do Google — sem imagem. Use os 3 títulos abaixo como base; eles também viram as palavras-chave que fazem o anúncio aparecer.</p>
             </div>
 
             <div data-plat-only="google" style="display:none;">
@@ -26731,30 +26731,26 @@ function obterFormularioGoogleEscolhido() {
   return select?.value?.trim() || "";
 }
 
-function validarPublicacaoCampanhaGoogle(imagensArquivos) {
+function validarPublicacaoCampanhaGoogle() {
+  // Responsive Search Ad (texto, sem imagem) exige no minimo 3 titulos e 2 descricoes
+  // -- mesma regra fixa aplicada no backend em /google/anuncio.
   const titulos = [
     document.getElementById("campanha_google_titulo_1")?.value?.trim(),
     document.getElementById("campanha_google_titulo_2")?.value?.trim(),
     document.getElementById("campanha_google_titulo_3")?.value?.trim()
   ].filter(Boolean);
-  if (!titulos.length) {
-    return "Informe ao menos um título para o anúncio do Google Ads.";
-  }
-  if (!document.getElementById("campanha_google_titulo_longo")?.value?.trim()) {
-    return "Informe o título longo do anúncio do Google Ads.";
+  if (titulos.length < 3) {
+    return "Informe os 3 títulos do anúncio do Google Ads.";
   }
   const descricoes = [
     document.getElementById("campanha_google_descricao_1")?.value?.trim(),
     document.getElementById("campanha_google_descricao_2")?.value?.trim()
   ].filter(Boolean);
-  if (!descricoes.length) {
-    return "Informe ao menos uma descrição para o anúncio do Google Ads.";
+  if (descricoes.length < 2) {
+    return "Informe as 2 descrições do anúncio do Google Ads.";
   }
   if (!document.getElementById("campanha_google_nome_anunciante")?.value?.trim()) {
     return "Informe o nome do anunciante para o anúncio do Google Ads.";
-  }
-  if (!imagensArquivos?.length) {
-    return "Envie ao menos uma imagem para o anúncio do Google Ads (idealmente 2: paisagem e quadrada).";
   }
   return null;
 }
@@ -29931,7 +29927,8 @@ function validarCamposCompartilhadosCampanha({
   texto,
   orcamento,
   imagensArquivos,
-  videoArquivo
+  videoArquivo,
+  redes
 }) {
   limparValidacaoCampanha();
 
@@ -29942,7 +29939,11 @@ function validarCamposCompartilhadosCampanha({
     );
   }
 
-  if (!imagensArquivos.length && !videoArquivo) {
+  // Imagem/vídeo só é exigido quando Meta ou TikTok estão selecionados — o anúncio do
+  // Google (Responsive Search Ad) é só texto e não usa nenhum dos dois.
+  const precisaDeCriativoVisual = (redes || []).some(r => r === "meta" || r === "tiktok");
+
+  if (precisaDeCriativoVisual && !imagensArquivos.length && !videoArquivo) {
     return conduzirParaCampoCampanha(
       "#btn-adicionar-imagem",
       "Adicione ao menos uma imagem ou um vídeo para o anúncio."
@@ -30410,47 +30411,20 @@ async function descartarCampanhaGoogleCriadaPorFalha(campaign_id, token) {
 }
 
 // Mesma orquestração do Meta/TikTok, adaptada: sem etapa de criar formulário (usa um
-// Lead Form já existente, escolhido pelo usuário) e com upload de 2 imagens (paisagem
-// e quadrada) exigidas pelo Responsive Display Ad — a segunda imagem do carrossel vira
-// a quadrada; se só houver uma, a mesma imagem é reaproveitada nos dois slots.
+// Lead Form já existente, escolhido pelo usuário) e sem imagem — o anúncio Google é uma
+// campanha de Pesquisa com Responsive Search Ad (só texto). Campanhas Display com Lead
+// Form exigem a conta já ter gasto histórico (gate da própria Google), então a
+// plataforma usa Pesquisa, que não tem essa exigência.
 async function publicarCampanhaGoogle(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, orcamento,
-    imagensArquivos, publicacaoGrupoId
+    publicacaoGrupoId
   } = contexto;
   const prefixo = isMultiRede ? "[Google Ads] " : "";
 
   try {
-    const uploadImagemGoogle = async (file, tipo) => {
-      const formData = new FormData();
-      formData.append("imagem", file);
-      formData.append("usuario_id", usuario_id);
-      formData.append("tipo", tipo);
-      const res = await fetch(`${API}/google/upload-imagem`, {
-        method: "POST",
-        headers: { "Authorization": "Bearer " + token },
-        body: formData
-      });
-      return res.json();
-    };
-
-    const imagemPaisagem = imagensArquivos[0];
-    const imagemQuadrada = imagensArquivos[1] || imagensArquivos[0];
-
-    setPublishProgress(10, `${prefixo}Enviando imagem paisagem...`);
-    const uploadPaisagem = await uploadImagemGoogle(imagemPaisagem, "paisagem");
-    if (uploadPaisagem.error) {
-      return { ok: false, mensagem: uploadPaisagem.error || "Erro ao enviar imagem paisagem para o Google Ads" };
-    }
-
-    setPublishProgress(22, `${prefixo}Enviando imagem quadrada...`);
-    const uploadQuadrada = await uploadImagemGoogle(imagemQuadrada, "quadrada");
-    if (uploadQuadrada.error) {
-      return { ok: false, mensagem: uploadQuadrada.error || "Erro ao enviar imagem quadrada para o Google Ads" };
-    }
-
-    setPublishProgress(35, `${prefixo}Criando campanha no Google Ads...`);
+    setPublishProgress(20, `${prefixo}Criando campanha no Google Ads...`);
 
     const campanhaRes = await fetch(`${API}/google/campanha`, {
       method: "POST",
@@ -30520,12 +30494,9 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         adgroup_id: adgroup.adgroup_id,
         form_id: formularioId,
         titulos,
-        titulo_longo: document.getElementById("campanha_google_titulo_longo")?.value?.trim(),
         descricoes,
         nome_anunciante: document.getElementById("campanha_google_nome_anunciante")?.value?.trim(),
         url_destino: document.getElementById("campanha_google_url")?.value?.trim(),
-        imagem_paisagem_resource: uploadPaisagem.resource_name,
-        imagem_quadrada_resource: uploadQuadrada.resource_name,
         daily_budget: Number(orcamento)
       })
     });
@@ -30582,7 +30553,7 @@ async function criarCampanhaCompleta() {
   const videoArquivo = obterArquivoVideoCampanha();
 
   if (!validarCamposCompartilhadosCampanha({
-    campanha_nome, texto, orcamento, imagensArquivos, videoArquivo
+    campanha_nome, texto, orcamento, imagensArquivos, videoArquivo, redes
   })) {
     return;
   }
@@ -30600,7 +30571,7 @@ async function criarCampanhaCompleta() {
   }
 
   if (redes.includes("google")) {
-    const erroGoogle = validarPublicacaoCampanhaGoogle(imagensArquivos);
+    const erroGoogle = validarPublicacaoCampanhaGoogle();
     if (erroGoogle) {
       mostrarErroPublicacao(erroGoogle);
       return;

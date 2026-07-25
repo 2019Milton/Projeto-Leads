@@ -15994,7 +15994,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           <div class="campanha-plat-selector" id="campanha_plat_selector">
             <button type="button" class="plat-sel-btn" data-plat="meta"
               onclick="selecionarPlataformaCampanha('meta')">
-              🟦 Meta Ads
+              <span style="color:#0081FB;font-weight:900;">∞</span> Meta Ads
             </button>
             <button type="button" class="plat-sel-btn" data-plat="tiktok"
               onclick="selecionarPlataformaCampanha('tiktok')">
@@ -16002,7 +16002,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </button>
             <button type="button" class="plat-sel-btn" data-plat="google"
               onclick="selecionarPlataformaCampanha('google')">
-              🔴 Google Ads
+              <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads
             </button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
@@ -33235,7 +33235,7 @@ async function carregarCampanhas() {
                 ${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}
               </span>
             ` : ""}
-            ${platBadge(c.plataforma || c.origem)}
+            ${platBadge(c.plataforma || "meta")}
             <span class="badge meta" style="display:none;">${escaparHtml(c.origem)}</span>
           </div>
 

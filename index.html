@@ -19882,8 +19882,13 @@ function navegarPara(secao) {
     btn.classList.toggle("ativa", btn.dataset.secao === secao);
   });
 
-  // Ao navegar para Dashboard, recarregar performance
-  if (secao === "dashboard" || secao === "desempenho") carregarPerformanceMeta();
+  // Ao navegar para Dashboard, recarregar performance e os widgets de resumo
+  // (Campanhas em detalhe / Leads por plataforma), que antes só carregavam
+  // uma vez no login e ficavam desatualizados em relação ao painel de performance.
+  if (secao === "dashboard" || secao === "desempenho") {
+    carregarPerformanceMeta();
+    carregarDashboard();
+  }
 
   // Ao navegar para Whatsapp Bot, recarregar status da conexão + roteiro salvo
   if (secao === "whatsappbot") carregarWhatsappBot();
@@ -26021,7 +26026,7 @@ function renderizarPainelPerformanceMeta(data) {
         <button
           type="button"
           class="performance-meta-btn"
-          onclick="carregarPerformanceMeta(performanceMetaPeriodoAtual)"
+          onclick="carregarPerformanceMeta(performanceMetaPeriodoAtual); carregarDashboard();"
           title="Atualizar dados da Meta"
         >Atualizar</button>
         <button

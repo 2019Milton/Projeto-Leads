@@ -15783,8 +15783,8 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             <span class="dashboard-performance-badge">Meta conectado ao painel</span>
           </div>
           <div class="desemp-tabs dashboard-platform-tabs">
-            <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta">🟦 Meta Ads</button>
-            <button class="desemp-tab" disabled title="Em breve">🔴 Google Ads</button>
+            <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta"><span style="color:#0081FB;font-weight:900;">∞</span> Meta Ads</button>
+            <button class="desemp-tab" disabled title="Em breve"><svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads</button>
             <button class="desemp-tab" disabled title="Em breve">🎵 TikTok Ads</button>
             <button class="desemp-tab" disabled title="Em breve">💼 LinkedIn Ads</button>
             <button class="desemp-tab" disabled title="Em breve">🎬 Kwai Ads</button>
@@ -30886,7 +30886,7 @@ async function carregarDashboard() {
         <div class="dashboard-panel">
           <div class="dashboard-panel-head">
             <div>
-              <h3>🟦 Status Meta</h3>
+              <h3><span style="color:#0081FB;font-weight:900;">∞</span> Status Meta</h3>
               <small>Campanhas, gasto e leads de hoje na Meta, com sincronização manual.</small>
             </div>
           </div>
@@ -30897,7 +30897,7 @@ async function carregarDashboard() {
         <div class="dashboard-panel">
           <div class="dashboard-panel-head">
             <div>
-              <h3>🔴 Status Google Ads</h3>
+              <h3><svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Status Google Ads</h3>
               <small>Campanhas, gasto e leads de hoje no Google Ads, com sincronização manual.</small>
             </div>
           </div>
@@ -31088,15 +31088,17 @@ function platNome(plataforma) {
 //   🔌 HUB DE CONEXÕES
 // =============================================
 
+// icone de cada item vem de PLATAFORMA_META (fonte unica) pra nunca mais dessincronizar
+// dos icones usados no selo de plataforma das campanhas.
 const HUB_PLATAFORMAS = [
-  { id: "meta",      nome: "Meta Ads",      icone: "🟦", disponivelConectar: true,  desc: "Facebook & Instagram Lead Ads" },
-  { id: "google",    nome: "Google Ads",    icone: "🔴", disponivelConectar: true,  desc: "Lead Form Extensions via Google" },
-  { id: "tiktok",    nome: "TikTok Ads",    icone: "🎵", disponivelConectar: true,  desc: "TikTok Instant Form Leads" },
-  { id: "linkedin",  nome: "LinkedIn Ads",  icone: "💼", disponivelConectar: false, desc: "LinkedIn Lead Gen Forms" },
-  { id: "kwai",      nome: "Kwai Ads",      icone: "🎬", disponivelConectar: false, desc: "Kwai Lead Form Ads" },
-  { id: "pinterest", nome: "Pinterest Ads", icone: "📌", disponivelConectar: false, desc: "Pinterest Lead Ads Webhook" },
-  { id: "snapchat",  nome: "Snapchat Ads",  icone: "👻", disponivelConectar: false, desc: "Snap Lead Generation API" },
-  { id: "microsoft", nome: "Microsoft Ads", icone: "🪟", disponivelConectar: false, desc: "Bing Ads Lead Form Extensions" },
+  { id: "meta",      nome: "Meta Ads",      icone: PLATAFORMA_META.meta.icone,      disponivelConectar: true,  desc: "Facebook & Instagram Lead Ads" },
+  { id: "google",    nome: "Google Ads",    icone: PLATAFORMA_META.google.icone,    disponivelConectar: true,  desc: "Lead Form Extensions via Google" },
+  { id: "tiktok",    nome: "TikTok Ads",    icone: PLATAFORMA_META.tiktok.icone,    disponivelConectar: true,  desc: "TikTok Instant Form Leads" },
+  { id: "linkedin",  nome: "LinkedIn Ads",  icone: PLATAFORMA_META.linkedin.icone,  disponivelConectar: false, desc: "LinkedIn Lead Gen Forms" },
+  { id: "kwai",      nome: "Kwai Ads",      icone: PLATAFORMA_META.kwai.icone,      disponivelConectar: false, desc: "Kwai Lead Form Ads" },
+  { id: "pinterest", nome: "Pinterest Ads", icone: PLATAFORMA_META.pinterest.icone, disponivelConectar: false, desc: "Pinterest Lead Ads Webhook" },
+  { id: "snapchat",  nome: "Snapchat Ads",  icone: PLATAFORMA_META.snapchat.icone,  disponivelConectar: false, desc: "Snap Lead Generation API" },
+  { id: "microsoft", nome: "Microsoft Ads", icone: PLATAFORMA_META.microsoft.icone, disponivelConectar: false, desc: "Bing Ads Lead Form Extensions" },
 ];
 
 function hubResumoItem(label, valor, classe = "") {

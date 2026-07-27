@@ -33482,10 +33482,10 @@ async function carregarCampanhas() {
           class="btn-campanha-toggle btn-campanha-publicar${veiculacaoSubcategoria === "campanha_pausada" ? " btn-campanha-publicar-destaque" : ""}"
           onclick="${
             campanhaRecebidaLocal
-              ? `publicarCampanhaRecebida(${Number(c.id)}, this)`
+              ? `publicarCampanhaRecebida(${Number(c.id)}, this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
               : `toggleCampanha('${c.campaign_id}', '${c.status}', this)`
           }"
-          title="${campanhaRecebidaLocal ? "Publicar campanha na sua Meta conectada" : "Publicar / ativar campanha"}"
+          title="${campanhaRecebidaLocal ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
         >Publicar</button>
             `
         }
@@ -33601,7 +33601,7 @@ async function carregarCampanhas() {
         campanhaUsaHistoricoLocal(c)
           ? `
             <div class="campanha-encaminhada">
-              Historico local da plataforma. Metricas da Meta indisponiveis.
+              Histórico local da plataforma. Métricas ainda não disponíveis.
             </div>
           `
           : ""
@@ -34986,12 +34986,26 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl) {
   }
 }
 
-async function publicarCampanhaRecebida(campanhaId, btnEl) {
+async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
 
   const token =
     localStorage.getItem("token");
 
   if (!token || !campanhaId) {
+    return;
+  }
+
+  // Este fluxo de publicação em 1 clique só existe para Meta (é o único que
+  // reconstrói o anúncio inteiro a partir dos campos genéricos salvos em
+  // configuracoes_avancadas). Google/TikTok nunca tiveram esse caminho — os
+  // campos específicos de anúncio dessas redes só existem no formulário de
+  // "Criar Campanha". Sem esta checagem, o botão chamava o endpoint da Meta
+  // de qualquer forma e devolvia um erro da API do Facebook sem nexo numa
+  // campanha marcada como Google Ads.
+  if (plataforma && plataforma !== "meta") {
+    mostrarErroPublicacao(
+      `Publicação automática de campanhas recebidas ainda só funciona para Meta Ads. Esta campanha é ${plataforma === "google" ? "Google Ads" : plataforma === "tiktok" ? "TikTok Ads" : plataforma}: recrie-a em "Criar Campanha" selecionando essa plataforma para publicá-la.`
+    );
     return;
   }
 

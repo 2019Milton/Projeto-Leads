@@ -751,6 +751,24 @@ button {
   margin: 6px 8px;
 }
 
+.sidebar-sync-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 0 6px;
+  font-size: 11px;
+  color: #64748b;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  background: rgba(15,23,42,0.4);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#sidebar-nav.recolhida .sidebar-sync-status { justify-content: center; padding: 8px 0; }
+#sidebar-nav.recolhida .sidebar-sync-texto { display: none; }
+
 .sidebar-rodape {
   padding: 10px 6px 14px;
   border-top: 1px solid #1e293b;
@@ -13605,6 +13623,11 @@ body.tema-claro .sidebar-perfil-nome {
 body.tema-claro .sidebar-perfil-info {
   color: #475569 !important;
 }
+body.tema-claro .sidebar-sync-status {
+  border-color: #b9cbd8 !important;
+  background: rgba(255,255,255,0.5) !important;
+  color: #64748b !important;
+}
 
 body.tema-claro .topbar-brand-title,
 body.tema-claro .login-brand-title {
@@ -19674,6 +19697,63 @@ function aplicarPermissoesCampanhasUsuario() {
   });
 }
 
+// Indicador de "última sincronização" na sidebar — só lê do banco
+// (rota leve /meta/ultimo-sync), nunca chama a API da Meta direto daqui.
+let _syncStatusUltimoValor = null;
+let _syncStatusIntervaloTexto = null;
+let _syncStatusIntervaloFetch = null;
+
+function formatarTempoRelativoSync(dataIso) {
+  if (!dataIso) return "nunca sincronizado";
+
+  const diffMs = Date.now() - new Date(dataIso).getTime();
+  if (diffMs < 60000) return "agora mesmo";
+
+  const min = Math.floor(diffMs / 60000);
+  if (min < 60) return `há ${min} min`;
+
+  const horas = Math.floor(min / 60);
+  if (horas < 24) return `há ${horas}h`;
+
+  const dias = Math.floor(horas / 24);
+  return `há ${dias}d`;
+}
+
+function atualizarTextoSyncSidebar() {
+  const el = document.getElementById("sidebar_sync_texto");
+  if (!el) return;
+  el.textContent = "Sync: " + formatarTempoRelativoSync(_syncStatusUltimoValor);
+}
+
+async function carregarUltimoSyncSidebar() {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/meta/ultimo-sync`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      _syncStatusUltimoValor = data.ultimo_sync || null;
+      atualizarTextoSyncSidebar();
+    }
+  } catch (err) {
+    // indicador secundário — falha silenciosa, não interrompe o resto do app
+  }
+}
+
+function iniciarStatusSyncSidebar() {
+  carregarUltimoSyncSidebar();
+
+  if (_syncStatusIntervaloTexto) clearInterval(_syncStatusIntervaloTexto);
+  if (_syncStatusIntervaloFetch) clearInterval(_syncStatusIntervaloFetch);
+
+  // Recalcula o texto relativo ("há X min") a cada 30s sem bater no backend,
+  // e busca o valor real de novo a cada 5min.
+  _syncStatusIntervaloTexto = setInterval(atualizarTextoSyncSidebar, 30 * 1000);
+  _syncStatusIntervaloFetch = setInterval(carregarUltimoSyncSidebar, 5 * 60 * 1000);
+}
+
 function montarSidebar() {
   const app = document.getElementById("app");
   app.classList.add("sidebar-ativa");
@@ -19744,6 +19824,10 @@ function montarSidebar() {
       </span>
     </div>
     <div class="sidebar-menu">${itensMenu}</div>
+    <div class="sidebar-sync-status" id="sidebar_sync_status" data-tooltip="Última sincronização com a Meta">
+      <span class="sidebar-icone">🔄</span>
+      <span class="sidebar-sync-texto" id="sidebar_sync_texto">—</span>
+    </div>
     <div class="sidebar-rodape">
       <div class="sidebar-perfil-info">
         <span class="sidebar-icone">👤</span>
@@ -19766,6 +19850,8 @@ function montarSidebar() {
 
   // Mostrar seção inicial
   navegarPara("dashboard");
+
+  iniciarStatusSyncSidebar();
 }
 
 let _cfgClickFora = null;
@@ -34804,6 +34890,7 @@ async function sincronizarCampanhas() {
     await carregarStatusMeta();
     await carregarPerformanceMeta();
     await carregarLeads();
+    carregarUltimoSyncSidebar();
 
     alert("Campanhas sincronizadas 🚀");
 

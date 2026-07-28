@@ -33488,7 +33488,7 @@ async function carregarCampanhas() {
             ? `
         <button
           class="btn-campanha-toggle btn-campanha-pausar"
-          onclick="toggleCampanha('${c.campaign_id}', '${c.status}', this)"
+          onclick="toggleCampanha('${c.campaign_id}', '${c.status}', this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')"
           title="Pausar campanha"
         >⏸ Pausar</button>
             `
@@ -33498,7 +33498,7 @@ async function carregarCampanhas() {
           onclick="${
             campanhaRecebidaLocal
               ? `publicarCampanhaRecebida(${Number(c.id)}, this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
-              : `toggleCampanha('${c.campaign_id}', '${c.status}', this)`
+              : `toggleCampanha('${c.campaign_id}', '${c.status}', this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
           }"
           title="${campanhaRecebidaLocal ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
         >Publicar</button>
@@ -34924,9 +34924,14 @@ async function sincronizarCampanhas() {
 
 
 
-async function toggleCampanha(campaign_id, statusAtual, btnEl) {
+async function toggleCampanha(campaign_id, statusAtual, btnEl, plataforma) {
 
   const token = localStorage.getItem("token");
+
+  const endpointToggle =
+    plataforma === "google" ? "/google/toggle-campanha" :
+    plataforma === "tiktok" ? "/tiktok/toggle-campanha" :
+    "/meta/toggle-campanha";
 
   const statusNormalizado =
     String(statusAtual || "").toUpperCase();
@@ -34960,7 +34965,7 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl) {
   try {
 
     const res = await fetch(
-      `${API}/meta/toggle-campanha`,
+      `${API}${endpointToggle}`,
       {
         method: "POST",
 

@@ -129,6 +129,50 @@ body::after {
   transform: translateY(-3px);
 }
 
+.landing-box {
+  width: 560px;
+  max-width: 92vw;
+  text-align: left;
+}
+
+.landing-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 26px;
+  margin: 0 0 6px;
+}
+
+.landing-subtitle {
+  color: #94a3b8;
+  margin: 0 0 18px;
+  font-size: 15px;
+}
+
+.landing-desc {
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+.landing-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: grid;
+  gap: 10px;
+  color: #e2e8f0;
+}
+
+body.tema-claro .landing-subtitle {
+  color: #475569;
+}
+
+body.tema-claro .landing-desc,
+body.tema-claro .landing-features {
+  color: #1e293b;
+}
+
 .login-space-scene {
   position: absolute;
   inset: 0;
@@ -15431,8 +15475,53 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
 </div>
 
+<!-- PÁGINA INICIAL PÚBLICA -->
+<div class="container" id="landingPage" style="display:none;">
+  <div class="login-space-scene" aria-hidden="true">
+    <span class="login-comet"></span>
+    <img class="login-scene-rocket" src="rocket-logo.png" alt="">
+  </div>
+  <div class="login-box landing-box">
+    <h1 class="landing-title">
+      <img class="rocket-icon" src="rocket-logo.png" alt="Foguete">
+      Plataforma de Leads
+    </h1>
+    <p class="landing-subtitle">Gestão inteligente de campanhas e leads para corretores</p>
+
+    <p class="landing-desc">
+      A Plataforma de Leads conecta suas contas de anúncios (Meta Ads, Google Ads
+      e TikTok Ads) e reúne campanhas, formulários de leads e atendimento em um
+      só lugar. Crie e publique campanhas diretamente pela plataforma, acompanhe
+      métricas de desempenho em tempo real e organize seus contatos com o apoio
+      de inteligência artificial.
+    </p>
+
+    <ul class="landing-features">
+      <li>📣 Criação e publicação de campanhas em Meta Ads, Google Ads e TikTok Ads</li>
+      <li>🧭 Central de Leads com histórico, atribuição de campanha e status</li>
+      <li>🤖 Pontuação e priorização de leads com apoio de IA</li>
+      <li>📊 Relatórios de performance por campanha e por plataforma</li>
+    </ul>
+
+    <button class="btn" onclick="mostrarLoginNaLanding()">Entrar</button>
+
+    <div class="credito-desenvolvedor-login">
+      Plataforma desenvolvida por <strong>Milton Santos</strong><br>
+      Operada por <strong>55.848.095 MICHELE CRISTINE DOS SANTOS</strong>
+      (MEI) &mdash; CNPJ 55.848.095/0001-90
+    </div>
+    <div class="login-legal-links">
+      <a href="/empresa" target="_blank" rel="noopener noreferrer">Dados da Empresa</a>
+      <span aria-hidden="true"> · </span>
+      <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+      <span aria-hidden="true"> · </span>
+      <a href="/terms" target="_blank" rel="noopener noreferrer">Termos de Serviço</a>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN -->
-<div class="container" id="loginBox">
+<div class="container" id="loginBox" style="display:none;">
   <div class="login-space-scene" aria-hidden="true">
     <span class="login-comet"></span>
     <img class="login-scene-rocket" src="rocket-logo.png" alt="">
@@ -19031,8 +19120,8 @@ function renderizarPaginaLegal() {
 
       <p>
         A Plataforma de Leads coleta e utiliza dados fornecidos pelos usuários
-        e por integrações autorizadas, como Meta/Facebook, para gerenciar
-        campanhas, leads, contatos comerciais e atendimento.
+        e por integrações autorizadas, como Meta Ads, Google Ads e TikTok Ads,
+        para gerenciar campanhas, leads, contatos comerciais e atendimento.
       </p>
 
       <h2>Dados coletados</h2>
@@ -19040,24 +19129,52 @@ function renderizarPaginaLegal() {
       <ul>
         <li>Dados de conta, como nome, sobrenome, email e tipo de usuário.</li>
         <li>Dados de leads, como nome, telefone, email, origem, campanha e observações.</li>
-        <li>Dados de conexão com a Meta, quando o usuário autoriza a integração.</li>
+        <li>Dados de conexão com a Meta Ads, quando o usuário autoriza a integração.</li>
+        <li>Dados de conexão com o Google Ads, como identificador da conta de anúncios, campanhas, grupos de anúncios, anúncios e formulários de lead, quando o usuário autoriza a integração via OAuth.</li>
+        <li>Dados de conexão com o TikTok Ads, quando o usuário autoriza a integração.</li>
         <li>Métricas de campanhas, como impressões, cliques, CTR, CPC, gasto e quantidade de leads.</li>
       </ul>
 
       <h2>Finalidade</h2>
 
       <p>
-        Os dados são usados para autenticação, gestão de usuários, criação e
-        sincronização de campanhas, organização de leads e acompanhamento de
+        Os dados são usados para autenticação, gestão de usuários, criação,
+        publicação e sincronização de campanhas (incluindo criar, editar,
+        ativar e pausar campanhas do Google Ads em nome do usuário, mediante
+        autorização OAuth), organização de leads e acompanhamento de
         desempenho comercial.
+      </p>
+
+      <h2>Segurança e proteção dos dados</h2>
+
+      <p>
+        Toda comunicação com a plataforma é feita via HTTPS/TLS. Tokens de
+        acesso obtidos por integrações (Meta, Google Ads, TikTok) são
+        armazenados de forma segura no banco de dados da aplicação, acessíveis
+        apenas pelo backend da Plataforma de Leads, nunca expostos diretamente
+        ao navegador do usuário. O acesso a cada integração é concedido
+        individualmente por usuário via OAuth e pode ser revogado a qualquer
+        momento, tanto pela própria Plataforma de Leads quanto diretamente nas
+        configurações da conta Google/Meta/TikTok do usuário. A Plataforma de
+        Leads solicita apenas os escopos de acesso estritamente necessários
+        para as funcionalidades oferecidas.
+      </p>
+
+      <p>
+        O uso e a transferência, pela Plataforma de Leads, de informações
+        recebidas das APIs do Google para qualquer outro aplicativo seguem a
+        <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Política de Dados do Usuário dos Serviços de API do Google</a>,
+        incluindo os requisitos de Uso Limitado (Limited Use).
       </p>
 
       <h2>Compartilhamento</h2>
 
       <p>
-        A Plataforma de Leads não vende dados pessoais. Dados podem ser tratados
-        por serviços necessários à operação da aplicação, como hospedagem,
-        banco de dados, envio de emails e APIs autorizadas pelo usuário.
+        A Plataforma de Leads não vende dados pessoais nem dados obtidos via
+        Google Ads, Meta Ads ou TikTok Ads. Dados podem ser tratados por
+        serviços necessários à operação da aplicação, como hospedagem, banco
+        de dados, envio de emails e as próprias APIs autorizadas pelo usuário
+        (Meta, Google Ads, TikTok).
       </p>
 
       <h2>Exclusão de dados</h2>
@@ -19104,7 +19221,7 @@ function renderizarPaginaLegal() {
 
       <ul>
         <li>Dados cadastrais do usuário.</li>
-        <li>Tokens de integração com a Meta/Facebook.</li>
+        <li>Tokens de integração com a Meta Ads, Google Ads e TikTok Ads.</li>
         <li>Leads e campanhas associados à conta, quando aplicável.</li>
       </ul>
 
@@ -19115,11 +19232,13 @@ function renderizarPaginaLegal() {
         obrigações legais, contratuais e de segurança.
       </p>
 
-      <h2>Revogação na Meta</h2>
+      <h2>Revogação de acesso</h2>
 
       <p>
-        O usuário também pode remover o acesso da Plataforma de Leads diretamente
-        nas configurações da própria conta Meta/Facebook.
+        O usuário também pode remover o acesso da Plataforma de Leads
+        diretamente nas configurações da própria conta Meta/Facebook, Google
+        (<a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">myaccount.google.com/permissions</a>)
+        ou TikTok, a qualquer momento.
       </p>
     `;
   } else {
@@ -19186,6 +19305,34 @@ function renderizarPaginaLegal() {
   }
 
   return true;
+}
+
+// Página pública na raiz do site (exigência do Google: uma home acessível sem
+// login antes da tela de autenticação). Só renderiza na raiz e quando não há
+// sessão ativa — usuário já logado que caia em "/" continua indo direto pro
+// app, sem passar por aqui.
+function renderizarLandingPage() {
+  const landingPage =
+    document.getElementById("landingPage");
+
+  if (
+    !landingPage ||
+    window.location.pathname !== "/" ||
+    localStorage.getItem("token")
+  ) {
+    return false;
+  }
+
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("app").style.display = "none";
+  landingPage.style.display = "flex";
+
+  return true;
+}
+
+function mostrarLoginNaLanding() {
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("loginBox").style.display = "flex";
 }
 
 function abrirEsquecerSenha() {
@@ -38868,12 +39015,17 @@ function coletarDadosNichoAtivo() {
 if (renderizarPaginaLegal()) {
   // página pública renderizada
 } else if (resetTokenUrl) {
+  document.getElementById("loginBox").style.display = "flex";
   validarEAbrirResetSenha(resetTokenUrl);
+} else if (renderizarLandingPage()) {
+  // landing pública renderizada
 } else {
   const token = localStorage.getItem("token");
 
   if (token) {
     init();
+  } else {
+    document.getElementById("loginBox").style.display = "flex";
   }
 }
 

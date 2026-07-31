@@ -15476,7 +15476,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 </div>
 
 <!-- PÁGINA INICIAL PÚBLICA -->
-<div class="container" id="landingPage" style="display:none;">
+<div class="container" id="landingPage">
   <div class="login-space-scene" aria-hidden="true">
     <span class="login-comet"></span>
     <img class="login-scene-rocket" src="rocket-logo.png" alt="">
@@ -19052,6 +19052,9 @@ function renderizarPaginaLegal() {
   }
 
   document.getElementById("loginBox")
+    .style.display = "none";
+
+  document.getElementById("landingPage")
     .style.display = "none";
 
   document.getElementById("app")
@@ -39015,12 +39018,15 @@ function coletarDadosNichoAtivo() {
 if (renderizarPaginaLegal()) {
   // página pública renderizada
 } else if (resetTokenUrl) {
+  document.getElementById("landingPage").style.display = "none";
   document.getElementById("loginBox").style.display = "flex";
   validarEAbrirResetSenha(resetTokenUrl);
 } else if (renderizarLandingPage()) {
   // landing pública renderizada
 } else {
   const token = localStorage.getItem("token");
+
+  document.getElementById("landingPage").style.display = "none";
 
   if (token) {
     init();

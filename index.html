@@ -19173,12 +19173,21 @@ function renderizarPaginaLegal() {
       <h2>Compartilhamento</h2>
 
       <p>
-        A Plataforma de Leads não vende dados pessoais nem dados obtidos via
-        Google Ads, Meta Ads ou TikTok Ads. Dados podem ser tratados por
-        serviços necessários à operação da aplicação, como hospedagem, banco
-        de dados, envio de emails e as próprias APIs autorizadas pelo usuário
-        (Meta, Google Ads, TikTok).
+        A Plataforma de Leads não vende, aluga nem compartilha dados de
+        usuários do Google (ou de qualquer outro usuário) com terceiros para
+        fins de publicidade, marketing ou qualquer finalidade não relacionada
+        ao funcionamento da plataforma. Dados são tratados apenas pelos
+        seguintes prestadores de serviço, estritamente para operar a
+        aplicação:
       </p>
+
+      <ul>
+        <li><strong>Railway</strong> — hospedagem do backend e do banco de dados (PostgreSQL) da aplicação.</li>
+        <li><strong>Vercel</strong> — hospedagem do frontend (interface web) da aplicação.</li>
+        <li><strong>Resend</strong> — envio de emails transacionais (ex.: recuperação de senha, notificações da conta).</li>
+        <li><strong>OpenAI</strong> — geração de análises e sugestões sobre campanhas e leads a partir de dados já coletados na plataforma (podendo incluir métricas de campanhas do Google Ads, quando essa integração estiver conectada). Os dados enviados à OpenAI são usados apenas para gerar a resposta solicitada e não são usados pela OpenAI para treinar seus modelos de IA.</li>
+        <li><strong>Meta, Google Ads e TikTok Ads</strong> — as próprias APIs autorizadas pelo usuário, origem dos dados de campanhas/anúncios sincronizados.</li>
+      </ul>
 
       <h2>Exclusão de dados</h2>
 

@@ -31666,6 +31666,11 @@ function renderResumoGoogle(conn, googleStatusCompleto) {
     return `
       <div class="integ-card-resumo">
         ${hubResumoAlerta("Conecte o Google Ads para importar leads e campanhas dos formulários de lead.")}
+        <div style="margin:6px 0 2px;">
+          <button type="button" onclick="abrirPassoGoogleConta()"
+            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+          >📘 Ainda não tem conta? Ver tutorial</button>
+        </div>
         <div class="integ-resumo-grid">
           ${hubResumoItem("Leads", "Pausados")}
           ${hubResumoItem("Campanhas", "Sem sync")}

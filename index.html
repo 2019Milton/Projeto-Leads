@@ -32479,13 +32479,17 @@ async function conectarWhatsapp(btnEl) {
     let concluido = false;
     // ⚠️ Formato do evento de conclusão do Embedded Signup — verificar contra a doc
     // atual da Meta antes de ir pra produção (nomes de campo podem mudar de versão).
+    // Fluxo de Coexistência (número já ativo no app do WhatsApp Business) conclui com
+    // o evento FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING e só garante o waba_id — o
+    // phone_number_id é resolvido no backend a partir da WABA nesse caso.
     function msgHandler(event) {
       if (!event.data || event.data.type !== "WA_EMBEDDED_SIGNUP") return;
-      if (event.data.event === "FINISH" && event.data.data?.phone_number_id && event.data.data?.waba_id) {
+      const ev = event.data.event;
+      if ((ev === "FINISH" || ev === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING") && event.data.data?.waba_id) {
         concluido = true;
         window.removeEventListener("message", msgHandler);
         finalizarConexaoWhatsapp(event.data.data.waba_id, event.data.data.phone_number_id, restaurarBotao);
-      } else if (event.data.event === "CANCEL" || event.data.event === "ERROR") {
+      } else if (ev === "CANCEL" || ev === "ERROR") {
         window.removeEventListener("message", msgHandler);
         restaurarBotao();
       }
@@ -32505,7 +32509,9 @@ async function conectarWhatsapp(btnEl) {
         config_id: cfg.config_id,
         response_type: "code",
         override_default_response_type: true,
-        extras: { featureType: "whatsapp_embedded_signup", sessionInfoVersion: "3" },
+        // Coexistência: mantém o corretor usando o app do WhatsApp Business depois do
+        // [HANDOFF] do bot, com histórico sincronizado entre app e Cloud API.
+        extras: { setup: {}, featureType: "whatsapp_business_app_onboarding", sessionInfoVersion: "3" },
       }
     );
   } catch (e) {

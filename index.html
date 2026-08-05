@@ -173,6 +173,144 @@ body.tema-claro .landing-features {
   color: #1e293b;
 }
 
+#landingPage {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+  align-items: flex-start;
+  padding: 48px 20px;
+}
+
+.landing-page-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.landing-section {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 15px;
+  padding: 32px;
+  backdrop-filter: blur(12px);
+  color: #e2e8f0;
+}
+
+.landing-section-title {
+  font-size: 20px;
+  margin: 0 0 16px;
+  color: #fff;
+}
+
+.landing-audience-tags {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.landing-audience-tags li {
+  background: rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.landing-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.landing-steps li {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.landing-steps li strong {
+  display: block;
+  color: #93c5fd;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.landing-plans {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.landing-plans li {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.landing-plans h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #fff;
+}
+
+.landing-plans ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.landing-contact-info {
+  margin: 0 0 14px;
+  line-height: 1.8;
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+.landing-contact-info a {
+  color: #93c5fd;
+}
+
+body.tema-claro .landing-section {
+  background: rgba(255,255,255,0.85);
+  color: #1e293b;
+}
+
+body.tema-claro .landing-section-title {
+  color: #0f172a;
+}
+
+body.tema-claro .landing-steps li,
+body.tema-claro .landing-plans li {
+  background: rgba(15,23,42,0.04);
+  color: #1e293b;
+}
+
+body.tema-claro .landing-contact-info {
+  color: #1e293b;
+}
+
 .login-space-scene {
   position: absolute;
   inset: 0;
@@ -15481,42 +15619,107 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
     <span class="login-comet"></span>
     <img class="login-scene-rocket" src="rocket-logo.png" alt="">
   </div>
-  <div class="login-box landing-box">
-    <h1 class="landing-title">
-      <img class="rocket-icon" src="rocket-logo.png" alt="Foguete">
-      Plataforma de Leads
-    </h1>
-    <p class="landing-subtitle">Gestão inteligente de campanhas e leads para corretores</p>
+  <div class="landing-page-inner">
+    <div class="login-box landing-box">
+      <h1 class="landing-title">
+        <img class="rocket-icon" src="rocket-logo.png" alt="Foguete">
+        Plataforma de Leads
+      </h1>
+      <p class="landing-subtitle">Gestão inteligente de campanhas e leads para corretores</p>
 
-    <p class="landing-desc">
-      A Plataforma de Leads conecta suas contas de anúncios (Meta Ads, Google Ads
-      e TikTok Ads) e reúne campanhas, formulários de leads e atendimento em um
-      só lugar. Crie e publique campanhas diretamente pela plataforma, acompanhe
-      métricas de desempenho em tempo real e organize seus contatos com o apoio
-      de inteligência artificial.
-    </p>
+      <p class="landing-desc">
+        A Plataforma de Leads conecta suas contas de anúncios (Meta Ads, Google Ads
+        e TikTok Ads) e reúne campanhas, formulários de leads e atendimento em um
+        só lugar. Crie e publique campanhas diretamente pela plataforma, acompanhe
+        métricas de desempenho em tempo real e organize seus contatos com o apoio
+        de inteligência artificial.
+      </p>
 
-    <ul class="landing-features">
-      <li>📣 Criação e publicação de campanhas em Meta Ads, Google Ads e TikTok Ads</li>
-      <li>🧭 Central de Leads com histórico, atribuição de campanha e status</li>
-      <li>🤖 Pontuação e priorização de leads com apoio de IA</li>
-      <li>📊 Relatórios de performance por campanha e por plataforma</li>
-    </ul>
+      <ul class="landing-features">
+        <li>📣 Criação e publicação de campanhas em Meta Ads, Google Ads e TikTok Ads</li>
+        <li>🧭 Central de Leads com histórico, atribuição de campanha e status</li>
+        <li>🤖 Pontuação e priorização de leads com apoio de IA</li>
+        <li>📊 Relatórios de performance por campanha e por plataforma</li>
+      </ul>
 
-    <button class="btn" onclick="mostrarLoginNaLanding()">Entrar</button>
+      <button class="btn" onclick="mostrarLoginNaLanding()">Entrar</button>
 
-    <div class="credito-desenvolvedor-login">
-      Plataforma desenvolvida por <strong>Milton Santos</strong><br>
-      Operada por <strong>55.848.095 MICHELE CRISTINE DOS SANTOS</strong>
-      (MEI) &mdash; CNPJ 55.848.095/0001-90
+      <div class="credito-desenvolvedor-login">
+        Plataforma desenvolvida por <strong>Milton Santos</strong><br>
+        Operada por <strong>55.848.095 MICHELE CRISTINE DOS SANTOS</strong>
+        (MEI) &mdash; CNPJ 55.848.095/0001-90
+      </div>
+      <div class="login-legal-links">
+        <a href="/empresa" target="_blank" rel="noopener noreferrer">Dados da Empresa</a>
+        <span aria-hidden="true"> · </span>
+        <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+        <span aria-hidden="true"> · </span>
+        <a href="/terms" target="_blank" rel="noopener noreferrer">Termos de Serviço</a>
+      </div>
     </div>
-    <div class="login-legal-links">
-      <a href="/empresa" target="_blank" rel="noopener noreferrer">Dados da Empresa</a>
-      <span aria-hidden="true"> · </span>
-      <a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
-      <span aria-hidden="true"> · </span>
-      <a href="/terms" target="_blank" rel="noopener noreferrer">Termos de Serviço</a>
-    </div>
+
+    <section class="landing-section">
+      <h2 class="landing-section-title">Para quem é</h2>
+      <ul class="landing-audience-tags">
+        <li>Corretores de Seguros</li>
+        <li>Corretores de Imóveis</li>
+        <li>Vendedores de Suplementos e Saúde</li>
+        <li>Pequenos negócios locais</li>
+      </ul>
+    </section>
+
+    <section class="landing-section">
+      <h2 class="landing-section-title">Como funciona</h2>
+      <ul class="landing-steps">
+        <li><strong>1. Conecte</strong>Conecte suas contas de anúncios do Meta Ads, Google Ads e TikTok Ads.</li>
+        <li><strong>2. Crie</strong>Crie e publique campanhas de geração de leads direto pela plataforma.</li>
+        <li><strong>3. Receba</strong>Os leads chegam automaticamente organizados na Central de Leads.</li>
+        <li><strong>4. Acompanhe</strong>Priorize contatos e acompanhe resultados com apoio de inteligência artificial.</li>
+      </ul>
+    </section>
+
+    <section class="landing-section">
+      <h2 class="landing-section-title">Planos</h2>
+      <ul class="landing-plans">
+        <li>
+          <h3>Bronze</h3>
+          <ul>
+            <li>Gestão de campanhas Meta, Google e TikTok Ads</li>
+            <li>Central de Leads e organização de contatos</li>
+            <li>Pontuação de leads com Machine Learning e IA</li>
+          </ul>
+        </li>
+        <li>
+          <h3>Prata</h3>
+          <ul>
+            <li>Tudo do plano Bronze</li>
+            <li>Recursos adicionais de acompanhamento de campanhas</li>
+          </ul>
+        </li>
+        <li>
+          <h3>Ouro</h3>
+          <ul>
+            <li>Tudo do plano Prata</li>
+            <li>IA Assistente Comercial</li>
+            <li>IA de Análise de Campanhas</li>
+            <li>Atendimento via IA no WhatsApp</li>
+          </ul>
+        </li>
+      </ul>
+      <p class="landing-desc" style="margin-top:16px;">
+        <a href="mailto:contato@plataformadeleads.com.br">Fale conosco</a> para conhecer os valores de cada plano.
+      </p>
+    </section>
+
+    <section class="landing-section">
+      <h2 class="landing-section-title">Contato</h2>
+      <p class="landing-contact-info">
+        Telefone: +55 11 91007-9616<br>
+        Email: <a href="mailto:contato@plataformadeleads.com.br">contato@plataformadeleads.com.br</a><br>
+        Endereço: Rua Serra do Mar, 490 &mdash; Vila Princesa Isabel, São Paulo - SP, CEP 08410-160
+      </p>
+      <a href="/empresa" target="_blank" rel="noopener noreferrer">Ver dados completos da empresa</a>
+    </section>
   </div>
 </div>
 

@@ -16297,6 +16297,18 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         .wpp-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; display:inline-block; margin-top:3px; }
         .wpp-badge-ativo { background:rgba(37,211,102,0.15); color:#25d366; }
         .wpp-badge-inativo { background:rgba(148,163,184,0.15); color:#94a3b8; }
+
+        .wpp-guia {
+          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+          border-left:3px solid #25d366; border-radius:10px; padding:12px 16px; margin-bottom:20px;
+        }
+        .wpp-guia summary { cursor:pointer; font-size:13px; font-weight:700; color:#e2e8f0; list-style:none; }
+        .wpp-guia summary::-webkit-details-marker { display:none; }
+        .wpp-guia summary::before { content:"▸ "; color:#25d366; }
+        .wpp-guia[open] summary::before { content:"▾ "; }
+        .wpp-guia ol { margin:10px 0 0; padding-left:18px; font-size:13px; color:#cbd5e1; line-height:1.6; }
+        .wpp-guia ol li { margin-bottom:6px; }
+        .wpp-guia .wpp-guia-aviso { margin-top:10px; font-size:12px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.08); padding-top:10px; }
       </style>
 
       <div class="card" id="card-whatsapp-bot">
@@ -16311,6 +16323,21 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         <div id="whatsapp_conexao_status" class="wpp-status-card" style="margin-top:18px;margin-bottom:20px;">
           <div style="color:#64748b;font-size:13px;">Carregando conexão...</div>
         </div>
+
+        <details class="wpp-guia">
+          <summary>Já uso o WhatsApp Business no celular — como conectar sem perder o app?</summary>
+          <ol>
+            <li>Antes de clicar em "Conectar meu WhatsApp", confirme que está com a sessão certa do Facebook aberta no navegador (a conta ligada ao seu negócio, não uma pessoal aleatória).</li>
+            <li>Deixe o celular com o número que você já usa no WhatsApp Business por perto — ele precisa ter câmera, pra escanear um QR Code.</li>
+            <li>Clique em "Conectar meu WhatsApp" e siga o popup do Facebook até a tela de escolha de conta.</li>
+            <li>Na tela "Selecione os ativos de negócios", escolha a opção <b>"Conectar um app do WhatsApp Business"</b> — não "Criar uma conta do WhatsApp Business" (essa criaria um número novo, do zero).</li>
+            <li>Abra o WhatsApp Business no celular e escaneie o QR Code que aparecer.</li>
+            <li>Confirme os dados na tela seguinte e clique em "Avançar" e depois "Concluir".</li>
+          </ol>
+          <div class="wpp-guia-aviso">
+            Seu número continua funcionando normalmente no aplicativo depois de conectar — nada é perdido. Se o seu portfólio empresarial na Meta ainda não tiver forma de pagamento cadastrada e verificação de empresa concluída (Gerenciador do WhatsApp → Configurações de pagamento / Verificação da empresa), o recebimento de mensagens pode demorar a funcionar 100%.
+          </div>
+        </details>
 
         <div id="whatsapp_bot_editor" style="display:none;">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">

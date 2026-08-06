@@ -16314,7 +16314,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         .wpp-diag-chip {
           display:flex; align-items:center; gap:6px; font-size:12px; color:#cbd5e1;
           background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
-          border-radius:999px; padding:5px 12px;
+          border-radius:999px; padding:5px 12px; cursor:help;
         }
         .wpp-diag-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; background:#64748b; }
         .wpp-diag-dot.ok { background:#25d366; }
@@ -32898,10 +32898,10 @@ function renderListaWhatsappBot() {
 
 // Traduz o rotulo tecnico da Meta (quality_rating) pro chip visual
 function _wppChipQualidade(quality) {
-  if (quality === "GREEN") return { classe: "ok", texto: "Qualidade: alta" };
-  if (quality === "YELLOW") return { classe: "alerta", texto: "Qualidade: média" };
-  if (quality === "RED") return { classe: "erro", texto: "Qualidade: baixa" };
-  return { classe: "", texto: "Qualidade: ainda sem dados" };
+  if (quality === "GREEN") return { classe: "ok", texto: "Qualidade: alta", titulo: "Poucos clientes bloquearam ou denunciaram esse número. Quanto mais alta a qualidade, melhor a entrega das mensagens." };
+  if (quality === "YELLOW") return { classe: "alerta", texto: "Qualidade: média", titulo: "Alguns clientes bloquearam ou denunciaram esse número. Fique de olho — se piorar, a Meta pode limitar o envio de mensagens." };
+  if (quality === "RED") return { classe: "erro", texto: "Qualidade: baixa", titulo: "Muitos clientes bloquearam ou denunciaram esse número. A Meta pode reduzir ou bloquear o envio de mensagens até isso melhorar." };
+  return { classe: "", texto: "Qualidade: ainda sem dados", titulo: "A Meta ainda não tem dados suficientes pra avaliar a qualidade desse número — normal em números recém-conectados." };
 }
 
 async function carregarDiagnosticoWhatsapp(token) {
@@ -32913,12 +32913,21 @@ async function carregarDiagnosticoWhatsapp(token) {
     if (!data?.conectado) { diagEl.style.display = "none"; return; }
 
     const chips = [];
-    chips.push(`<span class="wpp-diag-chip"><span class="wpp-diag-dot ${data.conta_aprovada ? "ok" : "alerta"}"></span>Conta ${data.conta_aprovada ? "aprovada pela Meta" : `em análise (${escaparHtml(data.account_review_status || "—")})`}</span>`);
-    chips.push(`<span class="wpp-diag-chip"><span class="wpp-diag-dot ${data.numero_status === "CONNECTED" ? "ok" : "erro"}"></span>Número ${data.numero_status === "CONNECTED" ? "ativo" : escaparHtml(data.numero_status || "sem status")}</span>`);
+    const tituloConta = data.conta_aprovada
+      ? "A Meta analisou e aprovou essa conta pra enviar e receber mensagens."
+      : "A Meta ainda está analisando essa conta — pode levar algumas horas. Enquanto isso, o envio de mensagens pode ficar limitado.";
+    chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(tituloConta)}"><span class="wpp-diag-dot ${data.conta_aprovada ? "ok" : "alerta"}"></span>Conta ${data.conta_aprovada ? "aprovada pela Meta" : `em análise (${escaparHtml(data.account_review_status || "—")})`}</span>`);
+
+    const tituloNumero = data.numero_status === "CONNECTED"
+      ? "Esse número está realmente conectado e pronto pra conversar."
+      : "Esse número não está ativo — verifique a conexão do WhatsApp.";
+    chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(tituloNumero)}"><span class="wpp-diag-dot ${data.numero_status === "CONNECTED" ? "ok" : "erro"}"></span>Número ${data.numero_status === "CONNECTED" ? "ativo" : escaparHtml(data.numero_status || "sem status")}</span>`);
+
     const qualidade = _wppChipQualidade(data.quality_rating);
-    chips.push(`<span class="wpp-diag-chip"><span class="wpp-diag-dot ${qualidade.classe}"></span>${qualidade.texto}</span>`);
+    chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(qualidade.titulo)}"><span class="wpp-diag-dot ${qualidade.classe}"></span>${qualidade.texto}</span>`);
+
     if (data.messaging_limit_tier) {
-      chips.push(`<span class="wpp-diag-chip"><span class="wpp-diag-dot"></span>Limite de mensagens: ${escaparHtml(data.messaging_limit_tier.replace("TIER_", ""))}/dia</span>`);
+      chips.push(`<span class="wpp-diag-chip" title="Quantas conversas você pode iniciar por dia com esse número. Esse limite sobe conforme o uso e a qualidade se mantêm boas."><span class="wpp-diag-dot"></span>Limite de mensagens: ${escaparHtml(data.messaging_limit_tier.replace("TIER_", ""))}/dia</span>`);
     }
     diagEl.innerHTML = chips.join("");
     diagEl.style.display = "flex";

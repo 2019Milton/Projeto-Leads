@@ -16309,6 +16309,17 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         .wpp-guia ol { margin:10px 0 0; padding-left:18px; font-size:13px; color:#cbd5e1; line-height:1.6; }
         .wpp-guia ol li { margin-bottom:6px; }
         .wpp-guia .wpp-guia-aviso { margin-top:10px; font-size:12px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.08); padding-top:10px; }
+
+        .wpp-diag { display:flex; flex-wrap:wrap; gap:8px; margin:-8px 0 20px; }
+        .wpp-diag-chip {
+          display:flex; align-items:center; gap:6px; font-size:12px; color:#cbd5e1;
+          background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+          border-radius:999px; padding:5px 12px;
+        }
+        .wpp-diag-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; background:#64748b; }
+        .wpp-diag-dot.ok { background:#25d366; }
+        .wpp-diag-dot.alerta { background:#facc15; }
+        .wpp-diag-dot.erro { background:#f87171; }
       </style>
 
       <div class="card" id="card-whatsapp-bot">
@@ -16323,6 +16334,8 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
         <div id="whatsapp_conexao_status" class="wpp-status-card" style="margin-top:18px;margin-bottom:20px;">
           <div style="color:#64748b;font-size:13px;">Carregando conexão...</div>
         </div>
+
+        <div id="whatsapp_diagnostico" class="wpp-diag" style="display:none;"></div>
 
         <details class="wpp-guia">
           <summary>Já uso o WhatsApp Business no celular — como conectar sem perder o app?</summary>
@@ -32870,6 +32883,37 @@ function renderListaWhatsappBot() {
   listaEl.innerHTML = _whatsappBotRoteiros.map(renderRoteiroWhatsappBotCard).join("");
 }
 
+// Traduz o rotulo tecnico da Meta (quality_rating) pro chip visual
+function _wppChipQualidade(quality) {
+  if (quality === "GREEN") return { classe: "ok", texto: "Qualidade: alta" };
+  if (quality === "YELLOW") return { classe: "alerta", texto: "Qualidade: média" };
+  if (quality === "RED") return { classe: "erro", texto: "Qualidade: baixa" };
+  return { classe: "", texto: "Qualidade: ainda sem dados" };
+}
+
+async function carregarDiagnosticoWhatsapp(token) {
+  const diagEl = document.getElementById("whatsapp_diagnostico");
+  if (!diagEl) return;
+  try {
+    const res = await fetch(`${API}/whatsapp/diagnostico`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = res.ok ? await res.json() : null;
+    if (!data?.conectado) { diagEl.style.display = "none"; return; }
+
+    const chips = [];
+    chips.push(`<span class="wpp-diag-chip"><span class="wpp-diag-dot ${data.conta_aprovada ? "ok" : "alerta"}"></span>Conta ${data.conta_aprovada ? "aprovada pela Meta" : `em análise (${escaparHtml(data.account_review_status || "—")})`}</span>`);
+    chips.push(`<span class="wpp-diag-chip"><span class="wpp-diag-dot ${data.numero_status === "CONNECTED" ? "ok" : "erro"}"></span>Número ${data.numero_status === "CONNECTED" ? "ativo" : escaparHtml(data.numero_status || "sem status")}</span>`);
+    const qualidade = _wppChipQualidade(data.quality_rating);
+    chips.push(`<span class="wpp-diag-chip"><span class="wpp-diag-dot ${qualidade.classe}"></span>${qualidade.texto}</span>`);
+    if (data.messaging_limit_tier) {
+      chips.push(`<span class="wpp-diag-chip"><span class="wpp-diag-dot"></span>Limite de mensagens: ${escaparHtml(data.messaging_limit_tier.replace("TIER_", ""))}/dia</span>`);
+    }
+    diagEl.innerHTML = chips.join("");
+    diagEl.style.display = "flex";
+  } catch (e) {
+    diagEl.style.display = "none";
+  }
+}
+
 async function carregarWhatsappBot() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -32894,6 +32938,7 @@ async function carregarWhatsappBot() {
         </div>
         <button class="btn wpp-btn wpp-btn-danger" onclick="desconectarPlataforma('whatsapp', this)">Desconectar</button>
       `;
+      carregarDiagnosticoWhatsapp(token);
     } else {
       statusEl.innerHTML = `
         <div>
@@ -32901,6 +32946,8 @@ async function carregarWhatsappBot() {
           <div style="font-size:12px;color:#94a3b8;margin-top:8px;">Sem conexão, você já pode rascunhar, gerar com IA e salvar roteiros — só não dá pra ativar nenhum até conectar o número.</div>
         </div>
       `;
+      const diagEl = document.getElementById("whatsapp_diagnostico");
+      if (diagEl) diagEl.style.display = "none";
     }
     // Editor fica sempre visível — corretor pode rascunhar/gerar com IA e salvar
     // roteiros mesmo sem conectar ainda; só a ativação exige conexão (checada

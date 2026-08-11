@@ -20844,6 +20844,13 @@ function abrirModalEncaminharCampanhaPorChave(chave) {
   }
 }
 
+// Duplicar reaproveita o formulario de "Criar Campanha" (ja testado e
+// funcional pra Meta/Google/TikTok) em vez do antigo fluxo que so clonava a
+// linha no banco silenciosamente: aquele clone nunca ganhava campaign_id, e
+// o botao "Publicar" de uma campanha sem campaign_id cai no toggle (que so
+// funciona pra campanha ja publicada) — ou seja, nada gerado por ele era
+// publicavel, em nenhuma plataforma. Pre-preencher e deixar o usuario
+// revisar/confirmar usa o mesmo caminho que ja publica campanhas de verdade.
 function duplicarCampanhaPorChave(chave) {
   const campanha =
     obterCampanhaRenderizada(chave);
@@ -20853,9 +20860,52 @@ function duplicarCampanhaPorChave(chave) {
     return;
   }
 
-  duplicarCampanha(
-    Number(campanha.id),
-    campanha.nome || "Campanha"
+  const nomeJaDigitado =
+    (document.getElementById("campanha_nome")?.value || "").trim();
+
+  if (
+    nomeJaDigitado &&
+    !confirm("Isso vai substituir os campos que voce ja preencheu em \"Criar Campanha\" pelos dados da campanha duplicada. Continuar?")
+  ) {
+    return;
+  }
+
+  const cfg = campanha.configuracoes_avancadas || {};
+  const plataforma = campanha.plataforma || "meta";
+
+  redesSelecionadasCampanha.clear();
+  redesSelecionadasCampanha.add(plataforma);
+  aplicarRedesCampanha();
+
+  preencherConfiguracoesAvancadas(cfg, campanha.daily_budget);
+  preencherCamposBasicosCampanha(campanha);
+  preencherImagensCampanhaSalva(cfg);
+
+  definirValorCampo("campanha_nome", `Cópia de ${campanha.nome || "Campanha"}`);
+
+  if (plataforma === "google") {
+    definirValorCampo("campanha_google_titulo_1", cfg.titulos?.[0] || "");
+    definirValorCampo("campanha_google_titulo_2", cfg.titulos?.[1] || "");
+    definirValorCampo("campanha_google_titulo_3", cfg.titulos?.[2] || "");
+    definirValorCampo("campanha_google_descricao_1", cfg.descricoes?.[0] || "");
+    definirValorCampo("campanha_google_descricao_2", cfg.descricoes?.[1] || "");
+    definirValorCampo("campanha_google_nome_anunciante", cfg.nome_anunciante || "");
+    definirValorCampo("campanha_google_url", cfg.url_destino || "");
+  }
+
+  aplicarEstadoCriarCampanha(false);
+
+  const card = document.getElementById("card-criar-campanha");
+  if (card) {
+    requestAnimationFrame(() => {
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  mostrarSucessoPublicacao(
+    plataforma === "google"
+      ? "Campos preenchidos com os dados da campanha original, incluindo títulos/descrições do Google. Revise (escolha o Formulário de lead) e clique em criar campanha para publicar a cópia."
+      : "Campos preenchidos com os dados da campanha original. Revise e clique em criar campanha para publicar a cópia."
   );
 }
 

@@ -16543,6 +16543,23 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               Selecione uma Pagina para verificar o Instagram vinculado.
             </div>
           </section>
+
+          <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="meta">
+            <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro do próprio Facebook/Instagram. WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma.', event)">i</button></h4>
+            <div class="advanced-checks">
+              <label>
+                <input type="radio" name="campanha_destino" id="destino_lead_ads" value="lead_ads" checked onchange="aplicarDestinoCampanha()">
+                Formulário de Leads
+              </label>
+              <label>
+                <input type="radio" name="campanha_destino" id="destino_whatsapp" value="whatsapp" onchange="aplicarDestinoCampanha()">
+                WhatsApp (clique para conversar)
+              </label>
+            </div>
+            <div id="destino_whatsapp_aviso" class="channel-picker-status alerta" style="display:none;">
+              Conecte o WhatsApp da plataforma (aba Whatsapp Bot) antes de publicar uma campanha com esse destino.
+            </div>
+          </section>
         </details>
 
         <!-- ═══ SEÇÃO 2: CONTEÚDO DO ANÚNCIO ═══ -->
@@ -16981,12 +16998,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div class="advanced-subsection" data-plat-only="meta,google">
+            <div class="advanced-subsection" data-plat-only="meta,google" data-destino-only="lead_ads">
               <h5>Formulário de leads</h5>
               <p>Perguntas e filtro de qualidade aplicados antes do envio do contato.</p>
             </div>
 
-            <div class="advanced-full" data-plat-only="meta,google">
+            <div class="advanced-full" data-plat-only="meta,google" data-destino-only="lead_ads">
               <label>Perguntas qualificadoras <button type="button" class="info-icone" onclick="mostrarInfoCampo('Perguntas que o cliente responde antes de enviar os dados de contato. Ajudam a filtrar quem está mais interessado. Coloque uma pergunta por linha.', event)">i</button></label>
               <textarea
                 id="adv_perguntas"
@@ -16999,7 +17016,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               </small>
             </div>
 
-            <div class="advanced-full" data-plat-only="meta">
+            <div class="advanced-full" data-plat-only="meta" data-destino-only="lead_ads">
               <label>Filtro de qualidade do formulário <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse ajuste é diferente do Público Advantage+. Aqui a Meta tenta priorizar pessoas com maior chance de preencher o formulário corretamente. Pode gerar menos leads, mas tende a melhorar a qualidade dos contatos.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
@@ -17009,12 +17026,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               </div>
             </div>
 
-            <div class="advanced-subsection" data-plat-only="meta">
+            <div class="advanced-subsection" data-plat-only="meta" data-destino-only="lead_ads">
               <h5>Tela de obrigado</h5>
               <p>Mensagem exibida depois que o lead envia o formulário.</p>
             </div>
 
-            <div data-plat-only="meta">
+            <div data-plat-only="meta" data-destino-only="lead_ads">
               <label>Título do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Mensagem principal que aparece para o cliente depois que ele preenche e envia o formulário. Ex: \"Obrigado! Em breve entraremos em contato.\"', event)">i</button></label>
               <input
                 type="text"
@@ -17023,7 +17040,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div data-plat-only="meta">
+            <div data-plat-only="meta" data-destino-only="lead_ads">
               <label>Botão do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto do botão que aparece na tela de confirmação. Pode ser \"Ver mais\", \"Acessar site\" ou qualquer chamada para ação.', event)">i</button></label>
               <input
                 type="text"
@@ -17032,7 +17049,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div class="advanced-full" data-plat-only="meta">
+            <div class="advanced-full" data-plat-only="meta" data-destino-only="lead_ads">
               <label>Mensagem de obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto completo que aparece na tela de confirmação. Aproveite para tranquilizar o cliente e dar um próximo passo, como \"Em breve nossa equipe vai entrar em contato\".', event)">i</button></label>
               <input
                 type="text"
@@ -24573,6 +24590,38 @@ function aplicarRedesCampanha() {
   });
 }
 
+let destinoCampanhaSelecionado = "lead_ads";
+
+// Formulário de Leads vs WhatsApp (Click-to-WhatsApp) — mesmo padrão de
+// aplicarRedesCampanha, mas via [data-destino-only] em vez de [data-plat-only].
+// Campos de formulário/tela de obrigado só fazem sentido pra Lead Ads.
+async function aplicarDestinoCampanha() {
+  const radioChecado = document.querySelector('input[name="campanha_destino"]:checked');
+  destinoCampanhaSelecionado = radioChecado?.value === "whatsapp" ? "whatsapp" : "lead_ads";
+
+  document.querySelectorAll("[data-destino-only]").forEach(el => {
+    const destinos = el.dataset.destinoOnly.split(",");
+    el.style.display = destinos.includes(destinoCampanhaSelecionado) ? "" : "none";
+  });
+
+  const aviso = document.getElementById("destino_whatsapp_aviso");
+  if (!aviso) return;
+
+  if (destinoCampanhaSelecionado !== "whatsapp") {
+    aviso.style.display = "none";
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/whatsapp/diagnostico`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = res.ok ? await res.json() : null;
+    aviso.style.display = data?.conectado ? "none" : "";
+  } catch (e) {
+    aviso.style.display = "";
+  }
+}
+
 function atualizarEstadoBotaoGerarIA() {
   const btn = document.getElementById("btn_gerar_campanha_ia");
   if (!btn) return;
@@ -24588,6 +24637,7 @@ function inicializarEstadoCriarCampanha() {
   // preferencia da sessao anterior, pra nunca abrir expandido por padrao.
   aplicarEstadoCriarCampanha(true);
   aplicarRedesCampanha();
+  aplicarDestinoCampanha();
   atualizarEstadoBotaoGerarIA();
 }
 
@@ -29065,6 +29115,10 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
   definirCheckbox("adv_platform_facebook", plataformas.includes("facebook"));
   definirCheckbox("adv_platform_instagram", plataformas.includes("instagram"));
 
+  const destinoRadio = document.getElementById(cfg.destino === "whatsapp" ? "destino_whatsapp" : "destino_lead_ads");
+  if (destinoRadio) destinoRadio.checked = true;
+  aplicarDestinoCampanha();
+
   marcarCheckboxesPorValor(".adv-facebook-position", cfg.facebook_positions);
   marcarCheckboxesPorValor(".adv-instagram-position", cfg.instagram_positions);
 
@@ -30780,8 +30834,9 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
   const prefixo = isMultiRede ? "[Facebook/Instagram] " : "";
 
   try {
-    const objetivo = "OUTCOME_LEADS";
-    const configuracoes_avancadas = { ...configuracoesBase };
+    const destino = destinoCampanhaSelecionado === "whatsapp" ? "whatsapp" : "lead_ads";
+    const objetivo = destino === "whatsapp" ? "OUTCOME_ENGAGEMENT" : "OUTCOME_LEADS";
+    const configuracoes_avancadas = { ...configuracoesBase, destino };
     if (publicacaoGrupoId) configuracoes_avancadas.publicacao_grupo_id = publicacaoGrupoId;
 
     const imageHashes = [];
@@ -30865,18 +30920,23 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
     }
 
     campanhaCriadaId = campanha.id;
-    setPublishProgress(55, `${prefixo}Criando formulário de leads...`);
 
-    const formRes = await fetch(`${API}/meta/formulario`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-      body: JSON.stringify({ usuario_id, page_id, configuracoes_avancadas })
-    });
-    const form = await formRes.json();
+    let form = { id: null };
 
-    if (form.error) {
-      await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
-      return { ok: false, mensagem: form.error?.message || form.error || "Erro ao criar formulário de leads" };
+    if (destino !== "whatsapp") {
+      setPublishProgress(55, `${prefixo}Criando formulário de leads...`);
+
+      const formRes = await fetch(`${API}/meta/formulario`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ usuario_id, page_id, configuracoes_avancadas })
+      });
+      form = await formRes.json();
+
+      if (form.error) {
+        await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
+        return { ok: false, mensagem: form.error?.message || form.error || "Erro ao criar formulário de leads" };
+      }
     }
 
     setPublishProgress(72, `${prefixo}Criando conjunto de anúncios...`);

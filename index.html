@@ -42040,7 +42040,12 @@ function fecharPassoMetaInstagram() {
   document.body.style.overflow = "";
 }
 
-function abrirPassoGoogleConta() {
+// Atribuicao explicita em window (em vez de so "function abrirPassoGoogleConta() {}")
+// pra garantir que o onclick inline do botao sempre encontre a funcao, mesmo se
+// algum dia essa declaracao acabar dentro de um escopo que nao vaza pro global
+// automaticamente — ja vimos "abrirPassoGoogleConta is not defined" ao clicar
+// no botao do card desconectado, sem causa raiz clara na analise estatica.
+window.abrirPassoGoogleConta = function abrirPassoGoogleConta() {
   const modal = document.getElementById("modal_passo_google_conta");
   if (!modal) return;
 
@@ -42064,16 +42069,16 @@ function abrirPassoGoogleConta() {
   modal.querySelectorAll(".passo-meta-body").forEach(el => {
     el.style.setProperty("background", "#ffffff", "important");
   });
-}
+};
 
-function fecharPassoGoogleConta() {
+window.fecharPassoGoogleConta = function fecharPassoGoogleConta() {
   const modal = document.getElementById("modal_passo_google_conta");
   if (!modal) return;
 
   modal.classList.remove("active");
   modal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
-}
+};
 
 function abrirPassoGoogleLeadFormTermos() {
   const modal = document.getElementById("modal_passo_google_leadform_termos");

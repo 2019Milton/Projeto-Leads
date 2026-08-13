@@ -32857,6 +32857,13 @@ async function conectarWhatsapp(btnEl) {
     // o evento FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING e só garante o waba_id — o
     // phone_number_id é resolvido no backend a partir da WABA nesse caso.
     function msgHandler(event) {
+      // 🔍 Log de diagnóstico: mais de um corretor já teve a conexão confirmada
+      // pela Meta sem esse evento chegar aqui (nunca bate no filtro abaixo) — sem
+      // isso não dá pra saber o formato real que a Meta mandou. Não remover até
+      // confirmarmos a causa contra alguns casos reais.
+      if (event.origin?.includes("facebook.com")) {
+        console.log("[whatsapp-connect] mensagem recebida do Facebook:", JSON.stringify(event.data));
+      }
       if (!event.data || event.data.type !== "WA_EMBEDDED_SIGNUP") return;
       const ev = event.data.event;
       if ((ev === "FINISH" || ev === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING") && event.data.data?.waba_id) {
@@ -32872,12 +32879,18 @@ async function conectarWhatsapp(btnEl) {
 
     window.FB.login(
       (response) => {
+        console.log("[whatsapp-connect] FB.login callback:", JSON.stringify(response));
+        // 1.5s era curto demais: o fluxo de Coexistência tem várias telas depois
+        // desse callback (confirmar conta, forma de pagamento) até a Meta mandar
+        // o evento de conclusão — o botão voltava ao normal e parávamos de
+        // escutar antes da mensagem real chegar. 2 minutos como rede de
+        // segurança pra popup realmente abandonado, sem cortar o fluxo normal.
         setTimeout(() => {
           if (!concluido) {
             window.removeEventListener("message", msgHandler);
             restaurarBotao();
           }
-        }, 1500);
+        }, 120000);
       },
       {
         config_id: cfg.config_id,

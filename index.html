@@ -21241,6 +21241,10 @@ function campanhaUsaHistoricoLocal(campanha) {
 }
 
 function campanhaEhRascunhoLocal(campanha) {
+  if (campanha?.destino_editavel === true) {
+    return true;
+  }
+
   return (
     campanha?.rascunho_local === true ||
     String(campanha?.origem || "").toLowerCase() === "manual" ||
@@ -21249,6 +21253,10 @@ function campanhaEhRascunhoLocal(campanha) {
 }
 
 function campanhaJaFoiPublicada(campanha) {
+  if (typeof campanha?.destino_editavel === "boolean") {
+    return !campanha.destino_editavel;
+  }
+
   return Boolean(campanha?.campaign_id) && !campanhaEhRascunhoLocal(campanha);
 }
 

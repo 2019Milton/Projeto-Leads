@@ -32818,7 +32818,11 @@ function garantirFacebookSDK() {
     await new Promise((resolve) => {
       if (window.FB) return resolve();
       window.fbAsyncInit = function () {
-        window.FB.init({ appId: cfg.app_id, xfbml: false, version: "v24.0" });
+        window.FB.init({
+          appId: cfg.app_id,
+          xfbml: false,
+          version: cfg.graph_api_version || "v24.0",
+        });
         resolve();
       };
       const script = document.createElement("script");
@@ -32850,21 +32854,43 @@ async function conectarWhatsapp(btnEl) {
   try {
     const cfg = await garantirFacebookSDK();
 
-    let concluido = false;
-    // ⚠️ Formato do evento de conclusão do Embedded Signup — verificar contra a doc
-    // atual da Meta antes de ir pra produção (nomes de campo podem mudar de versão).
-    // Fluxo de Coexistência (número já ativo no app do WhatsApp Business) conclui com
-    // o evento FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING e só garante o waba_id — o
-    // phone_number_id é resolvido no backend a partir da WABA nesse caso.
-    function msgHandler(event) {
-      if (event.origin?.includes("facebook.com")) {
-        console.log("[whatsapp-connect] mensagem recebida do Facebook:", JSON.stringify(event.data));
+    let signupData = null;
+    let codigoAutorizacao = "";
+    let callbackRecebido = false;
+    let finalizacaoIniciada = false;
+    let fluxoEncerrado = false;
+    let temporizador = null;
+
+    const origemFacebookValida = (origem) => {
+      try {
+        const hostname = new URL(origem).hostname.toLowerCase();
+        return hostname === "facebook.com" || hostname.endsWith(".facebook.com");
+      } catch {
+        return false;
       }
-      // Confirmado em produção (log real de um corretor): a Meta manda event.data
-      // como STRING (JSON serializado), não como objeto já pronto — sem isso o
-      // filtro abaixo nunca batia, mesmo com o waba_id certo lá dentro. A outra
-      // mensagem que a Meta também manda (relay interno dela, com campos tipo
-      // cb/domain/relation=opener) não é JSON — cai no catch e é ignorada, como já era.
+    };
+
+    const limparFluxo = () => {
+      window.removeEventListener("message", msgHandler);
+      if (temporizador) clearTimeout(temporizador);
+    };
+
+    const tentarFinalizar = () => {
+      if (fluxoEncerrado || finalizacaoIniciada || !signupData || !codigoAutorizacao) return;
+      finalizacaoIniciada = true;
+      fluxoEncerrado = true;
+      limparFluxo();
+      finalizarConexaoWhatsapp(
+        signupData.waba_id,
+        signupData.phone_number_id,
+        codigoAutorizacao,
+        restaurarBotao
+      );
+    };
+
+    function msgHandler(event) {
+      if (!origemFacebookValida(event.origin)) return;
+
       let dados = event.data;
       if (typeof dados === "string") {
         try {
@@ -32876,11 +32902,26 @@ async function conectarWhatsapp(btnEl) {
       if (!dados || dados.type !== "WA_EMBEDDED_SIGNUP") return;
       const ev = dados.event;
       if ((ev === "FINISH" || ev === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING") && dados.data?.waba_id) {
-        concluido = true;
-        window.removeEventListener("message", msgHandler);
-        finalizarConexaoWhatsapp(dados.data.waba_id, dados.data.phone_number_id, restaurarBotao);
+        signupData = {
+          waba_id: String(dados.data.waba_id),
+          phone_number_id: dados.data.phone_number_id
+            ? String(dados.data.phone_number_id)
+            : null,
+        };
+        if (callbackRecebido && !codigoAutorizacao) {
+          fluxoEncerrado = true;
+          limparFluxo();
+          alert("A Meta concluiu o cadastro, mas não devolveu o código de autorização. Tente conectar novamente.");
+          restaurarBotao();
+          return;
+        }
+        tentarFinalizar();
       } else if (ev === "CANCEL" || ev === "ERROR") {
-        window.removeEventListener("message", msgHandler);
+        fluxoEncerrado = true;
+        limparFluxo();
+        if (ev === "ERROR") {
+          alert(dados.data?.error_message || "A Meta não conseguiu concluir a conexão do WhatsApp.");
+        }
         restaurarBotao();
       }
     }
@@ -32888,18 +32929,21 @@ async function conectarWhatsapp(btnEl) {
 
     window.FB.login(
       (response) => {
-        console.log("[whatsapp-connect] FB.login callback:", JSON.stringify(response));
-        // 1.5s era curto demais: o fluxo de Coexistência tem várias telas depois
-        // desse callback (confirmar conta, forma de pagamento) até a Meta mandar
-        // o evento de conclusão — o botão voltava ao normal e parávamos de
-        // escutar antes da mensagem real chegar. 2 minutos como rede de
-        // segurança pra popup realmente abandonado, sem cortar o fluxo normal.
-        setTimeout(() => {
-          if (!concluido) {
-            window.removeEventListener("message", msgHandler);
-            restaurarBotao();
-          }
-        }, 120000);
+        callbackRecebido = true;
+        codigoAutorizacao = String(response?.authResponse?.code || "").trim();
+        console.log("[whatsapp-connect] callback recebido:", {
+          status: response?.status || null,
+          code_received: Boolean(codigoAutorizacao),
+        });
+
+        if (!codigoAutorizacao && signupData) {
+          fluxoEncerrado = true;
+          limparFluxo();
+          alert("A Meta concluiu o cadastro, mas não devolveu o código de autorização. Tente conectar novamente.");
+          restaurarBotao();
+          return;
+        }
+        tentarFinalizar();
       },
       {
         config_id: cfg.config_id,
@@ -32910,30 +32954,57 @@ async function conectarWhatsapp(btnEl) {
         extras: { setup: {}, featureType: "whatsapp_business_app_onboarding", sessionInfoVersion: "3" },
       }
     );
+
+    // O evento com a WABA e o callback com o código chegam separadamente e podem
+    // chegar em qualquer ordem. Mantemos os dois por até dois minutos.
+    temporizador = setTimeout(() => {
+      if (fluxoEncerrado || finalizacaoIniciada) return;
+      fluxoEncerrado = true;
+      limparFluxo();
+      const detalhe = callbackRecebido && !codigoAutorizacao
+        ? "A Meta não devolveu o código de autorização."
+        : "O tempo de conexão com a Meta expirou.";
+      alert(`${detalhe} Feche a janela aberta e tente novamente.`);
+      restaurarBotao();
+    }, 120000);
   } catch (e) {
     alert(e.message || "Erro ao iniciar conexão com o WhatsApp.");
     restaurarBotao();
   }
 }
 
-async function finalizarConexaoWhatsapp(wabaId, phoneNumberId, restaurarBotao) {
+async function finalizarConexaoWhatsapp(wabaId, phoneNumberId, codigo, restaurarBotao) {
   const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${API}/whatsapp/conectar`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ waba_id: wabaId, phone_number_id: phoneNumberId }),
+      body: JSON.stringify({
+        waba_id: wabaId,
+        phone_number_id: phoneNumberId || null,
+        code: codigo,
+      }),
     });
-    const data = await res.json();
+    const respostaTexto = await res.text();
+    let data = {};
+    try { data = respostaTexto ? JSON.parse(respostaTexto) : {}; } catch {}
     if (!res.ok) {
-      alert(data?.error || "Erro ao concluir a conexão do WhatsApp.");
+      const partes = [
+        data?.error || "Erro ao concluir a conexão do WhatsApp.",
+        data?.detalhe,
+      ].filter(Boolean);
+      if (Array.isArray(data?.instrucoes) && data.instrucoes.length) {
+        partes.push(data.instrucoes.map((item) => `• ${item}`).join("\n"));
+      }
+      alert(partes.join("\n\n"));
       restaurarBotao();
       return;
     }
     await carregarWhatsappBot();
     await carregarHub();
+    if (data?.aviso) alert(data.aviso);
   } catch (e) {
-    alert("Erro ao concluir a conexão do WhatsApp.");
+    alert(e?.message || "Erro ao concluir a conexão do WhatsApp.");
     restaurarBotao();
   }
 }
@@ -33058,6 +33129,16 @@ async function carregarDiagnosticoWhatsapp(token) {
       ? "Esse número está realmente conectado e pronto pra conversar."
       : "Esse número não está ativo — verifique a conexão do WhatsApp.";
     chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(tituloNumero)}"><span class="wpp-diag-dot ${data.numero_status === "CONNECTED" ? "ok" : "erro"}"></span>Número ${data.numero_status === "CONNECTED" ? "ativo" : escaparHtml(data.numero_status || "sem status")}</span>`);
+
+    const tituloWebhook = data.webhook_inscrito
+      ? "O app da Plataforma de Leads está inscrito nesta conta e pode receber mensagens da Meta."
+      : "O app ainda não está inscrito nesta conta. Sem essa inscrição, as mensagens não chegam ao bot.";
+    chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(tituloWebhook)}"><span class="wpp-diag-dot ${data.webhook_inscrito ? "ok" : "erro"}"></span>Webhook ${data.webhook_inscrito ? "inscrito" : "não inscrito"}</span>`);
+
+    if (Array.isArray(data.permissoes_ausentes) && data.permissoes_ausentes.length) {
+      const permissoes = data.permissoes_ausentes.join(", ");
+      chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(`Refaça o Embedded Signup depois de liberar: ${permissoes}`)}"><span class="wpp-diag-dot erro"></span>Permissões Meta incompletas</span>`);
+    }
 
     const qualidade = _wppChipQualidade(data.quality_rating);
     chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(qualidade.titulo)}"><span class="wpp-diag-dot ${qualidade.classe}"></span>${qualidade.texto}</span>`);

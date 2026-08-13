@@ -16559,6 +16559,9 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             <div id="destino_whatsapp_aviso" class="channel-picker-status alerta" style="display:none;">
               Conecte o WhatsApp da plataforma (aba Whatsapp Bot) antes de publicar uma campanha com esse destino.
             </div>
+            <div id="destino_campanha_bloqueado_aviso" class="channel-picker-status alerta" style="display:none;">
+              O destino não pode ser trocado em uma campanha já publicada. Duplique a campanha para escolher outro destino.
+            </div>
           </section>
         </details>
 
@@ -28821,6 +28824,10 @@ function coletarConfiguracoesAvancadas() {
       .slice(0, 4);
 
   return {
+    destino:
+      destinoCampanhaSelecionado === "whatsapp"
+        ? "whatsapp"
+        : "lead_ads",
     categoria_especial:
       valorCampo("adv_categoria_especial"),
     titulo: valorCampo("adv_titulo"),
@@ -29202,6 +29209,26 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
   preencherVideoCampanhaSalvo(cfg);
 }
 
+function configurarEdicaoDestinoCampanha(campanha = null) {
+  const publicada = Boolean(campanha?.campaign_id);
+
+  document
+    .querySelectorAll('input[name="campanha_destino"]')
+    .forEach(input => {
+      input.disabled = publicada;
+      input.title = publicada
+        ? "Para trocar o destino, duplique a campanha."
+        : "";
+    });
+
+  const aviso =
+    document.getElementById("destino_campanha_bloqueado_aviso");
+
+  if (aviso) {
+    aviso.style.display = publicada ? "block" : "none";
+  }
+}
+
 function abrirEdicaoCampanha(campanhaEncoded) {
 
   let campanha;
@@ -29261,6 +29288,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       campanha.configuracoes_avancadas || {},
       campanha.daily_budget
     );
+    configurarEdicaoDestinoCampanha(campanha);
     preencherCamposBasicosCampanha(campanha);
     preencherImagensCampanhaSalva(campanha.configuracoes_avancadas || {});
     _snapshotCriarCampanha.imagensAssinatura = assinaturaImagensCampanha();
@@ -29348,6 +29376,7 @@ function fecharEdicaoCampanha() {
   } finally {
     _snapshotCriarCampanha = null;
     campanhaEmEdicao = null;
+    configurarEdicaoDestinoCampanha(null);
     document
       .getElementById("campanhaEditarModal")
       ?.classList.remove("active");
@@ -34029,10 +34058,13 @@ async function carregarCampanhas() {
       !usuarioReceptorCampanha &&
       !c.recebida_por_encaminhamento;
 
-    const campanhaRecebidaLocal =
-      Boolean(c.recebida_por_encaminhamento) &&
-      campanhaUsaHistoricoLocal(c) &&
-      !c.campaign_id;
+    // Tanto campanhas recebidas quanto cópias ficam locais e sem campaign_id
+    // até a primeira publicação. As duas precisam usar o fluxo que reconstrói
+    // campanha, conjunto e anúncio na Meta; o toggle comum só serve quando já
+    // existe um campaign_id remoto.
+    const campanhaLocalPublicavel =
+      !c.campaign_id &&
+      !campanhaEstaExcluida(c);
 
     const botaoEnvioCriadorCampanha =
       usuarioUsaEnvioCriadorCampanha();
@@ -34186,11 +34218,11 @@ async function carregarCampanhas() {
         <button
           class="btn-campanha-toggle btn-campanha-publicar${veiculacaoSubcategoria === "campanha_pausada" ? " btn-campanha-publicar-destaque" : ""}"
           onclick="${
-            campanhaRecebidaLocal
+            campanhaLocalPublicavel
               ? `publicarCampanhaRecebida(${Number(c.id)}, this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
               : `toggleCampanha('${c.campaign_id}', '${c.status}', this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
           }"
-          title="${campanhaRecebidaLocal ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
+          title="${campanhaLocalPublicavel ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
         >Publicar</button>
             `
         }

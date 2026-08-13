@@ -32857,19 +32857,28 @@ async function conectarWhatsapp(btnEl) {
     // o evento FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING e só garante o waba_id — o
     // phone_number_id é resolvido no backend a partir da WABA nesse caso.
     function msgHandler(event) {
-      // 🔍 Log de diagnóstico: mais de um corretor já teve a conexão confirmada
-      // pela Meta sem esse evento chegar aqui (nunca bate no filtro abaixo) — sem
-      // isso não dá pra saber o formato real que a Meta mandou. Não remover até
-      // confirmarmos a causa contra alguns casos reais.
       if (event.origin?.includes("facebook.com")) {
         console.log("[whatsapp-connect] mensagem recebida do Facebook:", JSON.stringify(event.data));
       }
-      if (!event.data || event.data.type !== "WA_EMBEDDED_SIGNUP") return;
-      const ev = event.data.event;
-      if ((ev === "FINISH" || ev === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING") && event.data.data?.waba_id) {
+      // Confirmado em produção (log real de um corretor): a Meta manda event.data
+      // como STRING (JSON serializado), não como objeto já pronto — sem isso o
+      // filtro abaixo nunca batia, mesmo com o waba_id certo lá dentro. A outra
+      // mensagem que a Meta também manda (relay interno dela, com campos tipo
+      // cb/domain/relation=opener) não é JSON — cai no catch e é ignorada, como já era.
+      let dados = event.data;
+      if (typeof dados === "string") {
+        try {
+          dados = JSON.parse(dados);
+        } catch {
+          return;
+        }
+      }
+      if (!dados || dados.type !== "WA_EMBEDDED_SIGNUP") return;
+      const ev = dados.event;
+      if ((ev === "FINISH" || ev === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING") && dados.data?.waba_id) {
         concluido = true;
         window.removeEventListener("message", msgHandler);
-        finalizarConexaoWhatsapp(event.data.data.waba_id, event.data.data.phone_number_id, restaurarBotao);
+        finalizarConexaoWhatsapp(dados.data.waba_id, dados.data.phone_number_id, restaurarBotao);
       } else if (ev === "CANCEL" || ev === "ERROR") {
         window.removeEventListener("message", msgHandler);
         restaurarBotao();

@@ -16560,7 +16560,13 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               Conecte o WhatsApp da plataforma (aba Whatsapp Bot) antes de publicar uma campanha com esse destino.
             </div>
             <div id="destino_campanha_bloqueado_aviso" class="channel-picker-status alerta" style="display:none;">
-              O destino não pode ser trocado em uma campanha já publicada. Duplique a campanha para escolher outro destino.
+              <div>Esta versão já foi criada na Meta. Para trocar o destino sem perder o nome, a imagem e as configurações, crie um rascunho editável.</div>
+              <button
+                type="button"
+                id="btn_criar_rascunho_destino"
+                onclick="criarRascunhoEditavelParaTrocarDestino()"
+                style="margin-top:8px;padding:8px 12px;border:1px solid #f59e0b;border-radius:8px;background:rgba(245,158,11,.12);color:#fde68a;font-weight:700;cursor:pointer;"
+              >Criar rascunho editável</button>
             </div>
           </section>
         </details>
@@ -20868,13 +20874,11 @@ function abrirModalEncaminharCampanhaPorChave(chave) {
   }
 }
 
-// Duplicar reaproveita o formulario de "Criar Campanha" (ja testado e
-// funcional pra Meta/Google/TikTok) em vez do antigo fluxo que so clonava a
-// linha no banco silenciosamente: aquele clone nunca ganhava campaign_id, e
-// o botao "Publicar" de uma campanha sem campaign_id cai no toggle (que so
-// funciona pra campanha ja publicada) — ou seja, nada gerado por ele era
-// publicavel, em nenhuma plataforma. Pre-preencher e deixar o usuario
-// revisar/confirmar usa o mesmo caminho que ja publica campanhas de verdade.
+// Duplicar precisa gerar um rascunho local. Preencher o formulário de criação
+// fazia o clique seguinte criar campanha, conjunto e anúncio na Meta, mesmo
+// todos ficando pausados. Depois disso o destino já não podia ser trocado.
+// O rascunho local preserva as configurações e só cria a estrutura Meta quando
+// o usuário clicar em Publicar.
 function duplicarCampanhaPorChave(chave) {
   const campanha =
     obterCampanhaRenderizada(chave);
@@ -20884,52 +20888,14 @@ function duplicarCampanhaPorChave(chave) {
     return;
   }
 
-  const nomeJaDigitado =
-    (document.getElementById("campanha_nome")?.value || "").trim();
-
-  if (
-    nomeJaDigitado &&
-    !confirm("Isso vai substituir os campos que voce ja preencheu em \"Criar Campanha\" pelos dados da campanha duplicada. Continuar?")
-  ) {
+  if (!campanha.id) {
+    alert("Não foi possível identificar esta campanha. Clique em Sincronizar e tente novamente.");
     return;
   }
 
-  const cfg = campanha.configuracoes_avancadas || {};
-  const plataforma = campanha.plataforma || "meta";
-
-  redesSelecionadasCampanha.clear();
-  redesSelecionadasCampanha.add(plataforma);
-  aplicarRedesCampanha();
-
-  preencherConfiguracoesAvancadas(cfg, campanha.daily_budget);
-  preencherCamposBasicosCampanha(campanha);
-  preencherImagensCampanhaSalva(cfg);
-
-  definirValorCampo("campanha_nome", `Cópia de ${campanha.nome || "Campanha"}`);
-
-  if (plataforma === "google") {
-    definirValorCampo("campanha_google_titulo_1", cfg.titulos?.[0] || "");
-    definirValorCampo("campanha_google_titulo_2", cfg.titulos?.[1] || "");
-    definirValorCampo("campanha_google_titulo_3", cfg.titulos?.[2] || "");
-    definirValorCampo("campanha_google_descricao_1", cfg.descricoes?.[0] || "");
-    definirValorCampo("campanha_google_descricao_2", cfg.descricoes?.[1] || "");
-    definirValorCampo("campanha_google_nome_anunciante", cfg.nome_anunciante || "");
-    definirValorCampo("campanha_google_url", cfg.url_destino || "");
-  }
-
-  aplicarEstadoCriarCampanha(false);
-
-  const card = document.getElementById("card-criar-campanha");
-  if (card) {
-    requestAnimationFrame(() => {
-      card.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
-
-  mostrarSucessoPublicacao(
-    plataforma === "google"
-      ? "Campos preenchidos com os dados da campanha original, incluindo títulos/descrições do Google. Revise (escolha o Formulário de lead) e clique em criar campanha para publicar a cópia."
-      : "Campos preenchidos com os dados da campanha original. Revise e clique em criar campanha para publicar a cópia."
+  duplicarCampanha(
+    Number(campanha.id),
+    campanha.nome || "Campanha"
   );
 }
 
@@ -29661,43 +29627,109 @@ function fecharModalDuplicar() {
   _duplicarCampanhaNome = null;
 }
 
+async function criarRascunhoLocalDaCampanha(campanhaId, novoNome) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("Sua sessão expirou. Entre novamente na plataforma.");
+  }
+
+  const res = await fetch(`${API}/campanhas/${campanhaId}/duplicar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ nome: novoNome })
+  });
+
+  let data = {};
+  try { data = await res.json(); } catch (_) {}
+
+  if (!res.ok || data.error || !data.id) {
+    throw new Error(data.error || `Erro HTTP ${res.status}`);
+  }
+
+  return Number(data.id);
+}
+
+async function abrirRascunhoDuplicado(campanhaId) {
+  if (campanhaEmEdicao) {
+    fecharEdicaoCampanha();
+  }
+
+  await carregarCampanhas();
+
+  const rascunho =
+    campanhasAtuais.find(c => Number(c.id) === Number(campanhaId));
+
+  if (!rascunho) {
+    throw new Error("O rascunho foi criado, mas não apareceu na lista. Clique em Sincronizar.");
+  }
+
+  abrirEdicaoCampanha(
+    encodeURIComponent(JSON.stringify(rascunho))
+  );
+}
+
+async function criarRascunhoEditavelParaTrocarDestino() {
+  const campanha = campanhaEmEdicao;
+  const btn = document.getElementById("btn_criar_rascunho_destino");
+
+  if (!campanha?.id) {
+    alert("Não foi possível identificar esta campanha. Clique em Sincronizar e tente novamente.");
+    return;
+  }
+
+  const confirmado = confirm(
+    "A plataforma criará um rascunho editável com o mesmo conteúdo. A campanha pausada que já existe na Meta não será apagada. Continuar?"
+  );
+
+  if (!confirmado) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Criando rascunho...";
+  }
+
+  try {
+    const novoId = await criarRascunhoLocalDaCampanha(
+      Number(campanha.id),
+      `Cópia editável de ${campanha.nome || "Campanha"}`
+    );
+
+    await abrirRascunhoDuplicado(novoId);
+    alert("Rascunho criado. Agora escolha WhatsApp, salve e depois clique em Publicar.");
+  } catch (err) {
+    console.error("CRIAR RASCUNHO EDITÁVEL:", err);
+    alert(err?.message || "Erro ao criar rascunho editável.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Criar rascunho editável";
+    }
+  }
+}
+
 async function confirmarDuplicarCampanha() {
   const input = document.getElementById("input_nome_duplicar");
   const novoNome = (input?.value || "").trim() || `Cópia de ${_duplicarCampanhaNome}`;
   const campanhaId = _duplicarCampanhaId;
   fecharModalDuplicar();
 
-  const token = localStorage.getItem("token");
   try {
-    const res = await fetch(`${API}/campanhas/${campanhaId}/duplicar`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ nome: novoNome })
-    });
-    let data = {};
-    try { data = await res.json(); } catch(_) {}
-    console.log("DUPLICAR resultado:", res.status, data);
-    if (!res.ok || data.error) {
-      const msg = data.error || `Erro HTTP ${res.status}`;
-      const el = document.createElement("div");
-      el.textContent = "❌ " + msg;
-      Object.assign(el.style, {position:"fixed",bottom:"24px",right:"24px",background:"#7f1d1d",color:"#fca5a5",padding:"12px 18px",borderRadius:"10px",fontSize:"13px",zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)"});
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 5000);
-      return;
-    }
+    const novoId =
+      await criarRascunhoLocalDaCampanha(campanhaId, novoNome);
+
     const ok = document.createElement("div");
-    ok.textContent = "✅ Campanha duplicada com sucesso!";
+    ok.textContent = "✅ Rascunho duplicado. Revise antes de publicar.";
     Object.assign(ok.style, {position:"fixed",bottom:"24px",right:"24px",background:"#14532d",color:"#86efac",padding:"12px 18px",borderRadius:"10px",fontSize:"13px",zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)"});
     document.body.appendChild(ok);
     setTimeout(() => ok.remove(), 3500);
-    await carregarCampanhas();
+    await abrirRascunhoDuplicado(novoId);
   } catch (err) {
     console.error("ERRO duplicarCampanha:", err);
-    alert("Erro ao duplicar campanha. Verifique o console.");
+    alert(err?.message || "Erro ao duplicar campanha.");
   }
 }
 

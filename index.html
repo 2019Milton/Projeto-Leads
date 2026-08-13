@@ -35661,26 +35661,56 @@ async function sincronizarCampanhas() {
 
   try {
 
-    const res = await fetch(
-      `${API}/meta/sincronizar-campanhas`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      }
+    const conexoesRes = await fetch(`${API}/conexoes`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const conexoesData = conexoesRes.ok
+      ? await conexoesRes.json()
+      : { conexoes: [] };
+    const conectadas = new Set(
+      (conexoesData.conexoes || [])
+        .filter(c => c.status === "conectado")
+        .map(c => String(c.plataforma || "").toLowerCase())
     );
 
-    const data = await res.json();
+    const plataformas = [
+      { id: "meta", nome: "Meta", endpoint: "/meta/sincronizar-campanhas" },
+      { id: "google", nome: "Google Ads", endpoint: "/google/sincronizar-campanhas" },
+      { id: "tiktok", nome: "TikTok Ads", endpoint: "/tiktok/sincronizar-campanhas" }
+    ].filter(item => conectadas.has(item.id));
 
-    console.log("SYNC:", data);
-
-    if (data.error) {
-
-      alert(data.error);
-
-      return;
+    // Compatibilidade com conexões Meta antigas, anteriores ao hub genérico.
+    if (!plataformas.length) {
+      plataformas.push({
+        id: "meta",
+        nome: "Meta",
+        endpoint: "/meta/sincronizar-campanhas"
+      });
     }
+
+    const resultados = await Promise.all(
+      plataformas.map(async plataforma => {
+        try {
+          const res = await fetch(`${API}${plataforma.endpoint}`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || data.error) {
+            throw new Error(data.error || `Erro HTTP ${res.status}`);
+          }
+          return { ...plataforma, ok: true, data };
+        } catch (err) {
+          return {
+            ...plataforma,
+            ok: false,
+            erro: err?.message || "Falha ao sincronizar"
+          };
+        }
+      })
+    );
+
+    console.log("SYNC MULTIPLATAFORMA:", resultados);
 
     await carregarCampanhas();
     await carregarStatusMeta();
@@ -35688,7 +35718,20 @@ async function sincronizarCampanhas() {
     await carregarLeads();
     carregarUltimoSyncSidebar();
 
-    alert("Campanhas sincronizadas 🚀");
+    const concluidas = resultados.filter(r => r.ok).map(r => r.nome);
+    const falhas = resultados.filter(r => !r.ok);
+
+    if (falhas.length) {
+      const detalhes = falhas
+        .map(r => `${r.nome}: ${r.erro}`)
+        .join("\n");
+      alert(
+        `${concluidas.length ? `Sincronizadas: ${concluidas.join(", ")}.\n\n` : ""}` +
+        `Não foi possível sincronizar:\n${detalhes}`
+      );
+    } else {
+      alert(`Campanhas sincronizadas: ${concluidas.join(", ")} 🚀`);
+    }
 
   } catch (err) {
 

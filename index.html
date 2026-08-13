@@ -31994,6 +31994,11 @@ function renderResumoTikTok(conn) {
     return `
       <div class="integ-card-resumo">
         ${hubResumoAlerta("Conecte o TikTok Ads para importar leads e campanhas dos formulários instantâneos.")}
+        <div style="margin:6px 0 2px;">
+          <button type="button" onclick="abrirPassoTikTokConta()"
+            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+          >📘 Ainda não tem conta? Ver tutorial</button>
+        </div>
         <div class="integ-resumo-grid">
           ${hubResumoItem("Leads", "Pausados")}
           ${hubResumoItem("Campanhas", "Sem sync")}
@@ -41789,6 +41794,105 @@ async function enviarFeedback() {
   </div>
 </div>
 
+<!-- PASSO A PASSO TIKTOK ADS — criar conta -->
+<div
+  id="modal_passo_tiktok_conta"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoTikTokConta()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_tiktok_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_tiktok_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Passo a passo para criar uma conta do TikTok Ads
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          Abra o link em outra guia, execute a etapa no TikTok Ads Manager e volte
+          para esta janela para continuar acompanhando o guia.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoTikTokConta()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Tenha uma conta TikTok</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Você precisa de uma conta TikTok (pode ser a mesma que você já usa, ou criar uma nova em
+            <a href="https://www.tiktok.com/signup" target="_blank" rel="noopener noreferrer" style="color:#2563eb;font-weight:600;">tiktok.com/signup</a>).
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Crie uma conta no TikTok Ads Manager</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Acesse o link abaixo e cadastre-se como anunciante. Informe país/região, fuso horário e moeda
+            de faturamento com atenção — normalmente não podem ser alterados depois.
+          </p>
+          <p style="margin:10px 0 0;">
+            <a href="https://ads.tiktok.com/i18n/signup/" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir TikTok Ads Manager →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Complete o cadastro e o pagamento</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Preencha os dados da empresa/anunciante e o método de pagamento quando solicitado. A conta
+            pode ficar indisponível pela API enquanto esse cadastro estiver incompleto.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Localize o Advertiser ID</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            No canto superior do TikTok Ads Manager, clique no nome da conta para ver o
+            <strong>Advertiser ID</strong> (número da conta anunciante). Anote-o caso precise informar
+            manualmente depois.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">5. Conecte na Plataforma de Leads</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Feche esta janela, clique em <strong>"Conectar"</strong> no card do TikTok Ads e faça login
+            com a <strong>mesma conta TikTok</strong> usada nos passos acima. Depois selecione a conta de
+            anúncios encontrada.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PASSO A PASSO GOOGLE ADS — aceitar Termos de Serviço de Lead Form -->
 <div
   id="modal_passo_google_leadform_termos"
@@ -42099,6 +42203,41 @@ window.abrirPassoGoogleConta = function abrirPassoGoogleConta() {
 
 window.fecharPassoGoogleConta = function fecharPassoGoogleConta() {
   const modal = document.getElementById("modal_passo_google_conta");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+};
+
+window.abrirPassoTikTokConta = function abrirPassoTikTokConta() {
+  const modal = document.getElementById("modal_passo_tiktok_conta");
+  if (!modal) return;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  modal.querySelectorAll(".passo-meta-step-text h3").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+    el.style.setProperty("font-weight", "700", "important");
+  });
+  modal.querySelectorAll(".passo-meta-step-text p").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header h2").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header p").forEach(el => {
+    el.style.setProperty("color", "#374151", "important");
+  });
+  modal.querySelectorAll(".passo-meta-body").forEach(el => {
+    el.style.setProperty("background", "#ffffff", "important");
+  });
+};
+
+window.fecharPassoTikTokConta = function fecharPassoTikTokConta() {
+  const modal = document.getElementById("modal_passo_tiktok_conta");
   if (!modal) return;
 
   modal.classList.remove("active");

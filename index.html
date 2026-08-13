@@ -16559,6 +16559,15 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             <div id="destino_whatsapp_aviso" class="channel-picker-status alerta" style="display:none;">
               Conecte o WhatsApp da plataforma (aba Whatsapp Bot) antes de publicar uma campanha com esse destino.
             </div>
+            <div id="destino_campanha_bloqueado_aviso" class="channel-picker-status alerta" style="display:none;">
+              <div>Esta versão já foi criada na Meta. Para trocar o destino sem perder o nome, a imagem e as configurações, crie um rascunho editável.</div>
+              <button
+                type="button"
+                id="btn_criar_rascunho_destino"
+                onclick="criarRascunhoEditavelParaTrocarDestino()"
+                style="margin-top:8px;padding:8px 12px;border:1px solid #f59e0b;border-radius:8px;background:rgba(245,158,11,.12);color:#fde68a;font-weight:700;cursor:pointer;"
+              >Criar rascunho editável</button>
+            </div>
           </section>
         </details>
 
@@ -20865,13 +20874,11 @@ function abrirModalEncaminharCampanhaPorChave(chave) {
   }
 }
 
-// Duplicar reaproveita o formulario de "Criar Campanha" (ja testado e
-// funcional pra Meta/Google/TikTok) em vez do antigo fluxo que so clonava a
-// linha no banco silenciosamente: aquele clone nunca ganhava campaign_id, e
-// o botao "Publicar" de uma campanha sem campaign_id cai no toggle (que so
-// funciona pra campanha ja publicada) — ou seja, nada gerado por ele era
-// publicavel, em nenhuma plataforma. Pre-preencher e deixar o usuario
-// revisar/confirmar usa o mesmo caminho que ja publica campanhas de verdade.
+// Duplicar precisa gerar um rascunho local. Preencher o formulário de criação
+// fazia o clique seguinte criar campanha, conjunto e anúncio na Meta, mesmo
+// todos ficando pausados. Depois disso o destino já não podia ser trocado.
+// O rascunho local preserva as configurações e só cria a estrutura Meta quando
+// o usuário clicar em Publicar.
 function duplicarCampanhaPorChave(chave) {
   const campanha =
     obterCampanhaRenderizada(chave);
@@ -20881,52 +20888,14 @@ function duplicarCampanhaPorChave(chave) {
     return;
   }
 
-  const nomeJaDigitado =
-    (document.getElementById("campanha_nome")?.value || "").trim();
-
-  if (
-    nomeJaDigitado &&
-    !confirm("Isso vai substituir os campos que voce ja preencheu em \"Criar Campanha\" pelos dados da campanha duplicada. Continuar?")
-  ) {
+  if (!campanha.id) {
+    alert("Não foi possível identificar esta campanha. Clique em Sincronizar e tente novamente.");
     return;
   }
 
-  const cfg = campanha.configuracoes_avancadas || {};
-  const plataforma = campanha.plataforma || "meta";
-
-  redesSelecionadasCampanha.clear();
-  redesSelecionadasCampanha.add(plataforma);
-  aplicarRedesCampanha();
-
-  preencherConfiguracoesAvancadas(cfg, campanha.daily_budget);
-  preencherCamposBasicosCampanha(campanha);
-  preencherImagensCampanhaSalva(cfg);
-
-  definirValorCampo("campanha_nome", `Cópia de ${campanha.nome || "Campanha"}`);
-
-  if (plataforma === "google") {
-    definirValorCampo("campanha_google_titulo_1", cfg.titulos?.[0] || "");
-    definirValorCampo("campanha_google_titulo_2", cfg.titulos?.[1] || "");
-    definirValorCampo("campanha_google_titulo_3", cfg.titulos?.[2] || "");
-    definirValorCampo("campanha_google_descricao_1", cfg.descricoes?.[0] || "");
-    definirValorCampo("campanha_google_descricao_2", cfg.descricoes?.[1] || "");
-    definirValorCampo("campanha_google_nome_anunciante", cfg.nome_anunciante || "");
-    definirValorCampo("campanha_google_url", cfg.url_destino || "");
-  }
-
-  aplicarEstadoCriarCampanha(false);
-
-  const card = document.getElementById("card-criar-campanha");
-  if (card) {
-    requestAnimationFrame(() => {
-      card.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
-
-  mostrarSucessoPublicacao(
-    plataforma === "google"
-      ? "Campos preenchidos com os dados da campanha original, incluindo títulos/descrições do Google. Revise (escolha o Formulário de lead) e clique em criar campanha para publicar a cópia."
-      : "Campos preenchidos com os dados da campanha original. Revise e clique em criar campanha para publicar a cópia."
+  duplicarCampanha(
+    Number(campanha.id),
+    campanha.nome || "Campanha"
   );
 }
 
@@ -21235,6 +21204,26 @@ function formatarDataFimCampanha(campanha) {
 
 function campanhaUsaHistoricoLocal(campanha) {
   return campanha?.metricas_origem === "local";
+}
+
+function campanhaEhRascunhoLocal(campanha) {
+  if (campanha?.destino_editavel === true) {
+    return true;
+  }
+
+  return (
+    campanha?.rascunho_local === true ||
+    String(campanha?.origem || "").toLowerCase() === "manual" ||
+    (!campanha?.campaign_id && campanhaUsaHistoricoLocal(campanha))
+  );
+}
+
+function campanhaJaFoiPublicada(campanha) {
+  if (typeof campanha?.destino_editavel === "boolean") {
+    return !campanha.destino_editavel;
+  }
+
+  return Boolean(campanha?.campaign_id) && !campanhaEhRascunhoLocal(campanha);
 }
 
 function mensagemCampanhasVazias(filtro) {
@@ -28821,6 +28810,10 @@ function coletarConfiguracoesAvancadas() {
       .slice(0, 4);
 
   return {
+    destino:
+      destinoCampanhaSelecionado === "whatsapp"
+        ? "whatsapp"
+        : "lead_ads",
     categoria_especial:
       valorCampo("adv_categoria_especial"),
     titulo: valorCampo("adv_titulo"),
@@ -29202,6 +29195,26 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
   preencherVideoCampanhaSalvo(cfg);
 }
 
+function configurarEdicaoDestinoCampanha(campanha = null) {
+  const publicada = campanhaJaFoiPublicada(campanha);
+
+  document
+    .querySelectorAll('input[name="campanha_destino"]')
+    .forEach(input => {
+      input.disabled = publicada;
+      input.title = publicada
+        ? "Para trocar o destino, duplique a campanha."
+        : "";
+    });
+
+  const aviso =
+    document.getElementById("destino_campanha_bloqueado_aviso");
+
+  if (aviso) {
+    aviso.style.display = publicada ? "block" : "none";
+  }
+}
+
 function abrirEdicaoCampanha(campanhaEncoded) {
 
   let campanha;
@@ -29261,6 +29274,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       campanha.configuracoes_avancadas || {},
       campanha.daily_budget
     );
+    configurarEdicaoDestinoCampanha(campanha);
     preencherCamposBasicosCampanha(campanha);
     preencherImagensCampanhaSalva(campanha.configuracoes_avancadas || {});
     _snapshotCriarCampanha.imagensAssinatura = assinaturaImagensCampanha();
@@ -29348,6 +29362,7 @@ function fecharEdicaoCampanha() {
   } finally {
     _snapshotCriarCampanha = null;
     campanhaEmEdicao = null;
+    configurarEdicaoDestinoCampanha(null);
     document
       .getElementById("campanhaEditarModal")
       ?.classList.remove("active");
@@ -29502,7 +29517,9 @@ async function salvarEdicaoCampanha() {
     const payloadEdicao = {
       usuario_id,
       campanha_local_id: campanhaEmEdicao.id ?? null,
-      campaign_id: campanhaEmEdicao.campaign_id,
+      campaign_id: campanhaEhRascunhoLocal(campanhaEmEdicao)
+        ? null
+        : campanhaEmEdicao.campaign_id,
       nome: camposBasicos.nome,
       page_id: camposBasicos.page_id,
       texto: camposBasicos.texto,
@@ -29610,43 +29627,109 @@ function fecharModalDuplicar() {
   _duplicarCampanhaNome = null;
 }
 
+async function criarRascunhoLocalDaCampanha(campanhaId, novoNome) {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("Sua sessão expirou. Entre novamente na plataforma.");
+  }
+
+  const res = await fetch(`${API}/campanhas/${campanhaId}/duplicar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ nome: novoNome })
+  });
+
+  let data = {};
+  try { data = await res.json(); } catch (_) {}
+
+  if (!res.ok || data.error || !data.id) {
+    throw new Error(data.error || `Erro HTTP ${res.status}`);
+  }
+
+  return Number(data.id);
+}
+
+async function abrirRascunhoDuplicado(campanhaId) {
+  if (campanhaEmEdicao) {
+    fecharEdicaoCampanha();
+  }
+
+  await carregarCampanhas();
+
+  const rascunho =
+    campanhasAtuais.find(c => Number(c.id) === Number(campanhaId));
+
+  if (!rascunho) {
+    throw new Error("O rascunho foi criado, mas não apareceu na lista. Clique em Sincronizar.");
+  }
+
+  abrirEdicaoCampanha(
+    encodeURIComponent(JSON.stringify(rascunho))
+  );
+}
+
+async function criarRascunhoEditavelParaTrocarDestino() {
+  const campanha = campanhaEmEdicao;
+  const btn = document.getElementById("btn_criar_rascunho_destino");
+
+  if (!campanha?.id) {
+    alert("Não foi possível identificar esta campanha. Clique em Sincronizar e tente novamente.");
+    return;
+  }
+
+  const confirmado = confirm(
+    "A plataforma criará um rascunho editável com o mesmo conteúdo. A campanha pausada que já existe na Meta não será apagada. Continuar?"
+  );
+
+  if (!confirmado) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Criando rascunho...";
+  }
+
+  try {
+    const novoId = await criarRascunhoLocalDaCampanha(
+      Number(campanha.id),
+      `Cópia editável de ${campanha.nome || "Campanha"}`
+    );
+
+    await abrirRascunhoDuplicado(novoId);
+    alert("Rascunho criado. Agora escolha WhatsApp, salve e depois clique em Publicar.");
+  } catch (err) {
+    console.error("CRIAR RASCUNHO EDITÁVEL:", err);
+    alert(err?.message || "Erro ao criar rascunho editável.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Criar rascunho editável";
+    }
+  }
+}
+
 async function confirmarDuplicarCampanha() {
   const input = document.getElementById("input_nome_duplicar");
   const novoNome = (input?.value || "").trim() || `Cópia de ${_duplicarCampanhaNome}`;
   const campanhaId = _duplicarCampanhaId;
   fecharModalDuplicar();
 
-  const token = localStorage.getItem("token");
   try {
-    const res = await fetch(`${API}/campanhas/${campanhaId}/duplicar`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ nome: novoNome })
-    });
-    let data = {};
-    try { data = await res.json(); } catch(_) {}
-    console.log("DUPLICAR resultado:", res.status, data);
-    if (!res.ok || data.error) {
-      const msg = data.error || `Erro HTTP ${res.status}`;
-      const el = document.createElement("div");
-      el.textContent = "❌ " + msg;
-      Object.assign(el.style, {position:"fixed",bottom:"24px",right:"24px",background:"#7f1d1d",color:"#fca5a5",padding:"12px 18px",borderRadius:"10px",fontSize:"13px",zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)"});
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 5000);
-      return;
-    }
+    const novoId =
+      await criarRascunhoLocalDaCampanha(campanhaId, novoNome);
+
     const ok = document.createElement("div");
-    ok.textContent = "✅ Campanha duplicada com sucesso!";
+    ok.textContent = "✅ Rascunho duplicado. Revise antes de publicar.";
     Object.assign(ok.style, {position:"fixed",bottom:"24px",right:"24px",background:"#14532d",color:"#86efac",padding:"12px 18px",borderRadius:"10px",fontSize:"13px",zIndex:"99999",boxShadow:"0 4px 20px rgba(0,0,0,.4)"});
     document.body.appendChild(ok);
     setTimeout(() => ok.remove(), 3500);
-    await carregarCampanhas();
+    await abrirRascunhoDuplicado(novoId);
   } catch (err) {
     console.error("ERRO duplicarCampanha:", err);
-    alert("Erro ao duplicar campanha. Verifique o console.");
+    alert(err?.message || "Erro ao duplicar campanha.");
   }
 }
 
@@ -32823,7 +32906,11 @@ function garantirFacebookSDK() {
     await new Promise((resolve) => {
       if (window.FB) return resolve();
       window.fbAsyncInit = function () {
-        window.FB.init({ appId: cfg.app_id, xfbml: false, version: "v24.0" });
+        window.FB.init({
+          appId: cfg.app_id,
+          xfbml: false,
+          version: cfg.graph_api_version || "v24.0",
+        });
         resolve();
       };
       const script = document.createElement("script");
@@ -32855,21 +32942,43 @@ async function conectarWhatsapp(btnEl) {
   try {
     const cfg = await garantirFacebookSDK();
 
-    let concluido = false;
-    // ⚠️ Formato do evento de conclusão do Embedded Signup — verificar contra a doc
-    // atual da Meta antes de ir pra produção (nomes de campo podem mudar de versão).
-    // Fluxo de Coexistência (número já ativo no app do WhatsApp Business) conclui com
-    // o evento FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING e só garante o waba_id — o
-    // phone_number_id é resolvido no backend a partir da WABA nesse caso.
-    function msgHandler(event) {
-      if (event.origin?.includes("facebook.com")) {
-        console.log("[whatsapp-connect] mensagem recebida do Facebook:", JSON.stringify(event.data));
+    let signupData = null;
+    let codigoAutorizacao = "";
+    let callbackRecebido = false;
+    let finalizacaoIniciada = false;
+    let fluxoEncerrado = false;
+    let temporizador = null;
+
+    const origemFacebookValida = (origem) => {
+      try {
+        const hostname = new URL(origem).hostname.toLowerCase();
+        return hostname === "facebook.com" || hostname.endsWith(".facebook.com");
+      } catch {
+        return false;
       }
-      // Confirmado em produção (log real de um corretor): a Meta manda event.data
-      // como STRING (JSON serializado), não como objeto já pronto — sem isso o
-      // filtro abaixo nunca batia, mesmo com o waba_id certo lá dentro. A outra
-      // mensagem que a Meta também manda (relay interno dela, com campos tipo
-      // cb/domain/relation=opener) não é JSON — cai no catch e é ignorada, como já era.
+    };
+
+    const limparFluxo = () => {
+      window.removeEventListener("message", msgHandler);
+      if (temporizador) clearTimeout(temporizador);
+    };
+
+    const tentarFinalizar = () => {
+      if (fluxoEncerrado || finalizacaoIniciada || !signupData || !codigoAutorizacao) return;
+      finalizacaoIniciada = true;
+      fluxoEncerrado = true;
+      limparFluxo();
+      finalizarConexaoWhatsapp(
+        signupData.waba_id,
+        signupData.phone_number_id,
+        codigoAutorizacao,
+        restaurarBotao
+      );
+    };
+
+    function msgHandler(event) {
+      if (!origemFacebookValida(event.origin)) return;
+
       let dados = event.data;
       if (typeof dados === "string") {
         try {
@@ -32881,11 +32990,26 @@ async function conectarWhatsapp(btnEl) {
       if (!dados || dados.type !== "WA_EMBEDDED_SIGNUP") return;
       const ev = dados.event;
       if ((ev === "FINISH" || ev === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING") && dados.data?.waba_id) {
-        concluido = true;
-        window.removeEventListener("message", msgHandler);
-        finalizarConexaoWhatsapp(dados.data.waba_id, dados.data.phone_number_id, restaurarBotao);
+        signupData = {
+          waba_id: String(dados.data.waba_id),
+          phone_number_id: dados.data.phone_number_id
+            ? String(dados.data.phone_number_id)
+            : null,
+        };
+        if (callbackRecebido && !codigoAutorizacao) {
+          fluxoEncerrado = true;
+          limparFluxo();
+          alert("A Meta concluiu o cadastro, mas não devolveu o código de autorização. Tente conectar novamente.");
+          restaurarBotao();
+          return;
+        }
+        tentarFinalizar();
       } else if (ev === "CANCEL" || ev === "ERROR") {
-        window.removeEventListener("message", msgHandler);
+        fluxoEncerrado = true;
+        limparFluxo();
+        if (ev === "ERROR") {
+          alert(dados.data?.error_message || "A Meta não conseguiu concluir a conexão do WhatsApp.");
+        }
         restaurarBotao();
       }
     }
@@ -32893,18 +33017,21 @@ async function conectarWhatsapp(btnEl) {
 
     window.FB.login(
       (response) => {
-        console.log("[whatsapp-connect] FB.login callback:", JSON.stringify(response));
-        // 1.5s era curto demais: o fluxo de Coexistência tem várias telas depois
-        // desse callback (confirmar conta, forma de pagamento) até a Meta mandar
-        // o evento de conclusão — o botão voltava ao normal e parávamos de
-        // escutar antes da mensagem real chegar. 2 minutos como rede de
-        // segurança pra popup realmente abandonado, sem cortar o fluxo normal.
-        setTimeout(() => {
-          if (!concluido) {
-            window.removeEventListener("message", msgHandler);
-            restaurarBotao();
-          }
-        }, 120000);
+        callbackRecebido = true;
+        codigoAutorizacao = String(response?.authResponse?.code || "").trim();
+        console.log("[whatsapp-connect] callback recebido:", {
+          status: response?.status || null,
+          code_received: Boolean(codigoAutorizacao),
+        });
+
+        if (!codigoAutorizacao && signupData) {
+          fluxoEncerrado = true;
+          limparFluxo();
+          alert("A Meta concluiu o cadastro, mas não devolveu o código de autorização. Tente conectar novamente.");
+          restaurarBotao();
+          return;
+        }
+        tentarFinalizar();
       },
       {
         config_id: cfg.config_id,
@@ -32915,30 +33042,57 @@ async function conectarWhatsapp(btnEl) {
         extras: { setup: {}, featureType: "whatsapp_business_app_onboarding", sessionInfoVersion: "3" },
       }
     );
+
+    // O evento com a WABA e o callback com o código chegam separadamente e podem
+    // chegar em qualquer ordem. Mantemos os dois por até dois minutos.
+    temporizador = setTimeout(() => {
+      if (fluxoEncerrado || finalizacaoIniciada) return;
+      fluxoEncerrado = true;
+      limparFluxo();
+      const detalhe = callbackRecebido && !codigoAutorizacao
+        ? "A Meta não devolveu o código de autorização."
+        : "O tempo de conexão com a Meta expirou.";
+      alert(`${detalhe} Feche a janela aberta e tente novamente.`);
+      restaurarBotao();
+    }, 120000);
   } catch (e) {
     alert(e.message || "Erro ao iniciar conexão com o WhatsApp.");
     restaurarBotao();
   }
 }
 
-async function finalizarConexaoWhatsapp(wabaId, phoneNumberId, restaurarBotao) {
+async function finalizarConexaoWhatsapp(wabaId, phoneNumberId, codigo, restaurarBotao) {
   const token = localStorage.getItem("token");
   try {
     const res = await fetch(`${API}/whatsapp/conectar`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ waba_id: wabaId, phone_number_id: phoneNumberId }),
+      body: JSON.stringify({
+        waba_id: wabaId,
+        phone_number_id: phoneNumberId || null,
+        code: codigo,
+      }),
     });
-    const data = await res.json();
+    const respostaTexto = await res.text();
+    let data = {};
+    try { data = respostaTexto ? JSON.parse(respostaTexto) : {}; } catch {}
     if (!res.ok) {
-      alert(data?.error || "Erro ao concluir a conexão do WhatsApp.");
+      const partes = [
+        data?.error || "Erro ao concluir a conexão do WhatsApp.",
+        data?.detalhe,
+      ].filter(Boolean);
+      if (Array.isArray(data?.instrucoes) && data.instrucoes.length) {
+        partes.push(data.instrucoes.map((item) => `• ${item}`).join("\n"));
+      }
+      alert(partes.join("\n\n"));
       restaurarBotao();
       return;
     }
     await carregarWhatsappBot();
     await carregarHub();
+    if (data?.aviso) alert(data.aviso);
   } catch (e) {
-    alert("Erro ao concluir a conexão do WhatsApp.");
+    alert(e?.message || "Erro ao concluir a conexão do WhatsApp.");
     restaurarBotao();
   }
 }
@@ -33063,6 +33217,16 @@ async function carregarDiagnosticoWhatsapp(token) {
       ? "Esse número está realmente conectado e pronto pra conversar."
       : "Esse número não está ativo — verifique a conexão do WhatsApp.";
     chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(tituloNumero)}"><span class="wpp-diag-dot ${data.numero_status === "CONNECTED" ? "ok" : "erro"}"></span>Número ${data.numero_status === "CONNECTED" ? "ativo" : escaparHtml(data.numero_status || "sem status")}</span>`);
+
+    const tituloWebhook = data.webhook_inscrito
+      ? "O app da Plataforma de Leads está inscrito nesta conta e pode receber mensagens da Meta."
+      : "O app ainda não está inscrito nesta conta. Sem essa inscrição, as mensagens não chegam ao bot.";
+    chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(tituloWebhook)}"><span class="wpp-diag-dot ${data.webhook_inscrito ? "ok" : "erro"}"></span>Webhook ${data.webhook_inscrito ? "inscrito" : "não inscrito"}</span>`);
+
+    if (Array.isArray(data.permissoes_ausentes) && data.permissoes_ausentes.length) {
+      const permissoes = data.permissoes_ausentes.join(", ");
+      chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(`Refaça o Embedded Signup depois de liberar: ${permissoes}`)}"><span class="wpp-diag-dot erro"></span>Permissões Meta incompletas</span>`);
+    }
 
     const qualidade = _wppChipQualidade(data.quality_rating);
     chips.push(`<span class="wpp-diag-chip" title="${escaparHtml(qualidade.titulo)}"><span class="wpp-diag-dot ${qualidade.classe}"></span>${qualidade.texto}</span>`);
@@ -33953,10 +34117,13 @@ async function carregarCampanhas() {
       !usuarioReceptorCampanha &&
       !c.recebida_por_encaminhamento;
 
-    const campanhaRecebidaLocal =
-      Boolean(c.recebida_por_encaminhamento) &&
-      campanhaUsaHistoricoLocal(c) &&
-      !c.campaign_id;
+    // Tanto campanhas recebidas quanto cópias ficam locais e sem campaign_id
+    // até a primeira publicação. As duas precisam usar o fluxo que reconstrói
+    // campanha, conjunto e anúncio na Meta; o toggle comum só serve quando já
+    // existe um campaign_id remoto.
+    const campanhaLocalPublicavel =
+      campanhaEhRascunhoLocal(c) &&
+      !campanhaEstaExcluida(c);
 
     const botaoEnvioCriadorCampanha =
       usuarioUsaEnvioCriadorCampanha();
@@ -34110,11 +34277,11 @@ async function carregarCampanhas() {
         <button
           class="btn-campanha-toggle btn-campanha-publicar${veiculacaoSubcategoria === "campanha_pausada" ? " btn-campanha-publicar-destaque" : ""}"
           onclick="${
-            campanhaRecebidaLocal
+            campanhaLocalPublicavel
               ? `publicarCampanhaRecebida(${Number(c.id)}, this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
               : `toggleCampanha('${c.campaign_id}', '${c.status}', this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
           }"
-          title="${campanhaRecebidaLocal ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
+          title="${campanhaLocalPublicavel ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
         >Publicar</button>
             `
         }
@@ -34544,7 +34711,7 @@ async function carregarCampanhas() {
                   🗑️ definitivo
                 </button>
               `
-              : c.campaign_id
+              : campanhaJaFoiPublicada(c)
               ? `
                 <button
                   class="btn-danger"

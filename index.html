@@ -21240,6 +21240,18 @@ function campanhaUsaHistoricoLocal(campanha) {
   return campanha?.metricas_origem === "local";
 }
 
+function campanhaEhRascunhoLocal(campanha) {
+  return (
+    campanha?.rascunho_local === true ||
+    String(campanha?.origem || "").toLowerCase() === "manual" ||
+    (!campanha?.campaign_id && campanhaUsaHistoricoLocal(campanha))
+  );
+}
+
+function campanhaJaFoiPublicada(campanha) {
+  return Boolean(campanha?.campaign_id) && !campanhaEhRascunhoLocal(campanha);
+}
+
 function mensagemCampanhasVazias(filtro) {
   if (filtro === "ACTIVE") return "Nenhuma campanha ativa encontrada.";
   if (filtro === "PAUSED") return "Nenhuma campanha pausada encontrada.";
@@ -29210,7 +29222,7 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
 }
 
 function configurarEdicaoDestinoCampanha(campanha = null) {
-  const publicada = Boolean(campanha?.campaign_id);
+  const publicada = campanhaJaFoiPublicada(campanha);
 
   document
     .querySelectorAll('input[name="campanha_destino"]')
@@ -29531,7 +29543,9 @@ async function salvarEdicaoCampanha() {
     const payloadEdicao = {
       usuario_id,
       campanha_local_id: campanhaEmEdicao.id ?? null,
-      campaign_id: campanhaEmEdicao.campaign_id,
+      campaign_id: campanhaEhRascunhoLocal(campanhaEmEdicao)
+        ? null
+        : campanhaEmEdicao.campaign_id,
       nome: camposBasicos.nome,
       page_id: camposBasicos.page_id,
       texto: camposBasicos.texto,
@@ -34063,7 +34077,7 @@ async function carregarCampanhas() {
     // campanha, conjunto e anúncio na Meta; o toggle comum só serve quando já
     // existe um campaign_id remoto.
     const campanhaLocalPublicavel =
-      !c.campaign_id &&
+      campanhaEhRascunhoLocal(c) &&
       !campanhaEstaExcluida(c);
 
     const botaoEnvioCriadorCampanha =
@@ -34652,7 +34666,7 @@ async function carregarCampanhas() {
                   🗑️ definitivo
                 </button>
               `
-              : c.campaign_id
+              : campanhaJaFoiPublicada(c)
               ? `
                 <button
                   class="btn-danger"

@@ -10252,6 +10252,23 @@ body.tema-claro .info-tooltip-popup {
   color: #f1f5f9;
 }
 
+.iapm-plataforma-grupo {
+  margin-bottom: 14px;
+}
+
+.iapm-plataforma-grupo:last-child {
+  margin-bottom: 4px;
+}
+
+.iapm-plataforma-nome {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
 .iapm-stat-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -13287,6 +13304,10 @@ body.tema-claro .iapm-masthead p,
 body.tema-claro .iapm-how-col > p,
 body.tema-claro .iapm-live-head p {
   color: #475569;
+}
+
+body.tema-claro .iapm-plataforma-nome {
+  color: #64748b;
 }
 
 body.tema-claro .iapm-how {
@@ -17321,11 +17342,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           <div class="iapm-live">
             <div class="iapm-live-head">
               <div>
-                <h3>Enviado para a Meta agora</h3>
+                <h3>Enviado para as plataformas agora</h3>
                 <p>
                   Toda vez que um lead vira "quente" pela IA/ML — inclusive por causa de uma mensagem
-                  recebida no WhatsApp — ou é marcado como fechado, esse sinal vai para a Meta
-                  (Conversion Leads), para ela priorizar leads parecidos.
+                  recebida no WhatsApp — ou é marcado como fechado, esse sinal vai para a Meta, o
+                  Google Ads e o TikTok (Conversion Leads de cada plataforma), para elas priorizarem
+                  leads parecidos.
                 </p>
               </div>
               <span class="iapm-live-pill"><span class="iapm-live-dot"></span>Atualiza a cada 30s</span>
@@ -17334,17 +17356,20 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             <div class="iapm-status">
               <span class="iapm-status-icon">✓</span>
               <div>
-                <b>Campanhas novas já nascem otimizando para leads qualificados</b> — a Meta usa os
-                eventos acima como meta de otimização do conjunto de anúncios (Conversion Leads), não
-                só recebe o dado. <b>Campanhas que já estavam rodando continuam como antes</b>: a
-                própria Meta não permite trocar esse ajuste depois que o conjunto já começou a veicular
-                — para aplicar numa campanha existente, duplique ou recrie o conjunto de anúncios. A
-                Meta recomenda a partir de ~200 leads por mês na conta para essa otimização aprender bem.
+                <b>Na Meta, campanhas novas já nascem otimizando para leads qualificados</b> — a Meta
+                usa os eventos acima como meta de otimização do conjunto de anúncios (Conversion
+                Leads), não só recebe o dado. <b>Campanhas que já estavam rodando continuam como
+                antes</b>: a própria Meta não permite trocar esse ajuste depois que o conjunto já
+                começou a veicular — para aplicar numa campanha existente, duplique ou recrie o
+                conjunto de anúncios. A Meta recomenda a partir de ~200 leads por mês na conta para
+                essa otimização aprender bem. <b>No Google Ads e no TikTok</b>, por enquanto o sinal
+                já é enviado (veja abaixo), mas ainda não é usado pra otimizar a entrega automaticamente
+                — só a Meta faz isso hoje.
               </div>
             </div>
 
-            <div id="meta-conversao-kpis" class="iapm-stat-strip">
-              <div class="iapm-empty">Carregando dados enviados para a Meta...</div>
+            <div id="meta-conversao-kpis">
+              <div class="iapm-empty">Carregando dados enviados...</div>
             </div>
 
             <div class="iapm-live-grid">
@@ -17361,14 +17386,6 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                   <div class="iapm-empty">Carregando...</div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div class="iapm-soon">
-            <span class="iapm-soon-chip">Em breve</span>
-            <div>
-              <b>Google Ads e TikTok</b> vão receber o mesmo sinal de qualificação e fechamento que já
-              vai para a Meta — ainda não enviam dados reais.
             </div>
           </div>
 
@@ -21569,51 +21586,66 @@ async function carregarEstatisticasMetaConversao(token) {
       return;
     }
 
-    const kpis = [
-      {
-        label: "Leads da Meta",
-        valor: String(estatisticas.total_leads_meta || 0),
-        detalhe: "nesta conta",
-        cor: "#60a5fa"
-      },
-      {
-        label: "Qualificados enviados",
-        valor: String(estatisticas.qualificados_enviados || 0),
-        detalhe:
-          estatisticas.taxa_qualificacao != null
-            ? `${estatisticas.taxa_qualificacao.toFixed(1)}% dos leads da Meta`
-            : "Aguardando leads quentes",
-        cor: "#f5b942"
-      },
-      {
-        label: "Fechados enviados",
-        valor: String(estatisticas.fechados_enviados || 0),
-        detalhe:
-          estatisticas.taxa_fechamento != null
-            ? `${estatisticas.taxa_fechamento.toFixed(1)}% dos leads da Meta`
-            : "Aguardando negócios fechados",
-        cor: "#4ade80"
-      }
+    const plataformas = [
+      { chave: "meta", nome: "Meta", sufixo: "" },
+      { chave: "google", nome: "Google Ads", sufixo: "_google" },
+      { chave: "tiktok", nome: "TikTok", sufixo: "_tiktok" }
     ];
 
-    kpisEl.innerHTML = kpis.map(kpi => `
-      <div class="iapm-stat" style="--iapm-stat-color:${kpi.cor};">
-        <div class="n">${kpi.valor}</div>
-        <div class="l">${kpi.label}</div>
-        <div class="d">${kpi.detalhe}</div>
-      </div>
-    `).join("");
+    const gruposHtml = plataformas.map(({ chave, nome, sufixo }) => {
+
+      const total = estatisticas[`total_leads${sufixo}`] || 0;
+      const qualificados = estatisticas[`qualificados_enviados${sufixo}`] || 0;
+      const fechados = estatisticas[`fechados_enviados${sufixo}`] || 0;
+      const taxaQualificacao = estatisticas[`taxa_qualificacao${sufixo}`];
+      const taxaFechamento = estatisticas[`taxa_fechamento${sufixo}`];
+
+      const kpis = [
+        { label: `Leads da ${nome}`, valor: String(total), detalhe: "nesta conta", cor: "#60a5fa" },
+        {
+          label: "Qualificados enviados",
+          valor: String(qualificados),
+          detalhe: taxaQualificacao != null ? `${taxaQualificacao.toFixed(1)}% dos leads da ${nome}` : "Aguardando leads quentes",
+          cor: "#f5b942"
+        },
+        {
+          label: "Fechados enviados",
+          valor: String(fechados),
+          detalhe: taxaFechamento != null ? `${taxaFechamento.toFixed(1)}% dos leads da ${nome}` : "Aguardando negócios fechados",
+          cor: "#4ade80"
+        }
+      ];
+
+      return `
+        <div class="iapm-plataforma-grupo">
+          <div class="iapm-plataforma-nome">${escaparHtml(nome)}${total === 0 ? " · sem leads ainda" : ""}</div>
+          <div class="iapm-stat-strip">
+            ${kpis.map(kpi => `
+              <div class="iapm-stat" style="--iapm-stat-color:${kpi.cor};">
+                <div class="n">${kpi.valor}</div>
+                <div class="l">${kpi.label}</div>
+                <div class="d">${kpi.detalhe}</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    kpisEl.innerHTML = gruposHtml;
 
     if (eventosEl) {
 
       const eventos = estatisticas.ultimos_eventos || [];
+
+      const nomePlataforma = { meta: "Meta", google: "Google Ads", tiktok: "TikTok" };
 
       eventosEl.innerHTML = eventos.length
         ? eventos.map(ev => `
             <div class="iapm-feed-row">
               <span class="iapm-feed-icon ${ev.tipo === "fechado" ? "won" : "hot"}">${ev.tipo === "fechado" ? "✓" : "🔥"}</span>
               <span class="iapm-feed-name">${escaparHtml(ev.nome || "Lead")}</span>
-              <span class="iapm-feed-when">${ev.tipo === "fechado" ? "Fechamento" : "Qualificação"}</span>
+              <span class="iapm-feed-when">${ev.tipo === "fechado" ? "Fechamento" : "Qualificação"} · ${nomePlataforma[ev.plataforma] || ev.plataforma || ""}</span>
             </div>
           `).join("")
         : `<div class="iapm-empty">Nenhum evento enviado ainda. Assim que um lead virar quente ou fechar, aparece aqui.</div>`;
@@ -21623,7 +21655,7 @@ async function carregarEstatisticasMetaConversao(token) {
 
     console.error("META CONVERSAO ESTATISTICAS:", err);
 
-    kpisEl.innerHTML = `<div class="iapm-empty">Erro ao carregar os dados enviados para a Meta.</div>`;
+    kpisEl.innerHTML = `<div class="iapm-empty">Erro ao carregar os dados enviados.</div>`;
 
     if (eventosEl) {
       eventosEl.innerHTML = `<div class="iapm-empty">Erro ao carregar os últimos eventos.</div>`;

@@ -23136,10 +23136,28 @@ function renderizarRespostasLead(lead, limite = 2) {
 
 function renderizarBadgeConversionLeadsMeta(lead) {
 
-  const fechadoEm =
-    lead.meta_evento_fechado_enviado_em;
-  const qualificadoEm =
-    lead.meta_evento_qualificado_enviado_em;
+  const porPlataforma = {
+    meta: {
+      nome: "Meta",
+      fechadoEm: lead.meta_evento_fechado_enviado_em,
+      qualificadoEm: lead.meta_evento_qualificado_enviado_em
+    },
+    google: {
+      nome: "Google Ads",
+      fechadoEm: lead.google_evento_fechado_enviado_em,
+      qualificadoEm: lead.google_evento_qualificado_enviado_em
+    },
+    tiktok: {
+      nome: "TikTok",
+      fechadoEm: lead.tiktok_evento_fechado_enviado_em,
+      qualificadoEm: lead.tiktok_evento_qualificado_enviado_em
+    }
+  };
+
+  const plataforma =
+    porPlataforma[lead.plataforma] || porPlataforma.meta;
+
+  const { nome, fechadoEm, qualificadoEm } = plataforma;
 
   if (!fechadoEm && !qualificadoEm) {
     return "";
@@ -23147,8 +23165,8 @@ function renderizarBadgeConversionLeadsMeta(lead) {
 
   const texto =
     fechadoEm
-      ? "✓ Fechamento enviado à Meta"
-      : "✓ Qualificação enviada à Meta";
+      ? `✓ Fechamento enviado à ${nome}`
+      : `✓ Qualificação enviada à ${nome}`;
 
   const dataReferencia =
     formatarDataHoraLabel(fechadoEm || qualificadoEm);
@@ -23156,7 +23174,7 @@ function renderizarBadgeConversionLeadsMeta(lead) {
   return `
     <span
       class="lead-ml-badge alta"
-      title="Meta foi avisada para priorizar leads parecidos com este (evento enviado em ${escaparHtml(dataReferencia)})"
+      title="${escaparHtml(nome)} foi avisada para priorizar leads parecidos com este (evento enviado em ${escaparHtml(dataReferencia)})"
     >
       ${texto}
     </span>

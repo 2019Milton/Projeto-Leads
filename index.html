@@ -21658,19 +21658,40 @@ async function carregarEstatisticasMetaConversao(token) {
       return;
     }
 
+    // Nomes de campo do backend não seguem um padrão uniforme de sufixo — a
+    // Meta manteve os nomes originais (de antes da extensão pra Google/
+    // TikTok: total_leads_meta, mas qualificados_enviados/fechados_enviados
+    // sem sufixo nenhum), então cada plataforma lista seus campos explicitamente
+    // em vez de tentar montar o nome por interpolação (isso já gerou um bug:
+    // total_leads${""} virava "total_leads", que não existe na resposta).
     const plataformas = [
-      { chave: "meta", nome: "Meta", sufixo: "" },
-      { chave: "google", nome: "Google Ads", sufixo: "_google" },
-      { chave: "tiktok", nome: "TikTok", sufixo: "_tiktok" }
+      {
+        chave: "meta", nome: "Meta", icone: PLATAFORMA_META.meta.icone,
+        campoTotal: "total_leads_meta", campoQualificados: "qualificados_enviados",
+        campoFechados: "fechados_enviados", campoTaxaQualificacao: "taxa_qualificacao",
+        campoTaxaFechamento: "taxa_fechamento"
+      },
+      {
+        chave: "google", nome: "Google Ads", icone: PLATAFORMA_META.google.icone,
+        campoTotal: "total_leads_google", campoQualificados: "qualificados_enviados_google",
+        campoFechados: "fechados_enviados_google", campoTaxaQualificacao: "taxa_qualificacao_google",
+        campoTaxaFechamento: "taxa_fechamento_google"
+      },
+      {
+        chave: "tiktok", nome: "TikTok", icone: PLATAFORMA_META.tiktok.icone,
+        campoTotal: "total_leads_tiktok", campoQualificados: "qualificados_enviados_tiktok",
+        campoFechados: "fechados_enviados_tiktok", campoTaxaQualificacao: "taxa_qualificacao_tiktok",
+        campoTaxaFechamento: "taxa_fechamento_tiktok"
+      }
     ];
 
-    const gruposHtml = plataformas.map(({ chave, nome, sufixo }) => {
+    const gruposHtml = plataformas.map(({ nome, icone, campoTotal, campoQualificados, campoFechados, campoTaxaQualificacao, campoTaxaFechamento }) => {
 
-      const total = estatisticas[`total_leads${sufixo}`] || 0;
-      const qualificados = estatisticas[`qualificados_enviados${sufixo}`] || 0;
-      const fechados = estatisticas[`fechados_enviados${sufixo}`] || 0;
-      const taxaQualificacao = estatisticas[`taxa_qualificacao${sufixo}`];
-      const taxaFechamento = estatisticas[`taxa_fechamento${sufixo}`];
+      const total = estatisticas[campoTotal] || 0;
+      const qualificados = estatisticas[campoQualificados] || 0;
+      const fechados = estatisticas[campoFechados] || 0;
+      const taxaQualificacao = estatisticas[campoTaxaQualificacao];
+      const taxaFechamento = estatisticas[campoTaxaFechamento];
 
       const kpis = [
         { label: `Leads da ${nome}`, valor: String(total), detalhe: "nesta conta", cor: "#60a5fa" },
@@ -21690,7 +21711,7 @@ async function carregarEstatisticasMetaConversao(token) {
 
       return `
         <div class="iapm-plataforma-grupo">
-          <div class="iapm-plataforma-nome">${escaparHtml(nome)}${total === 0 ? " · sem leads ainda" : ""}</div>
+          <div class="iapm-plataforma-nome">${icone} ${escaparHtml(nome)}${total === 0 ? " · sem leads ainda" : ""}</div>
           <div class="iapm-stat-strip">
             ${kpis.map(kpi => `
               <div class="iapm-stat" style="--iapm-stat-color:${kpi.cor};">

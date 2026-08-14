@@ -20856,12 +20856,84 @@ function abrirCampanhaDrawerPorChave(chave) {
   }
 }
 
-function abrirEdicaoCampanhaPorChave(chave) {
-  const encoded =
-    campanhaEncodedPorChave(chave);
+async function abrirEdicaoCampanhaPorChave(chave) {
+  const campanha =
+    obterCampanhaRenderizada(chave);
 
-  if (encoded) {
-    abrirEdicaoCampanha(encoded);
+  if (!campanha) {
+    alert("Nao foi possivel carregar os dados desta campanha. Clique em Sincronizar e tente novamente.");
+    return;
+  }
+
+  let campanhaCompleta = campanha;
+  const publicadaMeta =
+    campanhaJaFoiPublicada(campanha) &&
+    String(campanha.plataforma || "meta").toLowerCase() === "meta" &&
+    campanha.id;
+
+  const botoesEdicao = Array.from(
+    document.querySelectorAll('[data-campanha-action="editar"]')
+  );
+  const botao = botoesEdicao.find(
+    item => String(item.dataset.campanhaKey || "") === String(chave || "")
+  );
+  const textoOriginal = botao?.textContent;
+
+  if (botao) {
+    botao.disabled = true;
+    botao.textContent = "…";
+    botao.title = "Carregando configuração publicada";
+  }
+
+  try {
+    if (publicadaMeta) {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${API}/meta/campanhas/${campanha.id}/configuracao-edicao`,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        }
+      );
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && !data.error) {
+        campanhaCompleta = {
+          ...campanha,
+          ...data,
+          configuracoes_avancadas: {
+            ...obterConfiguracoesCampanha(campanha),
+            ...obterConfiguracoesCampanha(data)
+          }
+        };
+
+        campanhasRenderCache[String(chave)] = campanhaCompleta;
+        const indice = campanhasAtuais.findIndex(
+          item => Number(item.id) === Number(campanhaCompleta.id)
+        );
+        if (indice >= 0) campanhasAtuais[indice] = campanhaCompleta;
+      } else {
+        console.warn("CONFIGURAÇÃO EDIÇÃO:", data.error || `HTTP ${res.status}`);
+      }
+    }
+
+    abrirEdicaoCampanha(
+      encodeURIComponent(JSON.stringify(campanhaCompleta))
+    );
+  } catch (err) {
+    console.error("ERRO AO COMPLETAR CONFIGURAÇÃO DA CAMPANHA:", err);
+    // A edição continua disponível com os dados locais mesmo se a Meta estiver
+    // temporariamente indisponível.
+    abrirEdicaoCampanha(
+      encodeURIComponent(JSON.stringify(campanha))
+    );
+  } finally {
+    if (botao) {
+      botao.disabled = false;
+      botao.textContent = textoOriginal || "✏️";
+      botao.title = "Editar campanha";
+    }
   }
 }
 
@@ -28982,6 +29054,7 @@ function assinaturaImagensCampanha() {
       const file = item.querySelector(".imagem-input")?.files?.[0];
       if (file) return `novo:${file.name}:${file.size}:${file.lastModified}`;
       if (item.dataset.hashExistente) return `existente:${item.dataset.hashExistente}`;
+      if (item.dataset.urlExistente) return `url:${item.dataset.urlExistente}`;
       return "";
     })
     .join("|");
@@ -29006,14 +29079,28 @@ function preencherCamposBasicosCampanha(campanha = {}) {
     "campanha_nome",
     primeiroValorCampanha(campanha, ["nome", "campanha_nome", "name"])
   );
-  definirValorCampo(
-    "pagina_select",
-    primeiroValorCampanha(campanha, [
-      "page_id",
-      "pagina_id",
-      "configuracoes_avancadas.page_id"
-    ])
-  );
+  const paginaId = primeiroValorCampanha(campanha, [
+    "page_id",
+    "pagina_id",
+    "configuracoes_avancadas.page_id"
+  ]);
+  const paginaSelect = document.getElementById("pagina_select");
+
+  // A Página usada pelo anúncio pode não estar na lista atual quando a Meta
+  // devolve permissões parciais. Mantemos uma opção temporária para o editor
+  // não parecer vazio nem substituir a Página silenciosamente ao salvar.
+  if (
+    paginaSelect &&
+    paginaId &&
+    !Array.from(paginaSelect.options).some(option => String(option.value) === String(paginaId))
+  ) {
+    const option = document.createElement("option");
+    option.value = paginaId;
+    option.textContent = `Página salva (${paginaId})`;
+    option.dataset.campanhaSalva = "1";
+    paginaSelect.appendChild(option);
+  }
+  definirValorCampo("pagina_select", paginaId);
   definirValorCampo(
     "texto",
     primeiroValorCampanha(campanha, [
@@ -29156,8 +29243,21 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
     }));
   renderizarLocalidadesChips();
 
-  // Restaura públicos personalizados selecionados
-  publicosPersonalizadosSelecionados = [];
+  // Mesmo quando a Meta não devolve o nome do público no targeting, restaura
+  // o ID salvo para ele continuar visível e não ser removido sem intenção.
+  publicosPersonalizadosSelecionados =
+    (cfg.custom_audiences || []).map(publico => {
+      if (publico && typeof publico === "object") {
+        return {
+          id: String(publico.id || publico.account_id || ""),
+          nome: publico.nome || publico.name || publico.id || "Público salvo"
+        };
+      }
+      return {
+        id: String(publico || ""),
+        nome: String(publico || "Público salvo")
+      };
+    }).filter(publico => publico.id);
   atualizarChipsPublicos();
 
   definirValorCampo("adv_interesse_busca", "");
@@ -29229,6 +29329,8 @@ function abrirEdicaoCampanha(campanhaEncoded) {
   try {
 
     campanhaEmEdicao = campanha;
+    const configuracoesCampanha =
+      obterConfiguracoesCampanha(campanha);
 
     _snapshotCriarCampanha = {
       basicos: coletarCamposBasicosCampanha(),
@@ -29271,12 +29373,18 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     }
 
     preencherConfiguracoesAvancadas(
-      campanha.configuracoes_avancadas || {},
+      configuracoesCampanha,
       campanha.daily_budget
     );
     configurarEdicaoDestinoCampanha(campanha);
-    preencherCamposBasicosCampanha(campanha);
-    preencherImagensCampanhaSalva(campanha.configuracoes_avancadas || {});
+    preencherCamposBasicosCampanha({
+      ...campanha,
+      configuracoes_avancadas: configuracoesCampanha
+    });
+    preencherImagensCampanhaSalva(
+      configuracoesCampanha,
+      campanha
+    );
     _snapshotCriarCampanha.imagensAssinatura = assinaturaImagensCampanha();
 
     const feedback = document.getElementById("editar_campanha_feedback");
@@ -30114,29 +30222,21 @@ function preencherVideoCampanhaSalvo(cfg = {}) {
 // Repopula o carrossel de imagens com o que já está salvo/publicado na campanha
 // (usado ao abrir a edição — sem isso o carrossel sempre aparecia vazio, mesmo
 // com imagens já ativas no anúncio no Meta).
-function preencherImagensCampanhaSalva(cfg = {}) {
+function preencherImagensCampanhaSalva(cfg = {}, campanha = {}) {
   const container = document.getElementById("imagens-container");
   if (!container) return;
 
-  const hashes = (
-    Array.isArray(cfg.imageHashes) && cfg.imageHashes.length
-      ? cfg.imageHashes
-      : Array.isArray(cfg.image_hashes) && cfg.image_hashes.length
-      ? cfg.image_hashes
-      : [cfg.imageHash || cfg.image_hash].filter(Boolean)
-  ).filter(Boolean);
-
-  const urls = (
-    Array.isArray(cfg.imagens_urls) && cfg.imagens_urls.length
-      ? cfg.imagens_urls
-      : Array.isArray(cfg.image_urls) && cfg.image_urls.length
-      ? cfg.image_urls
-      : [cfg.imagem_url || cfg.image_url].filter(Boolean)
-  ).filter(Boolean);
+  const imagens =
+    coletarImagensCampanhaDetalhe(campanha, cfg);
+  const hashes = imagens.hashes;
+  const urls = imagens.urls;
 
   container.innerHTML = "";
 
-  const total = Math.max(hashes.length, urls.length);
+  // URLs auxiliares da Meta (thumbnail + URL em tamanho cheio) podem apontar
+  // para a mesma imagem. O hash é a identidade real do criativo, então ele
+  // define a quantidade quando estiver disponível.
+  const total = hashes.length || urls.length;
 
   if (!total) {
     container.appendChild(criarItemImagem());
@@ -30146,7 +30246,10 @@ function preencherImagensCampanhaSalva(cfg = {}) {
 
   for (let i = 0; i < total; i++) {
     const item = criarItemImagem();
-    item.aplicarImagemExistente(hashes[i] || "", urls[i] || "");
+    item.aplicarImagemExistente(
+      hashes[i] || "",
+      urls[i] || (i === 0 ? urls[0] : "") || ""
+    );
     container.appendChild(item);
   }
 

@@ -35114,27 +35114,33 @@ function detalheItensExtras(objeto = {}, mapa = []) {
 }
 
 function coletarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
-  const urls = [
+  const urls = Array.from(new Set([
     ...(Array.isArray(cfg.imagens_urls) ? cfg.imagens_urls : []),
     ...(Array.isArray(cfg.image_urls) ? cfg.image_urls : []),
     ...(Array.isArray(campanha.imagens_urls) ? campanha.imagens_urls : []),
     cfg.imagem_url,
     cfg.image_url,
     campanha.imagem_url
-  ].filter(Boolean);
+  ].filter(Boolean).map(String)));
 
-  const hashes = [
+  const hashes = Array.from(new Set([
     ...(Array.isArray(cfg.imageHashes) ? cfg.imageHashes : []),
     ...(Array.isArray(cfg.image_hashes) ? cfg.image_hashes : []),
     ...(Array.isArray(cfg.criativo?.image_hashes) ? cfg.criativo.image_hashes : []),
     cfg.imageHash,
     cfg.image_hash,
     cfg.criativo?.image_hash
-  ].filter(Boolean);
+  ].filter(Boolean).map(String)));
+
+  // Um hash representa uma imagem real na Meta. URLs de tamanho completo,
+  // thumbnail e links temporários renovados não devem virar novos cards.
+  const urlsPorImagem = hashes.length
+    ? urls.slice(0, hashes.length)
+    : urls;
 
   return {
-    urls: Array.from(new Set(urls.map(String))),
-    hashes: Array.from(new Set(hashes.map(String)))
+    urls: urlsPorImagem,
+    hashes
   };
 }
 

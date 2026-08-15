@@ -20071,7 +20071,7 @@ async function login() {
 
   if (data.token) {
     localStorage.setItem("token", data.token);
-    init();
+    await iniciarAplicacaoAutenticada();
   } else {
     alert("Login inválido");
   }
@@ -20730,6 +20730,30 @@ async function init() {
   // seguro: as duas têm proteção própria contra rodar em dobro.
   try { configurarCliquesDinamicos(); } catch (e) { console.error("configurarCliquesDinamicos:", e); }
   try { inicializarCarrosselImagens(); } catch (e) { console.error("inicializarCarrosselImagens:", e); }
+}
+
+// No login manual, o documento já terminou de carregar. Na restauração da
+// sessão após F5, porém, este mesmo arquivo ainda está sendo interpretado.
+// Esperar o DOM completo evita montar a aplicação enquanto scripts/modais do
+// final da página ainda não existem. A Promise compartilhada também impede
+// duas inicializações concorrentes quando login e restauração se sobrepõem.
+let inicializacaoAppPromise = null;
+
+async function iniciarAplicacaoAutenticada() {
+  if (document.readyState === "loading") {
+    await new Promise(resolve => {
+      document.addEventListener("DOMContentLoaded", resolve, { once: true });
+    });
+  }
+
+  if (!inicializacaoAppPromise) {
+    inicializacaoAppPromise = init().catch(err => {
+      inicializacaoAppPromise = null;
+      throw err;
+    });
+  }
+
+  return inicializacaoAppPromise;
 }
 
 function inicializarKanbanTopScrollbar() {
@@ -34791,6 +34815,7 @@ async function carregarCampanhas() {
             data-campanha-action="detalhes"
             data-campanha-key="${campanhaCacheKey}"
             title="Detalhes"
+            onclick="abrirCampanhaDrawerPorChave('${campanhaCacheKey}')"
           >
             ⚙️
           </button>
@@ -34815,6 +34840,7 @@ async function carregarCampanhas() {
                   data-campanha-action="editar"
                   data-campanha-key="${campanhaCacheKey}"
                   title="Editar campanha"
+                  onclick="abrirEdicaoCampanhaPorChave('${campanhaCacheKey}')"
                 >
                   ✏️
                 </button>
@@ -39877,7 +39903,9 @@ if (renderizarPaginaLegal()) {
   document.getElementById("landingPage").style.display = "none";
 
   if (token) {
-    init();
+    iniciarAplicacaoAutenticada().catch(err => {
+      console.error("ERRO AO RESTAURAR SESSÃO:", err);
+    });
   } else {
     document.getElementById("loginBox").style.display = "flex";
   }

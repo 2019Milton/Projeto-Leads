@@ -16400,6 +16400,19 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             <span><b style="color:#93c5fd;">[HANDOFF]</b> transfere pra você</span>
           </div>
 
+          <details class="wpp-guia" style="margin-bottom:14px;">
+            <summary>Como o bot se comporta quando o contato volta a falar depois de um tempo?</summary>
+            <ol>
+              <li><b>Bot ainda esperando resposta, roteiro não mudou:</b> continua exatamente de onde parou, não repete nada.</li>
+              <li><b>Bot já tinha terminado ou te transferido a conversa (handoff):</b> o bot fica em silêncio — a mensagem só entra no histórico esperando você responder, sem repetir a saudação nem o roteiro.</li>
+              <li><b>Você trocou o roteiro ativo enquanto essa conversa estava esperando resposta:</b> o bot percebe a troca e não tenta encaixar a resposta na pergunta errada. Se a conversa tinha avançado pouco, ele reinicia o roteiro novo do começo. Se já tinha avançado bastante (ou o lead já estava "Em Conversa"/"Fechado" no Kanban), ele pula direto pra você e te avisa no seu WhatsApp — sem tentar continuar sozinho.</li>
+              <li><b>Trocou o roteiro, mas essa conversa já estava com você (handoff):</b> nada muda — trocar de roteiro nunca reativa uma conversa que já virou humana.</li>
+            </ol>
+            <div class="wpp-guia-aviso">
+              Hoje não existe um botão pra "reiniciar" manualmente uma conversa antiga — se o cliente voltou depois de meses e a conversa já tinha virado humana, o bot continua quieto por padrão.
+            </div>
+          </details>
+
           <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
             <button type="button" class="btn wpp-btn wpp-btn-ghost" onclick="anexarMidiaWhatsappBot('imagem')">📷 Anexar imagem</button>
             <button type="button" class="btn wpp-btn wpp-btn-ghost" onclick="anexarMidiaWhatsappBot('audio')">🎤 Anexar áudio</button>

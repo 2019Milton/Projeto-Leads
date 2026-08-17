@@ -16396,7 +16396,13 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
           <div class="wpp-legenda">
             <span><b style="color:#25d366;">MSG:</b> mensagem, segue sozinho</span>
             <span><b style="color:#facc15;">PERGUNTA:</b> espera o cliente responder</span>
+            <span><b style="color:#93c5fd;">IMAGEM: / AUDIO:</b> use os botões abaixo pra anexar</span>
             <span><b style="color:#93c5fd;">[HANDOFF]</b> transfere pra você</span>
+          </div>
+
+          <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+            <button type="button" class="btn wpp-btn wpp-btn-ghost" onclick="anexarMidiaWhatsappBot('imagem')">📷 Anexar imagem</button>
+            <button type="button" class="btn wpp-btn wpp-btn-ghost" onclick="anexarMidiaWhatsappBot('audio')">🎤 Anexar áudio</button>
           </div>
 
           <div class="wpp-editor-grid">
@@ -33298,6 +33304,12 @@ async function finalizarConexaoWhatsapp(wabaId, phoneNumberId, codigo, restaurar
 function serializarPassosWhatsappBot(passos) {
   return (passos || [])
     .map((p) => {
+      if (p.tipo === "imagem") {
+        return `IMAGEM: ${p.midia_url}${p.texto ? " | " + p.texto : ""}${p.handoff_apos ? " [HANDOFF]" : ""}`;
+      }
+      if (p.tipo === "audio") {
+        return `AUDIO: ${p.midia_url}${p.handoff_apos ? " [HANDOFF]" : ""}`;
+      }
       const prefixo = p.tipo === "pergunta" ? "PERGUNTA:" : "MSG:";
       return `${prefixo} ${p.texto}${p.handoff_apos ? " [HANDOFF]" : ""}`;
     })
@@ -33312,12 +33324,23 @@ function parsearPassosWhatsappBot(texto) {
     .map((linha, i) => {
       const handoff_apos = /\[HANDOFF\]\s*$/i.test(linha);
       const semHandoff = linha.replace(/\[HANDOFF\]\s*$/i, "").trim();
+
+      if (/^IMAGEM:/i.test(semHandoff)) {
+        const resto = semHandoff.replace(/^IMAGEM:\s*/i, "").trim();
+        const [midia_url, ...legendaPartes] = resto.split(" | ");
+        return { ordem: i + 1, tipo: "imagem", texto: legendaPartes.join(" | ").trim(), midia_url: (midia_url || "").trim(), handoff_apos };
+      }
+      if (/^AUDIO:/i.test(semHandoff)) {
+        const midia_url = semHandoff.replace(/^AUDIO:\s*/i, "").trim();
+        return { ordem: i + 1, tipo: "audio", texto: "", midia_url, handoff_apos };
+      }
+
       const ehPergunta = /^PERGUNTA:/i.test(semHandoff);
       const tipo = ehPergunta ? "pergunta" : "mensagem";
       const texto = semHandoff.replace(/^(PERGUNTA|MSG):\s*/i, "").trim();
       return { ordem: i + 1, tipo, texto, handoff_apos };
     })
-    .filter((p) => p.texto);
+    .filter((p) => p.texto || p.midia_url);
 }
 
 let whatsappBotEditandoId = null;
@@ -33365,9 +33388,22 @@ function renderWhatsappBotPreview() {
   passos.forEach((p) => {
     const classe = p.tipo === "pergunta" ? "wpp-bubble wpp-pergunta" : "wpp-bubble";
     const tagEspera = p.tipo === "pergunta" ? `<span class="wpp-tag-espera">⏳ aguarda resposta</span>` : "";
+
+    let conteudoHtml;
+    if (p.tipo === "imagem") {
+      conteudoHtml = `
+        <img src="${escaparHtml(p.midia_url)}" alt="Imagem do passo" style="max-width:100%;border-radius:8px;display:block;margin-bottom:${p.texto ? "6px" : "0"};">
+        ${p.texto ? escaparHtml(p.texto) : ""}
+      `;
+    } else if (p.tipo === "audio") {
+      conteudoHtml = `🎤 <i>Mensagem de áudio</i>`;
+    } else {
+      conteudoHtml = escaparHtml(p.texto);
+    }
+
     html += `
       <div class="${classe}">
-        ${escaparHtml(p.texto)}
+        ${conteudoHtml}
         <span class="wpp-hora">${hora} ✓✓</span>
         ${tagEspera}
       </div>
@@ -33377,6 +33413,48 @@ function renderWhatsappBotPreview() {
     }
   });
   container.innerHTML = html;
+}
+
+async function anexarMidiaWhatsappBot(tipo) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = tipo === "imagem" ? "image/jpeg,image/png,image/webp" : "audio/mpeg,audio/ogg,audio/mp4,audio/aac,.amr";
+
+  input.onchange = async () => {
+    const arquivo = input.files?.[0];
+    if (!arquivo) return;
+
+    const statusEl = document.getElementById("whatsapp_bot_salvar_status");
+    if (statusEl) statusEl.textContent = tipo === "imagem" ? "Enviando imagem..." : "Enviando áudio...";
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("arquivo", arquivo);
+      formData.append("tipo", tipo);
+
+      const res = await fetch(`${API}/whatsapp-bot/midia`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token },
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao enviar arquivo");
+
+      const textarea = document.getElementById("whatsapp_bot_passos");
+      const linha = tipo === "imagem" ? `IMAGEM: ${data.url}` : `AUDIO: ${data.url}`;
+      const prefixoQuebraLinha = textarea.value && !textarea.value.endsWith("\n") ? "\n" : "";
+      textarea.value += `${prefixoQuebraLinha}${linha}\n`;
+      renderWhatsappBotPreview();
+
+      if (statusEl) statusEl.textContent = "Arquivo anexado — adicione uma legenda se quiser, editando a linha no roteiro.";
+    } catch (e) {
+      if (statusEl) statusEl.textContent = "";
+      alert(e?.message || "Erro ao enviar arquivo.");
+    }
+  };
+
+  input.click();
 }
 
 function renderListaWhatsappBot() {

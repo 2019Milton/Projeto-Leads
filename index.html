@@ -33416,6 +33416,11 @@ function renderWhatsappBotPreview() {
 }
 
 async function anexarMidiaWhatsappBot(tipo) {
+  const textareaRef = document.getElementById("whatsapp_bot_passos");
+  // Guarda a posição do cursor JÁ, antes do seletor de arquivo abrir — depois disso
+  // o textarea perde o foco e não dá mais pra saber onde o corretor tinha clicado.
+  const posCursor = textareaRef ? textareaRef.selectionStart : null;
+
   const input = document.createElement("input");
   input.type = "file";
   input.accept = tipo === "imagem" ? "image/jpeg,image/png,image/webp" : "audio/mpeg,audio/ogg,audio/mp4,audio/aac,.amr";
@@ -33441,10 +33446,8 @@ async function anexarMidiaWhatsappBot(tipo) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao enviar arquivo");
 
-      const textarea = document.getElementById("whatsapp_bot_passos");
       const linha = tipo === "imagem" ? `IMAGEM: ${data.url}` : `AUDIO: ${data.url}`;
-      const prefixoQuebraLinha = textarea.value && !textarea.value.endsWith("\n") ? "\n" : "";
-      textarea.value += `${prefixoQuebraLinha}${linha}\n`;
+      inserirLinhaRoteiroWhatsappBot(linha, posCursor);
       renderWhatsappBotPreview();
 
       if (statusEl) statusEl.textContent = "Arquivo anexado — adicione uma legenda se quiser, editando a linha no roteiro.";
@@ -33455,6 +33458,29 @@ async function anexarMidiaWhatsappBot(tipo) {
   };
 
   input.click();
+}
+
+// Insere a linha exatamente onde estava o cursor no roteiro (ou no final, se
+// o cursor não estava em lugar nenhum) — assim o corretor clica no ponto do
+// roteiro onde quer a imagem/áudio antes de clicar em anexar.
+function inserirLinhaRoteiroWhatsappBot(linha, posCursor) {
+  const textarea = document.getElementById("whatsapp_bot_passos");
+  if (!textarea) return;
+
+  const valorAtual = textarea.value;
+  const pos = (posCursor === null || posCursor === undefined) ? valorAtual.length : posCursor;
+
+  const antes = valorAtual.slice(0, pos);
+  const depois = valorAtual.slice(pos);
+
+  const quebraAntes = antes && !antes.endsWith("\n") ? "\n" : "";
+  const quebraDepois = !depois || !depois.startsWith("\n") ? "\n" : "";
+
+  textarea.value = `${antes}${quebraAntes}${linha}${quebraDepois}${depois}`;
+
+  const novaPosicao = (antes + quebraAntes + linha + quebraDepois).length;
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = novaPosicao;
 }
 
 function renderListaWhatsappBot() {

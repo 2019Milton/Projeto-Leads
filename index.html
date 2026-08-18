@@ -10648,6 +10648,9 @@ body.tema-claro .btn-recolher-card:hover {
 .integ-card-status.conectado  { color: #4ade80; }
 .integ-card-status.desconectado { color: #64748b; }
 .integ-card-status.sempre { color: #60a5fa; }
+/* Integração real (backend já expõe as rotas), mas ainda dependente de aprovação
+   de API do parceiro (ex: Kwai) — não é nem "Em breve" nem um "Conectado" pleno. */
+.integ-card-status.em-configuracao { color: #fb923c; }
 .integ-card-desc { font-size: 11px; color: #475569; margin-top: 4px; line-height: 1.4; }
 .integ-card-conta { font-size: 11px; color: #94a3b8; padding: 7px 8px; background: #0f172a; border-radius: 6px; display: flex; flex-direction: column; gap: 5px; }
 .integ-card-conta .integ-detalhe-valor { max-width: 160px; }
@@ -14595,6 +14598,10 @@ body.tema-claro .integ-card-status.sempre {
   color: var(--claro-success) !important;
 }
 
+body.tema-claro .integ-card-status.em-configuracao {
+  color: #c2410c !important;
+}
+
 body.tema-claro .integ-card-conta,
 body.tema-claro .integ-card-detalhes {
   background: var(--claro-surface-soft) !important;
@@ -16477,7 +16484,10 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               onclick="selecionarPlataformaCampanha('linkedin')">
               💼 LinkedIn Ads
             </button>
-            <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
+            <button type="button" class="plat-sel-btn" data-plat="kwai"
+              onclick="selecionarPlataformaCampanha('kwai')">
+              🎬 Kwai Ads
+            </button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">🪟 Microsoft Ads</button>
@@ -16587,8 +16597,8 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
           </section>
 
-          <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="meta,linkedin">
-            <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro da própria rede (Facebook/Instagram ou LinkedIn). WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma — no LinkedIn isso abre um link wa.me pré-preenchido, já que o LinkedIn não tem um botão nativo de WhatsApp como a Meta.', event)">i</button></h4>
+          <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="meta,linkedin,kwai">
+            <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro da própria rede (Facebook/Instagram, LinkedIn ou Kwai). WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma — no LinkedIn isso abre um link wa.me pré-preenchido, já que o LinkedIn não tem um botão nativo de WhatsApp como a Meta.', event)">i</button></h4>
             <div class="advanced-checks">
               <label>
                 <input type="radio" name="campanha_destino" id="destino_lead_ads" value="lead_ads" checked onchange="aplicarDestinoCampanha()">
@@ -17125,6 +17135,23 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
                 <input type="text" id="campanha_tiktok_formulario_manual" placeholder="Cole aqui o ID do Instant Form">
               </div>
               <div id="campanha_tiktok_formulario_feedback" class="channel-picker-status alerta" style="display:none;"></div>
+            </div>
+
+            <div class="advanced-subsection" data-plat-only="kwai" data-destino-only="lead_ads" style="display:none;">
+              <h5>Formulário instantâneo (Kwai)</h5>
+              <p>O Kwai não cria formulário automaticamente — escolha um já existente no Kwai Business Center.</p>
+            </div>
+
+            <div class="advanced-full" data-plat-only="kwai" data-destino-only="lead_ads" style="display:none;">
+              <label>Formulário Kwai <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione um formulário de leads já criado no Kwai Business Center. Se a lista não aparecer, informe o ID manualmente.', event)">i</button></label>
+              <select id="campanha_kwai_formulario_select" onchange="alternarFormularioKwaiManual()">
+                <option value="">Carregando formulários...</option>
+              </select>
+              <div id="campanha_kwai_formulario_manual_wrap" style="display:none;margin-top:8px;">
+                <label>ID do formulário (manual)</label>
+                <input type="text" id="campanha_kwai_formulario_manual" placeholder="Cole aqui o ID do formulário Kwai">
+              </div>
+              <div id="campanha_kwai_formulario_feedback" class="channel-picker-status alerta" style="display:none;"></div>
             </div>
 
             <div class="advanced-subsection" data-plat-only="google" style="display:none;">
@@ -24762,6 +24789,10 @@ function selecionarPlataformaCampanha(plat) {
   if (plat === "google" && redesSelecionadasCampanha.has("google")) {
     carregarFormulariosGoogleCampanha();
   }
+
+  if (plat === "kwai" && redesSelecionadasCampanha.has("kwai")) {
+    carregarFormulariosKwaiCampanha();
+  }
 }
 
 function aplicarRedesCampanha() {
@@ -27611,6 +27642,66 @@ function obterFormularioTikTokEscolhido() {
   return select?.value?.trim() || "";
 }
 
+// Mesmo padrão do bloco de formulário TikTok acima — o Kwai também não cria Lead
+// Form automaticamente, então o usuário escolhe um já existente (ou informa o ID
+// manualmente se a listagem falhar). GET /kwai/formularios ainda é um stub de Fase 1
+// no backend (aguardando aprovação de API da Kuaishou): quando não devolver nada,
+// o fallback manual assume, exatamente como já acontece hoje pro TikTok.
+async function carregarFormulariosKwaiCampanha() {
+  const select = document.getElementById("campanha_kwai_formulario_select");
+  const feedback = document.getElementById("campanha_kwai_formulario_feedback");
+  if (!select) return;
+  const { token } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  select.innerHTML = `<option value="">Carregando formulários...</option>`;
+  if (feedback) feedback.style.display = "none";
+
+  try {
+    const res = await fetch(`${API}/kwai/formularios`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const formularios = data.formularios || [];
+
+    if (!formularios.length) {
+      select.innerHTML = `<option value="">-- Nenhum formulário encontrado --</option>`;
+      if (feedback) {
+        feedback.style.display = "";
+        feedback.textContent = data.aviso || data.error || "Nenhum formulário encontrado. Informe o ID manualmente abaixo.";
+      }
+      ativarFormularioKwaiManual(true);
+      return;
+    }
+
+    select.innerHTML = formularios.map(f => `
+      <option value="${escaparHtml(String(f.page_id || f.id))}">${escaparHtml(f.page_name || f.name || String(f.page_id || f.id))}</option>`
+    ).join("") + `<option value="__manual__">Digitar ID manualmente...</option>`;
+  } catch (_) {
+    select.innerHTML = `<option value="">-- Erro ao carregar --</option><option value="__manual__">Digitar ID manualmente...</option>`;
+    if (feedback) { feedback.style.display = ""; feedback.textContent = "Não foi possível listar formulários. Informe o ID manualmente."; }
+    ativarFormularioKwaiManual(true);
+  }
+}
+
+function alternarFormularioKwaiManual() {
+  const select = document.getElementById("campanha_kwai_formulario_select");
+  ativarFormularioKwaiManual(select?.value === "__manual__");
+}
+
+function ativarFormularioKwaiManual(mostrar) {
+  const wrap = document.getElementById("campanha_kwai_formulario_manual_wrap");
+  if (wrap) wrap.style.display = mostrar ? "" : "none";
+}
+
+function obterFormularioKwaiEscolhido() {
+  const select = document.getElementById("campanha_kwai_formulario_select");
+  if (select?.value === "__manual__") {
+    return document.getElementById("campanha_kwai_formulario_manual")?.value?.trim() || "";
+  }
+  return select?.value?.trim() || "";
+}
+
 async function carregarFormulariosGoogleCampanha() {
   const select = document.getElementById("campanha_google_formulario_select");
   const feedback = document.getElementById("campanha_google_formulario_feedback");
@@ -27803,6 +27894,18 @@ function validarPublicacaoCampanhaTikTok() {
   }
   if (!obterFormularioTikTokEscolhido()) {
     return "Escolha ou informe o ID de um formulário instantâneo do TikTok antes de publicar.";
+  }
+  return null;
+}
+
+// Mesmo padrão do validarPublicacaoCampanhaTikTok, mas sem identidade (o Kwai não
+// tem um equivalente à Página do Facebook / Identidade do TikTok nesta primeira
+// versão) e sem busca de localidade própria (usa a segmentação padrão, igual ao
+// LinkedIn). O formulário só é obrigatório quando o destino é "Formulário de Leads"
+// — no destino WhatsApp (igual à Meta) não existe formulário nenhum pra escolher.
+function validarPublicacaoCampanhaKwai() {
+  if (destinoCampanhaSelecionado !== "whatsapp" && !obterFormularioKwaiEscolhido()) {
+    return "Escolha ou informe o ID de um formulário de leads do Kwai antes de publicar.";
   }
   return null;
 }
@@ -30998,9 +31101,11 @@ function validarCamposCompartilhadosCampanha({
     );
   }
 
-  // Imagem/vídeo só é exigido quando Meta ou TikTok estão selecionados — o anúncio do
-  // Google (Responsive Search Ad) é só texto e não usa nenhum dos dois.
-  const precisaDeCriativoVisual = (redes || []).some(r => r === "meta" || r === "tiktok");
+  // Imagem/vídeo só é exigido quando Meta, TikTok ou Kwai estão selecionados — o
+  // anúncio do Google (Responsive Search Ad) é só texto e não usa nenhum dos três.
+  // Kwai entra na mesma regra do TikTok: é um app de vídeo curto, o anúncio sempre
+  // precisa de um criativo visual.
+  const precisaDeCriativoVisual = (redes || []).some(r => r === "meta" || r === "tiktok" || r === "kwai");
 
   if (precisaDeCriativoVisual && !imagensArquivos.length && !videoArquivo) {
     return conduzirParaCampoCampanha(
@@ -31738,6 +31843,170 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
   }
 }
 
+async function descartarCampanhaKwaiCriadaPorFalha(campaign_id, token) {
+  if (!campaign_id || !token) return;
+  try {
+    await fetch(`${API}/kwai/excluir-campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ campaign_id })
+    });
+  } catch (err) {
+    console.warn("Não foi possível remover a campanha Kwai criada após falha:", err);
+  }
+}
+
+// ─── Publica no Kwai ───────────────────────────────────────────────────────────
+// Mesma orquestração do TikTok (upload de imagem/vídeo → campanha → adgroup →
+// anúncio usando um formulário já existente, com rollback se algum passo falhar
+// no meio do caminho), com o mesmo tratamento explícito de destino que a Meta
+// usa (lead_ads vs whatsapp) — ver bloco "Destino da campanha" no formulário.
+// IMPORTANTE: as rotas /kwai/upload-imagem, /kwai/upload-video, /kwai/campanha,
+// /kwai/adgroup e /kwai/anuncio ainda são stubs de Fase 1 no backend — respondem
+// com um erro amigável ("aguardando aprovação da API Kwai") em vez de publicar de
+// verdade, porque a plataforma ainda não tem credenciais de parceiro da Kuaishou.
+// Isso é esperado: a função já trata esse erro como qualquer outro erro de API
+// (retorna { ok:false, mensagem }), e o orquestrador (criarCampanhaCompleta) isola
+// essa falha das demais redes selecionadas — uma campanha multi-rede com Kwai +
+// outra plataforma publica normalmente nas demais, só o Kwai fica pendente.
+async function publicarCampanhaKwai(contexto, isMultiRede) {
+  let campanhaCriadaId = null;
+  const {
+    token, usuario_id, campanha_nome, texto, cta, orcamento,
+    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
+  } = contexto;
+  const prefixo = isMultiRede ? "[Kwai Ads] " : "";
+
+  try {
+    const destino = destinoCampanhaSelecionado === "whatsapp" ? "whatsapp" : "lead_ads";
+    const configuracoes_avancadas = { ...configuracoesBase, destino };
+    if (publicacaoGrupoId) configuracoes_avancadas.publicacao_grupo_id = publicacaoGrupoId;
+
+    const imageIds = [];
+    const totalImagens = imagensArquivos.length;
+
+    for (let i = 0; i < imagensArquivos.length; i++) {
+      const file = imagensArquivos[i];
+      setPublishProgress(
+        totalImagens ? Math.round(5 + ((i + 1) / totalImagens) * 20) : 20,
+        `${prefixo}Enviando imagem ${i + 1} de ${totalImagens}...`
+      );
+
+      const formData = new FormData();
+      formData.append("imagem", file);
+      formData.append("usuario_id", usuario_id);
+
+      const uploadRes = await fetch(`${API}/kwai/upload-imagem`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token },
+        body: formData
+      });
+      const upload = await uploadRes.json();
+
+      if (upload.error) {
+        return { ok: false, mensagem: upload.error || "Erro ao enviar imagem para o Kwai" };
+      }
+      imageIds.push(upload.image_id);
+    }
+
+    let videoId = null;
+    if (videoArquivo) {
+      setPublishProgress(28, `${prefixo}Enviando vídeo...`);
+      const formData = new FormData();
+      formData.append("video", videoArquivo);
+      formData.append("usuario_id", usuario_id);
+
+      const uploadRes = await fetch(`${API}/kwai/upload-video`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token },
+        body: formData
+      });
+      const upload = await uploadRes.json();
+
+      if (upload.error) {
+        return { ok: false, mensagem: upload.error || "Erro ao enviar vídeo para o Kwai" };
+      }
+      videoId = upload.video_id;
+    }
+
+    setPublishProgress(35, `${prefixo}Criando campanha no Kwai...`);
+
+    const campanhaRes = await fetch(`${API}/kwai/campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        nome: campanha_nome,
+        configuracoes_avancadas,
+        nicho_id: window._nichoAtivo?.id || null,
+        daily_budget: Number(orcamento) * 100,
+        publicacao_grupo_id: publicacaoGrupoId
+      })
+    });
+    const campanha = await campanhaRes.json();
+
+    if (campanha.error) {
+      return { ok: false, mensagem: campanha.error };
+    }
+
+    campanhaCriadaId = campanha.campaign_id || campanha.id;
+    setPublishProgress(65, `${prefixo}Criando grupo de anúncios...`);
+
+    const adgroupRes = await fetch(`${API}/kwai/adgroup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanhaCriadaId,
+        daily_budget: Number(orcamento) * 100,
+        configuracoes_avancadas
+      })
+    });
+    const adgroup = await adgroupRes.json();
+
+    if (adgroup.error) {
+      await descartarCampanhaKwaiCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: adgroup.error };
+    }
+
+    setPublishProgress(88, `${prefixo}Publicando anúncio...`);
+
+    const formularioId = destino !== "whatsapp" ? obterFormularioKwaiEscolhido() : null;
+
+    const anuncioRes = await fetch(`${API}/kwai/anuncio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanhaCriadaId,
+        adgroup_id: adgroup.adgroup_id,
+        form_id: formularioId,
+        texto,
+        cta,
+        configuracoes_avancadas,
+        daily_budget: Number(orcamento) * 100,
+        image_ids: imageIds,
+        video_id: videoId
+      })
+    });
+    const anuncio = await anuncioRes.json();
+
+    if (anuncio.error) {
+      await descartarCampanhaKwaiCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: anuncio.error };
+    }
+
+    setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
+    return { ok: true };
+  } catch (err) {
+    console.error("ERRO publicarCampanhaKwai:", err);
+    if (campanhaCriadaId) {
+      await descartarCampanhaKwaiCriadaPorFalha(campanhaCriadaId, token);
+    }
+    return { ok: false, mensagem: "Erro ao criar campanha Kwai: " + (err?.message || String(err) || "Erro desconhecido") };
+  }
+}
+
 // ─── Orquestrador: publica em todas as redes marcadas (fan-out) ───────────────
 // Falha em uma rede não desfaz nem impede o sucesso das outras — cada rede
 // roda sua própria pipeline e o resultado final é reportado por rede.
@@ -31814,6 +32083,14 @@ async function criarCampanhaCompleta() {
     }
   }
 
+  if (redes.includes("kwai")) {
+    const erroKwai = validarPublicacaoCampanhaKwai();
+    if (erroKwai) {
+      mostrarErroPublicacao(erroKwai);
+      return;
+    }
+  }
+
   const publicacaoGrupoId =
     redes.length > 1
       ? ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `grp_${Date.now()}_${Math.random().toString(36).slice(2)}`)
@@ -31844,6 +32121,11 @@ async function criarCampanhaCompleta() {
   if (redes.includes("linkedin")) {
     const r = await publicarCampanhaLinkedIn(contexto, redes.length > 1);
     resultados.push({ rede: "LinkedIn Ads", ...r });
+  }
+
+  if (redes.includes("kwai")) {
+    const r = await publicarCampanhaKwai(contexto, redes.length > 1);
+    resultados.push({ rede: "Kwai Ads", ...r });
   }
 
   setPublishProgress(null);
@@ -32382,7 +32664,7 @@ const HUB_PLATAFORMAS = [
   { id: "google",    nome: "Google Ads",    icone: PLATAFORMA_META.google.icone,    disponivelConectar: true,  desc: "Lead Form Extensions via Google" },
   { id: "tiktok",    nome: "TikTok Ads",    icone: PLATAFORMA_META.tiktok.icone,    disponivelConectar: true,  desc: "TikTok Instant Form Leads" },
   { id: "linkedin",  nome: "LinkedIn Ads",  icone: PLATAFORMA_META.linkedin.icone,  disponivelConectar: true,  desc: "LinkedIn Lead Gen Forms" },
-  { id: "kwai",      nome: "Kwai Ads",      icone: PLATAFORMA_META.kwai.icone,      disponivelConectar: false, desc: "Kwai Lead Form Ads" },
+  { id: "kwai",      nome: "Kwai Ads",      icone: PLATAFORMA_META.kwai.icone,      disponivelConectar: true,  desc: "Kwai Lead Form Ads", emConfiguracao: true },
   { id: "pinterest", nome: "Pinterest Ads", icone: PLATAFORMA_META.pinterest.icone, disponivelConectar: false, desc: "Pinterest Lead Ads Webhook" },
   { id: "snapchat",  nome: "Snapchat Ads",  icone: PLATAFORMA_META.snapchat.icone,  disponivelConectar: false, desc: "Snap Lead Generation API" },
   { id: "microsoft", nome: "Microsoft Ads", icone: PLATAFORMA_META.microsoft.icone, disponivelConectar: false, desc: "Bing Ads Lead Form Extensions" },
@@ -32602,6 +32884,57 @@ function renderResumoLinkedIn(conn) {
     </div>`;
 }
 
+// Mesmo padrão do renderResumoTikTok, com um adicional: mesmo já conectado e com
+// conta selecionada, a publicação de campanhas no Kwai ainda depende da aprovação
+// da API oficial da Kuaishou (Fase 1 do backend responde com erro amigável nas
+// rotas de publicação) — por isso o alerta nunca vira "tudo pronto" (classe "ok"),
+// fica sempre em "warn" até a Fase 2 liberar a publicação de verdade.
+function renderResumoKwai(conn) {
+  const conectado = conn?.status === "conectado";
+
+  if (!conectado) {
+    return `
+      <div class="integ-card-resumo">
+        ${hubResumoAlerta("Integração com o Kwai Ads em configuração — aguardando aprovação da API oficial da Kuaishou. O botão \"Conectar\" já existe, mas o login pode responder como indisponível por enquanto.", "warn")}
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Leads", "Pausados")}
+          ${hubResumoItem("Campanhas", "Sem sync")}
+          ${hubResumoItem("Conta de anúncios", "Não conectada")}
+          ${hubResumoItem("Próximo passo", "Aguardar liberação da API")}
+        </div>
+      </div>`;
+  }
+
+  const advertiserId = conn?.conta?.advertiser_id || "";
+  const advertiserIds = conn?.conta?.advertiser_ids || [];
+
+  if (!advertiserId) {
+    return `
+      <div class="integ-card-resumo">
+        ${hubResumoAlerta(
+          advertiserIds.length
+            ? "Conta conectada. Abra os detalhes para escolher a conta de anúncios."
+            : "Conta conectada, mas nenhuma conta de anúncios foi encontrada nesse login.",
+          "warn"
+        )}
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Contas disponíveis", advertiserIds.length || 0)}
+          ${hubResumoItem("Conta de anúncios", "A selecionar")}
+          ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="integ-card-resumo">
+      ${hubResumoAlerta("Conta de anúncios selecionada. A publicação de campanhas no Kwai ainda aguarda aprovação da API — assim que liberar, \"Criar Campanha\" já publica direto por aqui.", "warn")}
+      <div class="integ-resumo-grid">
+        ${hubResumoItem("Conta de anúncios", advertiserId, "sucesso")}
+        ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
+      </div>
+    </div>`;
+}
+
 function renderResumoGoogle(conn, googleStatusCompleto) {
   const conectado = conn?.status === "conectado";
 
@@ -32753,20 +33086,27 @@ function renderIntegCard(p, conn, statusCompleto = null) {
     statusHtml = `<span class="integ-card-status desconectado">○ Em breve</span>`;
     acoesHtml  = `<button disabled>Em breve</button>`;
   } else if (conectado) {
-    statusHtml = `<span class="integ-card-status conectado">● Conectado</span>`;
+    // Kwai (e futuras integrações no mesmo estágio) já conecta de verdade, mas a
+    // publicação de campanhas ainda depende da aprovação da API do parceiro — o
+    // selo deixa isso explícito em vez de prometer um "Conectado" pleno como Meta/TikTok.
+    statusHtml = p.emConfiguracao
+      ? `<span class="integ-card-status em-configuracao">🔧 Conectado (em configuração)</span>`
+      : `<span class="integ-card-status conectado">● Conectado</span>`;
     acoesHtml  = `
       <button class="btn-desconectar" onclick="desconectarPlataforma('${p.id}', this)">Desconectar</button>
       <button class="btn-conectar"    onclick="conectarPlataforma('${p.id}', this)">Reconectar</button>
       <button id="btn-det-${p.id}"   onclick="toggleIntegDetalhes('${p.id}')">Ver detalhes ▾</button>
     `;
   } else {
-    statusHtml = `<span class="integ-card-status desconectado">○ Desconectado</span>`;
+    statusHtml = p.emConfiguracao
+      ? `<span class="integ-card-status em-configuracao">🔧 Em configuração</span>`
+      : `<span class="integ-card-status desconectado">○ Desconectado</span>`;
     acoesHtml  = `<button class="btn-conectar" onclick="conectarPlataforma('${p.id}', this)">Conectar</button>`;
   }
 
   const contaHtml = conectado ? renderResumoConexao(p, conn) : "";
 
-  const detalhesHtml = (p.id === "meta" || p.id === "tiktok" || p.id === "linkedin")
+  const detalhesHtml = (p.id === "meta" || p.id === "tiktok" || p.id === "linkedin" || p.id === "kwai")
     ? `<div class="integ-card-detalhes" id="integ-detalhes-${p.id}" style="display:none;"></div>` : "";
 
   const cls = `integ-card${conectado ? " conectado" : ""}${sempre ? " formulario-ativo" : ""}${emBreve ? " em-breve" : ""}`;
@@ -32780,6 +33120,8 @@ function renderIntegCard(p, conn, statusCompleto = null) {
     ? renderResumoGoogle(conn, statusCompleto)
     : p.id === "linkedin"
     ? renderResumoLinkedIn(conn)
+    : p.id === "kwai"
+    ? renderResumoKwai(conn)
     : emBreve
     ? renderResumoEmBreve(p)
     : "";
@@ -32838,6 +33180,7 @@ function toggleIntegDetalhes(plataforma) {
     rolarParaIntegDetalhes(el);
     if (plataforma === "tiktok") carregarDetalhesTikTokHub();
     else if (plataforma === "linkedin") carregarDetalhesLinkedInHub();
+    else if (plataforma === "kwai") carregarDetalhesKwaiHub();
   }
 }
 
@@ -33164,6 +33507,153 @@ async function sincronizarLinkedIn() {
   }
 }
 
+// Mesmo padrão do bloco TikTok (carregarDetalhesTikTokHub/selecionarAnuncianteTikTok/
+// sincronizarTikTok) — o Kwai devolve a lista de anunciantes da mesma forma que a
+// TikTok (advertiser_id/advertiser_name via GET /kwai/anunciantes). A rota ainda é um
+// stub de Fase 1 no backend (aguardando aprovação de API da Kuaishou), então o erro
+// amigável que ela devolver aparece aqui igual a qualquer outro erro de carregamento.
+async function recarregarHubMantendoDetalhesKwaiAbertos() {
+  await carregarHub();
+  const el = document.getElementById("integ-detalhes-kwai");
+  const btn = document.getElementById("btn-det-kwai");
+  if (el) el.style.display = "";
+  if (btn) btn.textContent = "Ocultar ▴";
+  await carregarDetalhesKwaiHub();
+}
+
+async function carregarDetalhesKwaiHub() {
+  const el = document.getElementById("integ-detalhes-kwai");
+  if (!el) return;
+  const token = localStorage.getItem("token");
+  el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas de anúncios...</span>`;
+  try {
+    const [resAnunciantes, resConexoes] = await Promise.all([
+      fetch(`${API}/kwai/anunciantes`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } })
+    ]);
+    const dataAnunciantes = await resAnunciantes.json();
+    const dataConexoes = await resConexoes.json();
+    const conn = (dataConexoes?.conexoes || []).find(c => c.plataforma === "kwai");
+    const advertiserIdAtual = conn?.conta?.advertiser_id || "";
+
+    if (!resAnunciantes.ok) {
+      el.innerHTML = `<span style="color:#f87171;">${escaparHtml(dataAnunciantes?.error || "Kwai Ads ainda não está disponível — aguardando aprovação da API.")}</span>`;
+      return;
+    }
+
+    const anunciantes = dataAnunciantes.anunciantes || [];
+    if (!anunciantes.length) {
+      el.innerHTML = `<span style="color:#f87171;">Nenhuma conta de anúncios encontrada para esse login Kwai.</span>`;
+      return;
+    }
+
+    // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta/TikTok)
+    if (!advertiserIdAtual && anunciantes.length === 1) {
+      await selecionarAnuncianteKwai(String(anunciantes[0].advertiser_id), { silencioso: true });
+      await recarregarHubMantendoDetalhesKwaiAbertos();
+      return;
+    }
+
+    const opcoes = anunciantes.map(a => `
+      <option value="${escaparHtml(String(a.advertiser_id))}" ${String(a.advertiser_id) === String(advertiserIdAtual) ? "selected" : ""}>
+        ${escaparHtml(a.advertiser_name || String(a.advertiser_id))}
+      </option>`).join("");
+
+    el.innerHTML = `
+      ${secaoColapsavel("📊 Status Kwai", `
+        <div class="integ-detalhe-linha">
+          <span class="integ-detalhe-label">Conta de anúncios</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
+          <select id="kwai_anunciante_select" style="flex:1;min-width:180px;">${opcoes}</select>
+          <button type="button" onclick="selecionarAnuncianteKwai(document.getElementById('kwai_anunciante_select').value, {}, this)">Usar esta conta</button>
+        </div>
+        <div class="integ-detalhe-linha">
+          <span class="integ-detalhe-label">Sincronização</span>
+          <span class="integ-detalhe-valor" id="kwai_sync_status">${advertiserIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
+        </div>
+        <div style="margin-top:8px;">
+          <button type="button" id="btn_kwai_sync" onclick="sincronizarKwai()" ${advertiserIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
+        </div>
+      `, { margemTopo: "0" })}
+
+      ${secaoAcoesRapidas([
+        linkAcaoRapida("🏠", "Abrir Kwai Business Center", "https://ads.kwai.com/", "sucesso"),
+        linkAcaoRapida("❓", "Central de Ajuda do Kwai Ads", "https://ads.kwai.com/learn/", "neutro"),
+      ].join(""))}
+    `;
+  } catch (_) {
+    el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar detalhes.</span>`;
+  }
+}
+
+async function selecionarAnuncianteKwai(advertiserId, opts = {}, btnEl) {
+  const token = localStorage.getItem("token");
+  if (!token || !advertiserId) return;
+
+  const estadoOriginal = btnEl
+    ? { html: btnEl.innerHTML, disabled: btnEl.disabled }
+    : null;
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Selecionando...';
+  }
+
+  const restaurarBotao = () => {
+    if (btnEl && estadoOriginal && document.body.contains(btnEl)) {
+      btnEl.disabled = estadoOriginal.disabled;
+      btnEl.innerHTML = estadoOriginal.html;
+    }
+  };
+
+  try {
+    const res = await fetch(`${API}/kwai/selecionar-anunciante`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ advertiser_id: advertiserId })
+    });
+    if (!res.ok) {
+      if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+      restaurarBotao();
+      return;
+    }
+    if (!opts.silencioso) {
+      await recarregarHubMantendoDetalhesKwaiAbertos();
+    }
+  } catch (_) {
+    if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+    restaurarBotao();
+  }
+}
+
+async function sincronizarKwai() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  const btn = document.getElementById("btn_kwai_sync");
+  const status = document.getElementById("kwai_sync_status");
+  if (btn) { btn.disabled = true; btn.textContent = "🔄 Sincronizando..."; }
+  try {
+    const res = await fetch(`${API}/kwai/sincronizar-campanhas`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (status) status.textContent = data?.error || "Erro ao sincronizar.";
+      return;
+    }
+    await recarregarHubMantendoDetalhesKwaiAbertos();
+    const statusNovo = document.getElementById("kwai_sync_status");
+    if (statusNovo) statusNovo.textContent = `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
+    return;
+  } catch (_) {
+    if (status) status.textContent = "Erro ao sincronizar.";
+  } finally {
+    if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = "🔄 Sincronizar agora"; }
+  }
+}
+
 function montarSeletorContaAnunciosGoogle(contas, customerIdAtual) {
   if (!contas.length) {
     return `
@@ -33464,17 +33954,19 @@ function conectarPlataforma(plataforma, btnEl) {
     btnEl.innerHTML = '<span class="spinner-toggle"></span> Conectando...';
   }
 
-  const popup = window.open(
-    `${API}/auth/${plataforma}/login?token=${encodeURIComponent(token)}`,
-    "_blank",
-    "width=600,height=700"
-  );
+  const loginUrl = `${API}/auth/${plataforma}/login?token=${encodeURIComponent(token)}`;
 
-  if (!popup) {
-    if (btnEl && estadoOriginal) {
+  const popup = window.open(loginUrl, "_blank", "width=600,height=700");
+
+  const restaurarBotao = () => {
+    if (btnEl && estadoOriginal && document.body.contains(btnEl)) {
       btnEl.disabled = estadoOriginal.disabled;
       btnEl.innerHTML = estadoOriginal.html;
     }
+  };
+
+  if (!popup) {
+    restaurarBotao();
     alert("Não foi possível abrir a janela de conexão. Verifique se o navegador bloqueou o pop-up.");
     return;
   }
@@ -33491,6 +33983,27 @@ function conectarPlataforma(plataforma, btnEl) {
   }
 
   window.addEventListener("message", msgHandler);
+
+  // Sonda em paralelo — não atrasa nem substitui a abertura do pop-up acima (que já
+  // aconteceu de forma síncrona, essencial pra não ser bloqueada como pop-up). Serve
+  // só pra cobrir o caso de integrações como o Kwai, cujo backend ainda responde
+  // /auth/kwai/login com um erro amigável (API do parceiro pendente de aprovação) em
+  // vez de redirecionar pra tela de login de verdade — sem isso o usuário via só o
+  // JSON cru dentro do pop-up e o botão "Conectando..." ficava preso até o timeout de
+  // 2 minutos. redirect:"manual" evita seguir o redirect real (que é cross-origin pro
+  // domínio da própria plataforma e travaria em CORS de qualquer forma) — só serve
+  // pra distinguir "o backend vai redirecionar" (opaqueredirect) de "respondeu com
+  // erro direto". Em qualquer plataforma já configurada (Meta, Google, TikTok,
+  // LinkedIn...) isso cai sempre no primeiro `return` e não muda nada do fluxo atual.
+  fetch(loginUrl, { redirect: "manual" }).then(res => {
+    if (res.type === "opaqueredirect" || res.ok) return;
+    return res.json().catch(() => null).then(data => {
+      concluir();
+      try { popup.close(); } catch (_) {}
+      restaurarBotao();
+      alert(data?.error || `Conexão com ${platNome(plataforma)} ainda não está disponível.`);
+    });
+  }).catch(() => {});
 }
 
 async function desconectarPlataforma(plataforma, btnEl) {
@@ -35445,7 +35958,7 @@ async function carregarCampanhas() {
                   title="Restaurar"
                   onclick="
                     restaurarCampanha(
-                      '${c.campaign_id}'
+                      '${c.campaign_id}', '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}'
                     )
                   "
                 >
@@ -35476,7 +35989,7 @@ async function carregarCampanhas() {
                   title="Excluir"
                   onclick="
                     excluirCampanha(
-                      '${c.campaign_id}'
+                      '${c.campaign_id}', '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}'
                     )
                   "
                 >
@@ -36517,6 +37030,7 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl, plataforma) {
     plataforma === "google" ? "/google/toggle-campanha" :
     plataforma === "tiktok" ? "/tiktok/toggle-campanha" :
     plataforma === "linkedin" ? "/linkedin/toggle-campanha" :
+    plataforma === "kwai" ? "/kwai/toggle-campanha" :
     "/meta/toggle-campanha";
 
   const statusNormalizado =
@@ -36676,7 +37190,21 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
   }
 }
 
-async function excluirCampanha(campaign_id) {
+// endpointPorPlataforma() centraliza o mapeamento plataforma → prefixo de rota usado
+// por excluir/restaurar (e reaproveita a mesma lista de plataformas do toggle acima).
+// Existe pra nao repetir o erro ja documentado neste arquivo de deixar uma acao nova
+// hardcoded pra /meta/... e ter que corrigir plataforma por plataforma depois.
+function endpointPorPlataforma(plataforma, sufixo) {
+  const base =
+    plataforma === "google" ? "/google" :
+    plataforma === "tiktok" ? "/tiktok" :
+    plataforma === "linkedin" ? "/linkedin" :
+    plataforma === "kwai" ? "/kwai" :
+    "/meta";
+  return `${base}/${sufixo}`;
+}
+
+async function excluirCampanha(campaign_id, plataforma) {
 
   const confirmar = confirm(
     "Deseja realmente excluir esta campanha?"
@@ -36691,7 +37219,7 @@ async function excluirCampanha(campaign_id) {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `${API}/meta/excluir-campanha`,
+      `${API}${endpointPorPlataforma(plataforma, "excluir-campanha")}`,
       {
         method: "POST",
 
@@ -36732,7 +37260,7 @@ async function excluirCampanha(campaign_id) {
   }
 }
 
-async function restaurarCampanha(campaign_id) {
+async function restaurarCampanha(campaign_id, plataforma) {
 
   const confirmar = confirm(
     "Restaurar esta campanha como pausada?"
@@ -36747,7 +37275,7 @@ async function restaurarCampanha(campaign_id) {
     const token = localStorage.getItem("token");
 
     const res = await fetch(
-      `${API}/meta/restaurar-campanha`,
+      `${API}${endpointPorPlataforma(plataforma, "restaurar-campanha")}`,
       {
         method: "POST",
 

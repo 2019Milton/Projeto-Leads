@@ -17423,14 +17423,14 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
             <div class="iapm-live-grid">
               <div class="iapm-feed">
-                <h4>Últimos eventos</h4>
+                <h4 title="Histórico dos envios mais recentes de sinal de qualidade pras plataformas de anúncio — cada linha é um lead que ficou quente (qualificado) ou fechou negócio.">Últimos eventos</h4>
                 <div id="meta-conversao-eventos">
                   <div class="iapm-empty">Carregando...</div>
                 </div>
               </div>
 
               <div class="iapm-gain">
-                <h4>Ganho projetado</h4>
+                <h4 title="Estimativa de quanto o custo por lead pode cair com o tempo, usando o histórico de gasto e leads da sua conta na Meta.">Ganho projetado</h4>
                 <div id="meta-conversao-ganho">
                   <div class="iapm-empty">Carregando...</div>
                 </div>
@@ -43495,6 +43495,96 @@ async function enviarFeedback() {
   </div>
 </div>
 
+<!-- PASSO A PASSO KWAI ADS — criar conta -->
+<div
+  id="modal_passo_kwai_conta"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoKwaiConta()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_kwai_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_kwai_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Passo a passo para criar uma conta do Kwai Ads
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          Abra o link em outra guia, execute a etapa no Kwai Business Center e volte
+          para esta janela para continuar acompanhando o guia.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoKwaiConta()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Crie uma conta no Kwai Business Center</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Acesse o link abaixo e cadastre-se como anunciante usando e-mail — não precisa ter uma
+            conta pessoal do app Kwai antes. Informe os dados da empresa, país/região e moeda de
+            faturamento com atenção — normalmente não podem ser alterados depois.
+          </p>
+          <p style="margin:10px 0 0;">
+            <a href="https://ads.kwai.com/" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir Kwai Business Center →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Complete o cadastro e o pagamento</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Preencha os dados da empresa/anunciante e o método de pagamento quando solicitado. A conta
+            pode ficar indisponível pela API enquanto esse cadastro estiver incompleto.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Localize o ID da conta de anúncios</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            No Kwai Business Center, localize o <strong>Advertiser ID</strong> (ID da conta de anúncios)
+            nas configurações da conta. Anote-o caso precise informar manualmente depois.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Conecte na Plataforma de Leads</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            A integração com a API oficial da Kwai ainda está em configuração, aguardando aprovação de
+            parceria — o botão <strong>"Conectar"</strong> já existe no card do Kwai Ads, mas o login pode
+            responder como indisponível por enquanto. Assim que a API for liberada, feche esta janela,
+            clique em "Conectar" e faça login com a mesma conta criada acima.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PASSO A PASSO GOOGLE ADS — aceitar Termos de Serviço de Lead Form -->
 <div
   id="modal_passo_google_leadform_termos"
@@ -43875,6 +43965,41 @@ window.abrirPassoLinkedInConta = function abrirPassoLinkedInConta() {
 
 window.fecharPassoLinkedInConta = function fecharPassoLinkedInConta() {
   const modal = document.getElementById("modal_passo_linkedin_conta");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+};
+
+window.abrirPassoKwaiConta = function abrirPassoKwaiConta() {
+  const modal = document.getElementById("modal_passo_kwai_conta");
+  if (!modal) return;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  modal.querySelectorAll(".passo-meta-step-text h3").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+    el.style.setProperty("font-weight", "700", "important");
+  });
+  modal.querySelectorAll(".passo-meta-step-text p").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header h2").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header p").forEach(el => {
+    el.style.setProperty("color", "#374151", "important");
+  });
+  modal.querySelectorAll(".passo-meta-body").forEach(el => {
+    el.style.setProperty("background", "#ffffff", "important");
+  });
+};
+
+window.fecharPassoKwaiConta = function fecharPassoKwaiConta() {
+  const modal = document.getElementById("modal_passo_kwai_conta");
   if (!modal) return;
 
   modal.classList.remove("active");

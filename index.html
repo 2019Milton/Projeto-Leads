@@ -32147,6 +32147,50 @@ function platNome(plataforma) {
 }
 
 // =============================================
+//   🔧 AÇÕES RÁPIDAS DE CONFIGURAÇÃO POR PLATAFORMA
+// =============================================
+
+const CORES_ACAO_RAPIDA = {
+  neutro:  { bg: "rgba(255,255,255,0.06)", border: "rgba(255,255,255,0.2)",  texto: "#e2e8f0" },
+  sucesso: { bg: "rgba(34,197,94,0.12)",   border: "rgba(34,197,94,0.3)",    texto: "#4ade80" },
+  alerta:  { bg: "rgba(251,191,36,0.12)",  border: "rgba(251,191,36,0.3)",   texto: "#fbbf24" },
+  indigo:  { bg: "rgba(99,102,241,0.12)",  border: "rgba(99,102,241,0.3)",   texto: "#a5b4fc" },
+};
+
+function estiloAcaoRapida(cor) {
+  const c = CORES_ACAO_RAPIDA[cor] || CORES_ACAO_RAPIDA.neutro;
+  return `display:inline-flex;align-items:center;gap:6px;padding:7px 12px;background:${c.bg};border:1px solid ${c.border};color:${c.texto};border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer;`;
+}
+
+// Botão que abre um link externo (config/billing da própria plataforma) em nova guia.
+function linkAcaoRapida(icone, label, href, cor = "neutro") {
+  return `<a href="${escaparHtml(href)}" target="_blank" rel="noopener noreferrer" style="${estiloAcaoRapida(cor)}">${icone} ${escaparHtml(label)}</a>`;
+}
+
+// Botão que chama uma função local (ex: abrir um tutorial passo a passo já existente).
+function botaoAcaoRapida(icone, label, onclick, cor = "indigo") {
+  return `<button type="button" onclick="${onclick}" style="${estiloAcaoRapida(cor)}">${icone} ${escaparHtml(label)}</button>`;
+}
+
+// Seção colapsável reutilizada nos painéis de detalhes (Meta/Google/TikTok) para agrupar
+// os links de configuração mais usados (criar conta, adicionar saldo, ajuda etc.), sempre
+// no mesmo padrão visual das seções "Status"/"Status de Pagamento" já existentes.
+function secaoAcoesRapidas(botoesHtml, titulo = "🔧 Configurações rápidas") {
+  if (!botoesHtml) return "";
+  return `
+    <div class="meta-conta-selector" style="margin-top:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <b style="font-size:13px;">${titulo}</b>
+        <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
+      </div>
+      <div class="meta-sec-body">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">${botoesHtml}</div>
+        <p style="margin:8px 0 0;font-size:11px;color:#94a3b8;line-height:1.5;">Os links abrem em uma nova guia, direto na plataforma de anúncios.</p>
+      </div>
+    </div>`;
+}
+
+// =============================================
 //   🔌 HUB DE CONEXÕES
 // =============================================
 
@@ -32663,6 +32707,13 @@ async function carregarDetalhesTikTokHub() {
       <div style="margin-top:8px;">
         <button type="button" id="btn_tiktok_sync" onclick="sincronizarTikTok()" ${advertiserIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
       </div>
+
+      ${secaoAcoesRapidas([
+        linkAcaoRapida("🏠", "Abrir TikTok Ads Manager", "https://ads.tiktok.com/i18n/dashboard", "sucesso"),
+        botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoTikTokConta()", "indigo"),
+        linkAcaoRapida("💳", "Como adicionar saldo (ajuda)", "https://ads.tiktok.com/help/article/tiktok-billing-options", "alerta"),
+        linkAcaoRapida("❓", "Central de Ajuda do TikTok Ads", "https://ads.tiktok.com/help", "neutro"),
+      ].join(""))}
     `;
   } catch (_) {
     el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar detalhes.</span>`;
@@ -32898,6 +32949,13 @@ async function carregarStatusGoogle() {
               </div>
             </div>
           </div>
+
+          ${secaoAcoesRapidas([
+            linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso"),
+            linkAcaoRapida("🏠", "Abrir Google Ads", "https://ads.google.com/aw/overview", "neutro"),
+            botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoGoogleConta()", "indigo"),
+            linkAcaoRapida("❓", "Central de Ajuda do Google Ads", "https://support.google.com/google-ads", "neutro"),
+          ].join(""))}
         </div>
       `;
     }
@@ -34062,6 +34120,14 @@ async function carregarStatusMeta() {
               <h4>${data.pronto_para_anunciar ? "🚀 Pronto para anunciar" : "⚠️ Ajustes necessários"}</h4>
               </div>
             </div>
+
+            ${secaoAcoesRapidas([
+              linkAcaoRapida("🏢", "Criar/gerenciar conta de anúncios", "https://business.facebook.com/settings/ad-accounts", "sucesso"),
+              linkAcaoRapida("📄", "Criar Página do Facebook", "https://www.facebook.com/pages/create", "neutro"),
+              linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", billingUrl, "sucesso"),
+              linkAcaoRapida("⚙️", "Configurações do Business Manager", "https://business.facebook.com/settings", "neutro"),
+              linkAcaoRapida("❓", "Central de Ajuda da Meta", "https://www.facebook.com/business/help", "neutro"),
+            ].join(""))}
 
           </div>
         `;

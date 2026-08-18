@@ -16473,7 +16473,10 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               onclick="selecionarPlataformaCampanha('google')">
               <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads
             </button>
-            <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
+            <button type="button" class="plat-sel-btn" data-plat="linkedin"
+              onclick="selecionarPlataformaCampanha('linkedin')">
+              💼 LinkedIn Ads
+            </button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
@@ -17075,12 +17078,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               </div>
             </div>
 
-            <div class="advanced-subsection" data-plat-only="meta" data-destino-only="lead_ads">
+            <div class="advanced-subsection" data-plat-only="meta,linkedin" data-destino-only="lead_ads">
               <h5>Tela de obrigado</h5>
               <p>Mensagem exibida depois que o lead envia o formulário.</p>
             </div>
 
-            <div data-plat-only="meta" data-destino-only="lead_ads">
+            <div data-plat-only="meta,linkedin" data-destino-only="lead_ads">
               <label>Título do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Mensagem principal que aparece para o cliente depois que ele preenche e envia o formulário. Ex: \"Obrigado! Em breve entraremos em contato.\"', event)">i</button></label>
               <input
                 type="text"
@@ -17098,7 +17101,7 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               >
             </div>
 
-            <div class="advanced-full" data-plat-only="meta" data-destino-only="lead_ads">
+            <div class="advanced-full" data-plat-only="meta,linkedin" data-destino-only="lead_ads">
               <label>Mensagem de obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto completo que aparece na tela de confirmação. Aproveite para tranquilizar o cliente e dar um próximo passo, como \"Em breve nossa equipe vai entrar em contato\".', event)">i</button></label>
               <input
                 type="text"
@@ -31580,6 +31583,149 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
   }
 }
 
+function validarPublicacaoCampanhaLinkedIn() {
+  // Sem campos obrigatórios próprios além dos compartilhados (nome, texto,
+  // orçamento) — geo padrão é Brasil e o Lead Gen Form é sempre criado
+  // automaticamente a partir dos campos de "obrigado" já compartilhados com
+  // a Meta/Google. Mantido como função dedicada (mesmo padrão de
+  // validarPublicacaoCampanhaGoogle/TikTok) para dar um lugar único pra
+  // crescer se surgir uma validação própria do LinkedIn no futuro.
+  return null;
+}
+
+async function descartarCampanhaLinkedInCriadaPorFalha(campaign_id, token) {
+  if (!campaign_id || !token) return;
+  try {
+    await fetch(`${API}/linkedin/excluir-campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ campaign_id })
+    });
+  } catch (err) {
+    console.warn("Não foi possível remover a campanha LinkedIn criada após falha:", err);
+  }
+}
+
+// Mesma orquestração do Google (campanha → grupo de segmentação → formulário
+// automático → anúncio) — diferente do Google, a imagem é opcional (o post
+// do LinkedIn aceita ser só texto) e o formulário é sempre criado do zero
+// (não há, nesta primeira versão, uma tela de "escolher formulário
+// existente" como Google/TikTok têm).
+async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
+  let campanhaCriadaId = null;
+  const {
+    token, usuario_id, campanha_nome, texto, cta, orcamento,
+    imagensArquivos, publicacaoGrupoId
+  } = contexto;
+  const prefixo = isMultiRede ? "[LinkedIn Ads] " : "";
+
+  try {
+    setPublishProgress(20, `${prefixo}Criando campanha no LinkedIn Ads...`);
+
+    const campanhaRes = await fetch(`${API}/linkedin/campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        nome: campanha_nome,
+        publicacao_grupo_id: publicacaoGrupoId
+      })
+    });
+    const campanha = await campanhaRes.json();
+    if (campanha.error) {
+      return { ok: false, mensagem: campanha.error };
+    }
+    campanhaCriadaId = campanha.campaign_id || campanha.id;
+
+    setPublishProgress(50, `${prefixo}Configurando segmentação e orçamento...`);
+
+    const adgroupRes = await fetch(`${API}/linkedin/adgroup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanhaCriadaId,
+        daily_budget: Number(orcamento)
+      })
+    });
+    const adgroup = await adgroupRes.json();
+    if (adgroup.error) {
+      await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: adgroup.error };
+    }
+
+    let imageUrn = null;
+    if (imagensArquivos?.length) {
+      setPublishProgress(65, `${prefixo}Enviando imagem...`);
+      const formImagem = new FormData();
+      formImagem.append("imagem", imagensArquivos[0]);
+      formImagem.append("usuario_id", usuario_id);
+      const uploadRes = await fetch(`${API}/linkedin/upload-imagem`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token },
+        body: formImagem
+      });
+      const upload = await uploadRes.json();
+      if (upload.error) {
+        await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
+        return { ok: false, mensagem: upload.error };
+      }
+      imageUrn = upload.image_urn;
+    }
+
+    setPublishProgress(80, `${prefixo}Criando formulário de lead...`);
+
+    const formularioRes = await fetch(`${API}/linkedin/formulario`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        nome_negocio: campanha_nome,
+        headline: document.getElementById("adv_titulo")?.value?.trim() || campanha_nome,
+        descricao: document.getElementById("adv_descricao")?.value?.trim(),
+        obrigado_titulo: document.getElementById("adv_obrigado_titulo")?.value?.trim(),
+        obrigado_texto: document.getElementById("adv_obrigado_texto")?.value?.trim()
+      })
+    });
+    const formulario = await formularioRes.json();
+    if (formulario.error) {
+      await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: formulario.error };
+    }
+
+    setPublishProgress(92, `${prefixo}Publicando anúncio...`);
+
+    const anuncioRes = await fetch(`${API}/linkedin/anuncio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campaign_id: campanhaCriadaId,
+        adgroup_id: adgroup.adgroup_id,
+        form_id: formulario.form_id,
+        texto,
+        cta,
+        image_urn: imageUrn,
+        daily_budget: Number(orcamento)
+      })
+    });
+    const anuncio = await anuncioRes.json();
+    if (anuncio.error) {
+      await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: anuncio.error };
+    }
+
+    setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
+    return { ok: true };
+  } catch (err) {
+    console.error("ERRO publicarCampanhaLinkedIn:", err);
+    if (campanhaCriadaId) {
+      await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
+    }
+    return { ok: false, mensagem: "Erro ao criar campanha LinkedIn Ads: " + (err?.message || String(err) || "Erro desconhecido") };
+  }
+}
+
 // ─── Orquestrador: publica em todas as redes marcadas (fan-out) ───────────────
 // Falha em uma rede não desfaz nem impede o sucesso das outras — cada rede
 // roda sua própria pipeline e o resultado final é reportado por rede.
@@ -31648,6 +31794,14 @@ async function criarCampanhaCompleta() {
     }
   }
 
+  if (redes.includes("linkedin")) {
+    const erroLinkedIn = validarPublicacaoCampanhaLinkedIn();
+    if (erroLinkedIn) {
+      mostrarErroPublicacao(erroLinkedIn);
+      return;
+    }
+  }
+
   const publicacaoGrupoId =
     redes.length > 1
       ? ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `grp_${Date.now()}_${Math.random().toString(36).slice(2)}`)
@@ -31673,6 +31827,11 @@ async function criarCampanhaCompleta() {
   if (redes.includes("google")) {
     const r = await publicarCampanhaGoogle(contexto, redes.length > 1);
     resultados.push({ rede: "Google Ads", ...r });
+  }
+
+  if (redes.includes("linkedin")) {
+    const r = await publicarCampanhaLinkedIn(contexto, redes.length > 1);
+    resultados.push({ rede: "LinkedIn Ads", ...r });
   }
 
   setPublishProgress(null);
@@ -32200,7 +32359,7 @@ const HUB_PLATAFORMAS = [
   { id: "meta",      nome: "Meta Ads",      icone: PLATAFORMA_META.meta.icone,      disponivelConectar: true,  desc: "Facebook & Instagram Lead Ads" },
   { id: "google",    nome: "Google Ads",    icone: PLATAFORMA_META.google.icone,    disponivelConectar: true,  desc: "Lead Form Extensions via Google" },
   { id: "tiktok",    nome: "TikTok Ads",    icone: PLATAFORMA_META.tiktok.icone,    disponivelConectar: true,  desc: "TikTok Instant Form Leads" },
-  { id: "linkedin",  nome: "LinkedIn Ads",  icone: PLATAFORMA_META.linkedin.icone,  disponivelConectar: false, desc: "LinkedIn Lead Gen Forms" },
+  { id: "linkedin",  nome: "LinkedIn Ads",  icone: PLATAFORMA_META.linkedin.icone,  disponivelConectar: true,  desc: "LinkedIn Lead Gen Forms" },
   { id: "kwai",      nome: "Kwai Ads",      icone: PLATAFORMA_META.kwai.icone,      disponivelConectar: false, desc: "Kwai Lead Form Ads" },
   { id: "pinterest", nome: "Pinterest Ads", icone: PLATAFORMA_META.pinterest.icone, disponivelConectar: false, desc: "Pinterest Lead Ads Webhook" },
   { id: "snapchat",  nome: "Snapchat Ads",  icone: PLATAFORMA_META.snapchat.icone,  disponivelConectar: false, desc: "Snap Lead Generation API" },
@@ -32382,6 +32541,45 @@ function renderResumoTikTok(conn) {
     </div>`;
 }
 
+function renderResumoLinkedIn(conn) {
+  const conectado = conn?.status === "conectado";
+
+  if (!conectado) {
+    return `
+      <div class="integ-card-resumo">
+        ${hubResumoAlerta("Conecte o LinkedIn Ads para importar leads e campanhas dos Lead Gen Forms.")}
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Leads", "Pausados")}
+          ${hubResumoItem("Campanhas", "Sem sync")}
+          ${hubResumoItem("Conta de anúncios", "Não conectada")}
+          ${hubResumoItem("Próximo passo", "Conectar")}
+        </div>
+      </div>`;
+  }
+
+  const adAccountId = conn?.conta?.ad_account_id || "";
+
+  if (!adAccountId) {
+    return `
+      <div class="integ-card-resumo">
+        ${hubResumoAlerta("Conta conectada. Abra os detalhes para escolher a conta de anúncios.", "warn")}
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Conta de anúncios", "A selecionar")}
+          ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="integ-card-resumo">
+      ${hubResumoAlerta("Conta de anúncios selecionada. Use \"Sincronizar agora\" nos detalhes para importar campanhas e leads.", "ok")}
+      <div class="integ-resumo-grid">
+        ${hubResumoItem("Conta de anúncios", adAccountId, "sucesso")}
+        ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
+      </div>
+    </div>`;
+}
+
 function renderResumoGoogle(conn, googleStatusCompleto) {
   const conectado = conn?.status === "conectado";
 
@@ -32546,7 +32744,7 @@ function renderIntegCard(p, conn, statusCompleto = null) {
 
   const contaHtml = conectado ? renderResumoConexao(p, conn) : "";
 
-  const detalhesHtml = (p.id === "meta" || p.id === "tiktok")
+  const detalhesHtml = (p.id === "meta" || p.id === "tiktok" || p.id === "linkedin")
     ? `<div class="integ-card-detalhes" id="integ-detalhes-${p.id}" style="display:none;"></div>` : "";
 
   const cls = `integ-card${conectado ? " conectado" : ""}${sempre ? " formulario-ativo" : ""}${emBreve ? " em-breve" : ""}`;
@@ -32558,6 +32756,8 @@ function renderIntegCard(p, conn, statusCompleto = null) {
     ? renderResumoTikTok(conn)
     : p.id === "google"
     ? renderResumoGoogle(conn, statusCompleto)
+    : p.id === "linkedin"
+    ? renderResumoLinkedIn(conn)
     : emBreve
     ? renderResumoEmBreve(p)
     : "";
@@ -32615,6 +32815,7 @@ function toggleIntegDetalhes(plataforma) {
   if (abrindo) {
     rolarParaIntegDetalhes(el);
     if (plataforma === "tiktok") carregarDetalhesTikTokHub();
+    else if (plataforma === "linkedin") carregarDetalhesLinkedInHub();
   }
 }
 
@@ -32780,6 +32981,150 @@ async function sincronizarTikTok() {
     // grava a mensagem de resultado no elemento novo, não no nó antigo já desconectado do DOM.
     await recarregarHubMantendoDetalhesTikTokAbertos();
     const statusNovo = document.getElementById("tiktok_sync_status");
+    if (statusNovo) statusNovo.textContent = `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
+    return;
+  } catch (_) {
+    if (status) status.textContent = "Erro ao sincronizar.";
+  } finally {
+    if (btn && document.body.contains(btn)) { btn.disabled = false; btn.textContent = "🔄 Sincronizar agora"; }
+  }
+}
+
+// Mesmo padrão do bloco TikTok acima (carregarDetalhesTikTokHub/
+// selecionarAnuncianteTikTok/sincronizarTikTok) — o LinkedIn não devolve as
+// contas de anúncio já na resposta do OAuth (diferente do TikTok), então a
+// listagem é buscada aqui via /linkedin/contas em vez de vir de "conexoes".
+async function recarregarHubMantendoDetalhesLinkedInAbertos() {
+  await carregarHub();
+  const el = document.getElementById("integ-detalhes-linkedin");
+  const btn = document.getElementById("btn-det-linkedin");
+  if (el) el.style.display = "";
+  if (btn) btn.textContent = "Ocultar ▴";
+  await carregarDetalhesLinkedInHub();
+}
+
+async function carregarDetalhesLinkedInHub() {
+  const el = document.getElementById("integ-detalhes-linkedin");
+  if (!el) return;
+  const token = localStorage.getItem("token");
+  el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas de anúncios...</span>`;
+  try {
+    const [resContas, resConexoes] = await Promise.all([
+      fetch(`${API}/linkedin/contas`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } })
+    ]);
+    const dataContas = await resContas.json();
+    const dataConexoes = await resConexoes.json();
+    const conn = (dataConexoes?.conexoes || []).find(c => c.plataforma === "linkedin");
+    const adAccountIdAtual = conn?.conta?.ad_account_id || "";
+
+    if (!resContas.ok) {
+      el.innerHTML = `<span style="color:#f87171;">${escaparHtml(dataContas?.error || "Erro ao carregar contas de anúncios.")}</span>`;
+      return;
+    }
+
+    const contas = dataContas.contas || [];
+    if (!contas.length) {
+      el.innerHTML = `<span style="color:#f87171;">Nenhuma conta de anúncios encontrada para esse login LinkedIn.</span>`;
+      return;
+    }
+
+    // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta/Google/TikTok)
+    if (!adAccountIdAtual && contas.length === 1) {
+      await selecionarContaLinkedIn(String(contas[0].id), contas[0].org_urn, { silencioso: true });
+      await recarregarHubMantendoDetalhesLinkedInAbertos();
+      return;
+    }
+
+    const opcoes = contas.map(conta => `
+      <option value="${escaparHtml(String(conta.id))}" data-org="${escaparHtml(conta.org_urn || "")}" ${String(conta.id) === String(adAccountIdAtual) ? "selected" : ""}>
+        ${escaparHtml(conta.nome || String(conta.id))}
+      </option>`).join("");
+
+    el.innerHTML = `
+      <div class="integ-detalhe-linha">
+        <span class="integ-detalhe-label">Conta de anúncios</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
+        <select id="linkedin_conta_select" style="flex:1;min-width:180px;">${opcoes}</select>
+        <button type="button" onclick="(function(btn){var sel=document.getElementById('linkedin_conta_select');selecionarContaLinkedIn(sel.value, sel.selectedOptions[0]?.dataset.org, {}, btn);})(this)">Usar esta conta</button>
+      </div>
+      <div class="integ-detalhe-linha">
+        <span class="integ-detalhe-label">Sincronização</span>
+        <span class="integ-detalhe-valor" id="linkedin_sync_status">${adAccountIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
+      </div>
+      <div style="margin-top:8px;">
+        <button type="button" id="btn_linkedin_sync" onclick="sincronizarLinkedIn()" ${adAccountIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
+      </div>
+
+      ${secaoAcoesRapidas([
+        linkAcaoRapida("🏠", "Abrir LinkedIn Campaign Manager", "https://www.linkedin.com/campaignmanager/", "sucesso"),
+        linkAcaoRapida("❓", "Central de Ajuda do LinkedIn Ads", "https://www.linkedin.com/help/lms", "neutro"),
+      ].join(""))}
+    `;
+  } catch (_) {
+    el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar detalhes.</span>`;
+  }
+}
+
+async function selecionarContaLinkedIn(adAccountId, orgUrn, opts = {}, btnEl) {
+  const token = localStorage.getItem("token");
+  if (!token || !adAccountId) return;
+
+  const estadoOriginal = btnEl
+    ? { html: btnEl.innerHTML, disabled: btnEl.disabled }
+    : null;
+
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Selecionando...';
+  }
+
+  const restaurarBotao = () => {
+    if (btnEl && estadoOriginal && document.body.contains(btnEl)) {
+      btnEl.disabled = estadoOriginal.disabled;
+      btnEl.innerHTML = estadoOriginal.html;
+    }
+  };
+
+  try {
+    const res = await fetch(`${API}/linkedin/selecionar-conta`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ ad_account_id: adAccountId, org_urn: orgUrn || "" })
+    });
+    if (!res.ok) {
+      if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+      restaurarBotao();
+      return;
+    }
+    if (!opts.silencioso) {
+      await recarregarHubMantendoDetalhesLinkedInAbertos();
+    }
+  } catch (_) {
+    if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+    restaurarBotao();
+  }
+}
+
+async function sincronizarLinkedIn() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  const btn = document.getElementById("btn_linkedin_sync");
+  const status = document.getElementById("linkedin_sync_status");
+  if (btn) { btn.disabled = true; btn.textContent = "🔄 Sincronizando..."; }
+  try {
+    const res = await fetch(`${API}/linkedin/sincronizar-campanhas`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (status) status.textContent = data?.error || "Erro ao sincronizar.";
+      return;
+    }
+    await recarregarHubMantendoDetalhesLinkedInAbertos();
+    const statusNovo = document.getElementById("linkedin_sync_status");
     if (statusNovo) statusNovo.textContent = `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
     return;
   } catch (_) {
@@ -36144,6 +36489,7 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl, plataforma) {
   const endpointToggle =
     plataforma === "google" ? "/google/toggle-campanha" :
     plataforma === "tiktok" ? "/tiktok/toggle-campanha" :
+    plataforma === "linkedin" ? "/linkedin/toggle-campanha" :
     "/meta/toggle-campanha";
 
   const statusNormalizado =

@@ -32334,19 +32334,29 @@ function botaoAcaoRapida(icone, label, onclick, cor = "indigo") {
 // Seção colapsável reutilizada nos painéis de detalhes (Meta/Google/TikTok) para agrupar
 // os links de configuração mais usados (criar conta, adicionar saldo, ajuda etc.), sempre
 // no mesmo padrão visual das seções "Status"/"Status de Pagamento" já existentes.
-function secaoAcoesRapidas(botoesHtml, titulo = "🔧 Configurações rápidas") {
-  if (!botoesHtml) return "";
+// Seção colapsável genérica (mesmo padrão visual das seções "Status"/"Status de Pagamento"
+// já usadas na Meta) — usada tanto para conteúdo livre (montarSecaoStatus) quanto para o
+// bloco fixo de links de configuração (secaoAcoesRapidas), assim os três ficam idênticos
+// visualmente em qualquer plataforma.
+function secaoColapsavel(titulo, innerHtml, opts = {}) {
+  if (!innerHtml) return "";
+  const margemTopo = opts.margemTopo ?? "10px";
   return `
-    <div class="meta-conta-selector" style="margin-top:10px;">
+    <div class="meta-conta-selector" style="margin-top:${margemTopo};">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <b style="font-size:13px;">${titulo}</b>
         <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
       </div>
-      <div class="meta-sec-body">
+      <div class="meta-sec-body">${innerHtml}</div>
+    </div>`;
+}
+
+function secaoAcoesRapidas(botoesHtml, titulo = "🔧 Configurações rápidas") {
+  if (!botoesHtml) return "";
+  return secaoColapsavel(titulo, `
         <div style="display:flex;flex-wrap:wrap;gap:8px;">${botoesHtml}</div>
         <p style="margin:8px 0 0;font-size:11px;color:#94a3b8;line-height:1.5;">Os links abrem em uma nova guia, direto na plataforma de anúncios.</p>
-      </div>
-    </div>`;
+  `);
 }
 
 // =============================================
@@ -32894,25 +32904,33 @@ async function carregarDetalhesTikTokHub() {
       </option>`).join("");
 
     el.innerHTML = `
-      <div class="integ-detalhe-linha">
-        <span class="integ-detalhe-label">Conta de anúncios</span>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
-        <select id="tiktok_anunciante_select" style="flex:1;min-width:180px;">${opcoes}</select>
-        <button type="button" onclick="selecionarAnuncianteTikTok(document.getElementById('tiktok_anunciante_select').value, {}, this)">Usar esta conta</button>
-      </div>
-      <div class="integ-detalhe-linha">
-        <span class="integ-detalhe-label">Sincronização</span>
-        <span class="integ-detalhe-valor" id="tiktok_sync_status">${advertiserIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
-      </div>
-      <div style="margin-top:8px;">
-        <button type="button" id="btn_tiktok_sync" onclick="sincronizarTikTok()" ${advertiserIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
-      </div>
+      ${secaoColapsavel("📊 Status TikTok", `
+        <div class="integ-detalhe-linha">
+          <span class="integ-detalhe-label">Conta de anúncios</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
+          <select id="tiktok_anunciante_select" style="flex:1;min-width:180px;">${opcoes}</select>
+          <button type="button" onclick="selecionarAnuncianteTikTok(document.getElementById('tiktok_anunciante_select').value, {}, this)">Usar esta conta</button>
+        </div>
+        <div class="integ-detalhe-linha">
+          <span class="integ-detalhe-label">Sincronização</span>
+          <span class="integ-detalhe-valor" id="tiktok_sync_status">${advertiserIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
+        </div>
+        <div style="margin-top:8px;">
+          <button type="button" id="btn_tiktok_sync" onclick="sincronizarTikTok()" ${advertiserIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
+        </div>
+      `, { margemTopo: "0" })}
+
+      ${secaoColapsavel("💳 Status de Pagamento TikTok", `
+        <p style="margin:0 0 10px;font-size:12px;color:#94a3b8;line-height:1.5;">
+          O saldo da conta ainda não é sincronizado automaticamente aqui — confira e adicione saldo direto no TikTok Ads Manager (Tools → Billing).
+        </p>
+        ${linkAcaoRapida("💳", "Abrir pagamento no TikTok Ads Manager", "https://ads.tiktok.com/help/article/tiktok-billing-options", "alerta")}
+      `)}
 
       ${secaoAcoesRapidas([
         linkAcaoRapida("🏠", "Abrir TikTok Ads Manager", "https://ads.tiktok.com/i18n/dashboard", "sucesso"),
         botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoTikTokConta()", "indigo"),
-        linkAcaoRapida("💳", "Como adicionar saldo (ajuda)", "https://ads.tiktok.com/help/article/tiktok-billing-options", "alerta"),
         linkAcaoRapida("❓", "Central de Ajuda do TikTok Ads", "https://ads.tiktok.com/help", "neutro"),
       ].join(""))}
     `;
@@ -33258,12 +33276,7 @@ async function carregarStatusGoogle() {
             </div>
           </div>
 
-          <div class="meta-conta-selector" style="margin-top:0;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <b style="font-size:13px;">📊 Status Google Ads</b>
-              <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
-            </div>
-            <div class="meta-sec-body">
+          ${secaoColapsavel("📊 Status Google Ads", `
               <div class="meta-fbig-columns">
                 <div class="meta-col meta-col-google">
                   <div class="meta-col-head">🔴 Contas de anúncios</div>
@@ -33279,24 +33292,26 @@ async function carregarStatusGoogle() {
                 </div>
 
                 <div class="meta-col meta-col-google">
-                  <div class="meta-col-head">💳 Status</div>
+                  <div class="meta-col-head">📈 Conta</div>
                   <div class="meta-col-body">
                     <div class="meta-status-tile">
                       <span>${contaInfo?.status === "ENABLED" ? "🟢" : contaInfo ? "🟡" : "⚪"} Status da conta</span>
                       <small>${escaparHtml(contaInfo?.status || "Selecione uma conta")}</small>
                     </div>
-                    <div class="meta-status-tile">
-                      <span>${pagamento?.status === "APPROVED" ? "🟢" : pagamento?.status ? "🟡" : "⚪"} Status de pagamento</span>
-                      <small>${escaparHtml(pagamento?.texto || "Não identificado")}</small>
-                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+          `, { margemTopo: "0" })}
+
+          ${secaoColapsavel("💳 Status de Pagamento Google Ads", `
+              <div class="meta-status-tile" style="margin-bottom:10px;">
+                <span>${pagamento?.status === "APPROVED" ? "🟢" : pagamento?.status ? "🟡" : "⚪"} Status de pagamento</span>
+                <small>${escaparHtml(pagamento?.texto || "Não identificado")}</small>
+              </div>
+              ${linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso")}
+          `)}
 
           ${secaoAcoesRapidas([
-            linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso"),
             linkAcaoRapida("🏠", "Abrir Google Ads", "https://ads.google.com/aw/overview", "neutro"),
             botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoGoogleConta()", "indigo"),
             linkAcaoRapida("❓", "Central de Ajuda do Google Ads", "https://support.google.com/google-ads", "neutro"),

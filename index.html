@@ -16587,8 +16587,8 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
             </div>
           </section>
 
-          <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="meta">
-            <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro do próprio Facebook/Instagram. WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma.', event)">i</button></h4>
+          <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="meta,linkedin">
+            <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro da própria rede (Facebook/Instagram ou LinkedIn). WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma — no LinkedIn isso abre um link wa.me pré-preenchido, já que o LinkedIn não tem um botão nativo de WhatsApp como a Meta.', event)">i</button></h4>
             <div class="advanced-checks">
               <label>
                 <input type="radio" name="campanha_destino" id="destino_lead_ads" value="lead_ads" checked onchange="aplicarDestinoCampanha()">
@@ -31607,10 +31607,14 @@ async function descartarCampanhaLinkedInCriadaPorFalha(campaign_id, token) {
 }
 
 // Mesma orquestração do Google (campanha → grupo de segmentação → formulário
-// automático → anúncio) — diferente do Google, a imagem é opcional (o post
-// do LinkedIn aceita ser só texto) e o formulário é sempre criado do zero
-// (não há, nesta primeira versão, uma tela de "escolher formulário
-// existente" como Google/TikTok têm).
+// automático → anúncio). Dois caminhos a partir da segmentação, conforme
+// destinoCampanhaSelecionado (mesmo rádio "Formulário de Leads vs WhatsApp"
+// que a Meta já usa, ver aplicarDestinoCampanha):
+// - lead_ads (padrão): cria um Lead Gen Form novo e o anúncio linka nele.
+// - whatsapp: pula o formulário — o LinkedIn não tem um destino nativo de
+//   WhatsApp como a Meta, então o anúncio linka pra um link wa.me
+//   pré-preenchido (montado no backend, ver /linkedin/anuncio), que abre a
+//   conversa com o bot exatamente como a Meta abre via Click-to-WhatsApp.
 async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
@@ -31618,6 +31622,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
     imagensArquivos, publicacaoGrupoId
   } = contexto;
   const prefixo = isMultiRede ? "[LinkedIn Ads] " : "";
+  const destino = destinoCampanhaSelecionado === "whatsapp" ? "whatsapp" : "lead_ads";
 
   try {
     setPublishProgress(20, `${prefixo}Criando campanha no LinkedIn Ads...`);
@@ -31645,7 +31650,8 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
       body: JSON.stringify({
         usuario_id,
         campaign_id: campanhaCriadaId,
-        daily_budget: Number(orcamento)
+        daily_budget: Number(orcamento),
+        destino
       })
     });
     const adgroup = await adgroupRes.json();
@@ -31655,7 +31661,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
     }
 
     let imageUrn = null;
-    if (imagensArquivos?.length) {
+    if (destino !== "whatsapp" && imagensArquivos?.length) {
       setPublishProgress(65, `${prefixo}Enviando imagem...`);
       const formImagem = new FormData();
       formImagem.append("imagem", imagensArquivos[0]);
@@ -31673,24 +31679,28 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
       imageUrn = upload.image_urn;
     }
 
-    setPublishProgress(80, `${prefixo}Criando formulário de lead...`);
+    let formId = null;
+    if (destino !== "whatsapp") {
+      setPublishProgress(80, `${prefixo}Criando formulário de lead...`);
 
-    const formularioRes = await fetch(`${API}/linkedin/formulario`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-      body: JSON.stringify({
-        usuario_id,
-        nome_negocio: campanha_nome,
-        headline: document.getElementById("adv_titulo")?.value?.trim() || campanha_nome,
-        descricao: document.getElementById("adv_descricao")?.value?.trim(),
-        obrigado_titulo: document.getElementById("adv_obrigado_titulo")?.value?.trim(),
-        obrigado_texto: document.getElementById("adv_obrigado_texto")?.value?.trim()
-      })
-    });
-    const formulario = await formularioRes.json();
-    if (formulario.error) {
-      await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
-      return { ok: false, mensagem: formulario.error };
+      const formularioRes = await fetch(`${API}/linkedin/formulario`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({
+          usuario_id,
+          nome_negocio: campanha_nome,
+          headline: document.getElementById("adv_titulo")?.value?.trim() || campanha_nome,
+          descricao: document.getElementById("adv_descricao")?.value?.trim(),
+          obrigado_titulo: document.getElementById("adv_obrigado_titulo")?.value?.trim(),
+          obrigado_texto: document.getElementById("adv_obrigado_texto")?.value?.trim()
+        })
+      });
+      const formulario = await formularioRes.json();
+      if (formulario.error) {
+        await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
+        return { ok: false, mensagem: formulario.error };
+      }
+      formId = formulario.form_id;
     }
 
     setPublishProgress(92, `${prefixo}Publicando anúncio...`);
@@ -31702,11 +31712,13 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
         usuario_id,
         campaign_id: campanhaCriadaId,
         adgroup_id: adgroup.adgroup_id,
-        form_id: formulario.form_id,
+        form_id: formId,
         texto,
         cta,
+        titulo: document.getElementById("adv_titulo")?.value?.trim(),
         image_urn: imageUrn,
-        daily_budget: Number(orcamento)
+        daily_budget: Number(orcamento),
+        destino
       })
     });
     const anuncio = await anuncioRes.json();

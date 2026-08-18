@@ -32852,6 +32852,11 @@ function renderResumoLinkedIn(conn) {
     return `
       <div class="integ-card-resumo">
         ${hubResumoAlerta("Conecte o LinkedIn Ads para importar leads e campanhas dos Lead Gen Forms.")}
+        <div style="margin:6px 0 2px;">
+          <button type="button" onclick="abrirPassoLinkedInConta()"
+            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+          >📘 Ainda não tem conta? Ver tutorial</button>
+        </div>
         <div class="integ-resumo-grid">
           ${hubResumoItem("Leads", "Pausados")}
           ${hubResumoItem("Campanhas", "Sem sync")}
@@ -32896,6 +32901,11 @@ function renderResumoKwai(conn) {
     return `
       <div class="integ-card-resumo">
         ${hubResumoAlerta("Integração com o Kwai Ads em configuração — aguardando aprovação da API oficial da Kuaishou. O botão \"Conectar\" já existe, mas o login pode responder como indisponível por enquanto.", "warn")}
+        <div style="margin:6px 0 2px;">
+          <button type="button" onclick="abrirPassoKwaiConta()"
+            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+          >📘 Ainda não tem conta? Ver tutorial</button>
+        </div>
         <div class="integ-resumo-grid">
           ${hubResumoItem("Leads", "Pausados")}
           ${hubResumoItem("Campanhas", "Sem sync")}
@@ -33432,6 +33442,7 @@ async function carregarDetalhesLinkedInHub() {
 
       ${secaoAcoesRapidas([
         linkAcaoRapida("🏠", "Abrir LinkedIn Campaign Manager", "https://www.linkedin.com/campaignmanager/", "sucesso"),
+        botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoLinkedInConta()", "indigo"),
         linkAcaoRapida("❓", "Central de Ajuda do LinkedIn Ads", "https://www.linkedin.com/help/lms", "neutro"),
       ].join(""))}
     `;
@@ -33579,6 +33590,7 @@ async function carregarDetalhesKwaiHub() {
 
       ${secaoAcoesRapidas([
         linkAcaoRapida("🏠", "Abrir Kwai Business Center", "https://ads.kwai.com/", "sucesso"),
+        botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoKwaiConta()", "indigo"),
         linkAcaoRapida("❓", "Central de Ajuda do Kwai Ads", "https://ads.kwai.com/learn/", "neutro"),
       ].join(""))}
     `;
@@ -43388,6 +43400,101 @@ async function enviarFeedback() {
   </div>
 </div>
 
+<!-- PASSO A PASSO LINKEDIN ADS — criar conta -->
+<div
+  id="modal_passo_linkedin_conta"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoLinkedInConta()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_linkedin_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_linkedin_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Passo a passo para criar uma conta do LinkedIn Ads
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          Abra o link em outra guia, execute a etapa no LinkedIn e volte
+          para esta janela para continuar acompanhando o guia.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoLinkedInConta()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Crie uma Company Page no LinkedIn</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            O LinkedIn Ads exige uma <strong>Company Page</strong> vinculada — não dá para anunciar
+            usando só um perfil pessoal. Se ainda não tem uma página da empresa, crie uma antes de
+            seguir para o próximo passo.
+          </p>
+          <p style="margin:10px 0 0;">
+            <a href="https://www.linkedin.com/company/setup/new/" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Criar Company Page →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Crie a conta no Campaign Manager</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Acesse o Campaign Manager, clique em <strong>"Criar conta"</strong> e vincule à Company Page
+            criada no passo anterior. Informe moeda de faturamento e fuso horário com atenção —
+            normalmente não podem ser alterados depois.
+          </p>
+          <p style="margin:10px 0 0;">
+            <a href="https://www.linkedin.com/campaignmanager/accounts" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir Campaign Manager →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Complete o cadastro e o pagamento</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Preencha os dados da empresa e o método de pagamento quando solicitado. A conta pode
+            ficar indisponível pela API enquanto esse cadastro estiver incompleto.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Conecte na Plataforma de Leads</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Feche esta janela, clique em <strong>"Conectar"</strong> no card do LinkedIn Ads e faça login
+            com a <strong>mesma conta LinkedIn</strong> usada nos passos acima. Depois selecione a conta
+            de anúncios encontrada.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PASSO A PASSO GOOGLE ADS — aceitar Termos de Serviço de Lead Form -->
 <div
   id="modal_passo_google_leadform_termos"
@@ -43733,6 +43840,41 @@ window.abrirPassoTikTokConta = function abrirPassoTikTokConta() {
 
 window.fecharPassoTikTokConta = function fecharPassoTikTokConta() {
   const modal = document.getElementById("modal_passo_tiktok_conta");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+};
+
+window.abrirPassoLinkedInConta = function abrirPassoLinkedInConta() {
+  const modal = document.getElementById("modal_passo_linkedin_conta");
+  if (!modal) return;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  modal.querySelectorAll(".passo-meta-step-text h3").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+    el.style.setProperty("font-weight", "700", "important");
+  });
+  modal.querySelectorAll(".passo-meta-step-text p").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header h2").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header p").forEach(el => {
+    el.style.setProperty("color", "#374151", "important");
+  });
+  modal.querySelectorAll(".passo-meta-body").forEach(el => {
+    el.style.setProperty("background", "#ffffff", "important");
+  });
+};
+
+window.fecharPassoLinkedInConta = function fecharPassoLinkedInConta() {
+  const modal = document.getElementById("modal_passo_linkedin_conta");
   if (!modal) return;
 
   modal.classList.remove("active");

@@ -10306,6 +10306,22 @@ body.tema-claro .info-tooltip-popup {
   color: #7c93ab;
 }
 
+.iapm-plataforma-eventos {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(148,163,184,0.14);
+}
+
+.iapm-plataforma-eventos .iapm-feed-row {
+  padding: 5px 0;
+  font-size: 12px;
+}
+
+.iapm-plataforma-eventos .iapm-empty {
+  padding: 4px 0;
+  font-size: 12px;
+}
+
 .iapm-live-grid {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
@@ -17417,20 +17433,33 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               </div>
             </div>
 
+            <details class="wpp-guia" style="margin:14px 0;">
+              <summary>Isso garante só leads qualificados, ou tem outras vantagens? Reduz o custo do lead?</summary>
+              <ol>
+                <li><b>Não é uma redução garantida no preço de cada lead.</b> O que acontece é o algoritmo passar a mostrar o anúncio pra mais gente parecida com quem já qualificou ou fechou — pelo mesmo dinheiro gasto, uma fatia maior dos leads chega com perfil melhor. O custo por <b>lead bom</b> tende a cair; o custo por lead "cru" pode continuar parecido, ou até subir um pouco.</li>
+                <li><b>Menos tempo perdido</b> com lead curioso ou morto que nunca vira nada — energia do corretor fica mais focada em quem tem chance real.</li>
+                <li><b>Relatório mais honesto:</b> dá pra ver quais campanhas/públicos realmente geram negócio fechado, não só quem clicou — ajuda a decidir onde investir mesmo sem depender só do algoritmo.</li>
+                <li>O mesmo sinal também é a base que a Meta usaria pra construir <b>públicos semelhantes</b> (lookalike) a quem já fechou — a plataforma ainda não monta esse público automaticamente, mas o dado enviado é o mesmo tipo usado pra isso.</li>
+              </ol>
+              <div class="wpp-guia-aviso">
+                Só funciona bem com volume (a Meta recomenda ~200 eventos qualificados por mês pra aprender direito), só vale pra campanhas novas (não afeta retroativamente as que já estão rodando), e depende do sinal ser verdadeiro — lead marcado errado como qualificado ensina o algoritmo do jeito errado.
+              </div>
+            </details>
+
             <div id="meta-conversao-kpis">
               <div class="iapm-empty">Carregando dados enviados...</div>
             </div>
 
             <div class="iapm-live-grid">
               <div class="iapm-feed">
-                <h4 title="Histórico dos envios mais recentes de sinal de qualidade pras plataformas de anúncio — cada linha é um lead que ficou quente (qualificado) ou fechou negócio.">Últimos eventos</h4>
+                <h4 title="Todos os eventos recentes juntos, de todas as plataformas — cada linha é um lead que ficou quente (qualificado) ou fechou negócio. Cada plataforma também mostra os próprios eventos na caixa dela, acima.">Total (todas as plataformas)</h4>
                 <div id="meta-conversao-eventos">
                   <div class="iapm-empty">Carregando...</div>
                 </div>
               </div>
 
               <div class="iapm-gain">
-                <h4 title="Estimativa de quanto o custo por lead pode cair com o tempo, usando o histórico de gasto e leads da sua conta na Meta.">Ganho projetado</h4>
+                <h4 title="Exclusivo da Meta: só ela documenta uma faixa oficial de economia por lead qualificado. Google Ads e TikTok já recebem o sinal de qualidade, mas ainda não têm uma projeção equivalente publicada.">Ganho Projetado (Meta)</h4>
                 <div id="meta-conversao-ganho">
                   <div class="iapm-empty">Carregando...</div>
                 </div>
@@ -21755,10 +21784,35 @@ async function carregarEstatisticasMetaConversao(token) {
         campoTotal: "total_leads_tiktok", campoQualificados: "qualificados_enviados_tiktok",
         campoFechados: "fechados_enviados_tiktok", campoTaxaQualificacao: "taxa_qualificacao_tiktok",
         campoTaxaFechamento: "taxa_fechamento_tiktok"
+      },
+      {
+        chave: "kwai", nome: "Kwai", icone: PLATAFORMA_META.kwai.icone,
+        campoTotal: "total_leads_kwai", campoQualificados: "qualificados_enviados_kwai",
+        campoFechados: "fechados_enviados_kwai", campoTaxaQualificacao: "taxa_qualificacao_kwai",
+        campoTaxaFechamento: "taxa_fechamento_kwai"
       }
     ];
 
-    const gruposHtml = plataformas.map(({ nome, icone, campoTotal, campoQualificados, campoFechados, campoTaxaQualificacao, campoTaxaFechamento }) => {
+    const nomePlataforma = { meta: "Meta", google: "Google Ads", tiktok: "TikTok", kwai: "Kwai" };
+
+    // Reaproveitada tanto dentro de cada caixa de plataforma (só os eventos
+    // daquela plataforma) quanto no "Total" combinado lá embaixo.
+    function renderizarListaEventos(eventos, mensagemVazia) {
+      if (!eventos.length) {
+        return `<div class="iapm-empty">${mensagemVazia}</div>`;
+      }
+      return eventos.map(ev => `
+        <div class="iapm-feed-row" title="${ev.tipo === "fechado" ? "Esse lead fechou negócio e o sinal de fechamento já foi enviado pra plataforma de anúncio." : "Esse lead esquentou (virou conversa real ou demonstrou interesse) e o sinal de qualidade já foi enviado pra plataforma de anúncio."}">
+          <span class="iapm-feed-icon ${ev.tipo === "fechado" ? "won" : "hot"}">${ev.tipo === "fechado" ? "✓" : "🔥"}</span>
+          <span class="iapm-feed-name">${escaparHtml(ev.nome || "Lead")}</span>
+          <span class="iapm-feed-when">${ev.tipo === "fechado" ? "Fechamento" : "Qualificação"} · ${nomePlataforma[ev.plataforma] || ev.plataforma || ""}</span>
+        </div>
+      `).join("");
+    }
+
+    const todosEventos = estatisticas.ultimos_eventos || [];
+
+    const gruposHtml = plataformas.map(({ chave, nome, icone, campoTotal, campoQualificados, campoFechados, campoTaxaQualificacao, campoTaxaFechamento }) => {
 
       const total = estatisticas[campoTotal] || 0;
       const qualificados = estatisticas[campoQualificados] || 0;
@@ -21787,6 +21841,8 @@ async function carregarEstatisticasMetaConversao(token) {
         }
       ];
 
+      const eventosDaPlataforma = todosEventos.filter(ev => ev.plataforma === chave).slice(0, 5);
+
       return `
         <div class="iapm-plataforma-grupo">
           <div class="iapm-plataforma-nome">${icone} ${escaparHtml(nome)}${total === 0 ? " · sem leads ainda" : ""}</div>
@@ -21799,6 +21855,9 @@ async function carregarEstatisticasMetaConversao(token) {
               </div>
             `).join("")}
           </div>
+          <div class="iapm-plataforma-eventos" title="Eventos mais recentes enviados pra ${nome} — os 5 últimos.">
+            ${renderizarListaEventos(eventosDaPlataforma, "Nenhum evento enviado ainda.")}
+          </div>
         </div>
       `;
     }).join("");
@@ -21806,20 +21865,10 @@ async function carregarEstatisticasMetaConversao(token) {
     kpisEl.innerHTML = gruposHtml;
 
     if (eventosEl) {
-
-      const eventos = estatisticas.ultimos_eventos || [];
-
-      const nomePlataforma = { meta: "Meta", google: "Google Ads", tiktok: "TikTok" };
-
-      eventosEl.innerHTML = eventos.length
-        ? eventos.map(ev => `
-            <div class="iapm-feed-row" title="${ev.tipo === "fechado" ? "Esse lead fechou negócio e o sinal de fechamento já foi enviado pra plataforma de anúncio." : "Esse lead esquentou (virou conversa real ou demonstrou interesse) e o sinal de qualidade já foi enviado pra plataforma de anúncio."}">
-              <span class="iapm-feed-icon ${ev.tipo === "fechado" ? "won" : "hot"}">${ev.tipo === "fechado" ? "✓" : "🔥"}</span>
-              <span class="iapm-feed-name">${escaparHtml(ev.nome || "Lead")}</span>
-              <span class="iapm-feed-when">${ev.tipo === "fechado" ? "Fechamento" : "Qualificação"} · ${nomePlataforma[ev.plataforma] || ev.plataforma || ""}</span>
-            </div>
-          `).join("")
-        : `<div class="iapm-empty">Nenhum evento enviado ainda. Assim que um lead virar quente ou fechar, aparece aqui.</div>`;
+      eventosEl.innerHTML = renderizarListaEventos(
+        todosEventos,
+        "Nenhum evento enviado ainda. Assim que um lead virar quente ou fechar, aparece aqui."
+      );
     }
 
   } catch (err) {

@@ -15487,6 +15487,93 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
   }
 }
 
+/* Campanhas: criação sempre visível à esquerda e gestão à direita. */
+#app.sidebar-ativa.campanhas-layout-ativo #app-content-area {
+  display: grid;
+  grid-template-columns:
+    12px minmax(360px, 35fr) 14px minmax(0, 65fr) 12px;
+  grid-template-rows: auto auto;
+  align-content: start;
+  align-items: start;
+}
+
+#app.sidebar-ativa.campanhas-layout-ativo #app-content-area > .app-topbar-slim {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+#app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #nicho_campanha_container.secao-visivel,
+#app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-criar-campanha.secao-visivel {
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+#app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel {
+  grid-column: 4;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+#app.sidebar-ativa.campanhas-layout-ativo #nicho_campanha_container,
+#app.sidebar-ativa.campanhas-layout-ativo #card-criar-campanha,
+#app.sidebar-ativa.campanhas-layout-ativo #card-campanhas {
+  box-sizing: border-box;
+}
+
+#app.sidebar-ativa.campanhas-layout-ativo .criar-campanha-cabecalho {
+  cursor: default;
+  align-items: flex-start !important;
+  padding: 2px 0 8px;
+}
+
+.criar-campanha-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.criar-campanha-descricao {
+  display: block;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+body.tema-claro .criar-campanha-descricao {
+  color: #64748b;
+}
+
+body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel {
+  grid-column: 2 / 5;
+}
+
+@media (max-width: 1180px) {
+  #app.sidebar-ativa.campanhas-layout-ativo #app-content-area {
+    grid-template-columns: 12px minmax(0, 1fr) 12px;
+    grid-template-rows: auto auto auto;
+    row-gap: 14px;
+  }
+
+  #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #nicho_campanha_container.secao-visivel,
+  #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-criar-campanha.secao-visivel {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel,
+  body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel {
+    grid-column: 2;
+    grid-row: 3;
+  }
+}
+
 </style>
 </head>
 
@@ -16465,20 +16552,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
         <h3
           class="criar-campanha-cabecalho"
-          onclick="toggleCriarCampanha()"
-          title="Expandir ou recolher Criar Campanha"
-          style="display:flex;align-items:center;justify-content:space-between;gap:8px;"
+          style="display:flex;justify-content:space-between;gap:8px;"
         >
-          <span class="criar-campanha-titulo">📢 Criar Campanha</span>
-          <button
-            type="button"
-            id="btn-recolher-campanha"
-            onclick="event.stopPropagation(); toggleCriarCampanha()"
-            class="btn-recolher-card"
-            title="Recolher Criar Campanha"
-            aria-label="Recolher Criar Campanha"
-            aria-expanded="true"
-          >▲</button>
+          <span class="criar-campanha-heading">
+            <span class="criar-campanha-titulo">📢 Criar Campanha</span>
+            <small class="criar-campanha-descricao">Configure um novo anúncio e publique nas plataformas conectadas.</small>
+          </span>
         </h3>
 
         <div class="advanced-full" style="margin-bottom:16px;">
@@ -20503,6 +20582,10 @@ function navegarPara(secao) {
   fecharConfiguracoes();
 
   secaoAtiva = secao;
+
+  document
+    .getElementById("app")
+    ?.classList.toggle("campanhas-layout-ativo", secao === "campanhas");
 
   // Atualizar título do topbar
   const titulo = document.getElementById("sidebar-secao-titulo");
@@ -24900,9 +24983,8 @@ function atualizarEstadoBotaoGerarIA() {
 }
 
 function inicializarEstadoCriarCampanha() {
-  // Sempre comeca recolhido ao entrar em Campanhas — nao guarda/le mais a
-  // preferencia da sessao anterior, pra nunca abrir expandido por padrao.
-  aplicarEstadoCriarCampanha(true);
+  // O formulario faz parte da coluna principal de criacao e permanece visivel.
+  aplicarEstadoCriarCampanha(false);
   aplicarRedesCampanha();
   aplicarDestinoCampanha();
   atualizarEstadoBotaoGerarIA();

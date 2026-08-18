@@ -10254,6 +10254,10 @@ body.tema-claro .info-tooltip-popup {
 
 .iapm-plataforma-grupo {
   margin-bottom: 14px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(148,163,184,0.14);
+  border-radius: 12px;
 }
 
 .iapm-plataforma-grupo:last-child {
@@ -10266,7 +10270,22 @@ body.tema-claro .info-tooltip-popup {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #94a3b8;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+}
+
+.iapm-plataforma-ganho {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(148,163,184,0.14);
+}
+
+.iapm-plataforma-subtitulo {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #a9c0d6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
 }
 
 .iapm-stat-strip {
@@ -10333,6 +10352,15 @@ body.tema-claro .info-tooltip-popup {
 .iapm-gain {
   border-top: 1px solid rgba(148,163,184,0.16);
   padding-top: 14px;
+}
+
+.iapm-feed-total {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(148,163,184,0.14);
+  border-radius: 12px;
+  border-top: 1px solid rgba(148,163,184,0.14);
 }
 
 .iapm-feed h4,
@@ -13329,6 +13357,19 @@ body.tema-claro .iapm-plataforma-nome {
   color: #64748b;
 }
 
+body.tema-claro .iapm-plataforma-grupo {
+  background: rgba(15,23,42,0.02);
+  border-color: rgba(15,23,42,0.10);
+}
+
+body.tema-claro .iapm-plataforma-ganho {
+  border-top-color: rgba(15,23,42,0.10);
+}
+
+body.tema-claro .iapm-plataforma-subtitulo {
+  color: #475569;
+}
+
 body.tema-claro .iapm-how {
   background: linear-gradient(180deg, #ffffff, #f3f6fb);
   border-color: rgba(15,23,42,0.10);
@@ -13383,6 +13424,11 @@ body.tema-claro .iapm-stat .d {
 body.tema-claro .iapm-feed,
 body.tema-claro .iapm-gain {
   border-top-color: rgba(15,23,42,0.10);
+}
+
+body.tema-claro .iapm-feed-total {
+  background: rgba(15,23,42,0.02);
+  border-color: rgba(15,23,42,0.10);
 }
 
 body.tema-claro .iapm-feed h4,
@@ -17450,19 +17496,10 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
               <div class="iapm-empty">Carregando dados enviados...</div>
             </div>
 
-            <div class="iapm-live-grid">
-              <div class="iapm-feed">
-                <h4 title="Todos os eventos recentes juntos, de todas as plataformas — cada linha é um lead que ficou quente (qualificado) ou fechou negócio. Cada plataforma também mostra os próprios eventos na caixa dela, acima.">Total (todas as plataformas)</h4>
-                <div id="meta-conversao-eventos">
-                  <div class="iapm-empty">Carregando...</div>
-                </div>
-              </div>
-
-              <div class="iapm-gain">
-                <h4 title="Exclusivo da Meta: só ela documenta uma faixa oficial de economia por lead qualificado. Google Ads e TikTok já recebem o sinal de qualidade, mas ainda não têm uma projeção equivalente publicada.">Ganho Projetado (Meta)</h4>
-                <div id="meta-conversao-ganho">
-                  <div class="iapm-empty">Carregando...</div>
-                </div>
+            <div class="iapm-feed iapm-feed-total">
+              <h4 title="Todos os eventos recentes juntos, de todas as plataformas — cada linha é um lead que ficou quente (qualificado) ou fechou negócio. Cada plataforma também mostra os próprios eventos na caixa dela, acima.">Total (todas as plataformas)</h4>
+              <div id="meta-conversao-eventos">
+                <div class="iapm-empty">Carregando...</div>
               </div>
             </div>
           </div>
@@ -21720,7 +21757,7 @@ async function carregarPlanoAtual() {
 // pro Conversion Leads da Meta + o ganho projetado (ver avaliarEEnviarQualificacaoMeta
 // no backend). Chamado ao entrar na aba e a cada 30s enquanto ela estiver ativa
 // (ver navegarPara).
-function carregarDashboardConversionLeadsMeta() {
+async function carregarDashboardConversionLeadsMeta() {
 
   const token = localStorage.getItem("token");
 
@@ -21728,10 +21765,12 @@ function carregarDashboardConversionLeadsMeta() {
     return;
   }
 
-  // As duas seções dependem de fontes diferentes (stats locais vs. Graph API
-  // da Meta) — carregadas em paralelo, cada uma com seu próprio erro, pra uma
-  // resposta lenta/falha de uma não travar a outra em "Carregando...".
-  carregarEstatisticasMetaConversao(token);
+  // Ganho Projetado agora renderiza DENTRO da caixa da Meta, num elemento que
+  // só existe depois que carregarEstatisticasMetaConversao monta o HTML das
+  // caixas de plataforma — por isso precisa esperar essa terminar antes de
+  // chamar a outra (senão document.getElementById("meta-conversao-ganho")
+  // roda cedo demais e não acha nada).
+  await carregarEstatisticasMetaConversao(token);
   carregarGanhoProjetadoMeta(token);
 }
 
@@ -21843,6 +21882,20 @@ async function carregarEstatisticasMetaConversao(token) {
 
       const eventosDaPlataforma = todosEventos.filter(ev => ev.plataforma === chave).slice(0, 5);
 
+      // Ganho Projetado é exclusivo da Meta (só ela documenta a faixa de
+      // economia) — o placeholder só entra na caixa dela; carregarGanhoProjetadoMeta
+      // preenche isso depois, assim que essa função terminar de montar o HTML.
+      const blocoGanho = chave === "meta"
+        ? `
+          <div class="iapm-plataforma-ganho">
+            <div class="iapm-plataforma-subtitulo" title="Exclusivo da Meta: só ela documenta uma faixa oficial de economia por lead qualificado.">Ganho Projetado (Meta)</div>
+            <div id="meta-conversao-ganho">
+              <div class="iapm-empty">Carregando...</div>
+            </div>
+          </div>
+        `
+        : "";
+
       return `
         <div class="iapm-plataforma-grupo">
           <div class="iapm-plataforma-nome">${icone} ${escaparHtml(nome)}${total === 0 ? " · sem leads ainda" : ""}</div>
@@ -21858,6 +21911,7 @@ async function carregarEstatisticasMetaConversao(token) {
           <div class="iapm-plataforma-eventos" title="Eventos mais recentes enviados pra ${nome} — os 5 últimos.">
             ${renderizarListaEventos(eventosDaPlataforma, "Nenhum evento enviado ainda.")}
           </div>
+          ${blocoGanho}
         </div>
       `;
     }).join("");

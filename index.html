@@ -21767,18 +21767,23 @@ async function carregarEstatisticasMetaConversao(token) {
       const taxaFechamento = estatisticas[campoTaxaFechamento];
 
       const kpis = [
-        { label: `Leads da ${nome}`, valor: String(total), detalhe: "nesta conta", cor: "#60a5fa" },
+        {
+          label: `Leads da ${nome}`, valor: String(total), detalhe: "nesta conta", cor: "#60a5fa",
+          titulo: `Quantidade total de leads que essa conta já gerou por anúncios da ${nome}, desde o início.`
+        },
         {
           label: "Qualificados enviados",
           valor: String(qualificados),
           detalhe: taxaQualificacao != null ? `${taxaQualificacao.toFixed(1)}% dos leads da ${nome}` : "Aguardando leads quentes",
-          cor: "#f5b942"
+          cor: "#f5b942",
+          titulo: `Quantas vezes avisamos a ${nome} que um lead esquentou (virou conversa real ou demonstrou interesse de verdade) — esse sinal ajuda o algoritmo de anúncio a encontrar mais gente parecida.`
         },
         {
           label: "Fechados enviados",
           valor: String(fechados),
           detalhe: taxaFechamento != null ? `${taxaFechamento.toFixed(1)}% dos leads da ${nome}` : "Aguardando negócios fechados",
-          cor: "#4ade80"
+          cor: "#4ade80",
+          titulo: `Quantas vezes avisamos a ${nome} que um negócio foi fechado de verdade — o sinal mais forte que existe pra ajudar o anúncio a buscar clientes parecidos com quem realmente comprou.`
         }
       ];
 
@@ -21787,7 +21792,7 @@ async function carregarEstatisticasMetaConversao(token) {
           <div class="iapm-plataforma-nome">${icone} ${escaparHtml(nome)}${total === 0 ? " · sem leads ainda" : ""}</div>
           <div class="iapm-stat-strip">
             ${kpis.map(kpi => `
-              <div class="iapm-stat" style="--iapm-stat-color:${kpi.cor};">
+              <div class="iapm-stat" style="--iapm-stat-color:${kpi.cor};" title="${escaparHtml(kpi.titulo)}">
                 <div class="n">${kpi.valor}</div>
                 <div class="l">${kpi.label}</div>
                 <div class="d">${kpi.detalhe}</div>
@@ -21808,7 +21813,7 @@ async function carregarEstatisticasMetaConversao(token) {
 
       eventosEl.innerHTML = eventos.length
         ? eventos.map(ev => `
-            <div class="iapm-feed-row">
+            <div class="iapm-feed-row" title="${ev.tipo === "fechado" ? "Esse lead fechou negócio e o sinal de fechamento já foi enviado pra plataforma de anúncio." : "Esse lead esquentou (virou conversa real ou demonstrou interesse) e o sinal de qualidade já foi enviado pra plataforma de anúncio."}">
               <span class="iapm-feed-icon ${ev.tipo === "fechado" ? "won" : "hot"}">${ev.tipo === "fechado" ? "✓" : "🔥"}</span>
               <span class="iapm-feed-name">${escaparHtml(ev.nome || "Lead")}</span>
               <span class="iapm-feed-when">${ev.tipo === "fechado" ? "Fechamento" : "Qualificação"} · ${nomePlataforma[ev.plataforma] || ev.plataforma || ""}</span>
@@ -21870,7 +21875,7 @@ async function carregarGanhoProjetadoMeta(token) {
       economiaReal != null
         ? `
           <div class="iapm-gain-row">
-            <span>Tendência recente</span>
+            <span title="Compara o custo por lead de hoje com a média dos dias anteriores do período — mostra se o custo está melhorando ou piorando, sem relação com o Conversion Leads (que ainda nem está otimizando essa campanha).">Tendência recente</span>
             <b style="color:${economiaReal >= 0 ? '#4ade80' : '#fb7185'};">${Math.abs(economiaReal).toFixed(1)}% ${economiaReal >= 0 ? "melhor" : "pior"}</b>
           </div>
         `
@@ -21878,12 +21883,12 @@ async function carregarGanhoProjetadoMeta(token) {
 
     ganhoEl.innerHTML = `
       <div class="iapm-gain-row">
-        <span>CPL médio atual</span>
+        <span title="Quanto, em média, cada lead está custando agora nesta conta (gasto total dividido pelos leads gerados no período selecionado).">CPL médio atual</span>
         <b>${formatarMoeda(cplAtual)}</b>
       </div>
       ${linhaTendencia}
       <div class="iapm-gain-row">
-        <span>Faixa projetada com Conversion Leads</span>
+        <span title="Estimativa de até onde o custo por lead pode cair com o tempo, graças ao envio dos sinais de qualidade (Conversion Leads) pra Meta — baseada na faixa de 15% a 21% que a própria Meta documenta pra esse recurso.">Faixa projetada com Conversion Leads</span>
         <b>${formatarMoeda(cplAtual - economiaMax)} a ${formatarMoeda(cplAtual - economiaMin)}</b>
       </div>
       <div class="iapm-gain-range">

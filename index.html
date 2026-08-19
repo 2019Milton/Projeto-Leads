@@ -10254,6 +10254,118 @@ body.tema-claro .info-tooltip-popup {
   margin-top: 16px;
 }
 
+.iapm-explain {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--iapm-accent-rgb, 96,165,250), 0.22);
+  border-radius: 12px;
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.065);
+}
+
+.iapm-explain summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+  color: #e8f0fa;
+  font-size: 11.5px;
+  font-weight: 750;
+  line-height: 1.35;
+  transition: background .18s ease, color .18s ease;
+}
+
+.iapm-explain summary::-webkit-details-marker,
+.iapm-platform-guide summary::-webkit-details-marker {
+  display: none;
+}
+
+.iapm-explain summary::before {
+  content: "?";
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(var(--iapm-accent-rgb, 96,165,250), 0.32);
+  border-radius: 50%;
+  color: var(--iapm-accent, #60a5fa);
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.10);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.iapm-explain summary::after {
+  content: "⌄";
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--iapm-accent, #60a5fa);
+  font-size: 17px;
+  line-height: 1;
+  transform: translateY(-2px);
+  transition: transform .18s ease;
+}
+
+.iapm-explain summary:hover,
+.iapm-explain[open] summary {
+  color: #ffffff;
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.08);
+}
+
+.iapm-explain[open] summary::after {
+  transform: rotate(180deg) translateY(2px);
+}
+
+.iapm-explain-body {
+  padding: 0 12px 13px 41px;
+  border-top: 1px solid rgba(var(--iapm-accent-rgb, 96,165,250), 0.13);
+  color: #a9bfd5;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.iapm-explain-body p {
+  margin: 11px 0 0;
+}
+
+.iapm-explain-body ul {
+  margin: 10px 0 0;
+  padding-left: 17px;
+}
+
+.iapm-explain-body li + li {
+  margin-top: 6px;
+}
+
+.iapm-explain-body b {
+  color: #f1f5f9;
+}
+
+.iapm-score-scale {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 11px;
+}
+
+.iapm-score-scale span {
+  padding: 7px 6px;
+  border: 1px solid rgba(148,163,184,0.13);
+  border-radius: 8px;
+  background: rgba(2,8,23,0.20);
+  color: #dbeafe;
+  text-align: center;
+  font-size: 10.5px;
+}
+
+.iapm-score-scale b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--iapm-accent, #60a5fa);
+}
+
 .iapm-status-kanban {
   position: relative;
   gap: 16px;
@@ -10332,6 +10444,12 @@ body.tema-claro .info-tooltip-popup {
   font-size: 11px;
 }
 
+.iapm-explain-kanban {
+  --iapm-accent: #2dd4bf;
+  --iapm-accent-rgb: 45,212,191;
+  max-width: 780px;
+}
+
 /* ---- painel "tempo real" ---- */
 
 .iapm-live {
@@ -10387,6 +10505,164 @@ body.tema-claro .info-tooltip-popup {
   border-radius: 50%;
   background: #4ade80;
   animation: iapmPulse 2.2s infinite;
+}
+
+.iapm-platform-guide {
+  margin: 0 0 14px;
+  overflow: hidden;
+  border: 1px solid rgba(56,189,248,0.28);
+  border-radius: 16px;
+  background:
+    radial-gradient(360px 130px at 0% 0%, rgba(56,189,248,0.09), transparent 72%),
+    rgba(15,23,42,0.46);
+}
+
+.iapm-platform-guide > summary {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 66px;
+  padding: 12px 15px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.iapm-platform-guide > summary:hover,
+.iapm-platform-guide[open] > summary {
+  background: rgba(56,189,248,0.055);
+}
+
+.iapm-platform-guide-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(56,189,248,0.26);
+  border-radius: 12px;
+  background: rgba(56,189,248,0.11);
+  font-size: 17px;
+}
+
+.iapm-platform-guide-title {
+  display: block;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 780;
+  line-height: 1.35;
+}
+
+.iapm-platform-guide-subtitle {
+  display: block;
+  margin-top: 3px;
+  color: #8ea8bf;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.iapm-platform-guide-chevron {
+  color: #38bdf8;
+  font-size: 19px;
+  line-height: 1;
+  transition: transform .18s ease;
+}
+
+.iapm-platform-guide[open] .iapm-platform-guide-chevron {
+  transform: rotate(180deg);
+}
+
+.iapm-platform-guide-body {
+  padding: 14px;
+  border-top: 1px solid rgba(56,189,248,0.16);
+}
+
+.iapm-platform-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.iapm-platform-card {
+  --iapm-platform-color: #60a5fa;
+  --iapm-platform-rgb: 96,165,250;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(var(--iapm-platform-rgb), 0.23);
+  border-radius: 13px;
+  background: rgba(var(--iapm-platform-rgb), 0.055);
+}
+
+.iapm-platform-card--meta {
+  --iapm-platform-color: #60a5fa;
+  --iapm-platform-rgb: 96,165,250;
+}
+
+.iapm-platform-card--google {
+  --iapm-platform-color: #fbbf24;
+  --iapm-platform-rgb: 251,191,36;
+}
+
+.iapm-platform-card--tiktok {
+  --iapm-platform-color: #2dd4bf;
+  --iapm-platform-rgb: 45,212,191;
+}
+
+.iapm-platform-card--soon {
+  --iapm-platform-color: #a78bfa;
+  --iapm-platform-rgb: 167,139,250;
+}
+
+.iapm-platform-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.iapm-platform-card h4 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 12.5px;
+}
+
+.iapm-platform-state {
+  padding: 3px 7px;
+  border: 1px solid rgba(var(--iapm-platform-rgb), 0.26);
+  border-radius: 999px;
+  background: rgba(var(--iapm-platform-rgb), 0.10);
+  color: var(--iapm-platform-color);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.iapm-platform-card p {
+  margin: 0;
+  color: #a9bfd5;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.iapm-platform-card p + p {
+  margin-top: 8px;
+}
+
+.iapm-platform-card b {
+  color: #edf6ff;
+}
+
+.iapm-platform-guide-note {
+  margin: 11px 0 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(148,163,184,0.14);
+  border-radius: 10px;
+  background: rgba(2,8,23,0.18);
+  color: #8ea8bf;
+  font-size: 10.5px;
+  line-height: 1.5;
 }
 
 @keyframes iapmPulse {
@@ -10672,6 +10948,10 @@ body.tema-claro .info-tooltip-popup {
     grid-template-columns: 1fr;
   }
 
+  .iapm-platform-grid {
+    grid-template-columns: 1fr;
+  }
+
   .iapm-masthead {
     padding: 22px;
   }
@@ -10709,6 +10989,10 @@ body.tema-claro .info-tooltip-popup {
   .iapm-status-kanban {
     flex-direction: column;
     padding: 18px;
+  }
+
+  .iapm-explain-kanban {
+    max-width: none;
   }
 
   .iapm-stat-strip {
@@ -13608,11 +13892,72 @@ body.tema-claro .iapm-how-note {
   background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.045);
 }
 
+body.tema-claro .iapm-explain {
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.045);
+  border-color: rgba(var(--iapm-accent-rgb, 96,165,250), 0.22);
+}
+
+body.tema-claro .iapm-explain summary {
+  color: #1e293b;
+}
+
+body.tema-claro .iapm-explain summary:hover,
+body.tema-claro .iapm-explain[open] summary {
+  color: #0f172a;
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.07);
+}
+
+body.tema-claro .iapm-explain-body {
+  color: #52677d;
+}
+
+body.tema-claro .iapm-explain-body b,
+body.tema-claro .iapm-score-scale span {
+  color: #1e293b;
+}
+
+body.tema-claro .iapm-score-scale span {
+  background: rgba(255,255,255,0.68);
+  border-color: rgba(15,23,42,0.09);
+}
+
+body.tema-claro .iapm-score-scale b {
+  color: var(--iapm-accent, #2563eb);
+}
+
 body.tema-claro .iapm-live {
   background:
     radial-gradient(480px 220px at 0% 0%, rgba(22,163,74,0.10), transparent 60%),
     linear-gradient(180deg, #ffffff, #f3f6fb);
   border-color: rgba(22,163,74,0.24);
+}
+
+body.tema-claro .iapm-platform-guide {
+  background:
+    radial-gradient(360px 130px at 0% 0%, rgba(56,189,248,0.10), transparent 72%),
+    rgba(248,250,252,0.90);
+  border-color: rgba(14,165,233,0.24);
+}
+
+body.tema-claro .iapm-platform-guide-title,
+body.tema-claro .iapm-platform-card h4,
+body.tema-claro .iapm-platform-card b {
+  color: #0f172a;
+}
+
+body.tema-claro .iapm-platform-guide-subtitle,
+body.tema-claro .iapm-platform-card p,
+body.tema-claro .iapm-platform-guide-note {
+  color: #52677d;
+}
+
+body.tema-claro .iapm-platform-card {
+  background: rgba(var(--iapm-platform-rgb), 0.045);
+}
+
+body.tema-claro .iapm-platform-guide-note {
+  background: rgba(255,255,255,0.70);
+  border-color: rgba(15,23,42,0.09);
 }
 
 body.tema-claro .iapm-status {
@@ -17699,11 +18044,11 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
 
           <div class="iapm-masthead">
             <span class="iapm-eyebrow">Inteligência de leads</span>
-            <h3>Como a plataforma qualifica seus leads — e o que já está mudando na Meta</h3>
+            <h3>Como a plataforma qualifica seus leads — e melhora a mídia paga</h3>
             <p>
               Pontuação automática, previsão por Machine Learning e IA generativa funcionam juntas para
-              toda a conta. O que a IA descobre sobre cada lead também é enviado de volta para a Meta,
-              para ela priorizar entrega para quem realmente converte.
+              toda a conta. Os sinais de qualidade e fechamento também podem voltar para Meta, Google Ads
+              e TikTok, respeitando a configuração e as regras de cada plataforma.
             </p>
           </div>
 
@@ -17730,6 +18075,18 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
                 <li><span>Conversa do WhatsApp entra nesses mesmos sinais</span></li>
               </ul>
               <p class="iapm-how-note">Quente a partir de 70 pontos · morno de 35 a 69 · score manual sempre prevalece. A conversa do WhatsApp conta junto — a fala do cliente <b>e</b> a sua pelo app, não as perguntas fixas do roteiro do bot.</p>
+              <details class="iapm-explain">
+                <summary>Como ler a pontuação e os rótulos?</summary>
+                <div class="iapm-explain-body">
+                  <div class="iapm-score-scale">
+                    <span><b>Frio</b>0 a 34</span>
+                    <span><b>Morno</b>35 a 69</span>
+                    <span><b>Quente</b>70 ou mais</span>
+                  </div>
+                  <p><b>Exemplo:</b> telefone (+10), urgência (+20) e preparo financeiro (+15) somam 45 pontos; o lead fica Morno.</p>
+                  <p>Se o corretor definir a pontuação manualmente, essa decisão prevalece sobre o cálculo automático.</p>
+                </div>
+              </details>
             </div>
 
             <div class="iapm-how-col" style="--iapm-accent:#f5b942;--iapm-accent-rgb:245,185,66;">
@@ -17750,6 +18107,17 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
                 <li><span>Conversa do WhatsApp também vira sinal pra previsão</span></li>
               </ul>
               <p class="iapm-how-note">Quanto mais histórico a conta acumula, mais precisa fica a previsão. Um único modelo por conta — nicho e WhatsApp ajudam a previsão sem exigir histórico separado.</p>
+              <details class="iapm-explain">
+                <summary>Quando o aprendizado começa a ajudar?</summary>
+                <div class="iapm-explain-body">
+                  <p>O modelo sai do estado inicial quando a conta reúne pelo menos <b>10 leads de histórico</b>, incluindo no mínimo <b>4 fechados e 4 perdidos</b>.</p>
+                  <ul>
+                    <li>Ele aprende somente com os resultados da própria conta.</li>
+                    <li>Quanto mais resultados corretos forem registrados, melhor tende a ficar a estimativa.</li>
+                    <li>A previsão refina o rótulo automático; a decisão manual do corretor continua soberana.</li>
+                  </ul>
+                </div>
+              </details>
             </div>
 
             <div class="iapm-how-col" style="--iapm-accent:#8b7cf6;--iapm-accent-rgb:139,124,246;">
@@ -17770,6 +18138,13 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
                 <li><span>Considera o que cliente e corretor já escreveram no WhatsApp</span></li>
               </ul>
               <p class="iapm-how-note">Ativa para toda a conta — sem diferença por plano.</p>
+              <details class="iapm-explain">
+                <summary>O que a IA entrega no dia a dia?</summary>
+                <div class="iapm-explain-body">
+                  <p>Ela organiza o contexto do atendimento e transforma os dados do lead em sugestões práticas: resumo, próxima ação, mensagem pronta, perguntas de qualificação e textos de reativação.</p>
+                  <p>As sugestões consideram o nicho e a conversa real, mas <b>não substituem a revisão do corretor</b> nem garantem que o lead irá fechar.</p>
+                </div>
+              </details>
             </div>
           </div>
 
@@ -17785,6 +18160,16 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
                 <span>✋ Permite correção manual a qualquer momento</span>
               </div>
               <span class="iapm-status-timing">⏱ Roda a cada poucas horas e reavalia somente conversas com mensagens novas, mantendo o uso de IA sob controle.</span>
+              <details class="iapm-explain iapm-explain-kanban">
+                <summary>Quando o Kanban move um lead automaticamente?</summary>
+                <div class="iapm-explain-body">
+                  <ul>
+                    <li>Somente quando existe conteúdo novo na conversa e a IA identifica o estágio com <b>alta confiança</b>.</li>
+                    <li>Se a confiança for baixa ou a análise falhar, o card permanece onde está.</li>
+                    <li>O corretor pode corrigir o estágio manualmente a qualquer momento.</li>
+                  </ul>
+                </div>
+              </details>
             </div>
           </div>
 
@@ -17794,39 +18179,76 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
                 <h3>Enviado para as plataformas agora</h3>
                 <p>
                   Toda vez que um lead vira "quente" pela IA/ML — inclusive por causa de uma mensagem
-                  recebida no WhatsApp — ou é marcado como fechado, esse sinal vai para a Meta, o
-                  Google Ads e o TikTok (Conversion Leads de cada plataforma), para elas priorizarem
-                  leads parecidos.
+                  recebida no WhatsApp — ou é marcado como fechado, a plataforma tenta devolver esse
+                  sinal à rede de origem. O envio depende da integração estar ativa e dos identificadores
+                  exigidos por Meta, Google Ads ou TikTok.
                 </p>
               </div>
               <span class="iapm-live-pill"><span class="iapm-live-dot"></span>Atualiza a cada 30s</span>
             </div>
 
-            <div class="iapm-status">
-              <span class="iapm-status-icon">✓</span>
-              <div>
-                <b>Na Meta, campanhas novas já nascem otimizando para leads qualificados</b> — a Meta
-                usa os eventos acima como meta de otimização do conjunto de anúncios (Conversion
-                Leads), não só recebe o dado. <b>Campanhas que já estavam rodando continuam como
-                antes</b>: a própria Meta não permite trocar esse ajuste depois que o conjunto já
-                começou a veicular — para aplicar numa campanha existente, duplique ou recrie o
-                conjunto de anúncios. A Meta recomenda a partir de ~200 leads por mês na conta para
-                essa otimização aprender bem. <b>No Google Ads e no TikTok</b>, por enquanto o sinal
-                já é enviado (veja abaixo), mas ainda não é usado pra otimizar a entrega automaticamente
-                — só a Meta faz isso hoje.
+            <details class="iapm-platform-guide">
+              <summary>
+                <span class="iapm-platform-guide-icon" aria-hidden="true">📡</span>
+                <span>
+                  <span class="iapm-platform-guide-title">Como cada plataforma usa os sinais de qualificação?</span>
+                  <span class="iapm-platform-guide-subtitle">Abra para entender as diferenças entre Meta, Google Ads, TikTok e as integrações em preparação.</span>
+                </span>
+                <span class="iapm-platform-guide-chevron" aria-hidden="true">⌄</span>
+              </summary>
+              <div class="iapm-platform-guide-body">
+                <div class="iapm-platform-grid">
+                  <article class="iapm-platform-card iapm-platform-card--meta">
+                    <div class="iapm-platform-card-head">
+                      <h4>∞ Meta Ads</h4>
+                      <span class="iapm-platform-state">Otimização em campanhas novas</span>
+                    </div>
+                    <p>A plataforma envia os eventos de <b>lead qualificado</b> e <b>negócio fechado</b>. Nas campanhas novas criadas aqui, esses sinais participam da otimização para a Meta buscar pessoas com maior chance de avançar.</p>
+                    <p>Conjuntos que já estavam veiculando mantêm a configuração original; para mudar a otimização, é necessário duplicar ou recriar o conjunto.</p>
+                  </article>
+
+                  <article class="iapm-platform-card iapm-platform-card--google">
+                    <div class="iapm-platform-card-head">
+                      <h4>Google Ads</h4>
+                      <span class="iapm-platform-state">Depende das metas</span>
+                    </div>
+                    <p>A plataforma importa as conversões qualificadas e fechadas quando o lead possui o identificador do clique. Isso melhora a atribuição e pode alimentar os Lances Inteligentes.</p>
+                    <p>Para influenciar a entrega, as ações precisam estar incluídas nas metas de conversão da conta; o envio não troca sozinho a estratégia de lances.</p>
+                  </article>
+
+                  <article class="iapm-platform-card iapm-platform-card--tiktok">
+                    <div class="iapm-platform-card-head">
+                      <h4>TikTok Ads</h4>
+                      <span class="iapm-platform-state">Depende da conta</span>
+                    </div>
+                    <p>Os eventos de qualificação e fechamento são enviados pela Events API com os dados de contato protegidos. Eles ajudam na mensuração e podem alimentar recursos de otimização quando disponíveis e configurados na conta.</p>
+                    <p>A aceitação do evento não significa mudança imediata na entrega; elegibilidade, volume e configuração da campanha continuam importantes.</p>
+                  </article>
+
+                  <article class="iapm-platform-card iapm-platform-card--soon">
+                    <div class="iapm-platform-card-head">
+                      <h4>Outras redes</h4>
+                      <span class="iapm-platform-state">Em preparação</span>
+                    </div>
+                    <p>Kwai, LinkedIn e futuras integrações podem exibir campanhas e métricas quando disponíveis, mas <b>ainda não recebem deste painel os sinais de qualificado e fechado</b> para otimização automática.</p>
+                    <p>Quando esse retorno estiver ativo, o status desta área será atualizado para deixar claro o que cada rede já utiliza.</p>
+                  </article>
+                </div>
+
+                <p class="iapm-platform-guide-note"><b>Importante:</b> “enviado” significa que a rede recebeu o evento. Isso melhora a qualidade dos dados, mas não garante redução imediata do custo por lead nem aumento automático de vendas.</p>
               </div>
-            </div>
+            </details>
 
             <details class="wpp-guia" style="margin:14px 0;">
               <summary>Isso garante só leads qualificados, ou tem outras vantagens? Reduz o custo do lead?</summary>
               <ol>
-                <li><b>Não é uma redução garantida no preço de cada lead.</b> O que acontece é o algoritmo passar a mostrar o anúncio pra mais gente parecida com quem já qualificou ou fechou — pelo mesmo dinheiro gasto, uma fatia maior dos leads chega com perfil melhor. O custo por <b>lead bom</b> tende a cair; o custo por lead "cru" pode continuar parecido, ou até subir um pouco.</li>
+                <li><b>Não é uma redução garantida no preço de cada lead.</b> Quando a rede está configurada para otimizar com esses eventos, o algoritmo pode buscar mais pessoas parecidas com quem já qualificou ou fechou. O custo por <b>lead bom</b> pode melhorar; o custo por lead "cru" pode continuar parecido, ou até subir um pouco.</li>
                 <li><b>Menos tempo perdido</b> com lead curioso ou morto que nunca vira nada — energia do corretor fica mais focada em quem tem chance real.</li>
                 <li><b>Relatório mais honesto:</b> dá pra ver quais campanhas/públicos realmente geram negócio fechado, não só quem clicou — ajuda a decidir onde investir mesmo sem depender só do algoritmo.</li>
-                <li>O mesmo sinal também é a base que a Meta usaria pra construir <b>públicos semelhantes</b> (lookalike) a quem já fechou — a plataforma ainda não monta esse público automaticamente, mas o dado enviado é o mesmo tipo usado pra isso.</li>
+                <li><b>Otimização mais profunda quando a rede estiver configurada:</b> Meta, Google Ads e TikTok podem usar eventos posteriores ao cadastro para aprender quais cliques realmente avançam e buscar perfis semelhantes.</li>
               </ol>
               <div class="wpp-guia-aviso">
-                Só funciona bem com volume (a Meta recomenda ~200 eventos qualificados por mês pra aprender direito), só vale pra campanhas novas (não afeta retroativamente as que já estão rodando), e depende do sinal ser verdadeiro — lead marcado errado como qualificado ensina o algoritmo do jeito errado.
+                O resultado depende de volume, consistência e configuração dentro de cada rede. O sinal também precisa ser verdadeiro: lead marcado incorretamente como qualificado ensina o algoritmo do jeito errado. Consulte o guia por plataforma acima para saber o que já está ativo em cada uma.
               </div>
             </details>
 

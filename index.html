@@ -10039,9 +10039,42 @@ body.tema-claro .info-tooltip-popup {
   gap: 22px;
 }
 
+.iapm-masthead {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 26px 28px;
+  border: 1px solid rgba(74,222,128,0.18);
+  border-radius: 20px;
+  background:
+    radial-gradient(520px 210px at 100% 0%, rgba(34,197,94,0.14), transparent 68%),
+    linear-gradient(135deg, rgba(15,23,42,0.92), rgba(7,24,28,0.82));
+  box-shadow: 0 16px 42px rgba(2,8,23,0.22);
+}
+
+.iapm-masthead::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 190px;
+  height: 190px;
+  top: -112px;
+  right: 7%;
+  border: 1px solid rgba(74,222,128,0.14);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 28px rgba(74,222,128,0.035),
+    0 0 0 58px rgba(74,222,128,0.025);
+}
+
 .iapm-eyebrow {
-  display: block;
-  margin-bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 5px 10px;
+  border: 1px solid rgba(74,222,128,0.22);
+  border-radius: 999px;
+  background: rgba(34,197,94,0.09);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.09em;
@@ -10059,7 +10092,7 @@ body.tema-claro .info-tooltip-popup {
 
 .iapm-masthead p {
   margin: 10px 0 0;
-  max-width: 68ch;
+  max-width: 78ch;
   color: #a9c0d6;
   line-height: 1.6;
   font-size: 13px;
@@ -10067,34 +10100,76 @@ body.tema-claro .info-tooltip-popup {
 
 .iapm-how {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border: 1px solid rgba(148,163,184,0.16);
-  border-radius: 18px;
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(15,23,42,0.72), rgba(8,17,34,0.6));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 
 .iapm-how-col {
-  padding: 20px 20px 22px;
   position: relative;
-  border-left: 1px solid rgba(148,163,184,0.14);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--iapm-accent-rgb, 96,165,250), 0.30);
+  border-radius: 20px;
+  background:
+    radial-gradient(280px 150px at 0% 0%, rgba(var(--iapm-accent-rgb, 96,165,250), 0.14), transparent 72%),
+    linear-gradient(160deg, rgba(15,23,42,0.94), rgba(8,17,34,0.86));
+  box-shadow:
+    0 14px 36px rgba(2,8,23,0.26),
+    inset 0 1px 0 rgba(255,255,255,0.035);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 
-.iapm-how-col:first-child {
-  border-left: none;
+.iapm-how-col:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--iapm-accent-rgb, 96,165,250), 0.52);
+  box-shadow:
+    0 18px 42px rgba(2,8,23,0.34),
+    0 0 0 1px rgba(var(--iapm-accent-rgb, 96,165,250), 0.08);
 }
 
 .iapm-how-col::before {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
+  height: 4px;
   background: var(--iapm-accent, #60a5fa);
+}
+
+.iapm-how-card-head {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.iapm-how-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(var(--iapm-accent-rgb, 96,165,250), 0.34);
+  border-radius: 14px;
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.13);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  font-size: 20px;
+}
+
+.iapm-how-step {
+  align-self: start;
+  color: rgba(var(--iapm-accent-rgb, 96,165,250), 0.66);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
 }
 
 .iapm-how-tag {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 3px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -10103,14 +10178,14 @@ body.tema-claro .info-tooltip-popup {
 }
 
 .iapm-how-col h4 {
-  margin: 0 0 6px;
-  font-size: 14.5px;
-  font-weight: 700;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 750;
   color: #f8fafc;
 }
 
 .iapm-how-col > p {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   font-size: 12.5px;
   line-height: 1.6;
   color: #a9c0d6;
@@ -10122,35 +10197,139 @@ body.tema-claro .info-tooltip-popup {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .iapm-how-list li {
   display: flex;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: 10px;
-  padding: 7px 0;
-  border-bottom: 1px dashed rgba(148,163,184,0.16);
+  padding: 10px 11px;
+  border: 1px solid rgba(148,163,184,0.11);
+  border-radius: 11px;
+  background: rgba(255,255,255,0.025);
   font-size: 12.5px;
+  line-height: 1.4;
   color: #f1f5f9;
 }
 
-.iapm-how-list li:last-child {
-  border-bottom: none;
+.iapm-how-list li::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--iapm-accent, #60a5fa);
+  box-shadow: 0 0 0 3px rgba(var(--iapm-accent-rgb, 96,165,250), 0.10);
+}
+
+.iapm-how-list li span {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .iapm-how-list b {
   color: var(--iapm-accent, #60a5fa);
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.11);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .iapm-how-note {
-  margin-top: 14px;
+  margin: auto 0 0;
+  padding: 14px 14px 13px;
+  border: 1px solid rgba(var(--iapm-accent-rgb, 96,165,250), 0.16);
+  border-radius: 12px;
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.055);
   font-size: 11.5px;
   color: #7c93ab;
   line-height: 1.5;
+}
+
+.iapm-how-list + .iapm-how-note {
+  margin-top: 16px;
+}
+
+.iapm-status-kanban {
+  position: relative;
+  gap: 16px;
+  margin-bottom: 0;
+  padding: 20px 22px;
+  overflow: hidden;
+  border-color: rgba(45,212,191,0.30);
+  border-radius: 18px;
+  background:
+    radial-gradient(340px 150px at 100% 0%, rgba(45,212,191,0.12), transparent 70%),
+    linear-gradient(135deg, rgba(6,78,59,0.26), rgba(8,47,73,0.24));
+  box-shadow: 0 14px 34px rgba(2,8,23,0.20);
+}
+
+.iapm-status-kanban .iapm-status-icon {
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(45,212,191,0.30);
+  border-radius: 14px;
+  background: rgba(45,212,191,0.13);
+  font-size: 20px;
+}
+
+.iapm-status-copy {
+  min-width: 0;
+}
+
+.iapm-status-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: #5eead4;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.iapm-status-kanban .iapm-status-copy > b {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.iapm-status-kanban p {
+  margin: 0;
+  color: #b8d7d2;
+}
+
+.iapm-status-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.iapm-status-facts span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid rgba(45,212,191,0.18);
+  border-radius: 999px;
+  background: rgba(15,118,110,0.12);
+  color: #ccfbf1;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.iapm-status-timing {
+  display: block;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(45,212,191,0.14);
+  color: #86aaa6;
+  font-size: 11px;
 }
 
 /* ---- painel "tempo real" ---- */
@@ -10218,6 +10397,8 @@ body.tema-claro .info-tooltip-popup {
 
 @media (prefers-reduced-motion: reduce) {
   .iapm-live-dot { animation: none; }
+  .iapm-how-col { transition: none; }
+  .iapm-how-col:hover { transform: none; }
 }
 
 .iapm-status {
@@ -10491,13 +10672,8 @@ body.tema-claro .info-tooltip-popup {
     grid-template-columns: 1fr;
   }
 
-  .iapm-how-col {
-    border-left: none;
-    border-top: 1px solid rgba(148,163,184,0.14);
-  }
-
-  .iapm-how-col:first-child {
-    border-top: none;
+  .iapm-masthead {
+    padding: 22px;
   }
 
   .iapm-live-grid {
@@ -10506,6 +10682,35 @@ body.tema-claro .info-tooltip-popup {
 }
 
 @media (max-width: 620px) {
+  .iapm-masthead {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .iapm-masthead h3 {
+    font-size: 19px;
+  }
+
+  .iapm-how-col {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .iapm-how-card-head {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .iapm-how-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .iapm-status-kanban {
+    flex-direction: column;
+    padding: 18px;
+  }
+
   .iapm-stat-strip {
     grid-template-columns: 1fr;
     gap: 14px;
@@ -13339,6 +13544,16 @@ body:not(.tema-claro) .ia-resumo-periodo:hover {
 
 body.tema-claro .iapm-eyebrow {
   color: #16a34a;
+  background: rgba(22,163,74,0.08);
+  border-color: rgba(22,163,74,0.20);
+}
+
+body.tema-claro .iapm-masthead {
+  background:
+    radial-gradient(520px 210px at 100% 0%, rgba(34,197,94,0.11), transparent 68%),
+    linear-gradient(135deg, #ffffff, #f2faf6);
+  border-color: rgba(22,163,74,0.20);
+  box-shadow: 0 14px 34px rgba(15,23,42,0.08);
 }
 
 body.tema-claro .iapm-masthead h3,
@@ -13371,21 +13586,26 @@ body.tema-claro .iapm-plataforma-subtitulo {
 }
 
 body.tema-claro .iapm-how {
-  background: linear-gradient(180deg, #ffffff, #f3f6fb);
-  border-color: rgba(15,23,42,0.10);
+  background: transparent;
 }
 
 body.tema-claro .iapm-how-col {
-  border-left-color: rgba(15,23,42,0.08);
+  background:
+    radial-gradient(280px 150px at 0% 0%, rgba(var(--iapm-accent-rgb, 96,165,250), 0.11), transparent 72%),
+    linear-gradient(160deg, #ffffff, #f7f9fc);
+  border-color: rgba(var(--iapm-accent-rgb, 96,165,250), 0.28);
+  box-shadow: 0 12px 28px rgba(15,23,42,0.09);
 }
 
 body.tema-claro .iapm-how-list li {
   color: #1e293b;
-  border-bottom-color: rgba(15,23,42,0.10);
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.035);
+  border-color: rgba(15,23,42,0.09);
 }
 
 body.tema-claro .iapm-how-note {
   color: #64748b;
+  background: rgba(var(--iapm-accent-rgb, 96,165,250), 0.045);
 }
 
 body.tema-claro .iapm-live {
@@ -13403,6 +13623,29 @@ body.tema-claro .iapm-status {
 
 body.tema-claro .iapm-status b {
   color: #0f172a;
+}
+
+body.tema-claro .iapm-status-kanban {
+  background:
+    radial-gradient(340px 150px at 100% 0%, rgba(45,212,191,0.13), transparent 70%),
+    linear-gradient(135deg, #f0fdfa, #eff6ff);
+  border-color: rgba(13,148,136,0.24);
+  box-shadow: 0 12px 28px rgba(15,23,42,0.08);
+}
+
+body.tema-claro .iapm-status-kanban p {
+  color: #3f625e;
+}
+
+body.tema-claro .iapm-status-facts span {
+  color: #115e59;
+  background: rgba(13,148,136,0.08);
+  border-color: rgba(13,148,136,0.16);
+}
+
+body.tema-claro .iapm-status-timing {
+  color: #64748b;
+  border-top-color: rgba(13,148,136,0.14);
 }
 
 body.tema-claro .iapm-stat {
@@ -17465,9 +17708,15 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
           </div>
 
           <div class="iapm-how">
-            <div class="iapm-how-col" style="--iapm-accent:#60a5fa;">
-              <span class="iapm-how-tag">Inteligência do lead</span>
-              <h4>Pontuação automática</h4>
+            <div class="iapm-how-col" style="--iapm-accent:#60a5fa;--iapm-accent-rgb:96,165,250;">
+              <div class="iapm-how-card-head">
+                <span class="iapm-how-icon" aria-hidden="true">🎯</span>
+                <div>
+                  <span class="iapm-how-tag">Inteligência do lead</span>
+                  <h4>Pontuação automática</h4>
+                </div>
+                <span class="iapm-how-step">01</span>
+              </div>
               <p>Cada lead recebe pontos por sinais reais — soma tudo e classifica Frio, Morno ou Quente.</p>
               <ul class="iapm-how-list">
                 <li><span>Telefone informado</span><b>+10</b></li>
@@ -17483,9 +17732,15 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
               <p class="iapm-how-note">Quente a partir de 70 pontos · morno de 35 a 69 · score manual sempre prevalece. A conversa do WhatsApp conta junto — a fala do cliente <b>e</b> a sua pelo app, não as perguntas fixas do roteiro do bot.</p>
             </div>
 
-            <div class="iapm-how-col" style="--iapm-accent:#f5b942;">
-              <span class="iapm-how-tag">Machine Learning</span>
-              <h4>Aprende com o histórico</h4>
+            <div class="iapm-how-col" style="--iapm-accent:#f5b942;--iapm-accent-rgb:245,185,66;">
+              <div class="iapm-how-card-head">
+                <span class="iapm-how-icon" aria-hidden="true">📈</span>
+                <div>
+                  <span class="iapm-how-tag">Machine Learning</span>
+                  <h4>Aprende com o histórico</h4>
+                </div>
+                <span class="iapm-how-step">02</span>
+              </div>
               <p>Usa os leads fechados e perdidos da própria conta para calcular a probabilidade real de conversão.</p>
               <ul class="iapm-how-list">
                 <li><span>Leads de histórico para sair do "aprendendo"</span><b>10</b></li>
@@ -17497,9 +17752,15 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
               <p class="iapm-how-note">Quanto mais histórico a conta acumula, mais precisa fica a previsão. Um único modelo por conta — nicho e WhatsApp ajudam a previsão sem exigir histórico separado.</p>
             </div>
 
-            <div class="iapm-how-col" style="--iapm-accent:#8b7cf6;">
-              <span class="iapm-how-tag">IA generativa</span>
-              <h4>Assistência na jornada</h4>
+            <div class="iapm-how-col" style="--iapm-accent:#8b7cf6;--iapm-accent-rgb:139,124,246;">
+              <div class="iapm-how-card-head">
+                <span class="iapm-how-icon" aria-hidden="true">✨</span>
+                <div>
+                  <span class="iapm-how-tag">IA generativa</span>
+                  <h4>Assistência na jornada</h4>
+                </div>
+                <span class="iapm-how-step">03</span>
+              </div>
               <p>Lê status, score, respostas, conversa do WhatsApp e histórico do lead para sugerir o próximo passo certo.</p>
               <ul class="iapm-how-list">
                 <li><span>Resumo, próxima ação e mensagem pronta</span></li>
@@ -17512,20 +17773,18 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
             </div>
           </div>
 
-          <div class="iapm-status">
+          <div class="iapm-status iapm-status-kanban">
             <span class="iapm-status-icon">💬</span>
-            <div>
+            <div class="iapm-status-copy">
+              <span class="iapm-status-kicker">Automação do Kanban</span>
               <b>A plataforma agora lê sozinha a conversa que você assumiu no WhatsApp e move o Kanban por conta própria.</b>
-              Sem perguntar nada pra você: a cada ciclo, a IA lê tudo que você e o cliente já
-              escreveram naquele atendimento e decide em qual estágio o lead realmente está —
-              "primeiro contato", "em conversa", "fechado" ou "perdido" — e já move o card sozinha,
-              sem precisar arrastar nada. Você recebe uma notificação avisando quando isso acontece
-              e o porquê, e continua podendo arrastar o card manualmente a qualquer momento se
-              quiser corrigir.
-              <br><br>
-              Não é em tempo real — a leitura roda em ciclos (a cada poucas horas), e só reavalia
-              conversas que tiveram mensagem nova desde a última vez, pra manter o gasto de IA sob
-              controle.
+              <p>A cada ciclo, a IA considera tudo que cliente e corretor escreveram e identifica o estágio correto do atendimento.</p>
+              <div class="iapm-status-facts">
+                <span>↗ Move entre primeiro contato, conversa, fechado ou perdido</span>
+                <span>🔔 Avisa o que mudou e explica o motivo</span>
+                <span>✋ Permite correção manual a qualquer momento</span>
+              </div>
+              <span class="iapm-status-timing">⏱ Roda a cada poucas horas e reavalia somente conversas com mensagens novas, mantendo o uso de IA sob controle.</span>
             </div>
           </div>
 

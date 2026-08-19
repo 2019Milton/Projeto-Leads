@@ -29593,7 +29593,6 @@ function coletarConfiguracoesAvancadas() {
       valorCampo("adv_categoria_especial"),
     titulo: valorCampo("adv_titulo"),
     descricao: valorCampo("adv_descricao"),
-    link: valorCampo("adv_link"),
     pais: valorCampo("adv_pais"),
     genero: valorCampo("adv_genero"),
     idade_min: valorCampo("adv_idade_min"),
@@ -29608,12 +29607,9 @@ function coletarConfiguracoesAvancadas() {
     bid_amount: valorCampo("adv_bid_amount"),
     inicio: valorCampo("adv_inicio"),
     fim: valorCampo("adv_fim"),
-    privacidade_url: valorCampo("adv_privacidade_url"),
-    privacidade_texto: valorCampo("adv_privacidade_texto"),
     obrigado_titulo: valorCampo("adv_obrigado_titulo"),
     obrigado_texto: valorCampo("adv_obrigado_texto"),
     obrigado_botao: valorCampo("adv_obrigado_botao"),
-    obrigado_url: valorCampo("adv_obrigado_url"),
     perguntas,
     plataformas,
     instagram_actor_id:
@@ -33897,13 +33893,13 @@ async function carregarDetalhesLinkedInHub() {
 
     // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta/Google/TikTok)
     if (!adAccountIdAtual && contas.length === 1) {
-      await selecionarContaLinkedIn(String(contas[0].id), contas[0].org_urn, { silencioso: true });
+      await selecionarContaLinkedIn(String(contas[0].id), contas[0].org_urn, contas[0].moeda, { silencioso: true });
       await recarregarHubMantendoDetalhesLinkedInAbertos();
       return;
     }
 
     const opcoes = contas.map(conta => `
-      <option value="${escaparHtml(String(conta.id))}" data-org="${escaparHtml(conta.org_urn || "")}" ${String(conta.id) === String(adAccountIdAtual) ? "selected" : ""}>
+      <option value="${escaparHtml(String(conta.id))}" data-org="${escaparHtml(conta.org_urn || "")}" data-moeda="${escaparHtml(conta.moeda || "BRL")}" ${String(conta.id) === String(adAccountIdAtual) ? "selected" : ""}>
         ${escaparHtml(conta.nome || String(conta.id))}
       </option>`).join("");
 
@@ -33913,7 +33909,7 @@ async function carregarDetalhesLinkedInHub() {
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
         <select id="linkedin_conta_select" style="flex:1;min-width:180px;">${opcoes}</select>
-        <button type="button" onclick="(function(btn){var sel=document.getElementById('linkedin_conta_select');selecionarContaLinkedIn(sel.value, sel.selectedOptions[0]?.dataset.org, {}, btn);})(this)">Usar esta conta</button>
+        <button type="button" onclick="(function(btn){var sel=document.getElementById('linkedin_conta_select');selecionarContaLinkedIn(sel.value, sel.selectedOptions[0]?.dataset.org, sel.selectedOptions[0]?.dataset.moeda, {}, btn);})(this)">Usar esta conta</button>
       </div>
       <div class="integ-detalhe-linha">
         <span class="integ-detalhe-label">Sincronização</span>
@@ -33934,7 +33930,7 @@ async function carregarDetalhesLinkedInHub() {
   }
 }
 
-async function selecionarContaLinkedIn(adAccountId, orgUrn, opts = {}, btnEl) {
+async function selecionarContaLinkedIn(adAccountId, orgUrn, moeda, opts = {}, btnEl) {
   const token = localStorage.getItem("token");
   if (!token || !adAccountId) return;
 
@@ -33958,7 +33954,7 @@ async function selecionarContaLinkedIn(adAccountId, orgUrn, opts = {}, btnEl) {
     const res = await fetch(`${API}/linkedin/selecionar-conta`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ad_account_id: adAccountId, org_urn: orgUrn || "" })
+      body: JSON.stringify({ ad_account_id: adAccountId, org_urn: orgUrn || "", moeda: moeda || "" })
     });
     if (!res.ok) {
       if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");

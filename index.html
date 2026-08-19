@@ -16934,12 +16934,12 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
               <h3>📈 Campo de performance por plataforma</h3>
               <p>Veja gasto, leads, CPL, cliques e campanhas com leitura por período.</p>
             </div>
-            <span class="dashboard-performance-badge">Meta conectado ao painel</span>
+            <span class="dashboard-performance-badge" id="dashboard-performance-badge">Meta conectado ao painel</span>
           </div>
           <div class="desemp-tabs dashboard-platform-tabs">
             <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta"><span style="color:#0081FB;font-weight:900;">∞</span> Meta Ads</button>
-            <button class="desemp-tab" disabled title="Em breve"><svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads</button>
-            <button class="desemp-tab" disabled title="Em breve">🎵 TikTok Ads</button>
+            <button class="desemp-tab" onclick="selecionarTabDesempenho('google')" data-plat="google"><svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads</button>
+            <button class="desemp-tab" onclick="selecionarTabDesempenho('tiktok')" data-plat="tiktok">🎵 TikTok Ads</button>
             <button class="desemp-tab" disabled title="Em breve">💼 LinkedIn Ads</button>
             <button class="desemp-tab" disabled title="Em breve">🎬 Kwai Ads</button>
             <button class="desemp-tab" disabled title="Em breve">📌 Pinterest Ads</button>
@@ -21362,21 +21362,28 @@ function navegarPara(secao) {
   }
 }
 
+// Plataformas que já têm /<plataforma>/performance-diaria no backend. As demais
+// (linkedin, kwai, pinterest, snapchat, microsoft) continuam com o botão desabilitado
+// no HTML (title="Em breve") — nem chegam a cair aqui.
+const PLATAFORMAS_PERFORMANCE_DISPONIVEIS = ["meta", "google", "tiktok"];
+let performanceAtivaPlataforma = "meta";
+
 function selecionarTabDesempenho(plataformaId) {
   document.querySelectorAll(".desemp-tab[data-plat]").forEach(btn => {
     btn.classList.toggle("ativa", btn.dataset.plat === plataformaId);
   });
   const painel = document.getElementById("painel_performance_meta");
-  if (plataformaId === "meta") {
+  const badge = document.getElementById("dashboard-performance-badge");
+  if (badge) badge.textContent = `${platNome(plataformaId)} conectado ao painel`;
+
+  if (PLATAFORMAS_PERFORMANCE_DISPONIVEIS.includes(plataformaId)) {
+    performanceAtivaPlataforma = plataformaId;
     if (painel) painel.style.display = "";
     carregarPerformanceMeta();
   } else {
-    if (painel) painel.style.display = "none";
-    // placeholder para plataformas futuras
-    const conteudo = document.getElementById("painel_performance_meta");
-    if (conteudo) {
-      conteudo.style.display = "";
-      conteudo.innerHTML = `<div class="perf-vazio">Performance de ${plataformaId} em breve.</div>`;
+    if (painel) {
+      painel.style.display = "";
+      painel.innerHTML = `<div class="perf-vazio">Performance de ${platNome(plataformaId)} em breve.</div>`;
     }
   }
 }
@@ -27601,7 +27608,7 @@ function textoRegistroPerformance(registro, agrupamento) {
   );
 }
 
-function renderizarPainelPerformanceMeta(data) {
+function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
 
   const painel =
     document.getElementById("painel_performance_meta");
@@ -27609,6 +27616,9 @@ function renderizarPainelPerformanceMeta(data) {
   if (!painel) {
     return;
   }
+
+  const nomePlataforma = platNome(plataformaId);
+  const ehMeta = plataformaId === "meta";
 
   const resumo =
     data.resumo || {};
@@ -27627,6 +27637,7 @@ function renderizarPainelPerformanceMeta(data) {
 
   performanceMetaUltimoRelatorio = {
     ...data,
+    plataforma: plataformaId,
     periodo,
     agrupamento,
     atualizado_em: new Date().toISOString()
@@ -27672,18 +27683,19 @@ function renderizarPainelPerformanceMeta(data) {
     Number(resumo.leads_total || 0) - Number(resumo.leads_total_plataforma || 0);
 
   const avisoDivergenciaLeadsHtml =
-    diffLeadsMetaPlataforma === 0
+    !ehMeta || diffLeadsMetaPlataforma === 0
       ? ""
       : `
         <div class="performance-meta-alerta">
-          <span class="performance-meta-alerta-icone">!</span>
+          <span class="performance-meta-alerta-icone">i</span>
           <span>
+            <b>Isso não significa lead perdido</b> — é uma pequena diferença normal entre o que a Meta contabiliza do lado dela e o que realmente chegou aqui.
             ${
               diffLeadsMetaPlataforma > 0
-                ? `A Meta registrou <b>${diffLeadsMetaPlataforma} lead${diffLeadsMetaPlataforma > 1 ? "s" : ""} a mais</b> do que chegou na Central de Leads neste período (<b>${resumo.leads_total || 0}</b> na Meta vs. <b>${resumo.leads_total_plataforma || 0}</b> salvos aqui).`
-                : `A Central de Leads tem <b>${Math.abs(diffLeadsMetaPlataforma)} lead${Math.abs(diffLeadsMetaPlataforma) > 1 ? "s" : ""} a mais</b> do que a Meta reportou neste período (<b>${resumo.leads_total_plataforma || 0}</b> salvos aqui vs. <b>${resumo.leads_total || 0}</b> na Meta).`
+                ? `A Meta contabilizou <b>${diffLeadsMetaPlataforma} lead${diffLeadsMetaPlataforma > 1 ? "s" : ""} a mais</b> neste período (<b>${resumo.leads_total || 0}</b> na Meta vs. <b>${resumo.leads_total_plataforma || 0}</b> na Central de Leads).`
+                : `A Central de Leads tem <b>${Math.abs(diffLeadsMetaPlataforma)} lead${Math.abs(diffLeadsMetaPlataforma) > 1 ? "s" : ""} a mais</b> neste período (<b>${resumo.leads_total_plataforma || 0}</b> na Central de Leads vs. <b>${resumo.leads_total || 0}</b> na Meta).`
             }
-            Motivos mais comuns: atraso ou falha no webhook, fuso horário (o lead cai em outro dia na contagem) ou leads de teste no Gerenciador de Anúncios.
+            Motivos mais comuns: pequeno atraso no webhook, fuso horário (o lead cai em outro dia na contagem) ou testes feitos dentro do próprio Gerenciador de Anúncios.
           </span>
         </div>
       `;
@@ -27693,14 +27705,22 @@ function renderizarPainelPerformanceMeta(data) {
       .slice()
       .reverse();
 
+  // Meta tem uma 2ª coluna de leads (o que a própria Meta contabilizou) porque o Graph API
+  // expõe isso; Google/TikTok não têm um número equivalente confiável pra mostrar ao lado
+  // do real, então só aparece a coluna única "Leads" (ver rota /google|tiktok/performance-diaria
+  // no backend — leads_meta sempre null pra essas duas).
+  const colunasTabela = ehMeta ? 6 : 5;
+
   const linhas = registrosOrdenados.map((registro) => {
     const temDados =
       registro.gasto > 0 ||
       registro.leads > 0 ||
       registro.cliques > 0;
 
+    // Detalhamento por campanha só existe pra Meta (/meta/performance-diaria/:data/campanhas);
+    // Google/TikTok ainda não têm essa rota, então a linha não expande pra eles.
     const podeDetalhar =
-      agrupamento === "diario";
+      agrupamento === "diario" && ehMeta;
 
     const chave =
       String(registro.data || registro.periodo || "")
@@ -27719,7 +27739,7 @@ function renderizarPainelPerformanceMeta(data) {
         </td>
         <td>${formatarMoeda(registro.gasto)}</td>
         <td>${registro.leads || 0}</td>
-        <td>${registro.leads_plataforma ?? 0}</td>
+        ${ehMeta ? `<td>${registro.leads_plataforma ?? 0}</td>` : ""}
         <td>${
           registro.custo_por_lead === null || registro.custo_por_lead === undefined
             ? "-"
@@ -27731,7 +27751,7 @@ function renderizarPainelPerformanceMeta(data) {
         podeDetalhar
           ? `
             <tr class="perf-detalhe-row" id="${detalheId}" style="display:none;">
-              <td colspan="6">
+              <td colspan="${colunasTabela}">
                 <div class="perf-detalhe-inner">
                   <span class="perf-detalhe-loading">Carregando campanhas...</span>
                 </div>
@@ -27746,7 +27766,7 @@ function renderizarPainelPerformanceMeta(data) {
   painel.innerHTML = `
     <div class="performance-meta-head">
       <div>
-        <h3>📊 Performance de leads Meta</h3>
+        <h3>📊 Performance de leads ${nomePlataforma}</h3>
         <small>
           Registro ${tituloPeriodoPerformance(periodo).toLowerCase()} (${descricaoPeriodoPerformance(periodo)}) de gasto, leads e custo por lead.
         </small>
@@ -27765,13 +27785,13 @@ function renderizarPainelPerformanceMeta(data) {
           type="button"
           class="performance-meta-btn"
           onclick="carregarPerformanceMeta(performanceMetaPeriodoAtual); carregarDashboard();"
-          title="Atualizar dados da Meta"
+          title="Atualizar dados de ${nomePlataforma}"
         >Atualizar</button>
         <button
           type="button"
           class="performance-meta-btn"
           onclick="exportarPerformanceMetaXLSX()"
-          title="Exportar performance Meta"
+          title="Exportar performance ${nomePlataforma}"
         >Exportar</button>
         <span class="performance-meta-updated">
           Atualizado ${atualizadoTexto}
@@ -27787,7 +27807,7 @@ function renderizarPainelPerformanceMeta(data) {
       <div class="performance-meta-card">
         <span>Leads no periodo</span>
         <strong>${resumo.leads_total || 0}</strong>
-        <small>Na plataforma: ${resumo.leads_total_plataforma ?? 0}</small>
+        ${ehMeta ? `<small>Na plataforma: ${resumo.leads_total_plataforma ?? 0}</small>` : ""}
       </div>
       <div class="performance-meta-card">
         <span>CPL hoje</span>
@@ -27831,8 +27851,12 @@ function renderizarPainelPerformanceMeta(data) {
           <tr>
             <th>${agrupamento === "mensal" ? "Mes" : "Dia"}</th>
             <th>Gasto</th>
-            <th title="Leads que a Meta registrou na propria plataforma de anuncios">Leads (Meta)</th>
-            <th title="Leads que realmente chegaram e foram salvos na Central de Leads">Leads (Plataforma)</th>
+            ${ehMeta ? `
+              <th title="Quanto a Meta contabilizou do lado dela — pequenas diferenças com a coluna ao lado são normais">Leads (Meta)</th>
+              <th title="Quantos leads realmente chegaram e foram salvos na Central de Leads — esse é o número que vale pro seu dia a dia">Leads (Plataforma)</th>
+            ` : `
+              <th>Leads</th>
+            `}
             <th>CPL</th>
             <th>Cliques</th>
           </tr>
@@ -27840,7 +27864,7 @@ function renderizarPainelPerformanceMeta(data) {
         <tbody>
           ${linhas || `
             <tr>
-              <td colspan="6">Sem dados de performance no periodo.</td>
+              <td colspan="${colunasTabela}">Sem dados de performance no periodo.</td>
             </tr>
           `}
         </tbody>
@@ -27848,11 +27872,13 @@ function renderizarPainelPerformanceMeta(data) {
     </div>
 
     <div class="performance-meta-note">
-      <strong>CPL</strong> e o custo medio por lead. A Meta cobra por impressoes; nem todo clique vira lead.
-      Use a linha expandida para ver quais campanhas puxaram o gasto de cada dia.
-      <br>
-      <strong>Leads (Meta)</strong> e o que a Meta registrou na propria plataforma de anuncios;
-      <strong>Leads (Plataforma)</strong> e o que realmente chegou e foi salvo na Central de Leads.
+      <strong>CPL</strong> e o custo medio por lead. ${ehMeta ? "A Meta cobra por impressoes; nem todo clique vira lead." : `${nomePlataforma} cobra por impressoes ou cliques, dependendo da campanha; nem todo clique vira lead.`}
+      ${ehMeta ? `
+        <br>
+        Use a linha expandida para ver quais campanhas puxaram o gasto de cada dia.
+        <br>
+        <strong>Leads (Meta)</strong> e o que a Meta contabilizou do lado dela; <strong>Leads (Plataforma)</strong> e o que realmente chegou e foi salvo na Central de Leads — pequenas diferenças entre os dois são normais e não significam lead perdido.
+      ` : ""}
     </div>
   `;
 
@@ -27864,8 +27890,12 @@ function renderizarPainelPerformanceMeta(data) {
 
 async function exportarPerformanceMetaXLSX() {
   const data = performanceMetaUltimoRelatorio;
-  if (!data) { alert("Carregue a performance Meta antes de exportar."); return; }
+  if (!data) { alert("Carregue a performance antes de exportar."); return; }
   if (typeof XLSX === "undefined") { alert("Módulo de exportação indisponível no momento."); return; }
+
+  const plataformaId  = data.plataforma || "meta";
+  const nomePlataforma = platNome(plataformaId);
+  const ehMeta         = plataformaId === "meta";
 
   const periodo    = data.periodo || performanceMetaPeriodoAtual || "semanal";
   const agrupamento = data.agrupamento || "diario";
@@ -27908,14 +27938,18 @@ async function exportarPerformanceMetaXLSX() {
   }
 
   // ─── ABA 1: RESUMO ────────────────────────────────────────────────────────
+  const linhaLeadsResumo = ehMeta
+    ? ["Gasto Total (período)",    Number(resumo.gasto_total || 0),          "", "Leads no Período (Meta)",   Number(resumo.leads_total || 0), "", "Leads no Período (Plataforma)", Number(resumo.leads_total_plataforma || 0)]
+    : ["Gasto Total (período)",    Number(resumo.gasto_total || 0),          "", "Leads no Período",   Number(resumo.leads_total || 0)];
+
   const wsResumo = XLSX.utils.aoa_to_sheet([
-    [`🚀 Performance Meta — ${tituloPeriodo}`],                                           // A1
+    [`🚀 Performance ${nomePlataforma} — ${tituloPeriodo}`],                            // A1
     [""],
     ["Exportado em", exportadoEm, "", "Conta de Anúncios", conta.nome || "-"],         // A3
     ["Período",      periodoTexto,"", "Moeda",             conta.moeda || "BRL"],      // A4
     [""],
     ["RESUMO GERAL"],                                                                   // A6
-    ["Gasto Total (período)",    Number(resumo.gasto_total || 0),          "", "Leads no Período (Meta)",   Number(resumo.leads_total || 0), "", "Leads no Período (Plataforma)", Number(resumo.leads_total_plataforma || 0)],
+    linhaLeadsResumo,
     ["CPL Médio (período)",      valorPerformanceValido(resumo.custo_por_lead_medio) ? Number(resumo.custo_por_lead_medio) : "-", "", "CPL Hoje",  hoje.custo_por_lead != null ? Number(hoje.custo_por_lead) : "-"],
     ["Gasto Hoje",               Number(hoje.gasto || 0),                  "", "Leads Hoje",         Number(hoje.leads || 0)],
     ["CPL Médio Dias Anteriores",valorPerformanceValido(resumo.media_cpl_anterior) ? Number(resumo.media_cpl_anterior) : "-", "", "Tendência vs Média", tendenciaTexto],
@@ -27941,7 +27975,9 @@ async function exportarPerformanceMetaXLSX() {
 
   // ─── ABA 2: PERFORMANCE DIÁRIA ────────────────────────────────────────────
   const labelDia = agrupamento === "mensal" ? "Mês" : "Dia";
-  const headersDia = [labelDia,"Gasto (R$)","Leads (Meta)","Leads (Plataforma)","CPL (R$)","Cliques","Impressões","Alcance","CTR (%)","Taxa Lead/Clique (%)"];
+  const headersDia = ehMeta
+    ? [labelDia,"Gasto (R$)","Leads (Meta)","Leads (Plataforma)","CPL (R$)","Cliques","Impressões","Alcance","CTR (%)","Taxa Lead/Clique (%)"]
+    : [labelDia,"Gasto (R$)","Leads","CPL (R$)","Cliques","Impressões","Alcance","CTR (%)","Taxa Lead/Clique (%)"];
 
   const dadosDia = registros.map(r => {
     const gasto      = Number(r.gasto || 0);
@@ -27950,37 +27986,45 @@ async function exportarPerformanceMetaXLSX() {
     const impressoes = Number(r.impressoes || 0);
     const ctr        = impressoes > 0 ? Number((cliques / impressoes * 100).toFixed(2)) : "";
     const taxaLC     = cliques > 0    ? Number((leads / cliques * 100).toFixed(2)) : "";
-    return [
-      textoRegistroPerformance(r, agrupamento),
-      gasto,
-      leads,
-      Number(r.leads_plataforma || 0),
+    const base = [textoRegistroPerformance(r, agrupamento), gasto, leads];
+    if (ehMeta) base.push(Number(r.leads_plataforma || 0));
+    base.push(
       valorPerformanceValido(r.custo_por_lead) ? Number(r.custo_por_lead) : "",
       cliques,
       impressoes,
       Number(r.alcance || 0),
       ctr,
       taxaLC
-    ];
+    );
+    return base;
   });
 
+  const ultimaColDia = XLSX.utils.encode_col(headersDia.length - 1);
+  const penultimaColDia = XLSX.utils.encode_col(Math.max(headersDia.length - 2, 0));
+  const linha2Dia = new Array(headersDia.length).fill("");
+  linha2Dia[0] = periodoTexto;
+  linha2Dia[headersDia.length - 1] = `Exportado: ${exportadoEm}`;
+
   const wsDia = XLSX.utils.aoa_to_sheet([
-    [`Performance Meta — ${tituloPeriodo} — Por ${labelDia}`],
-    [periodoTexto, "", "", "", "", "", "", "", "", `Exportado: ${exportadoEm}`],
+    [`Performance ${nomePlataforma} — ${tituloPeriodo} — Por ${labelDia}`],
+    linha2Dia,
     [],
     headersDia,
     ...dadosDia
   ]);
-  wsDia["!cols"] = [{ wch: 14 },{ wch: 13 },{ wch: 14 },{ wch: 18 },{ wch: 12 },{ wch: 10 },{ wch: 13 },{ wch: 12 },{ wch: 10 },{ wch: 22 }];
-  wsDia["!merges"] = [XLSX.utils.decode_range("A1:J1"), XLSX.utils.decode_range("A2:I2")];
-  wsDia["!autofilter"] = { ref: "A4:J4" };
+  wsDia["!cols"] = ehMeta
+    ? [{ wch: 14 },{ wch: 13 },{ wch: 14 },{ wch: 18 },{ wch: 12 },{ wch: 10 },{ wch: 13 },{ wch: 12 },{ wch: 10 },{ wch: 22 }]
+    : [{ wch: 14 },{ wch: 13 },{ wch: 10 },{ wch: 12 },{ wch: 10 },{ wch: 13 },{ wch: 12 },{ wch: 10 },{ wch: 22 }];
+  wsDia["!merges"] = [XLSX.utils.decode_range(`A1:${ultimaColDia}1`), XLSX.utils.decode_range(`A2:${penultimaColDia}2`)];
+  wsDia["!autofilter"] = { ref: `A4:${ultimaColDia}4` };
   wsDia["!freeze"] = { xSplit: 0, ySplit: 4 };
-  aplicarEstilo(wsDia, "A1:J1", sTitulo);
-  aplicarEstilo(wsDia, "A4:J4", sHeader);
+  aplicarEstilo(wsDia, `A1:${ultimaColDia}1`, sTitulo);
+  aplicarEstilo(wsDia, `A4:${ultimaColDia}4`, sHeader);
 
   // ─── ABA 3: POR CAMPANHA (busca async) ────────────────────────────────────
+  // Só existe pra Meta — /:data/campanhas ainda não tem equivalente pra Google/TikTok.
   let wsCampanha = null;
-  if (agrupamento === "diario") {
+  if (agrupamento === "diario" && ehMeta) {
     const diasComDados = registros.filter(r => Number(r.gasto || 0) > 0 || Number(r.leads || 0) > 0);
     const linhasCampanha = [];
     const token = localStorage.getItem("token");
@@ -28039,7 +28083,7 @@ async function exportarPerformanceMetaXLSX() {
     XLSX.utils.book_append_sheet(workbook, wsCampanha, "Por Campanha");
   }
 
-  XLSX.writeFile(workbook, `Performance-Meta-${periodo}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  XLSX.writeFile(workbook, `Performance-${nomePlataforma.replace(/\s+/g, "")}-${periodo}-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 /* ===== CONTROLE DE CUSTO — descrição dinâmica ===== */
@@ -28353,10 +28397,13 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
     btnAtualizar.textContent = "Atualizando...";
   }
 
+  const plataformaId = performanceAtivaPlataforma || "meta";
+  const nomePlataforma = platNome(plataformaId);
+
   try {
 
     const res = await fetch(
-      `${API}/meta/performance-diaria?periodo=${performanceMetaPeriodoAtual}`,
+      `${API}/${plataformaId}/performance-diaria?periodo=${performanceMetaPeriodoAtual}`,
       {
         headers: {
           "Authorization": `Bearer ${token}`
@@ -28367,18 +28414,18 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
     const data = await res.json();
 
     if (!res.ok || data.error) {
-      console.warn("PERFORMANCE META:", data);
-      painel.innerHTML = `<div class="perf-vazio">Conecte o Meta Ads para ver a performance aqui.</div>`;
+      console.warn(`PERFORMANCE ${plataformaId.toUpperCase()}:`, data);
+      painel.innerHTML = `<div class="perf-vazio">Conecte o ${nomePlataforma} para ver a performance aqui.</div>`;
       return;
     }
 
     _perfDetalheCarregado.clear();
 
-    renderizarPainelPerformanceMeta(data);
+    renderizarPainelPerformanceMeta(data, plataformaId);
 
   } catch (err) {
 
-    console.error("PERFORMANCE META:", err);
+    console.error(`PERFORMANCE ${plataformaId.toUpperCase()}:`, err);
     if (painel) painel.innerHTML = `<div class="perf-vazio">Erro ao carregar dados de performance.</div>`;
 
   } finally {

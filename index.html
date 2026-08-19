@@ -17576,8 +17576,8 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
             </div>
 
             <div class="iapm-feed iapm-feed-total">
-              <h4 title="Todos os eventos recentes juntos, de todas as plataformas — cada linha é um lead que ficou quente (qualificado) ou fechou negócio. Cada plataforma também mostra os próprios eventos na caixa dela, acima.">Total (todas as plataformas)</h4>
-              <div id="meta-conversao-eventos">
+              <h4 title="Soma de Leads, Qualificados enviados e Fechados enviados de todas as plataformas juntas (Meta + Google Ads + TikTok + Kwai).">Total (todas as plataformas)</h4>
+              <div id="meta-conversao-total-kpis">
                 <div class="iapm-empty">Carregando...</div>
               </div>
             </div>
@@ -21860,7 +21860,7 @@ async function carregarDashboardConversionLeadsMeta() {
 async function carregarEstatisticasMetaConversao(token) {
 
   const kpisEl = document.getElementById("meta-conversao-kpis");
-  const eventosEl = document.getElementById("meta-conversao-eventos");
+  const totalKpisEl = document.getElementById("meta-conversao-total-kpis");
 
   if (!kpisEl) {
     return;
@@ -21876,8 +21876,8 @@ async function carregarEstatisticasMetaConversao(token) {
 
     if (!res.ok || estatisticas.error) {
       kpisEl.innerHTML = `<div class="iapm-empty">Não foi possível carregar os dados enviados para a Meta.</div>`;
-      if (eventosEl) {
-        eventosEl.innerHTML = `<div class="iapm-empty">Não foi possível carregar os últimos eventos.</div>`;
+      if (totalKpisEl) {
+        totalKpisEl.innerHTML = `<div class="iapm-empty">Não foi possível carregar o total.</div>`;
       }
       return;
     }
@@ -22001,11 +22001,45 @@ async function carregarEstatisticasMetaConversao(token) {
 
     kpisEl.innerHTML = gruposHtml;
 
-    if (eventosEl) {
-      eventosEl.innerHTML = renderizarListaEventos(
-        todosEventos,
-        "Nenhum evento enviado ainda. Assim que um lead virar quente ou fechar, aparece aqui."
-      );
+    if (totalKpisEl) {
+
+      const totalLeadsTodas = plataformas.reduce((soma, p) => soma + (estatisticas[p.campoTotal] || 0), 0);
+      const totalQualificadosTodas = plataformas.reduce((soma, p) => soma + (estatisticas[p.campoQualificados] || 0), 0);
+      const totalFechadosTodas = plataformas.reduce((soma, p) => soma + (estatisticas[p.campoFechados] || 0), 0);
+
+      const taxaQualificacaoTodas = totalLeadsTodas > 0 ? (totalQualificadosTodas / totalLeadsTodas) * 100 : null;
+      const taxaFechamentoTodas = totalLeadsTodas > 0 ? (totalFechadosTodas / totalLeadsTodas) * 100 : null;
+
+      const kpisTotais = [
+        {
+          label: "Leads (todas as plataformas)", valor: String(totalLeadsTodas), detalhe: "Meta + Google Ads + TikTok + Kwai", cor: "#60a5fa",
+          titulo: "Soma de todos os leads gerados nesta conta, em qualquer plataforma."
+        },
+        {
+          label: "Qualificados enviados", valor: String(totalQualificadosTodas),
+          detalhe: taxaQualificacaoTodas != null ? `${taxaQualificacaoTodas.toFixed(1)}% de todos os leads` : "Aguardando leads quentes",
+          cor: "#f5b942",
+          titulo: "Soma de quantas vezes um lead esquentou e o sinal de qualidade foi enviado — somando todas as plataformas."
+        },
+        {
+          label: "Fechados enviados", valor: String(totalFechadosTodas),
+          detalhe: taxaFechamentoTodas != null ? `${taxaFechamentoTodas.toFixed(1)}% de todos os leads` : "Aguardando negócios fechados",
+          cor: "#4ade80",
+          titulo: "Soma de quantos negócios fecharam e o sinal foi enviado — somando todas as plataformas."
+        }
+      ];
+
+      totalKpisEl.innerHTML = `
+        <div class="iapm-stat-strip">
+          ${kpisTotais.map(kpi => `
+            <div class="iapm-stat" style="--iapm-stat-color:${kpi.cor};" title="${escaparHtml(kpi.titulo)}">
+              <div class="n">${kpi.valor}</div>
+              <div class="l">${kpi.label}</div>
+              <div class="d">${kpi.detalhe}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
     }
 
   } catch (err) {
@@ -22014,8 +22048,8 @@ async function carregarEstatisticasMetaConversao(token) {
 
     kpisEl.innerHTML = `<div class="iapm-empty">Erro ao carregar os dados enviados.</div>`;
 
-    if (eventosEl) {
-      eventosEl.innerHTML = `<div class="iapm-empty">Erro ao carregar os últimos eventos.</div>`;
+    if (totalKpisEl) {
+      totalKpisEl.innerHTML = `<div class="iapm-empty">Erro ao carregar o total.</div>`;
     }
   }
 }

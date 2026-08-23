@@ -15621,6 +15621,21 @@ body.tema-claro .desemp-tab:disabled {
   font-weight: 700;
 }
 
+.dashboard-platform-canal {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(37,211,102,0.14);
+  border: 1px solid rgba(37,211,102,0.3);
+  color: #4ade80;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .dashboard-platform-track {
   height: 9px;
   border-radius: 999px;
@@ -15835,6 +15850,12 @@ body.tema-claro .dashboard-performance-top h3,
 body.tema-claro .dashboard-platform-count,
 body.tema-claro .dashboard-platform-name {
   color: var(--claro-text) !important;
+}
+
+body.tema-claro .dashboard-platform-canal {
+  background: #e3f9ec !important;
+  border-color: #b7ecca !important;
+  color: #15803d !important;
 }
 
 body.tema-claro .dashboard-hero-copy p,
@@ -33193,28 +33214,35 @@ function dashboardNormalizarPlataformas(platsData, leads, campanhas) {
     return brutos
       .map(item => ({
         plataforma: dashboardPlataformaId(item.plataforma || item.origem || item.nome || item.id),
-        total: dashboardPrimeiroNumero(item, ["total", "leads", "quantidade", "count"])
+        total: dashboardPrimeiroNumero(item, ["total", "leads", "quantidade", "count"]),
+        canalWhatsapp: Boolean(item.canal_whatsapp)
       }))
       .filter(item => item.total > 0);
   }
 
+  // Fallback (só usado se /leads/stats/plataformas falhar): mesma ideia do NULLIF que o
+  // backend já aplica — lead.plataforma vale 'whatsapp' pro canal (CTWA da Meta, wa.me do
+  // LinkedIn etc.), quem diz a rede de anúncio real nesse caso é lead.origem.
   const mapa = {};
   leads.forEach(lead => {
-    const id = dashboardPlataformaId(lead.plataforma || lead.origem || lead.fonte || "formulario");
-    mapa[id] = (mapa[id] || 0) + 1;
+    const canalWhatsapp = lead.plataforma === "whatsapp";
+    const id = dashboardPlataformaId(canalWhatsapp ? (lead.origem || "whatsapp") : (lead.plataforma || lead.origem || "formulario"));
+    const chave = `${id}|${canalWhatsapp}`;
+    mapa[chave] = mapa[chave] || { plataforma: id, canalWhatsapp, total: 0 };
+    mapa[chave].total += 1;
   });
 
   if (!Object.keys(mapa).length) {
     campanhas.forEach(campanha => {
       const id = dashboardPlataformaId(campanha.plataforma || campanha.origem || "meta");
       const leadsCampanha = dashboardPrimeiroNumero(campanha, ["leads", "leads_total", "total_leads"]);
-      mapa[id] = (mapa[id] || 0) + leadsCampanha;
+      const chave = `${id}|false`;
+      mapa[chave] = mapa[chave] || { plataforma: id, canalWhatsapp: false, total: 0 };
+      mapa[chave].total += leadsCampanha;
     });
   }
 
-  return Object.entries(mapa)
-    .map(([plataforma, total]) => ({ plataforma, total }))
-    .filter(item => item.total > 0);
+  return Object.values(mapa).filter(item => item.total > 0);
 }
 
 function dashboardRenderPlatformRows(plataformas) {
@@ -33242,9 +33270,15 @@ function dashboardRenderPlatformRows(plataformas) {
       const meta = PLATAFORMA_META[item.plataforma] || { nome: item.plataforma, icone: "📣" };
       const pct = Math.max(6, Math.round((item.total / max) * 100));
       const cor = cores[item.plataforma] || "#60a5fa";
+      // Leads vindos de conversa (CTWA da Meta, wa.me do LinkedIn etc.) continuam com o
+      // ícone/cor da plataforma que pagou o anúncio (é o que "linka" com ela) — só ganham
+      // um selo "· WhatsApp" pra não esconder que a conversão foi por chat, não formulário.
+      const nomeExibido = item.canalWhatsapp
+        ? `${escHtml(meta.nome)} <span class="dashboard-platform-canal">💬 WhatsApp</span>`
+        : escHtml(meta.nome);
       return `
         <div class="dashboard-platform-row" ${dashboardAjuda("leadsPlataforma")}>
-          <div class="dashboard-platform-name">${meta.icone} ${escHtml(meta.nome)}</div>
+          <div class="dashboard-platform-name">${meta.icone} ${nomeExibido}</div>
           <div class="dashboard-platform-track">
             <div class="dashboard-platform-fill" style="width:${pct}%;--dash-accent:${cor};"></div>
           </div>

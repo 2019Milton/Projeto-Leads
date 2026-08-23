@@ -8241,6 +8241,20 @@ body.tema-claro .cal-nav span { color: #111827; }
 .plat-badge.snapchat  { background: rgba(255,252,0,.12);  border-color: rgba(255,252,0,.35); color: #fde68a; }
 .plat-badge.microsoft { background: rgba(0,164,239,.15);  border-color: rgba(0,164,239,.4);  color: #7dd3fc; }
 .plat-badge.formulario{ background: rgba(168,85,247,.15); border-color: rgba(168,85,247,.4); color: #c4b5fd; }
+.lead-plat-grupo { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.plat-canal-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(37,211,102,.15);
+  border: 1px solid rgba(37,211,102,.35);
+  color: #4ade80;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
 .nicho-stripe {
   width: 4px;
   border-radius: 4px 0 0 4px;
@@ -23713,11 +23727,7 @@ function criarLeadCard(lead) {
 
         <div class="lead-meta">
 
-          ${platBadge(lead.plataforma)}
-
-          <span>
-            📢 ${escaparHtml(lead.origem || "-")}
-          </span>
+          ${platBadgeComCanal(lead)}
 
           <span>
             📍 ${escaparHtml(lead.campanha || "-")}
@@ -33584,6 +33594,23 @@ function platBadge(plataforma) {
   const id = (plataforma || "formulario").toLowerCase();
   const p  = PLATAFORMA_META[id] || { nome: id, icone: "📣" };
   return `<span class="plat-badge ${id}">${p.icone} ${p.nome}</span>`;
+}
+
+// Mesma ideia do NULLIF já usada no backend (/leads/stats/plataformas,
+// /leads/meta-conversao/estatisticas): lead.plataforma vale 'whatsapp' pro canal de
+// conversão (CTWA da Meta, wa.me do LinkedIn etc.), não pra rede de anúncio — quem diz
+// isso é lead.origem. Mostra o badge da plataforma real + um selo "WhatsApp" ao lado,
+// em vez do badge genérico "📣 whatsapp" desconectado de quem pagou o anúncio.
+function platBadgeComCanal(lead) {
+  const canalWhatsapp = lead.plataforma === "whatsapp";
+  const idReal = canalWhatsapp ? (lead.origem || "whatsapp") : (lead.plataforma || lead.origem || "formulario");
+  if (!canalWhatsapp) return platBadge(idReal);
+  return `
+    <span class="lead-plat-grupo">
+      ${platBadge(idReal)}
+      <span class="plat-canal-whatsapp">💬 WhatsApp</span>
+    </span>
+  `;
 }
 
 function platNome(plataforma) {

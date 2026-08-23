@@ -33397,7 +33397,12 @@ async function carregarDashboard() {
       dashboardFetchJson(`${API}/meta/metricas-campanhas`, token, [])
     ]);
 
-    const leads = dashboardLista(leadsData, ["leads", "data", "items"]);
+    // GET /leads nunca devolveu uma lista plana — sempre agrupou por coluna do Kanban
+    // ({novos, primeiro_contato, em_conversa, fechado, perdido}, igual carregarLeads() já
+    // trata em Central de Leads). dashboardLista() procurava chaves ("leads"/"data"/"items")
+    // que nunca existiram nesse formato, então "Leads totais" ficava sempre zerado aqui.
+    const leads = ["novos", "primeiro_contato", "em_conversa", "fechado", "perdido"]
+      .reduce((acc, estagio) => acc.concat(Array.isArray(leadsData?.[estagio]) ? leadsData[estagio] : []), []);
     const campanhasPlataforma = dashboardLista(campData, ["campanhas", "data", "items"]);
     const campanhasMetricas = dashboardLista(metricasCampanhasData, ["campanhas", "data", "items"]);
     const campanhas = campanhasMetricas.length ? campanhasMetricas : campanhasPlataforma;
@@ -33456,7 +33461,7 @@ async function carregarDashboard() {
       .slice(0, 8);
 
     const kpis = [
-      { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto(leads.length)} na amostra recente`, cor: "#60a5fa", ajuda: "leadsTotais" },
+      { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto((leadsData?.novos || []).length)} aguardando primeiro contato`, cor: "#60a5fa", ajuda: "leadsTotais" },
       { label: "Campanhas", valor: `${campanhasAtivas}/${campanhasTotal || 0}`, detalhe: `${campanhasPausadas} pausadas · ${campanhasAtencao} em atenção`, cor: "#22c55e", ajuda: "campanhas" },
       { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Gasto consolidado das campanhas", cor: "#f59e0b", ajuda: "investimento" },
       { label: "CPL médio", valor: cplMedio ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa", ajuda: "cplMedio" },

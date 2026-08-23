@@ -33131,7 +33131,7 @@ const DASHBOARD_AJUDA = {
   investimento: "Gasto total das campanhas.",
   cplMedio: "Custo medio por lead.",
   ctrMedio: "Taxa media de cliques.",
-  plataformas: "Canais com leads.",
+  plataformas: "Plataformas de anúncio conectadas (Meta, Google Ads, TikTok Ads etc.) — não conta o WhatsApp Bot, que é canal de atendimento, não de campanha.",
   saude: "Campanhas que pedem atencao.",
   orcamento: "Soma dos orcamentos diarios.",
   leadsPorClique: "Leads gerados por clique.",
@@ -33443,9 +33443,14 @@ async function carregarDashboard() {
     const cplMedio = leadsCampanhas > 0 ? gastoTotal / leadsCampanhas : 0;
     const ctrMedio = impressoesTotal > 0 ? (cliquesTotal / impressoesTotal) * 100 : 0;
     const taxaLeadClique = cliquesTotal > 0 ? (leadsCampanhas / cliquesTotal) * 100 : 0;
+    // Só conta plataformas de anúncio de verdade (a mesma lista do Hub de Integrações) —
+    // antes excluía só "formulario" e contava o WhatsApp Bot junto, então "Plataformas: 2"
+    // podia aparecer com Meta + WhatsApp mesmo com nenhuma 2ª plataforma de anúncio conectada
+    // (WhatsApp Bot é canal de atendimento, não uma plataforma onde se roda campanha).
+    const idsPlataformasAnuncio = HUB_PLATAFORMAS.map(p => p.id);
     const plataformasConectadas = conexoes.filter(x =>
       String(x.status || "").toLowerCase() === "conectado" &&
-      dashboardPlataformaId(x.plataforma) !== "formulario"
+      idsPlataformasAnuncio.includes(dashboardPlataformaId(x.plataforma))
     ).length;
 
     const topCampanhas = [...campanhas]
@@ -33466,7 +33471,7 @@ async function carregarDashboard() {
       { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Gasto consolidado das campanhas", cor: "#f59e0b", ajuda: "investimento" },
       { label: "CPL médio", valor: cplMedio ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa", ajuda: "cplMedio" },
       { label: "CTR médio", valor: ctrMedio ? `${ctrMedio.toFixed(1)}%` : "-", detalhe: `${dashboardCompacto(cliquesTotal)} cliques`, cor: "#38bdf8", ajuda: "ctrMedio" },
-      { label: "Plataformas", valor: dashboardCompacto(plataformasConectadas || plataformas.length), detalhe: `${plataformas.length || 0} com volume de leads`, cor: "#34d399", ajuda: "plataformas" }
+      { label: "Plataformas", valor: dashboardCompacto(plataformasConectadas), detalhe: `${plataformasConectadas} de ${idsPlataformasAnuncio.length} conectadas`, cor: "#34d399", ajuda: "plataformas" }
     ];
 
     document.getElementById("dashboard-kpis").innerHTML = kpis.map(kpi => `

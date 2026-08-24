@@ -21369,6 +21369,18 @@ function navegarPara(secao) {
   if (secao === "dashboard" || secao === "desempenho") {
     carregarPerformanceMeta();
     carregarDashboard();
+    // Mantém o painel em dia com o auto-sync do backend (roda a cada 30 min lá) enquanto
+    // o usuário fica parado nessa tela — sem isso "Último sync" e as métricas ficavam
+    // congeladas no que foi carregado na primeira vez que a tela abriu.
+    if (!window._dashboardAutoSyncInterval) {
+      window._dashboardAutoSyncInterval = setInterval(() => {
+        carregarPerformanceMeta();
+        carregarDashboard();
+      }, 1000 * 60 * 30);
+    }
+  } else {
+    clearInterval(window._dashboardAutoSyncInterval);
+    window._dashboardAutoSyncInterval = null;
   }
 
   // Ao navegar para Whatsapp Bot, recarregar status da conexão + roteiro salvo

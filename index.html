@@ -35938,10 +35938,19 @@ async function carregarStatusMeta() {
                         <div style="margin-top:6px;font-size:10.5px;color:#94a3b8;line-height:1.5;">
                           Isso é <strong>opcional</strong>: só é necessário se você quiser que os anúncios rodem também usando um perfil do Instagram como anunciante.
                         </div>
-                        <div style="margin-top:6px;">
+                        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
                           <button type="button" onclick="conectarInstagram()"
                             style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:#e2e8f0;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
                           >📷 Conectar conta separada</button>
+                          <button type="button" onclick="abrirPassoInstagramVinculado()"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                          >📘 Já vinculado à Página?</button>
+                          <button type="button" onclick="abrirPassoInstagramSeparada()"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                          >📘 Passo a passo: conta separada</button>
+                          <button type="button" onclick="abrirPassoInstagramComercial()"
+                            style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
+                          >📘 Transformar em conta Comercial</button>
                         </div>
                         <div class="meta-warn-chip">
                           ⚠️ <span>Use só se essa conta <strong>não</strong> estiver vinculada à Página do Facebook ao lado. Ela também precisa estar liberada no mesmo Business Manager da conta de anúncios "${escaparHtml(conta?.nome || conta?.name || "")}" — senão a Meta pode recusar na hora de publicar.</span>
@@ -44193,6 +44202,299 @@ async function enviarFeedback() {
   </div>
 </div>
 
+<!-- PASSO A PASSO INSTAGRAM — já vinculado à Página, mas não detectado -->
+<div
+  id="modal_passo_instagram_vinculado"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoInstagramVinculado()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_instagram_vinculado_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_instagram_vinculado_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Meu Instagram já está vinculado à Página, por que não aparece?
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          A plataforma só detecta o Instagram automaticamente quando ele está vinculado à
+          <strong>mesma Página do Facebook</strong> usada aqui e liberado para a conta de anúncios certa.
+          Confira os passos abaixo.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoInstagramVinculado()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Confirme que é uma conta Comercial ou Criador de Conteúdo</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Conta pessoal do Instagram não funciona para anunciar. No app do Instagram, vá em
+            <strong>Configurações e privacidade → Tipo de conta e ferramentas</strong> e confira se já está
+            como Comercial ou Criador de Conteúdo. Se ainda for pessoal, siga primeiro o
+            <button type="button" onclick="fecharPassoInstagramVinculado(); abrirPassoInstagramComercial();"
+              style="background:none;border:none;padding:0;color:#2563eb;font-weight:700;text-decoration:underline;cursor:pointer;font-size:inherit;"
+            >passo a passo de transformar em conta profissional</button> e depois volte aqui.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Confirme que está vinculada à Página certa</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            No app do Instagram, veja em <strong>Editar perfil → Página</strong> (ou nas Configurações da sua
+            Página do Facebook, aba <strong>Instagram</strong>) se o Instagram está vinculado exatamente à
+            Página do Facebook que aparece no quadro de Status Meta desta plataforma — não a outra Página,
+            caso você administre mais de uma.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Libere o Instagram para a conta de anúncios</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Abra o Business Manager, procure <strong>Contas → Contas do Instagram</strong>, clique na conta e
+            abra a aba <strong>Contas de anúncios</strong> (ou <strong>Atribuir ativos</strong>). Marque a
+            conta de anúncios usada nesta plataforma para liberar o uso desse Instagram nos anúncios dela.
+          </p>
+          <p style="margin:10px 0 0;">
+            <a id="passo_instagram_vinculado_link" href="https://business.facebook.com/settings/instagram-accounts" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir Configurações de Negócios →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Volte aqui e atualize</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Feche a guia do Facebook e clique em <strong>🔄 Atualizar status</strong> no quadro de Status Meta.
+            Se estiver tudo certo, o Instagram aparece com a bolinha verde.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PASSO A PASSO INSTAGRAM — conectar conta separada -->
+<div
+  id="modal_passo_instagram_separada"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoInstagramSeparada()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_instagram_separada_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_instagram_separada_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Passo a passo para conectar um Instagram separado
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          Use este caminho quando o Instagram que você quer usar como anunciante
+          <strong>não</strong> está vinculado à Página do Facebook conectada nesta plataforma.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoInstagramSeparada()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Confirme que é uma conta Comercial ou Criador de Conteúdo</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Esse fluxo não funciona com conta pessoal. Se a sua ainda for pessoal, siga primeiro o
+            <button type="button" onclick="fecharPassoInstagramSeparada(); abrirPassoInstagramComercial();"
+              style="background:none;border:none;padding:0;color:#2563eb;font-weight:700;text-decoration:underline;cursor:pointer;font-size:inherit;"
+            >passo a passo de transformar em conta profissional</button> e depois volte pra cá.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Clique em "Conectar conta separada"</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Feche este guia e clique no botão <strong>📷 Conectar conta separada</strong>, logo acima, no
+            quadro de Status Meta.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Faça login com o Instagram, não com o Facebook</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Vai abrir uma tela em <strong>instagram.com</strong> (não facebook.com) pedindo pra entrar.
+            Use o usuário e senha do próprio Instagram que você quer conectar.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Libere no Business Manager</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Depois de conectar aqui, essa conta ainda precisa estar autorizada a anunciar pela mesma conta de
+            anúncios usada nesta plataforma. Abra o Business Manager, vá em
+            <strong>Contas → Contas do Instagram</strong>, clique na conta e na aba
+            <strong>Contas de anúncios</strong> marque a conta de anúncios usada aqui.
+          </p>
+          <p style="margin:10px 0 0;">
+            <a id="passo_instagram_separada_link" href="https://business.facebook.com/settings/instagram-accounts" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir Configurações de Negócios →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">5. Volte aqui e atualize</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Clique em <strong>🔄 Atualizar status</strong> no quadro de Status Meta pra conferir se ficou
+            tudo certo.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PASSO A PASSO INSTAGRAM — transformar em conta Comercial/Criador -->
+<div
+  id="modal_passo_instagram_comercial"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoInstagramComercial()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_instagram_comercial_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_instagram_comercial_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Passo a passo para transformar seu Instagram em conta Comercial ou Criador
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          É pré-requisito pra conectar o Instagram nos anúncios — conta pessoal não funciona.
+          Faça isso pelo aplicativo do Instagram no celular.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoInstagramComercial()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Abra as configurações do seu perfil</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            No app do Instagram, vá no seu perfil e toque no menu (☰) no canto superior direito, depois em
+            <strong>Configurações e privacidade</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Encontre "Tipo de conta e ferramentas"</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Procure a opção <strong>Tipo de conta e ferramentas</strong> (em versões mais antigas do app pode
+            aparecer como <strong>Conta → Mudar para conta profissional</strong>) e toque em
+            <strong>Mudar para conta profissional</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Escolha Comercial ou Criador de Conteúdo</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Escolha <strong>Comercial</strong> se você representa uma empresa/negócio (pode pedir CNPJ ou
+            categoria do negócio), ou <strong>Criador de Conteúdo</strong> se for um perfil pessoal de
+            divulgação. Qualquer um dos dois funciona para anunciar.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Conclua as telas do Instagram</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Siga o assistente do Instagram (categoria, informações de contato etc.) até a conversão terminar.
+            Você pode editar ou pular a maioria dessas informações depois.
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">5. Volte pra plataforma e conecte</h3>
+          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
+            Com a conta já profissional, siga o
+            <button type="button" onclick="fecharPassoInstagramComercial(); abrirPassoInstagramSeparada();"
+              style="background:none;border:none;padding:0;color:#2563eb;font-weight:700;text-decoration:underline;cursor:pointer;font-size:inherit;"
+            >passo a passo de conectar conta separada</button>, ou clique em <strong>🔄 Atualizar status</strong>
+            se ela já estiver vinculada à Página conectada aqui.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PASSO A PASSO GOOGLE ADS — criar conta -->
 <div
   id="modal_passo_google_conta"
@@ -44892,6 +45194,62 @@ function fecharPassoMetaInstagram() {
   modal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
 }
+
+// Mesmo padrão window.<fn> = function <fn>() {} do abrirPassoGoogleConta logo abaixo —
+// os 3 tutoriais de Instagram se referenciam entre si via onclick inline (ex: botão
+// "transformar em conta profissional" dentro do modal de conta separada), então precisam
+// estar garantidamente no escopo global.
+window.abrirPassoInstagramVinculado = function abrirPassoInstagramVinculado() {
+  const modal = document.getElementById("modal_passo_instagram_vinculado");
+  if (!modal) return;
+  const link = document.getElementById("passo_instagram_vinculado_link");
+  if (link) link.href = linkInstagramBusinessSettings;
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+};
+
+window.fecharPassoInstagramVinculado = function fecharPassoInstagramVinculado() {
+  const modal = document.getElementById("modal_passo_instagram_vinculado");
+  if (!modal) return;
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+};
+
+window.abrirPassoInstagramSeparada = function abrirPassoInstagramSeparada() {
+  const modal = document.getElementById("modal_passo_instagram_separada");
+  if (!modal) return;
+  const link = document.getElementById("passo_instagram_separada_link");
+  if (link) link.href = linkInstagramBusinessSettings;
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+};
+
+window.fecharPassoInstagramSeparada = function fecharPassoInstagramSeparada() {
+  const modal = document.getElementById("modal_passo_instagram_separada");
+  if (!modal) return;
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+};
+
+window.abrirPassoInstagramComercial = function abrirPassoInstagramComercial() {
+  const modal = document.getElementById("modal_passo_instagram_comercial");
+  if (!modal) return;
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+};
+
+window.fecharPassoInstagramComercial = function fecharPassoInstagramComercial() {
+  const modal = document.getElementById("modal_passo_instagram_comercial");
+  if (!modal) return;
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+};
 
 // Atribuicao explicita em window (em vez de so "function abrirPassoGoogleConta() {}")
 // pra garantir que o onclick inline do botao sempre encontre a funcao, mesmo se

@@ -7074,6 +7074,20 @@ body.tema-claro .cal-nav span { color: #111827; }
   margin-bottom: 16px;
 }
 
+/* Abas por plataforma dentro do formulario "Criar Campanha" — mesmo visual
+   das abas do drawer de detalhes (.campanha-drawer-aba), container proprio
+   so pra nao confundir com o seletor de "quais redes publicar" (.plat-sel-btn). */
+.campanha-criar-abas {
+
+  display: flex;
+
+  gap: 6px;
+
+  flex-wrap: wrap;
+
+  margin: 4px 0 16px;
+}
+
 .campanha-drawer-aba {
 
   padding: 6px 12px;
@@ -17350,7 +17364,9 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
             style="display:none;"
           ></div>
         </div>
-  
+
+        <div id="campanha_plat_abas" class="campanha-criar-abas" style="display:none;"></div>
+
         <!-- ═══ SEÇÃO 1: CONFIGURAÇÃO DA CAMPANHA ═══ -->
         <details class="advanced-campaign" id="bloco_configuracao_campanha" open>
           <summary>📋 Configuração da campanha</summary>
@@ -25799,6 +25815,12 @@ function toggleCriarCampanha() {
 
 const redesSelecionadasCampanha = new Set();
 
+// Plataformas que ganham aba própria dentro do formulário de Criar Campanha
+// quando 2+ delas estão marcadas ao mesmo tempo. LinkedIn/Kwai continuam
+// mostrando/escondendo campos do jeito de sempre, sem aba.
+const PLATAFORMAS_COM_ABA_CAMPANHA = ["meta", "google", "tiktok"];
+let abaAtivaCampanha = null;
+
 function selecionarPlataformaCampanha(plat) {
   const btn = document.querySelector(`.plat-sel-btn[data-plat="${plat}"]`);
   if (!btn) return;
@@ -25828,11 +25850,57 @@ function selecionarPlataformaCampanha(plat) {
 }
 
 function aplicarRedesCampanha() {
+  const platsComAbaMarcadas =
+    PLATAFORMAS_COM_ABA_CAMPANHA.filter(p => redesSelecionadasCampanha.has(p));
+
+  if (platsComAbaMarcadas.length < 2) {
+    abaAtivaCampanha = null;
+  } else if (!abaAtivaCampanha || !platsComAbaMarcadas.includes(abaAtivaCampanha)) {
+    abaAtivaCampanha = platsComAbaMarcadas[0];
+  }
+
+  renderizarAbasCampanha(platsComAbaMarcadas);
+
   document.querySelectorAll("[data-plat-only]").forEach(el => {
     const redes = el.dataset.platOnly.split(",");
-    const mostrar = redes.some(r => redesSelecionadasCampanha.has(r));
-    el.style.display = mostrar ? "" : "none";
+    const mostrarPorPlataforma = redes.some(r => redesSelecionadasCampanha.has(r));
+
+    // Campo que nao toca nenhuma das plataformas com aba (ex: so linkedin/kwai)
+    // continua so sob controle da checagem de plataforma acima, sem aba.
+    const tocaAbaGerenciada = redes.some(r => PLATAFORMAS_COM_ABA_CAMPANHA.includes(r));
+    const mostrarPorAba =
+      !abaAtivaCampanha || !tocaAbaGerenciada || redes.includes(abaAtivaCampanha);
+
+    el.style.display = (mostrarPorPlataforma && mostrarPorAba) ? "" : "none";
   });
+}
+
+// Faixa de abas (Meta/Google/TikTok) do formulario de Criar Campanha — só
+// aparece quando 2+ dessas plataformas estao marcadas juntas. Reaproveita
+// platBadge() pro mesmo icone/nome/cor usados no resto do app.
+function renderizarAbasCampanha(platsComAba) {
+  const container = document.getElementById("campanha_plat_abas");
+  if (!container) return;
+
+  if (!platsComAba || platsComAba.length < 2) {
+    container.style.display = "none";
+    container.innerHTML = "";
+    return;
+  }
+
+  container.style.display = "";
+  container.innerHTML = platsComAba.map(p => `
+    <button
+      type="button"
+      class="campanha-drawer-aba${p === abaAtivaCampanha ? " ativa" : ""}"
+      onclick="selecionarAbaCampanha('${p}')"
+    >${platBadge(p)}</button>
+  `).join("");
+}
+
+function selecionarAbaCampanha(plat) {
+  abaAtivaCampanha = plat;
+  aplicarRedesCampanha();
 }
 
 let destinoCampanhaSelecionado = "lead_ads";

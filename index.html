@@ -7063,6 +7063,71 @@ body.tema-claro .cal-nav span { color: #111827; }
   width: 520px;
 }
 
+.campanha-drawer-abas {
+
+  display: flex;
+
+  gap: 6px;
+
+  flex-wrap: wrap;
+
+  margin-bottom: 16px;
+}
+
+.campanha-drawer-aba {
+
+  padding: 6px 12px;
+
+  border-radius: 8px;
+
+  border: 1px solid rgba(255,255,255,0.2);
+
+  background: rgba(255,255,255,0.06);
+
+  color: inherit;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.campanha-drawer-aba.ativa {
+
+  background: rgba(99,102,241,0.25);
+
+  border-color: rgba(99,102,241,0.6);
+}
+
+.campanha-drawer-painel-erro {
+
+  padding: 14px;
+
+  border-radius: 10px;
+
+  background: rgba(250,204,21,0.08);
+
+  border: 1px solid rgba(250,204,21,0.3);
+
+  margin-bottom: 16px;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+.campanha-drawer-acoes-aba {
+
+  display: flex;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+
+  margin-bottom: 16px;
+}
+
 .detalhes-grid {
 
   display: grid;
@@ -21821,13 +21886,24 @@ function campanhaEncodedPorChave(chave) {
   return encodeURIComponent(JSON.stringify(campanha));
 }
 
-function abrirCampanhaDrawerPorChave(chave) {
-  const encoded =
-    campanhaEncodedPorChave(chave);
+// Recebe uma ou mais chaves (uma por plataforma, quando a campanha foi
+// publicada em mais de uma rede ao mesmo tempo — mesmo publicacao_grupo_id)
+// e abre o drawer com uma aba por linha.
+function abrirCampanhaDrawerPorChaves(chaves, chaveAtivaInicial) {
+  const lista =
+    (Array.isArray(chaves) ? chaves : [chaves]).filter(Boolean);
 
-  if (encoded) {
-    abrirCampanhaDrawer(encoded);
+  const pares =
+    lista
+      .map(chave => ({ chave, campanha: obterCampanhaRenderizada(chave) }))
+      .filter(p => p.campanha);
+
+  if (!pares.length) {
+    alert("Nao foi possivel carregar os dados desta campanha. Clique em Sincronizar e tente novamente.");
+    return;
   }
+
+  abrirCampanhaDrawer(pares, chaveAtivaInicial || pares[0].chave);
 }
 
 async function abrirEdicaoCampanhaPorChave(chave) {
@@ -22830,7 +22906,7 @@ async function carregarGanhoProjetadoMeta(token) {
       economiaReal != null
         ? `
           <div class="iapm-gain-row">
-            <span title="Compara o custo por lead de hoje com a média dos dias anteriores do período — mostra se o custo está melhorando ou piorando, sem relação com o Conversion Leads (que ainda nem está otimizando essa campanha).">Tendência recente</span>
+            <span title="Compara o custo por lead dos últimos 3 dias com a média dos dias anteriores do período — mostra se o custo está melhorando ou piorando, sem relação com o Conversion Leads (que ainda nem está otimizando essa campanha). Usa uma janela de 3 dias em vez de só hoje pra não oscilar demais em contas com poucos leads por dia.">Tendência recente</span>
             <b style="color:${economiaReal >= 0 ? '#4ade80' : '#fb7185'};">${Math.abs(economiaReal).toFixed(1)}% ${economiaReal >= 0 ? "melhor" : "pior"}</b>
           </div>
         `
@@ -26897,7 +26973,7 @@ function configurarCliquesDinamicos() {
   document.addEventListener("click", async (event) => {
     try {
       const acaoCampanha =
-        event.target.closest("#campanhas_lista [data-campanha-action]");
+        event.target.closest("#campanhas_lista [data-campanha-action], #campanha_drawer_conteudo [data-campanha-action]");
 
       if (acaoCampanha) {
         event.preventDefault();
@@ -26933,8 +27009,10 @@ function configurarCliquesDinamicos() {
 
         if (action === "toggle" && typeof toggleCampanha === "function") {
           toggleCampanha(campanha.campaign_id, campanha.status);
-        } else if (action === "detalhes" && typeof abrirCampanhaDrawerPorChave === "function") {
-          abrirCampanhaDrawerPorChave(acaoCampanha.dataset.campanhaKey);
+        } else if (action === "detalhes" && typeof abrirCampanhaDrawerPorChaves === "function") {
+          const chavesJson = acaoCampanha.dataset.campanhaKeys;
+          const chaves = chavesJson ? JSON.parse(chavesJson) : [acaoCampanha.dataset.campanhaKey];
+          abrirCampanhaDrawerPorChaves(chaves, acaoCampanha.dataset.campanhaKey);
         } else if (action === "editar" && typeof abrirEdicaoCampanhaPorChave === "function") {
           abrirEdicaoCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
         } else if (action === "duplicar" && typeof duplicarCampanhaPorChave === "function") {
@@ -27707,7 +27785,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
   const leituraCplTexto =
     economia === null ||
     economia === undefined
-      ? "Historico insuficiente para comparar o CPL de hoje."
+      ? "Historico insuficiente para comparar a tendencia recente."
       : economia >= 0
       ? `${formatarPercentualPerformance(economia)} melhor que a media recente.`
       : `${formatarPercentualPerformance(Math.abs(economia))} acima da media recente.`;
@@ -33630,6 +33708,20 @@ function platNome(plataforma) {
   return (PLATAFORMA_META[id] || { nome: id }).nome;
 }
 
+// O que cada plataforma suporta no drawer de detalhes da campanha. Hoje só a
+// Meta tem preview real de anúncio (fala direto com graph.facebook.com) —
+// as outras redes não têm endpoint equivalente no backend ainda.
+const CAPACIDADES_PLATAFORMA = {
+  meta:     { previewReal: true },
+  google:   { previewReal: false },
+  tiktok:   { previewReal: false },
+  linkedin: { previewReal: false },
+  kwai:     { previewReal: false },
+};
+function capacidadesPlataforma(plataforma) {
+  return CAPACIDADES_PLATAFORMA[(plataforma || "meta").toLowerCase()] || { previewReal: false };
+}
+
 // =============================================
 //   🔧 AÇÕES RÁPIDAS DE CONFIGURAÇÃO POR PLATAFORMA
 // =============================================
@@ -36395,8 +36487,11 @@ async function carregarCampanhas() {
     document.getElementById("campanhas_contador");
 
   if (contador) {
+    // Campanhas do mesmo publicacao_grupo_id contam como 1 (viram um card só).
     const total =
-      campanhasFiltradas.length;
+      new Set(
+        campanhasFiltradas.map((c, i) => c.publicacao_grupo_id || `__linha_${i}`)
+      ).size;
 
     contador.innerText =
       `${total} ${total === 1 ? "filtrada" : "filtradas"}`;
@@ -36419,11 +36514,52 @@ async function carregarCampanhas() {
     return;
   }
 
+  // Campanhas publicadas em mais de uma rede ao mesmo tempo compartilham um
+  // publicacao_grupo_id (gerado no momento da publicacao multi-rede). Elas
+  // viram um card unico na lista — so a linha "principal" (Meta primeiro,
+  // senao a primeira do grupo) desenha o card; as demais ficam disponiveis
+  // como abas dentro do drawer de Detalhes desse card (abrirCampanhaDrawer).
+  const chavePorLinhaCampanha = new Map();
+  campanhasFiltradas.forEach((c, indice) => {
+    chavePorLinhaCampanha.set(c, registrarCampanhaRenderizada(c, indice));
+  });
+
+  const ORDEM_PLATAFORMA_GRUPO = { meta: 0, google: 1, tiktok: 2, linkedin: 3, kwai: 4 };
+  const gruposPublicacaoCampanha = new Map();
+  campanhasFiltradas.forEach(c => {
+    const gid = c.publicacao_grupo_id;
+    if (!gid) return;
+    if (!gruposPublicacaoCampanha.has(gid)) gruposPublicacaoCampanha.set(gid, []);
+    gruposPublicacaoCampanha.get(gid).push(c);
+  });
+  gruposPublicacaoCampanha.forEach((linhas, gid) => {
+    // Grupo com so 1 linha visivel agora (as outras podem ter sido filtradas
+    // pelo status atual, ou ainda nao sincronizadas) nao tem o que agrupar.
+    if (linhas.length < 2) { gruposPublicacaoCampanha.delete(gid); return; }
+    linhas.sort((a, b) =>
+      (ORDEM_PLATAFORMA_GRUPO[a.plataforma] ?? 9) - (ORDEM_PLATAFORMA_GRUPO[b.plataforma] ?? 9)
+    );
+  });
+
   const _campanhasHTMLParts = [];
   campanhasFiltradas.forEach((c, indiceCampanha) => {
 
+    const linhasGrupoCampanha =
+      c.publicacao_grupo_id ? gruposPublicacaoCampanha.get(c.publicacao_grupo_id) : null;
+
+    // So a linha principal do grupo desenha card — as outras ja estao
+    // registradas no cache acima e aparecem como aba dentro do drawer dela.
+    if (linhasGrupoCampanha && linhasGrupoCampanha[0] !== c) {
+      return;
+    }
+
     const campanhaCacheKey =
-      registrarCampanhaRenderizada(c, indiceCampanha);
+      chavePorLinhaCampanha.get(c);
+
+    const chavesGrupoCampanha =
+      linhasGrupoCampanha
+        ? linhasGrupoCampanha.map(l => chavePorLinhaCampanha.get(l))
+        : [campanhaCacheKey];
 
     const usuarioReceptorCampanha =
       usuarioEhCorretorReceptor();
@@ -36565,7 +36701,9 @@ async function carregarCampanhas() {
                 ${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}
               </span>
             ` : ""}
-            ${platBadge(c.plataforma || "meta")}
+            ${linhasGrupoCampanha
+              ? linhasGrupoCampanha.map(l => platBadge(l.plataforma || "meta")).join("")
+              : platBadge(c.plataforma || "meta")}
             <span class="badge meta" style="display:none;">${escaparHtml(c.origem)}</span>
           </div>
 
@@ -36934,8 +37072,9 @@ async function carregarCampanhas() {
             type="button"
             data-campanha-action="detalhes"
             data-campanha-key="${campanhaCacheKey}"
-            title="Detalhes"
-            onclick="abrirCampanhaDrawerPorChave('${campanhaCacheKey}')"
+            data-campanha-keys='${JSON.stringify(chavesGrupoCampanha)}'
+            title="${linhasGrupoCampanha ? `Detalhes (${linhasGrupoCampanha.length} plataformas)` : "Detalhes"}"
+            onclick="abrirCampanhaDrawerPorChaves(JSON.parse(this.dataset.campanhaKeys), '${campanhaCacheKey}')"
           >
             ⚙️
           </button>
@@ -37368,72 +37507,95 @@ function formatarLocalidadesResumo(cfg) {
   return null;
 }
 
-function abrirCampanhaDrawer(campanhaEncoded) {
-
-  let campanha = null;
-
-  try {
-    campanha =
-      JSON.parse(
-        decodeURIComponent(campanhaEncoded)
-      );
-  } catch (err) {
-    console.error(
-      "ERRO CAMPANHA DRAWER:",
-      err
-    );
-    return;
-  }
-
-  const drawer =
-    document.getElementById(
-      "campanhaDrawer"
-    );
-
-  const titulo =
-    document.getElementById(
-      "campanha_drawer_nome"
-    );
-
-  const conteudo =
-    document.getElementById(
-      "campanha_drawer_conteudo"
-    );
-
-  if (!drawer || !titulo || !conteudo) {
-    return;
-  }
-
+// Painel de UMA plataforma dentro do drawer (uma campanha publicada em N
+// redes tem N linhas/N chamadas desta funcao, uma por aba). `chave` é a
+// chave de cache dessa linha especifica, usada pelos botoes de acao.
+function renderizarPainelPlataformaCampanha(campanha, chave) {
   const cfg =
     campanha.configuracoes_avancadas || {};
   const campanhaJsonSeguro =
     codificarJsonInline(campanha);
+  const ehMetaPainel =
+    (campanha.plataforma || "meta") === "meta";
+  const aindaNaoPublicada =
+    campanhaEhRascunhoLocal(campanha) && !campanhaEstaExcluida(campanha);
 
-  titulo.innerText =
-    campanha.nome || "Campanha";
-
-  conteudo.innerHTML = `
-    <div class="preview-anuncio-meta-box">
-      <h4>Anúncio real na Meta</h4>
-      <p>
-        Veja o anúncio exatamente como a Meta exibe, com dados atualizados direto do Facebook/Instagram.
-      </p>
-      <button
-        class="btn-reanalisar-ia"
-        onclick="carregarPreviewAnuncioCampanha(${Number(campanha.id)}, this)"
-      >
-        Ver anúncio real
-      </button>
-      <div
-        id="preview_anuncio_meta_resultado"
-        class="preview-anuncio-meta-resultado"
-      ></div>
+  const acoesPainel = `
+    <div class="campanha-drawer-acoes-aba">
+      ${campanhaEstaExcluida(campanha)
+        ? `
+          <button class="btn-acao" type="button" data-campanha-action="restaurar" data-campanha-key="${chave}">↩ Restaurar</button>
+          <button class="btn-acao" type="button" data-campanha-action="excluir-definitivo" data-campanha-key="${chave}">🗑 Excluir definitivamente</button>
+        `
+        : `
+          <button class="btn-acao" type="button" onclick="abrirEdicaoCampanhaPorChave('${chave}')">✏️ Editar</button>
+          ${aindaNaoPublicada
+            ? `<button class="btn-acao" type="button" onclick="publicarCampanhaRecebida(${Number(campanha.id)}, this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">🚀 Publicar</button>`
+            : campanhaEstaAtiva(campanha)
+              ? `<button class="btn-acao" type="button" onclick="toggleCampanha('${campanha.campaign_id}', '${campanha.status}', this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">⏸ Pausar</button>`
+              : `<button class="btn-acao" type="button" onclick="toggleCampanha('${campanha.campaign_id}', '${campanha.status}', this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">▶ Publicar</button>`
+          }
+          ${!usuarioEhCorretorReceptor() ? `
+            <button class="btn-acao" type="button" data-campanha-action="duplicar" data-campanha-key="${chave}">📋 Duplicar</button>
+            ${usuarioPodeEncaminharCampanhas() && !campanha.recebida_por_encaminhamento
+              ? `<button class="btn-acao" type="button" data-campanha-action="encaminhar" data-campanha-key="${chave}">➡️ Encaminhar</button>`
+              : ""}
+          ` : ""}
+          <button class="btn-acao" type="button" data-campanha-action="excluir" data-campanha-key="${chave}">🗑 Excluir</button>
+        `}
     </div>
+  `;
+
+  // Perna do grupo que ainda nao publicou ou falhou ao publicar nesta
+  // plataforma: nada real pra mostrar em metricas/IA ainda.
+  if (aindaNaoPublicada || campanha.erro_publicacao) {
+    return `
+      <div class="campanha-drawer-painel-erro">
+        ${campanha.erro_publicacao
+          ? `⚠️ ${escaparHtml(campanha.erro_publicacao)}`
+          : `⏳ Ainda não publicada em ${escaparHtml(platNome(campanha.plataforma))}.`}
+      </div>
+      ${acoesPainel}
+    `;
+  }
+
+  const previewBox =
+    capacidadesPlataforma(campanha.plataforma).previewReal
+      ? `
+        <div class="preview-anuncio-meta-box">
+          <h4>Anúncio real na Meta</h4>
+          <p>
+            Veja o anúncio exatamente como a Meta exibe, com dados atualizados direto do Facebook/Instagram.
+          </p>
+          <button
+            class="btn-reanalisar-ia"
+            onclick="carregarPreviewAnuncioCampanha(${Number(campanha.id)}, this)"
+          >
+            Ver anúncio real
+          </button>
+          <div
+            id="preview_anuncio_meta_resultado"
+            class="preview-anuncio-meta-resultado"
+          ></div>
+        </div>
+      `
+      : "";
+
+  return `
+    ${acoesPainel}
+
+    ${campanha.meta_disponivel === false ? `
+      <div class="campanha-drawer-painel-erro">
+        ⚠️ ${escaparHtml(campanha.erro_meta || `Métricas indisponíveis para ${platNome(campanha.plataforma)}.`)}
+      </div>
+    ` : ""}
+
+    ${previewBox}
 
     <div class="ia-ouro-destaque">
       <h4>IA Ouro - Analise de campanha</h4>
       <p>
-        Auditoria completa como um gestor de trafego pago senior: CPL, CTR, CPC, pacing de orcamento, segmentacao, criativo, lance/CBO e formulario — com segunda opiniao de outra IA quando disponivel.
+        Auditoria completa como um gestor de trafego pago senior, calibrada pra ${escaparHtml(platNome(campanha.plataforma))}: CPL, CTR, CPC, pacing de orcamento, segmentacao, criativo, lance/orcamento e formulario — com segunda opiniao de outra IA quando disponivel.
       </p>
       <button
         class="btn-reanalisar-ia"
@@ -37453,7 +37615,7 @@ function abrirCampanhaDrawer(campanhaEncoded) {
     <div class="detalhes-grid">
       ${detalheItem("Status", campanha.status)}
       ${detalheItem("Origem", campanha.origem)}
-      ${detalheItem("ID da campanha Meta", campanha.campaign_id)}
+      ${detalheItem("ID da campanha", campanha.campaign_id)}
       ${detalheItem("ID do conjunto", campanha.adset_id || cfg.adset_id)}
       ${detalheItem("ID do anúncio", campanha.ad_id || cfg.ad_id)}
       ${detalheItem("ID do formulário", campanha.form_id || cfg.form_id)}
@@ -37481,12 +37643,12 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ${detalheItem("Dispositivos", cfg.dispositivos)}
       ${detalheItem("Início", cfg.inicio ? new Date(cfg.inicio).toLocaleString("pt-BR") : "-")}
       ${detalheItem("Término", cfg.fim ? new Date(cfg.fim).toLocaleString("pt-BR") : "-")}
-      ${detalheItem("Controle de custo", cfg.bid_strategy)}
-      ${detalheItem("Valor de controle", cfg.bid_amount ? formatarMoeda(cfg.bid_amount) : "-")}
+      ${ehMetaPainel ? detalheItem("Controle de custo", cfg.bid_strategy) : ""}
+      ${ehMetaPainel ? detalheItem("Valor de controle", cfg.bid_amount ? formatarMoeda(cfg.bid_amount) : "-") : ""}
       ${detalheItem("Formulário de qualidade", cfg.formulario_qualidade ? "Ativo" : "Não usado")}
-      ${detalheItem("Público Advantage+ Meta", (cfg.advantage_audience ?? true) ? "Ativo" : "Não usado")}
-      ${detalheItem("CBO (otimização de orçamento)", (cfg.cbo ?? true) ? "Ativo — Meta distribui automaticamente" : "Desativado — orçamento por conjunto")}
-      ${detalheItem("Janela de atribuição", cfg.attribution_spec || "Padrão da Meta")}
+      ${ehMetaPainel ? detalheItem("Público Advantage+ Meta", (cfg.advantage_audience ?? true) ? "Ativo" : "Não usado") : ""}
+      ${ehMetaPainel ? detalheItem("CBO (otimização de orçamento)", (cfg.cbo ?? true) ? "Ativo — Meta distribui automaticamente" : "Desativado — orçamento por conjunto") : ""}
+      ${ehMetaPainel ? detalheItem("Janela de atribuição", cfg.attribution_spec || "Padrão da Meta") : ""}
       ${detalheItem("Públicos personalizados", cfg.custom_audiences?.length ? `${cfg.custom_audiences.length} público(s) selecionado(s)` : "Nenhum")}
       ${detalheItem("Conta Instagram", cfg.instagram_actor_id)}
       ${detalheItem("Interesses detalhados", Array.isArray(cfg.interesses_detalhados) ? cfg.interesses_detalhados.map(i => i?.nome || i?.name || String(i)).filter(Boolean) : cfg.interesses_detalhados, "full")}
@@ -37517,8 +37679,75 @@ function abrirCampanhaDrawer(campanhaEncoded) {
       ])}
     </div>
   `;
+}
+
+// Guarda os pares {chave, campanha} do drawer aberto no momento, pra trocar
+// de aba sem precisar re-resolver tudo a cada clique.
+let campanhaDrawerParesAtuais = [];
+
+function abrirCampanhaDrawer(pares, chaveAtivaInicial) {
+  if (!Array.isArray(pares) || !pares.length) {
+    return;
+  }
+
+  const drawer =
+    document.getElementById("campanhaDrawer");
+  const titulo =
+    document.getElementById("campanha_drawer_nome");
+  const abasEl =
+    document.getElementById("campanha_drawer_abas");
+  const conteudo =
+    document.getElementById("campanha_drawer_conteudo");
+
+  if (!drawer || !titulo || !conteudo || !abasEl) {
+    return;
+  }
+
+  campanhaDrawerParesAtuais = pares;
+
+  titulo.innerText =
+    pares[0].campanha.nome || "Campanha";
+
+  if (pares.length > 1) {
+    abasEl.style.display = "";
+    abasEl.innerHTML = pares.map(p => `
+      <button
+        type="button"
+        class="campanha-drawer-aba"
+        data-drawer-aba-chave="${p.chave}"
+        onclick="ativarAbaCampanhaDrawer('${p.chave}')"
+      >${platBadge(p.campanha.plataforma || "meta")}</button>
+    `).join("");
+  } else {
+    abasEl.style.display = "none";
+    abasEl.innerHTML = "";
+  }
+
+  ativarAbaCampanhaDrawer(chaveAtivaInicial || pares[0].chave);
 
   drawer.classList.add("active");
+}
+
+function ativarAbaCampanhaDrawer(chave) {
+  const par =
+    campanhaDrawerParesAtuais.find(p => p.chave === chave) ||
+    campanhaDrawerParesAtuais[0];
+
+  if (!par) return;
+
+  document
+    .querySelectorAll("#campanha_drawer_abas .campanha-drawer-aba")
+    .forEach(botao => {
+      botao.classList.toggle("ativa", botao.dataset.drawerAbaChave === par.chave);
+    });
+
+  const conteudo =
+    document.getElementById("campanha_drawer_conteudo");
+
+  if (conteudo) {
+    conteudo.innerHTML =
+      renderizarPainelPlataformaCampanha(par.campanha, par.chave);
+  }
 }
 
 function fecharCampanhaDrawer() {
@@ -43626,6 +43855,8 @@ async function enviarFeedback() {
     </div>
 
     <div class="lead-drawer-body">
+
+      <div id="campanha_drawer_abas" class="campanha-drawer-abas" style="display:none;"></div>
 
       <div id="campanha_drawer_conteudo">
       </div>

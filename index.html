@@ -21922,6 +21922,168 @@ function abrirCampanhaDrawerPorChaves(chaves, chaveAtivaInicial) {
   abrirCampanhaDrawer(pares, chaveAtivaInicial || pares[0].chave);
 }
 
+// Grupo de linhas (uma por plataforma) sendo editado agora no modal, quando
+// a campanha faz parte de uma publicacao multi-rede. Vazio = edicao avulsa
+// (comportamento antigo, sem abas).
+let camposEdicaoGrupo = [];
+let abaEdicaoAtivaGrupo = null;
+
+// Porta de entrada pra editar um grupo inteiro (uma ou mais linhas). Com 1
+// chave so, cai no fluxo de sempre sem nenhuma mudanca de comportamento.
+// Salvar so existe de verdade pra Meta (unico backend com endpoint de
+// edicao, /meta/editar-campanha) — Google/TikTok abrem em modo leitura.
+async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
+  const lista =
+    (Array.isArray(chaves) ? chaves : [chaves]).filter(Boolean);
+
+  const pares =
+    lista
+      .map(chave => ({ chave, campanha: obterCampanhaRenderizada(chave) }))
+      .filter(p => p.campanha);
+
+  if (!pares.length) {
+    alert("Nao foi possivel carregar os dados desta campanha. Clique em Sincronizar e tente novamente.");
+    return;
+  }
+
+  camposEdicaoGrupo = pares;
+
+  if (pares.length < 2) {
+    esconderAbasEdicaoCampanha();
+    await abrirEdicaoCampanhaPorChave(pares[0].chave);
+    return;
+  }
+
+  const parMeta =
+    pares.find(p => (p.campanha.plataforma || "meta") === "meta");
+
+  const chaveInicial =
+    (chaveAtivaInicial && pares.some(p => p.chave === chaveAtivaInicial))
+      ? chaveAtivaInicial
+      : (parMeta?.chave || pares[0].chave);
+
+  renderizarAbasEdicaoCampanha(pares, chaveInicial);
+
+  if (parMeta) {
+    // Fluxo existente, 100% inalterado — so reaproveitado aqui.
+    await abrirEdicaoCampanhaPorChave(parMeta.chave);
+  } else {
+    abrirModalEdicaoSomenteLeitura(pares[0].campanha);
+  }
+
+  ativarAbaEdicaoCampanha(chaveInicial);
+}
+
+function renderizarAbasEdicaoCampanha(pares, chaveAtiva) {
+  const container = document.getElementById("editar_campanha_abas");
+  if (!container) return;
+
+  if (!pares || pares.length < 2) {
+    container.style.display = "none";
+    container.innerHTML = "";
+    return;
+  }
+
+  container.style.display = "";
+  container.innerHTML = pares.map(p => `
+    <button
+      type="button"
+      class="campanha-drawer-aba${p.chave === chaveAtiva ? " ativa" : ""}"
+      data-aba-edicao-chave="${p.chave}"
+      onclick="ativarAbaEdicaoCampanha('${p.chave}')"
+    >${platBadge(p.campanha.plataforma || "meta")}</button>
+  `).join("");
+}
+
+// Trocar de aba e so visual: a Meta sempre usa os mesmos campos reais
+// (nunca precisam recarregar valor nenhum), as outras mostram um resumo
+// estatico no lugar. Nada e recarregado/reenviado ao trocar de aba.
+function ativarAbaEdicaoCampanha(chave) {
+  abaEdicaoAtivaGrupo = chave;
+
+  document
+    .querySelectorAll("#editar_campanha_abas .campanha-drawer-aba")
+    .forEach(botao => {
+      botao.classList.toggle("ativa", botao.dataset.abaEdicaoChave === chave);
+    });
+
+  const par = camposEdicaoGrupo.find(p => p.chave === chave);
+  if (!par) return;
+
+  const ehMeta = (par.campanha.plataforma || "meta") === "meta";
+  const camposEl = document.getElementById("editar_campanha_campos");
+  const resumoEl = document.getElementById("editar_campanha_resumo_outra_plataforma");
+  const btnSalvar = document.getElementById("editar_campanha_btn_salvar");
+  const nomeEl = document.getElementById("editar_campanha_nome");
+
+  if (nomeEl) nomeEl.textContent = par.campanha.nome || "Campanha";
+  if (camposEl) camposEl.style.display = ehMeta ? "" : "none";
+  if (btnSalvar) btnSalvar.style.display = ehMeta ? "" : "none";
+
+  if (resumoEl) {
+    resumoEl.style.display = ehMeta ? "none" : "";
+    resumoEl.innerHTML = ehMeta ? "" : renderizarResumoEdicaoSomenteLeitura(par.campanha);
+  }
+}
+
+function renderizarResumoEdicaoSomenteLeitura(campanha) {
+  const cfg = campanha.configuracoes_avancadas || {};
+  return `
+    <div class="campanha-drawer-painel-erro">
+      ✏️ Edição direta ainda não está disponível para ${escaparHtml(platNome(campanha.plataforma))} por aqui — use Pausar, Duplicar ou Excluir na lista (ou no drawer de Detalhes) enquanto isso não é suportado.
+    </div>
+    <div class="detalhes-grid">
+      ${detalheItem("Status", campanha.status)}
+      ${detalheItem("ID da campanha", campanha.campaign_id)}
+      ${campanha.daily_budget ? detalheItem("Orçamento/dia", "R$ " + Number(campanha.daily_budget / 100).toFixed(2)) : ""}
+      ${detalheItem("Título do anúncio", cfg.titulo)}
+      ${detalheItem("Texto do anúncio", cfg.texto, "full")}
+      ${detalheItem("Descrição", cfg.descricao, "full")}
+    </div>
+  `;
+}
+
+// Caso raro: grupo sem nenhuma linha Meta (ex: so Google+TikTok juntas) —
+// nada editavel, so mostra o modal ja em modo leitura.
+function abrirModalEdicaoSomenteLeitura(campanhaRef) {
+  const nomeEl = document.getElementById("editar_campanha_nome");
+  if (nomeEl) nomeEl.textContent = campanhaRef.nome || "Campanha";
+
+  const camposEl = document.getElementById("editar_campanha_campos");
+  if (camposEl) {
+    camposEl.innerHTML = "";
+    camposEl.style.display = "none";
+  }
+
+  const btnSalvar = document.getElementById("editar_campanha_btn_salvar");
+  if (btnSalvar) btnSalvar.style.display = "none";
+
+  document.getElementById("campanhaEditarModal")?.classList.add("active");
+}
+
+function esconderAbasEdicaoCampanha() {
+  const container = document.getElementById("editar_campanha_abas");
+  if (container) {
+    container.style.display = "none";
+    container.innerHTML = "";
+  }
+
+  const resumoEl = document.getElementById("editar_campanha_resumo_outra_plataforma");
+  if (resumoEl) {
+    resumoEl.style.display = "none";
+    resumoEl.innerHTML = "";
+  }
+
+  const camposEl = document.getElementById("editar_campanha_campos");
+  if (camposEl) camposEl.style.display = "";
+
+  const btnSalvar = document.getElementById("editar_campanha_btn_salvar");
+  if (btnSalvar) btnSalvar.style.display = "";
+
+  camposEdicaoGrupo = [];
+  abaEdicaoAtivaGrupo = null;
+}
+
 async function abrirEdicaoCampanhaPorChave(chave) {
   const campanha =
     obterCampanhaRenderizada(chave);
@@ -27081,8 +27243,10 @@ function configurarCliquesDinamicos() {
           const chavesJson = acaoCampanha.dataset.campanhaKeys;
           const chaves = chavesJson ? JSON.parse(chavesJson) : [acaoCampanha.dataset.campanhaKey];
           abrirCampanhaDrawerPorChaves(chaves, acaoCampanha.dataset.campanhaKey);
-        } else if (action === "editar" && typeof abrirEdicaoCampanhaPorChave === "function") {
-          abrirEdicaoCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+        } else if (action === "editar" && typeof abrirEdicaoCampanhaPorChaves === "function") {
+          const chavesEditarJson = acaoCampanha.dataset.campanhaKeys;
+          const chavesEditar = chavesEditarJson ? JSON.parse(chavesEditarJson) : [acaoCampanha.dataset.campanhaKey];
+          abrirEdicaoCampanhaPorChaves(chavesEditar, acaoCampanha.dataset.campanhaKey);
         } else if (action === "duplicar" && typeof duplicarCampanhaPorChave === "function") {
           duplicarCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
         } else if (action === "encaminhar" && typeof abrirModalEncaminharCampanhaPorChave === "function") {
@@ -30766,6 +30930,8 @@ function abrirEdicaoCampanha(campanhaEncoded) {
 function fecharEdicaoCampanha() {
 
   try {
+
+    esconderAbasEdicaoCampanha();
 
     BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
       restaurarBloco(blocoId);
@@ -37166,8 +37332,9 @@ async function carregarCampanhas() {
                   type="button"
                   data-campanha-action="editar"
                   data-campanha-key="${campanhaCacheKey}"
+                  data-campanha-keys='${JSON.stringify(chavesGrupoCampanha)}'
                   title="Editar campanha"
-                  onclick="abrirEdicaoCampanhaPorChave('${campanhaCacheKey}')"
+                  onclick="abrirEdicaoCampanhaPorChaves(JSON.parse(this.dataset.campanhaKeys), '${campanhaCacheKey}')"
                 >
                   ✏️
                 </button>
@@ -37596,7 +37763,7 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
           <button class="btn-acao" type="button" data-campanha-action="excluir-definitivo" data-campanha-key="${chave}">🗑 Excluir definitivamente</button>
         `
         : `
-          <button class="btn-acao" type="button" onclick="abrirEdicaoCampanhaPorChave('${chave}')">✏️ Editar</button>
+          <button class="btn-acao" type="button" onclick='abrirEdicaoCampanhaPorChaves(${JSON.stringify(campanhaDrawerParesAtuais.map(p => p.chave))}, "${chave}")'>✏️ Editar</button>
           ${aindaNaoPublicada
             ? `<button class="btn-acao" type="button" onclick="publicarCampanhaRecebida(${Number(campanha.id)}, this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">🚀 Publicar</button>`
             : campanhaEstaAtiva(campanha)
@@ -44084,7 +44251,11 @@ async function enviarFeedback() {
       </p>
     </div>
 
+    <div id="editar_campanha_abas" class="campanha-drawer-abas" style="display:none;"></div>
+
     <div id="editar_campanha_campos" class="card campanha-editar-campos"></div>
+
+    <div id="editar_campanha_resumo_outra_plataforma" style="display:none;"></div>
 
     <div
       id="editar_campanha_feedback"

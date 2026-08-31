@@ -36211,7 +36211,10 @@ async function carregarStatusMeta() {
           montarSeletorContaAnunciosMeta(data);
 
         const tipoPagamentoAtivo = conta?.tipo_pagamento;
-        const pagamentoAutomaticoAtivo = tipoPagamentoAtivo === "automatico";
+        // Backend nunca envia "automatico" — o valor real e "metodo_detectado"
+        // (ver tipoPagamento em index.ts). Com "automatico" esse card nunca
+        // acendia "Em vigor", nem com cartao confirmado pela Meta.
+        const pagamentoAutomaticoAtivo = tipoPagamentoAtivo === "metodo_detectado";
         const pagamentoManualAtivo = tipoPagamentoAtivo === "manual_pre_pago";
         const rawContaId = conta?.id || "";
         const accountIdPagamento = rawContaId.replace("act_", "");

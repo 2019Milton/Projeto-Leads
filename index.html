@@ -26307,6 +26307,10 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_objetivo", "objetivo do suplemento"],
     ["#nicho_marca", "marca"],
     ["#nicho_publico_alvo", "público-alvo"],
+    ["#nicho_tipo_servico", "tipo de serviço"],
+    ["#nicho_frequencia", "frequência"],
+    ["#nicho_area_atendida", "área atendida"],
+    ["#nicho_publico_alvo_higienizacao", "público-alvo"],
     ["#adv_cbo", "CBO (otimização de orçamento)"],
     ["#adv_attribution_spec", "janela de atribuição"],
     ["#campanha_google_titulo_1", "título 1 (Google)"],
@@ -26339,6 +26343,10 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_objetivo", "objetivo do suplemento"],
     ["#nicho_marca", "marca"],
     ["#nicho_publico_alvo", "público-alvo"],
+    ["#nicho_tipo_servico", "tipo de serviço"],
+    ["#nicho_frequencia", "frequência"],
+    ["#nicho_area_atendida", "área atendida"],
+    ["#nicho_publico_alvo_higienizacao", "público-alvo"],
     ["#adv_platform_facebook", "Facebook/Instagram"],
     ["#adv_inicio_btn", "data de início"],
     ["#adv_device_mobile", "dispositivos"],
@@ -26552,6 +26560,55 @@ function aplicarCampanhaIA(indice) {
       avançado: "avancado",
       avancados: "avancado",
       avançados: "avancado"
+    }
+  );
+  preencherSelectIA(
+    "#nicho_tipo_servico",
+    s.nicho_tipo_servico || s.tipo_servico,
+    {
+      estofado: "estofados",
+      estofados: "estofados",
+      sofa: "estofados",
+      sofá: "estofados",
+      colchao: "colchoes",
+      colchão: "colchoes",
+      colchoes: "colchoes",
+      colchões: "colchoes",
+      carpete: "carpetes_tapetes",
+      carpetes: "carpetes_tapetes",
+      tapete: "carpetes_tapetes",
+      tapetes: "carpetes_tapetes",
+      "pos obra": "pos_obra",
+      "pós-obra": "pos_obra",
+      pos_obra: "pos_obra",
+      "ar condicionado": "ar_condicionado",
+      "ar-condicionado": "ar_condicionado",
+      ar_condicionado: "ar_condicionado",
+      "caixa dagua": "caixa_dagua",
+      "caixa d'agua": "caixa_dagua",
+      "caixa d'água": "caixa_dagua",
+      caixa_dagua: "caixa_dagua",
+      geral: "geral"
+    }
+  );
+  preencherSelectIA(
+    "#nicho_frequencia",
+    s.nicho_frequencia || s.frequencia,
+    {
+      avulso: "avulso",
+      avulsa: "avulso",
+      recorrente: "recorrente",
+      contrato: "recorrente"
+    }
+  );
+  preencherCampoIA("#nicho_area_atendida", s.localidade);
+  preencherSelectIA(
+    "#nicho_publico_alvo_higienizacao",
+    s.nicho_publico_alvo || s.publico_alvo,
+    {
+      residencial: "residencial",
+      comercial: "comercial",
+      industrial: "industrial"
     }
   );
   if (s.genero !== undefined && s.genero !== null) {
@@ -37910,7 +37967,10 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
         ["Objetivo do nicho", "objetivo"],
         ["Marca", "marca"],
         ["Público-alvo", "publico_alvo", "full"],
-        ["Tipo de produto", "tipo_produto"]
+        ["Tipo de produto", "tipo_produto"],
+        ["Tipo de serviço", "tipo_servico"],
+        ["Frequência", "frequencia"],
+        ["Área atendida", "area_atendida", "full"]
       ])}
     </div>
   `;
@@ -41779,6 +41839,7 @@ function corSolidaNicho(nicho = {}) {
   if (slug.includes("saude") || slug.includes("convenio") || id === 2) return "#14B8A6";
   if (slug.includes("suplement") || id === 3) return "#C2410C";
   if (slug.includes("saas") || slug.includes("plataforma") || id === 4) return "#7C3AED";
+  if (slug.includes("higien") || id === 5) return "#16A34A";
   return nicho.cor || nicho.nicho_cor || "#2563EB";
 }
 function estiloNichoBadge(nicho = {}) {
@@ -41844,6 +41905,23 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
+  if (slug.includes("higien") || id === 5) {
+    return {
+      cor,
+      bg: "#0a2416",
+      border: "#16a34a",
+      text: "#dcfce7",
+      title: "#bbf7d0",
+      inputBg: "#123420",
+      inputBorder: "#22c55e",
+      bgLight: "#f0fdf4",
+      borderLight: "#16a34a",
+      textLight: "#052e16",
+      titleLight: "#15803d",
+      inputBorderLight: "#16a34a"
+    };
+  }
+
   return {
     cor,
     bg: "#0b1f3f",
@@ -41869,11 +41947,13 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("imove")) return "Imóveis";
   if (slug.includes("suplement")) return "Suplementos";
   if (slug.includes("saas") || slug.includes("plataforma")) return "Plataforma / SaaS";
+  if (slug.includes("higien")) return "Higienização";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";
   if (id === 3) return "Suplementos";
   if (id === 4) return "Plataforma / SaaS";
+  if (id === 5) return "Higienização";
   return escaparHtml(nicho.slug || "");
 }
 
@@ -41892,7 +41972,8 @@ function detectarNichoPorNome(nomeCampanha = "") {
     saude:       ["saude", "plano", "convenio", "medico", "hospital", "clinica", "seguro saude"],
     suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
     imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
-    saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"]
+    saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"],
+    higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"]
   };
 
   for (const nicho of nichos) {
@@ -42039,6 +42120,14 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Voce ja anuncia no Facebook ou Instagram?",
     interesse: "Ex: marketing digital, CRM, Facebook Ads, gestao de leads"
   };
+  if (slug === "higienizacao") return {
+    ia:        "Opcional: descreva o servico, publico-alvo ou diferencial (ex: higienizacao de estofados e colchoes a domicilio, produtos hipoalergenicos, atendimento residencial e comercial)",
+    nome:      "Ex: Higienização de Estofados a Domicílio",
+    titulo:    "Ex: Higienização Profissional de Estofados",
+    descricao: "Ex: Equipamento profissional e produtos hipoalergênicos",
+    perguntas: "Uma pergunta por linha. Ex: Qual item você quer higienizar?",
+    interesse: "Ex: limpeza residencial, higienização de estofados, casa limpa"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -42074,6 +42163,12 @@ window.PERGUNTAS_RAPIDAS_FORMULARIO = window.PERGUNTAS_RAPIDAS_FORMULARIO || {
     "Voce ja anuncia no Facebook ou Instagram?",
     "Como organiza seus leads hoje?"
   ],
+  higienizacao: [
+    "Qual item ou ambiente voce quer higienizar?",
+    "Qual a cidade ou regiao do atendimento?",
+    "Prefere um servico avulso ou recorrente?",
+    "Tem alguma urgencia para agendar?"
+  ],
   default: [
     "Qual sua principal necessidade?",
     "Qual melhor horario para contato?",
@@ -42093,6 +42188,7 @@ function perguntasRapidasDoNicho(slug = "") {
   if (chave.includes("suplement")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.suplementos;
   if (chave.includes("saas") || chave.includes("plataforma")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.saas;
   if (chave.includes("imove")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.imoveis;
+  if (chave.includes("higien")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.higienizacao;
 
   return window.PERGUNTAS_RAPIDAS_FORMULARIO.default;
 }
@@ -42212,6 +42308,11 @@ function _salvarEstadoFormNicho(slug) {
   } else if (slug === "saas") {
     state.tipo_produto = get("nicho_tipo_produto");
     state.publico_alvo = get("nicho_publico_alvo_saas");
+  } else if (slug === "higienizacao") {
+    state.tipo_servico  = get("nicho_tipo_servico");
+    state.frequencia    = get("nicho_frequencia");
+    state.area_atendida = get("nicho_area_atendida");
+    state.publico_alvo  = get("nicho_publico_alvo_higienizacao");
   }
   window._nichoFormState[slug] = state;
 }
@@ -42258,6 +42359,11 @@ function _restaurarEstadoFormNicho(slug) {
   } else if (slug === "saas") {
     set("nicho_tipo_produto",      state.tipo_produto);
     set("nicho_publico_alvo_saas", state.publico_alvo);
+  } else if (slug === "higienizacao") {
+    set("nicho_tipo_servico",             state.tipo_servico);
+    set("nicho_frequencia",               state.frequencia);
+    set("nicho_area_atendida",            state.area_atendida);
+    set("nicho_publico_alvo_higienizacao",state.publico_alvo);
   }
 }
 
@@ -42455,6 +42561,45 @@ function selecionarNichoTab(nicho, btnEl) {
         </div>
       </div>
     `;
+  } else if (nicho.slug === "higienizacao") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de serviço ${_i('O que voce higieniza: estofados e sofas, colchoes, carpetes e tapetes, pos-obra, ar-condicionado, reservatorio de agua ou limpeza geral.')}</label>
+          <select id="nicho_tipo_servico" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="estofados">Estofados e Sofás</option>
+            <option value="colchoes">Colchões</option>
+            <option value="carpetes_tapetes">Carpetes e Tapetes</option>
+            <option value="pos_obra">Pós-Obra</option>
+            <option value="ar_condicionado">Ar-Condicionado</option>
+            <option value="caixa_dagua">Caixa D'água</option>
+            <option value="geral">Limpeza Geral</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Frequência ${_i('O servico e avulso (feito uma vez) ou recorrente (contrato periodico de manutencao)?')}</label>
+          <select id="nicho_frequencia" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="avulso">Avulso</option>
+            <option value="recorrente">Recorrente</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Para quem e o servico: clientes residenciais, comerciais (escritorios, lojas) ou industriais.')}</label>
+          <select id="nicho_publico_alvo_higienizacao" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="residencial">Residencial</option>
+            <option value="comercial">Comercial</option>
+            <option value="industrial">Industrial</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Área atendida ${_i('Informe a cidade, bairro ou regiao atendida pelo servico.')}</label>
+          <input type="text" id="nicho_area_atendida" placeholder="Ex: Zona Sul de São Paulo" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
@@ -42490,6 +42635,11 @@ function coletarDadosNichoAtivo() {
   } else if (nicho.slug === "saas") {
     dados.tipo_produto = document.getElementById("nicho_tipo_produto")?.value      || null;
     dados.publico_alvo = document.getElementById("nicho_publico_alvo_saas")?.value || null;
+  } else if (nicho.slug === "higienizacao") {
+    dados.tipo_servico  = document.getElementById("nicho_tipo_servico")?.value  || null;
+    dados.frequencia    = document.getElementById("nicho_frequencia")?.value    || null;
+    dados.area_atendida = document.getElementById("nicho_area_atendida")?.value || null;
+    dados.publico_alvo  = document.getElementById("nicho_publico_alvo_higienizacao")?.value || null;
   }
 
   return dados;
@@ -46355,7 +46505,8 @@ function detectarNichoPorNome(nomeCampanha = "") {
     saude:       ["saude", "plano", "convenio", "medico", "hospital", "clinica", "seguro saude"],
     suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
     imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
-    saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"]
+    saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"],
+    higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"]
   };
 
   for (const nicho of nichos) {
@@ -46390,6 +46541,10 @@ function corSolidaNicho(nicho = {}) {
 
   if (slug.includes("saas") || slug.includes("plataforma") || id === 4) {
     return "#7C3AED";
+  }
+
+  if (slug.includes("higien") || id === 5) {
+    return "#16A34A";
   }
 
   return nicho.cor || nicho.nicho_cor || "#2563EB";
@@ -46451,6 +46606,23 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
+  if (slug.includes("higien") || id === 5) {
+    return {
+      cor,
+      bg: "#0a2416",
+      border: "#16a34a",
+      text: "#dcfce7",
+      title: "#bbf7d0",
+      inputBg: "#123420",
+      inputBorder: "#22c55e",
+      bgLight: "#f0fdf4",
+      borderLight: "#16a34a",
+      textLight: "#052e16",
+      titleLight: "#15803d",
+      inputBorderLight: "#16a34a"
+    };
+  }
+
   return {
     cor,
     bg: "#0b1f3f",
@@ -46505,11 +46677,13 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("imove")) return "Imóveis";
   if (slug.includes("suplement")) return "Suplementos";
   if (slug.includes("saas") || slug.includes("plataforma")) return "Plataforma / SaaS";
+  if (slug.includes("higien")) return "Higienização";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";
   if (id === 3) return "Suplementos";
   if (id === 4) return "Plataforma / SaaS";
+  if (id === 5) return "Higienização";
   return escaparHtml(nicho.slug || "");
 }
 
@@ -46621,6 +46795,14 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Voce ja anuncia no Facebook ou Instagram?",
     interesse: "Ex: marketing digital, CRM, Facebook Ads, gestao de leads"
   };
+  if (slug === "higienizacao") return {
+    ia:        "Opcional: descreva o servico, publico-alvo ou diferencial (ex: higienizacao de estofados e colchoes a domicilio, produtos hipoalergenicos, atendimento residencial e comercial)",
+    nome:      "Ex: Higienização de Estofados a Domicílio",
+    titulo:    "Ex: Higienização Profissional de Estofados",
+    descricao: "Ex: Equipamento profissional e produtos hipoalergênicos",
+    perguntas: "Uma pergunta por linha. Ex: Qual item você quer higienizar?",
+    interesse: "Ex: limpeza residencial, higienização de estofados, casa limpa"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -46670,6 +46852,11 @@ function _salvarEstadoFormNicho(slug) {
   } else if (slug === "saas") {
     state.tipo_produto = get("nicho_tipo_produto");
     state.publico_alvo = get("nicho_publico_alvo_saas");
+  } else if (slug === "higienizacao") {
+    state.tipo_servico  = get("nicho_tipo_servico");
+    state.frequencia    = get("nicho_frequencia");
+    state.area_atendida = get("nicho_area_atendida");
+    state.publico_alvo  = get("nicho_publico_alvo_higienizacao");
   }
   window._nichoFormState[slug] = state;
 }
@@ -46716,6 +46903,11 @@ function _restaurarEstadoFormNicho(slug) {
   } else if (slug === "saas") {
     set("nicho_tipo_produto",      state.tipo_produto);
     set("nicho_publico_alvo_saas", state.publico_alvo);
+  } else if (slug === "higienizacao") {
+    set("nicho_tipo_servico",             state.tipo_servico);
+    set("nicho_frequencia",               state.frequencia);
+    set("nicho_area_atendida",            state.area_atendida);
+    set("nicho_publico_alvo_higienizacao",state.publico_alvo);
   }
 }
 
@@ -46910,6 +47102,45 @@ function selecionarNichoTab(nicho, btnEl) {
             <option value="freelancers">Freelancers</option>
             <option value="agencias">Agências de Marketing</option>
           </select>
+        </div>
+      </div>
+    `;
+  } else if (nicho.slug === "higienizacao") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de serviço ${_i('O que voce higieniza: estofados e sofas, colchoes, carpetes e tapetes, pos-obra, ar-condicionado, reservatorio de agua ou limpeza geral.')}</label>
+          <select id="nicho_tipo_servico" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="estofados">Estofados e Sofás</option>
+            <option value="colchoes">Colchões</option>
+            <option value="carpetes_tapetes">Carpetes e Tapetes</option>
+            <option value="pos_obra">Pós-Obra</option>
+            <option value="ar_condicionado">Ar-Condicionado</option>
+            <option value="caixa_dagua">Caixa D'água</option>
+            <option value="geral">Limpeza Geral</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Frequência ${_i('O servico e avulso (feito uma vez) ou recorrente (contrato periodico de manutencao)?')}</label>
+          <select id="nicho_frequencia" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="avulso">Avulso</option>
+            <option value="recorrente">Recorrente</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Para quem e o servico: clientes residenciais, comerciais (escritorios, lojas) ou industriais.')}</label>
+          <select id="nicho_publico_alvo_higienizacao" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="residencial">Residencial</option>
+            <option value="comercial">Comercial</option>
+            <option value="industrial">Industrial</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Área atendida ${_i('Informe a cidade, bairro ou regiao atendida pelo servico.')}</label>
+          <input type="text" id="nicho_area_atendida" placeholder="Ex: Zona Sul de São Paulo" style="margin-top:4px;">
         </div>
       </div>
     `;

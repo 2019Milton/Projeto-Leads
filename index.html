@@ -18804,13 +18804,22 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
           class="lead-filter"
           id="filtro_campanha"
         >
-      
+
           <option value="">
             Todas campanhas
           </option>
-      
+
         </select>
-      
+
+        <!-- 📣 PLATAFORMA -->
+        <select
+          class="lead-filter"
+          id="filtro_plataforma"
+          onchange="aplicarFiltrosLeads()"
+        >
+          <option value="">Todas plataformas</option>
+        </select>
+
         <!-- 📅 PERÍODO -->
         <select
           class="lead-filter"
@@ -23172,6 +23181,8 @@ function limparFiltrosLeads() {
   if (busca) busca.value = "";
   const campanha = document.getElementById("filtro_campanha");
   if (campanha) campanha.value = "";
+  const plataforma = document.getElementById("filtro_plataforma");
+  if (plataforma) plataforma.value = "";
   const periodo = document.getElementById("filtro_periodo");
   if (periodo) periodo.value = "todos";
   carregarLeads();
@@ -23204,6 +23215,7 @@ async function carregarLeads() {
   ];
   
   popularFiltroCampanhas(todosLeads);
+  popularFiltroPlataformas(todosLeads);
 
   leadsFiltradosAtuais = todosLeads;
 
@@ -23421,12 +23433,22 @@ function aplicarFiltrosLeads() {
 
   // 📢 CAMPANHA
   if (campanhaSelecionada) {
-  
+
     filtrados = filtrados.filter(
-  
+
       lead =>
         lead.campanha ===
         campanhaSelecionada
+    );
+  }
+
+  // 📣 PLATAFORMA
+  const plataformaSelecionada =
+    document.getElementById("filtro_plataforma")?.value || "";
+
+  if (plataformaSelecionada) {
+    filtrados = filtrados.filter(
+      lead => plataformaRealLead(lead) === plataformaSelecionada
     );
   }
 
@@ -34059,9 +34081,20 @@ function platBadge(plataforma) {
 // conversão (CTWA da Meta, wa.me do LinkedIn etc.), não pra rede de anúncio — quem diz
 // isso é lead.origem. Mostra o badge da plataforma real + um selo "WhatsApp" ao lado,
 // em vez do badge genérico "📣 whatsapp" desconectado de quem pagou o anúncio.
+// lead.plataforma vale 'whatsapp' pro CANAL de conversão (CTWA da Meta, wa.me
+// do LinkedIn etc.), não pra rede que pagou o anúncio — quem diz isso é
+// lead.origem. Mesma resolução usada no badge do card e no filtro de
+// plataforma da Central de Leads.
+function plataformaRealLead(lead) {
+  const canalWhatsapp = lead.plataforma === "whatsapp";
+  return canalWhatsapp
+    ? (lead.origem || "whatsapp")
+    : (lead.plataforma || lead.origem || "formulario");
+}
+
 function platBadgeComCanal(lead) {
   const canalWhatsapp = lead.plataforma === "whatsapp";
-  const idReal = canalWhatsapp ? (lead.origem || "whatsapp") : (lead.plataforma || lead.origem || "formulario");
+  const idReal = plataformaRealLead(lead);
   if (!canalWhatsapp) return platBadge(idReal);
   return `
     <span class="lead-plat-grupo">
@@ -39653,6 +39686,27 @@ function popularFiltroCampanhas(leads) {
       </option>
     `;
   });
+}
+
+function popularFiltroPlataformas(leads) {
+  const select = document.getElementById("filtro_plataforma");
+  if (!select) return;
+
+  const valorAtual = select.value;
+
+  const plataformas = [
+    ...new Set(leads.map(plataformaRealLead).filter(Boolean))
+  ];
+
+  select.innerHTML =
+    `<option value="">Todas plataformas</option>` +
+    plataformas
+      .map(id => `<option value="${id}">${escaparHtml(platNome(id))}</option>`)
+      .join("");
+
+  if (plataformas.includes(valorAtual)) {
+    select.value = valorAtual;
+  }
 }
 
 

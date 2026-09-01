@@ -33119,9 +33119,17 @@ async function carregarDashboard() {
         <div class="dashboard-panel-head">
           <div>
             <h3 ${dashboardAjuda("campanhasDetalhe")}>🚀 Campanhas em detalhe</h3>
-            <small>Status, plataforma, volume, investimento, CPL e CTR por campanha.</small>
+            <small>${
+              campanhasTotal > topCampanhas.length
+                ? `As ${topCampanhas.length} campanhas com mais leads e gasto, de ${dashboardCompacto(campanhasTotal)} no total.`
+                : "Status, plataforma, volume, investimento, CPL e CTR por campanha."
+            }</small>
           </div>
-          <span class="dashboard-pill" ${dashboardAjuda("campanhas")}>${dashboardCompacto(campanhasTotal)} campanhas</span>
+          <span class="dashboard-pill" ${dashboardAjuda("campanhas")}>${
+            campanhasTotal > topCampanhas.length
+              ? `Top ${topCampanhas.length} de ${dashboardCompacto(campanhasTotal)}`
+              : `${dashboardCompacto(campanhasTotal)} campanhas`
+          }</span>
         </div>
         ${dashboardRenderCampaignTable(topCampanhas)}
       </div>

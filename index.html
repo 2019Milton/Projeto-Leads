@@ -7518,6 +7518,14 @@ body.tema-claro .cal-nav span { color: #111827; }
   background: rgba(59,130,246,0.24);
 }
 
+.preview-anuncio-meta-aviso {
+  display: block;
+  margin: -4px 0 10px;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
 .preview-anuncio-meta-erro {
   padding: 10px 12px;
   border-radius: 10px;
@@ -26118,6 +26126,17 @@ async function aplicarDestinoCampanha() {
   const radioChecado = document.querySelector('input[name="campanha_destino"]:checked');
   destinoCampanhaSelecionado = radioChecado?.value === "whatsapp" ? "whatsapp" : "lead_ads";
 
+  // Destaque visual explícito da opção atual — o ponto nativo do rádio fica
+  // pouco visível quando desabilitado (campanha já publicada), então não dá
+  // pra confiar só nele pra indicar qual destino já está selecionado.
+  document.querySelectorAll('input[name="campanha_destino"]').forEach(input => {
+    const label = input.closest("label");
+    if (!label) return;
+    const ehAtual = input.value === destinoCampanhaSelecionado;
+    label.style.borderColor = ehAtual ? "#22c55e" : "";
+    label.style.background = ehAtual ? "rgba(34,197,94,0.12)" : "";
+  });
+
   document.querySelectorAll("[data-destino-only]").forEach(el => {
     const destinos = el.dataset.destinoOnly.split(",");
     el.style.display = destinos.includes(destinoCampanhaSelecionado) ? "" : "none";
@@ -38278,7 +38297,17 @@ async function carregarPreviewAnuncioCampanha(campanhaId, botao, adFormat) {
         `
         : "";
 
-    box.innerHTML = linkHtml + data.preview_html;
+    // O link do Instagram abre o post original (instagram_permalink_url) — sem
+    // o contexto de anúncio patrocinado, o Instagram não mostra as setas do
+    // carrossel nem o botão de CTA (WhatsApp etc.) nessa página, diferente do
+    // permalink do Facebook. O preview acima (ad_format da própria Meta) já
+    // reflete como o anúncio aparece de verdade, então isso é só um aviso.
+    const avisoInstagram =
+      data.link_rede === "instagram"
+        ? `<span class="preview-anuncio-meta-aviso">ℹ️ O link acima abre o post original no Instagram — pode não mostrar o carrossel completo nem o botão de WhatsApp (limitação do próprio Instagram). O preview abaixo já mostra como o anúncio aparece de verdade.</span>`
+        : "";
+
+    box.innerHTML = linkHtml + avisoInstagram + data.preview_html;
   } catch (err) {
     box.innerHTML =
       `<div class="preview-anuncio-meta-erro">${escaparHtml(err.message || "Erro ao carregar preview do anúncio.")}</div>`;

@@ -18569,6 +18569,16 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
           <option value="">Todas plataformas</option>
         </select>
 
+        <!-- 📷 FACEBOOK/INSTAGRAM (só do clique em Click-to-WhatsApp) -->
+        <select
+          class="lead-filter"
+          id="filtro_rede_origem"
+          onchange="aplicarFiltrosLeads()"
+          style="display:none;"
+        >
+          <option value="">Facebook/Instagram</option>
+        </select>
+
         <!-- 📅 PERÍODO -->
         <select
           class="lead-filter"
@@ -22932,6 +22942,8 @@ function limparFiltrosLeads() {
   if (campanha) campanha.value = "";
   const plataforma = document.getElementById("filtro_plataforma");
   if (plataforma) plataforma.value = "";
+  const redeOrigem = document.getElementById("filtro_rede_origem");
+  if (redeOrigem) redeOrigem.value = "";
   const periodo = document.getElementById("filtro_periodo");
   if (periodo) periodo.value = "todos";
   carregarLeads();
@@ -22965,6 +22977,7 @@ async function carregarLeads() {
   
   popularFiltroCampanhas(todosLeads);
   popularFiltroPlataformas(todosLeads);
+  popularFiltroRedeOrigem(todosLeads);
 
   leadsFiltradosAtuais = todosLeads;
 
@@ -23198,6 +23211,16 @@ function aplicarFiltrosLeads() {
   if (plataformaSelecionada) {
     filtrados = filtrados.filter(
       lead => plataformaRealLead(lead) === plataformaSelecionada
+    );
+  }
+
+  // 📷 FACEBOOK/INSTAGRAM (posicionamento real do clique, só existe em leads de Click-to-WhatsApp)
+  const redeOrigemSelecionada =
+    document.getElementById("filtro_rede_origem")?.value || "";
+
+  if (redeOrigemSelecionada) {
+    filtrados = filtrados.filter(
+      lead => lead.rede_origem === redeOrigemSelecionada
     );
   }
 
@@ -23817,6 +23840,7 @@ function criarLeadCard(lead) {
         <div class="lead-meta">
 
           ${platBadgeComCanal(lead)}
+          ${badgeRedeOrigemLead(lead)}
 
           <span>
             📍 ${escaparHtml(lead.campanha || "-")}
@@ -33227,6 +33251,19 @@ function platBadgeComCanal(lead) {
   `;
 }
 
+// De qual posicionamento (Facebook ou Instagram) esse lead especifico veio —
+// diferente de iconesPlacementMeta (que mostra onde a campanha FOI VEICULADA,
+// podendo ser as duas ao mesmo tempo): aqui é o clique real de UM lead,
+// extraido do referral de Click-to-WhatsApp (lead.rede_origem, preenchido em
+// detectarRedeOrigemReferral no backend). Reaproveita os mesmos icones de
+// ICONES_META_PUBLISHER pra ficar visualmente igual ao badge da campanha.
+function badgeRedeOrigemLead(lead) {
+  const icone = ICONES_META_PUBLISHER[lead.rede_origem];
+  if (!icone) return "";
+  const nome = lead.rede_origem === "instagram" ? "Instagram" : "Facebook";
+  return `<span class="plat-canal-whatsapp" title="Clicou no anúncio vindo do ${nome}">${icone} ${nome}</span>`;
+}
+
 // Ícones de Facebook/Instagram compartilhados pelo badge do card (plat-sub-badge,
 // abaixo) e pelo alternador do preview real do anúncio (carregarPreviewAnuncioCampanha).
 const ICONES_META_PUBLISHER = {
@@ -38922,6 +38959,37 @@ function popularFiltroPlataformas(leads) {
       .join("");
 
   if (plataformas.includes(valorAtual)) {
+    select.value = valorAtual;
+  }
+}
+
+// Só aparece quando existe pelo menos um lead com rede_origem preenchido
+// (leads de Click-to-WhatsApp) — pra não mostrar um filtro vazio/inútil pra
+// quem só usa Lead Ads ou outras plataformas sem esse dado.
+function popularFiltroRedeOrigem(leads) {
+  const select = document.getElementById("filtro_rede_origem");
+  if (!select) return;
+
+  const valorAtual = select.value;
+
+  const redes = [
+    ...new Set(leads.map(l => l.rede_origem).filter(Boolean))
+  ];
+
+  if (!redes.length) {
+    select.style.display = "none";
+    select.value = "";
+    return;
+  }
+
+  select.style.display = "";
+  select.innerHTML =
+    `<option value="">Facebook/Instagram</option>` +
+    redes
+      .map(id => `<option value="${id}">${id === "instagram" ? "Instagram" : "Facebook"}</option>`)
+      .join("");
+
+  if (redes.includes(valorAtual)) {
     select.value = valorAtual;
   }
 }

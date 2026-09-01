@@ -12574,10 +12574,11 @@ body.tema-claro .targeting-chip {
 }
 .chat-janela-fechar:hover { color: #e2e8f0; }
 
-/* ✨ Atalho flutuante pro Gerar Banner com IA — mesma posição e mesmo estilo de
-   pílula do antigo fab do ChatIALeads, cores emprestadas do próprio botão
-   "Gerar Banner com IA" de dentro de Criar Campanha (.btn-gerar-banner-ia)
-   pra manter a identidade visual do recurso. */
+/* ✨ Atalho flutuante pro Gerar/Editar Criativo — mesma posição do antigo fab do
+   ChatIALeads, cores emprestadas do próprio botão "Gerar/Editar Criativo" de
+   dentro de Criar Campanha (.btn-gerar-banner-ia). Largura travada em 190px
+   (sidebar tem 220px, o botão fica em left:24px) pra nunca vazar pra fora
+   dela — com texto em 2 linhas em vez de 1 linha larga. */
 .banner-ia-fab {
   position: fixed;
   left: 24px;
@@ -12586,16 +12587,21 @@ body.tema-claro .targeting-chip {
   z-index: 5200;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
   width: auto;
+  max-width: 190px;
   min-width: auto;
-  padding: 13px 18px;
+  padding: 12px 16px;
   border: 1px solid rgba(245,158,11,0.5);
-  border-radius: 999px;
+  border-radius: 16px;
   background: linear-gradient(135deg, #7c3aed, #f59e0b);
   color: #fff7ed;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
   box-shadow: 0 18px 44px rgba(124,58,237,0.28), 0 0 0 1px rgba(255,255,255,0.08) inset;
   cursor: pointer;
 }
@@ -17312,7 +17318,7 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
                 type="button"
                 class="btn-gerar-banner-ia"
                 onclick="abrirModalGerarBanner()"
-              >✨ Gerar Banner com IA</button>
+              >✨ Gerar/Editar Criativo</button>
               <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
               <p data-plat-only="google" style="font-size:11px;opacity:.55;margin:6px 0 0">
                 ℹ️ O anúncio do Google Ads é só texto (títulos e descrições) — as imagens acima
@@ -18288,14 +18294,14 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
       </div>
     </div>
 
-    <!-- ✨ Atalho flutuante pro Gerar Banner com IA (mesmo lugar onde ficava o ChatIALeads) -->
+    <!-- ✨ Atalho flutuante pro Gerar/Editar Criativo (mesmo lugar onde ficava o ChatIALeads) -->
     <button
       class="banner-ia-fab"
       type="button"
       onclick="abrirModalGerarBanner()"
-      title="Gerar Banner com IA"
+      title="Gerar/Editar Criativo"
     >
-      ✨ Gerar Banner com IA
+      ✨ Gerar/Editar Criativo
     </button>
 
     <!-- 🔍 LIGHTBOX (visualização de imagem do chat) -->
@@ -45181,24 +45187,25 @@ async function enviarFeedback() {
   <div class="modal-banner-ia-content">
 
     <div class="banner-ia-header">
-      <h3>✨ Gerar Banner com IA</h3>
+      <h3>✨ Gerar/Editar Criativo</h3>
       <button onclick="fecharModalGerarBanner()">✕</button>
     </div>
 
     <!-- Tabs de modo -->
     <div class="banner-ia-tabs">
       <button class="banner-ia-tab ativo" id="banner_tab_gerar" onclick="selecionarModoBanner('gerar')">
-        🎨 Gerar imagem nova
+        🎨 Gerar criativo novo
       </button>
       <button class="banner-ia-tab" id="banner_tab_editar" onclick="selecionarModoBanner('editar')">
-        ✏️ Editar imagem existente
+        ✏️ Editar criativo existente
       </button>
     </div>
 
     <!-- ── MODO GERAR NOVO ── -->
     <div id="banner_modo_gerar">
       <div class="banner-ia-info">
-        <strong>Como funciona:</strong> A IA cria uma imagem nova do zero com base na sua descrição.
+        <strong>Como funciona:</strong> A IA cria um criativo novo do zero com base na sua descrição,
+        já considerando boas práticas visuais do seu nicho.
         Selecione fotos do carrossel abaixo para usar como referência de estilo — quanto mais imagens, mais contexto a IA tem.
         Ou deixe sem nenhuma e descreva tudo no texto.
       </div>
@@ -45212,11 +45219,11 @@ async function enviarFeedback() {
       </div>
 
       <div style="margin-top:16px;">
-        <div class="banner-ia-label">Descreva o banner que você quer</div>
+        <div class="banner-ia-label">Descreva o criativo que você quer</div>
         <textarea
           id="banner_ia_prompt_gerar"
           class="banner-ia-textarea"
-          placeholder="Ex: Banner profissional para apartamento de alto padrão, fundo em tons de azul e dourado, texto 'Reserve sua unidade' em destaque, estilo moderno e sofisticado..."
+          placeholder="Ex: Criativo profissional para apartamento de alto padrão, fundo em tons de azul e dourado, texto 'Reserve sua unidade' em destaque, estilo moderno e sofisticado..."
         ></textarea>
         <div class="banner-ia-exemplos" id="banner_exemplos_gerar">
           <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Apartamento de luxo com piscina</span>
@@ -45232,7 +45239,7 @@ async function enviarFeedback() {
     <div id="banner_modo_editar" style="display:none;">
       <div class="banner-ia-info">
         <strong>Como funciona:</strong> Selecione <strong>uma imagem</strong> do carrossel como base.
-        A IA aplica as modificações que você descrever diretamente nessa imagem — adicionar texto, trocar o fundo, inserir elementos, etc.
+        A IA aplica as modificações que você descrever diretamente nesse criativo — adicionar texto, trocar o fundo, inserir elementos, etc.
       </div>
 
       <div style="margin-top:16px;">
@@ -45279,14 +45286,14 @@ async function enviarFeedback() {
       <div class="banner-ia-loading-shimmer"></div>
       <div class="banner-ia-loading-texto">
         <div class="banner-ia-spinner"></div>
-        A IA está criando seu banner...
+        A IA está criando seu criativo...
       </div>
     </div>
 
     <!-- Preview do resultado -->
     <div id="banner_ia_preview_wrap" class="banner-ia-preview-wrap">
-      <div class="banner-ia-label">Banner gerado</div>
-      <img id="banner_ia_preview_img" class="banner-ia-preview-img" src="" alt="Banner gerado">
+      <div class="banner-ia-label">Criativo gerado</div>
+      <img id="banner_ia_preview_img" class="banner-ia-preview-img" src="" alt="Criativo gerado">
       <button type="button" class="btn-primary" onclick="adicionarBannerGeradoAoCarrossel()" style="width:100%;">
         + Adicionar ao carrossel
       </button>
@@ -45806,7 +45813,7 @@ async function gerarBannerComIA() {
   const loading = document.getElementById("banner_ia_loading");
 
   if (!prompt) {
-    if (feedback) { feedback.textContent = "Descreva o banner antes de gerar."; feedback.style.display = "block"; }
+    if (feedback) { feedback.textContent = "Descreva o criativo antes de gerar."; feedback.style.display = "block"; }
     return;
   }
   if (feedback) { feedback.style.display = "none"; feedback.textContent = ""; }
@@ -45832,16 +45839,22 @@ async function gerarBannerComIA() {
   if (loading) loading.classList.add("ativo");
 
   try {
+    // Nicho ativo (aba selecionada em Criar Campanha) — deixa a IA usar direção
+    // visual apropriada ao mercado do anunciante. Se o modal foi aberto fora do
+    // fluxo de Criar Campanha (ex: atalho flutuante), window._nichoAtivo pode
+    // não existir — backend cai num guia genérico nesse caso.
+    const nichoAtivo = window._nichoAtivo?.slug || null;
+
     const res = await fetch(`${API}/ia/gerar-banner`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ usuario_id, prompt, imagens_base64: imagensBase64, modo: _modoBanner })
+      body: JSON.stringify({ usuario_id, prompt, imagens_base64: imagensBase64, modo: _modoBanner, nicho: nichoAtivo })
     });
 
     const data = await res.json();
 
     if (!res.ok || data.error) {
-      const msg = typeof data.error === "string" ? data.error : "Erro ao gerar banner";
+      const msg = typeof data.error === "string" ? data.error : "Erro ao gerar criativo";
       if (feedback) { feedback.textContent = msg; feedback.style.display = "block"; }
       return;
     }
@@ -45858,7 +45871,7 @@ async function gerarBannerComIA() {
 
   } catch (err) {
     console.error("GERAR BANNER:", err);
-    if (feedback) { feedback.textContent = "Erro de conexão ao gerar banner."; feedback.style.display = "block"; }
+    if (feedback) { feedback.textContent = "Erro de conexão ao gerar criativo."; feedback.style.display = "block"; }
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = "✨ Gerar"; }
     if (loading) loading.classList.remove("ativo");

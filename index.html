@@ -33954,6 +33954,17 @@ async function carregarDashboard() {
             <div class="dashboard-empty-state">Carregando status do Google Ads...</div>
           </div>
         </div>
+        <div class="dashboard-panel">
+          <div class="dashboard-panel-head">
+            <div>
+              <h3>🎵 Status TikTok</h3>
+              <small>Campanhas, gasto e leads de hoje no TikTok Ads, com sincronização manual.</small>
+            </div>
+          </div>
+          <div id="dashboard-status-tiktok">
+            <div class="dashboard-empty-state">Carregando status do TikTok Ads...</div>
+          </div>
+        </div>
       </div>
 
       <div id="dashboard-analytics-grid" class="dashboard-intel-grid">
@@ -33966,6 +33977,8 @@ async function carregarDashboard() {
   carregarStatusMeta();
   // Preenche o card "Status Google Ads" (usa a mesma rotina do painel de conexões)
   carregarStatusGoogle();
+  // Preenche o card "Status TikTok" (mesmo padrão dos dois acima)
+  carregarStatusTikTok();
 
   // Buscar KPIs reais
   try {
@@ -35488,6 +35501,93 @@ async function carregarStatusGoogle() {
   } catch (_) {
     if (googleInfo) googleInfo.innerHTML = `<div style="color:#f87171;font-size:13px;padding:10px 0;">Não foi possível carregar os detalhes do Google Ads.</div>`;
     if (dashboardStatusGoogle) dashboardStatusGoogle.innerHTML = `<div class="dashboard-empty-state">Não foi possível carregar o status do Google Ads.</div>`;
+  }
+}
+
+// Card "Status TikTok" do Dashboard — mesmo padrão de carregarStatusGoogle,
+// só que sem o painel duplicado em Integrações (esse já existe à parte em
+// carregarDetalhesTikTokHub).
+async function carregarStatusTikTok() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  const dashboardStatusTikTok = document.getElementById("dashboard-status-tiktok");
+  if (!dashboardStatusTikTok) return;
+
+  try {
+    const res = await fetch(`${API}/tiktok/status-completo`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const dataStatus = res.ok ? await res.json() : { conectado: false };
+
+    if (!dataStatus.conectado) {
+      dashboardStatusTikTok.innerHTML = `<div class="dashboard-empty-state">🔴 TikTok Ads não conectado. <a href="#" onclick="navegarPara('integracoes');return false;" style="color:#60a5fa;">Conectar agora →</a></div>`;
+      return;
+    }
+
+    const gastoFormatado = typeof dataStatus.gasto_hoje === "number"
+      ? dataStatus.gasto_hoje.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+      : "—";
+
+    dashboardStatusTikTok.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+          <span style="font-size:22px;font-weight:800;color:#c4b5fd;display:block;">${dataStatus.campanhas_total ?? 0}</span>
+          <small style="margin-top:4px;font-size:11px;">📢 Campanhas</small>
+        </div>
+        <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+          <span style="font-size:22px;font-weight:800;color:#4ade80;display:block;">${dataStatus.campanhas_ativas ?? 0}</span>
+          <small style="margin-top:4px;font-size:11px;">🟢 Ativas</small>
+        </div>
+        <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+          <span style="font-size:16px;font-weight:800;color:#fbbf24;display:block;line-height:1.4;">${gastoFormatado}</span>
+          <small style="margin-top:4px;font-size:11px;">💰 Gasto hoje</small>
+        </div>
+        <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
+          <span style="font-size:22px;font-weight:800;color:#60a5fa;display:block;">${dataStatus.leads_hoje ?? 0}</span>
+          <small style="margin-top:4px;font-size:11px;">🧲 Leads hoje</small>
+        </div>
+      </div>
+      <div class="sync-box" style="margin-top:0;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
+        <div style="font-size:11px;color:#94a3b8;line-height:1.7;">
+          🕒 <span style="color:#cbd5e1;">Último sync</span><br>
+          <span style="color:#e2e8f0;font-size:12px;">${dataStatus.ultimo_sync ? new Date(dataStatus.ultimo_sync).toLocaleString() : "Nunca sincronizado"}</span>
+        </div>
+        <button class="btn-sync-manual" id="btn_tiktok_sync_dashboard" onclick="sincronizarTikTokDetalhe()" ${dataStatus.advertiser_id ? "" : "disabled"}>🔄</button>
+      </div>
+      <div id="tiktok_sync_status_detalhe" style="font-size:11px;color:#94a3b8;margin-top:6px;">${dataStatus.advertiser_id ? "" : "Selecione uma conta em Plataformas antes de sincronizar."}</div>
+    `;
+  } catch (_) {
+    dashboardStatusTikTok.innerHTML = `<div class="dashboard-empty-state">Não foi possível carregar o status do TikTok Ads.</div>`;
+  }
+}
+
+async function sincronizarTikTokDetalhe() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  const btn = document.getElementById("btn_tiktok_sync_dashboard");
+  const status = document.getElementById("tiktok_sync_status_detalhe");
+  if (btn) { btn.disabled = true; }
+  if (status) status.textContent = "🔄 Sincronizando...";
+  try {
+    const res = await fetch(`${API}/tiktok/sincronizar-campanhas`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (status) status.textContent = data?.error || "Erro ao sincronizar.";
+      return;
+    }
+    // carregarStatusTikTok() recria o painel — reconsulta os elementos depois,
+    // ja que os nos antigos ficam desconectados do DOM apos o innerHTML ser trocado.
+    await carregarStatusTikTok();
+    const statusNovo = document.getElementById("tiktok_sync_status_detalhe");
+    if (statusNovo) statusNovo.textContent = `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
+    return;
+  } catch (_) {
+    if (status) status.textContent = "Erro ao sincronizar.";
+  } finally {
+    if (btn && document.body.contains(btn)) { btn.disabled = false; }
   }
 }
 

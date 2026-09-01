@@ -45323,9 +45323,14 @@ async function enviarFeedback() {
     <div id="banner_ia_preview_wrap" class="banner-ia-preview-wrap">
       <div class="banner-ia-label">Criativo gerado</div>
       <img id="banner_ia_preview_img" class="banner-ia-preview-img" src="" alt="Criativo gerado">
-      <button type="button" class="btn-primary" onclick="adicionarBannerGeradoAoCarrossel()" style="width:100%;">
-        + Adicionar ao carrossel
-      </button>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn-primary" onclick="adicionarBannerGeradoAoCarrossel()" style="flex:1;">
+          + Adicionar ao carrossel
+        </button>
+        <button type="button" class="btn-gerar-banner-ia" onclick="editarCriativoRecemGerado()" style="flex:1;">
+          ✏️ Editar este criativo
+        </button>
+      </div>
     </div>
 
   </div>
@@ -45823,6 +45828,41 @@ async function anexarImagemExternaBanner(modo, inputEl) {
     console.error("ANEXAR IMAGEM EXTERNA BANNER:", err);
   } finally {
     inputEl.value = "";
+  }
+}
+
+// Manda o criativo que acabou de ser gerado (ou editado) direto pro modo
+// editar, já selecionado como base — pra iterar em cima dele (ajustar texto,
+// trocar algo, refinar) sem precisar primeiro adicionar ao carrossel.
+function editarCriativoRecemGerado() {
+  if (!_bannerGeradoBase64) return;
+
+  selecionarModoBanner("editar");
+
+  const grid = document.getElementById("banner_ia_grid_editar");
+  const vazio = document.getElementById("banner_ia_vazio_editar");
+  if (!grid) return;
+
+  // Substitui uma versão anterior "recém-gerada" em vez de acumular a cada
+  // rodada de gerar → editar → gerar de novo.
+  grid.querySelectorAll('.banner-ia-imagem-item[data-recem-gerado="1"]').forEach(el => el.remove());
+
+  if (vazio) vazio.style.display = "none";
+  grid.style.display = "grid";
+
+  const dataUrl = `data:image/png;base64,${_bannerGeradoBase64}`;
+  const div = _criarItemGridBanner(dataUrl, "Criativo recém-gerado", grid, true);
+  div.dataset.recemGerado = "1";
+
+  grid.querySelectorAll(".banner-ia-imagem-item").forEach(d => d.classList.remove("selecionada"));
+  div.classList.add("selecionada");
+  const aviso = document.getElementById("banner_aviso_editar");
+  if (aviso) aviso.style.display = "none";
+
+  const promptEditar = document.getElementById("banner_ia_prompt_editar");
+  if (promptEditar) {
+    promptEditar.value = "";
+    promptEditar.focus();
   }
 }
 

@@ -36485,8 +36485,11 @@ async function carregarStatusMeta() {
                     <strong style="font-size:12.5px;">🛡️ Limite de gastos da conta</strong>
                     <div style="font-size:12px;color:#94a3b8;margin-top:2px;">
                       ${data.conta_anuncios?.limite_gastos
-                        ? `Gasto atual: ${formatarMoeda(data.conta_anuncios.gasto_periodo_atual || 0)} de ${formatarMoeda(data.conta_anuncios.limite_gastos)}`
+                        ? `Gasto acumulado: ${formatarMoeda(data.conta_anuncios.gasto_periodo_atual || 0)} de ${formatarMoeda(data.conta_anuncios.limite_gastos)}`
                         : "Nenhum limite definido na Meta — a conta pode gastar sem teto."}
+                    </div>
+                    <div style="font-size:11px;color:#64748b;margin-top:2px;">
+                      Valor acumulado desde a última redefinição na Meta — não zera sozinho todo mês; você precisa clicar em "Redefinir" no Gerenciador de Anúncios pra recomeçar a contagem.
                     </div>
                   </div>
                   <button

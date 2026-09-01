@@ -11327,8 +11327,15 @@ body.tema-claro .btn-recolher-card:hover {
 .integ-card-status.desconectado { color: #64748b; }
 .integ-card-status.sempre { color: #60a5fa; }
 /* Integração real (backend já expõe as rotas), mas ainda dependente de aprovação
-   de API do parceiro (ex: Kwai) — não é nem "Em breve" nem um "Conectado" pleno. */
-.integ-card-status.em-configuracao { color: #fb923c; }
+   de API do parceiro (ex: Kwai, LinkedIn) — não é nem "Em breve" nem um "Conectado"
+   pleno. Faixa laranja sólida (não só texto colorido) pra chamar mais atenção. */
+.integ-card-status.em-configuracao {
+  color: #431407;
+  background: #fb923c;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-weight: 700;
+}
 .integ-card-desc { font-size: 11px; color: #475569; margin-top: 4px; line-height: 1.4; }
 .integ-card-conta { font-size: 11px; color: #94a3b8; padding: 7px 8px; background: #0f172a; border-radius: 6px; display: flex; flex-direction: column; gap: 5px; }
 .integ-card-conta .integ-detalhe-valor { max-width: 160px; }
@@ -15394,7 +15401,8 @@ body.tema-claro .integ-card-status.sempre {
 }
 
 body.tema-claro .integ-card-status.em-configuracao {
-  color: #c2410c !important;
+  color: #431407 !important;
+  background: #fb923c !important;
 }
 
 body.tema-claro .integ-card-conta,
@@ -34266,7 +34274,7 @@ const HUB_PLATAFORMAS = [
   { id: "meta",      nome: "Meta Ads",      icone: PLATAFORMA_META.meta.icone,      disponivelConectar: true,  desc: "Facebook & Instagram Lead Ads" },
   { id: "google",    nome: "Google Ads",    icone: PLATAFORMA_META.google.icone,    disponivelConectar: true,  desc: "Lead Form Extensions via Google" },
   { id: "tiktok",    nome: "TikTok Ads",    icone: PLATAFORMA_META.tiktok.icone,    disponivelConectar: true,  desc: "TikTok Instant Form Leads" },
-  { id: "linkedin",  nome: "LinkedIn Ads",  icone: PLATAFORMA_META.linkedin.icone,  disponivelConectar: true,  desc: "LinkedIn Lead Gen Forms" },
+  { id: "linkedin",  nome: "LinkedIn Ads",  icone: PLATAFORMA_META.linkedin.icone,  disponivelConectar: true,  desc: "LinkedIn Lead Gen Forms", emConfiguracao: true },
   { id: "kwai",      nome: "Kwai Ads",      icone: PLATAFORMA_META.kwai.icone,      disponivelConectar: true,  desc: "Kwai Lead Form Ads", emConfiguracao: true },
   { id: "pinterest", nome: "Pinterest Ads", icone: PLATAFORMA_META.pinterest.icone, disponivelConectar: false, desc: "Pinterest Lead Ads Webhook" },
   { id: "snapchat",  nome: "Snapchat Ads",  icone: PLATAFORMA_META.snapchat.icone,  disponivelConectar: false, desc: "Snap Lead Generation API" },
@@ -34451,10 +34459,15 @@ function renderResumoTikTok(conn) {
 function renderResumoLinkedIn(conn) {
   const conectado = conn?.status === "conectado";
 
+  // Mesmo padrão do renderResumoKwai: a integração já existe no backend
+  // (campanhas, sync, conversion API — tudo implementado), mas publicar de
+  // verdade depende da aprovação da Advertising API do LinkedIn pro nosso
+  // app, então o alerta fica em "warn" com o mesmo aviso de "aguardando
+  // liberação" em vez de prometer um fluxo de conexão pleno como Meta/TikTok.
   if (!conectado) {
     return `
       <div class="integ-card-resumo">
-        ${hubResumoAlerta("Conecte o LinkedIn Ads para importar leads e campanhas dos Lead Gen Forms.")}
+        ${hubResumoAlerta("Integração com o LinkedIn Ads em configuração — aguardando aprovação da Advertising API do LinkedIn. O botão \"Conectar\" já existe, mas o acesso pode responder como indisponível por enquanto.", "warn")}
         <div style="margin:6px 0 2px;">
           <button type="button" onclick="abrirPassoLinkedInConta()"
             style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
@@ -34464,7 +34477,7 @@ function renderResumoLinkedIn(conn) {
           ${hubResumoItem("Leads", "Pausados")}
           ${hubResumoItem("Campanhas", "Sem sync")}
           ${hubResumoItem("Conta de anúncios", "Não conectada")}
-          ${hubResumoItem("Próximo passo", "Conectar")}
+          ${hubResumoItem("Próximo passo", "Aguardar liberação da API")}
         </div>
       </div>`;
   }

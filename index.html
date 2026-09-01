@@ -14796,6 +14796,27 @@ body.tema-claro .ia-resumo-panel {
   font-style: italic;
 }
 
+.banner-ia-anexar-externa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px dashed rgba(148,163,184,0.4);
+  background: rgba(148,163,184,0.06);
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+.banner-ia-anexar-externa:hover {
+  border-color: rgba(124,92,255,0.5);
+  color: #cbd5e1;
+  background: rgba(124,92,255,0.08);
+}
+
 .banner-ia-textarea {
   width: 100%;
   min-height: 88px;
@@ -45216,6 +45237,10 @@ async function enviarFeedback() {
         <p class="banner-ia-sem-imagens" id="banner_ia_vazio_gerar" style="display:none;">
           Sem imagens no carrossel. Você pode gerar sem referência, apenas com o texto.
         </p>
+        <label class="banner-ia-anexar-externa">
+          📎 Anexar imagem do computador
+          <input type="file" accept="image/*" style="display:none;" onchange="anexarImagemExternaBanner('gerar', this)">
+        </label>
       </div>
 
       <div style="margin-top:16px;">
@@ -45251,6 +45276,10 @@ async function enviarFeedback() {
         <div class="banner-ia-editar-aviso" id="banner_aviso_editar">
           Apenas uma imagem pode ser selecionada por vez no modo edição.
         </div>
+        <label class="banner-ia-anexar-externa">
+          📎 Anexar imagem do computador
+          <input type="file" accept="image/*" style="display:none;" onchange="anexarImagemExternaBanner('editar', this)">
+        </label>
       </div>
 
       <div style="margin-top:16px;">
@@ -45694,6 +45723,41 @@ function selecionarModoBanner(modo) {
   document.getElementById("banner_ia_loading").classList.remove("ativo");
 }
 
+// Monta um item clicável da grade (usado tanto pelas imagens já no carrossel
+// quanto pelas anexadas do computador via anexarImagemExternaBanner) — extraído
+// pra um helper único pra não duplicar a lógica de seleção nos dois lugares.
+function _criarItemGridBanner(src, alt, grid, modoEditar) {
+  const div = document.createElement("div");
+  div.className = "banner-ia-imagem-item";
+  div.dataset.src = src;
+
+  const imgEl = document.createElement("img");
+  imgEl.src = src;
+  imgEl.alt = alt;
+
+  const check = document.createElement("span");
+  check.className = "banner-ia-imagem-check";
+  check.textContent = "✓";
+
+  div.appendChild(imgEl);
+  div.appendChild(check);
+
+  div.addEventListener("click", () => {
+    if (modoEditar) {
+      const jaSelecionada = div.classList.contains("selecionada");
+      grid.querySelectorAll(".banner-ia-imagem-item").forEach(d => d.classList.remove("selecionada"));
+      if (!jaSelecionada) div.classList.add("selecionada");
+      const aviso = document.getElementById("banner_aviso_editar");
+      if (aviso) aviso.style.display = "none";
+    } else {
+      div.classList.toggle("selecionada");
+    }
+  });
+
+  grid.appendChild(div);
+  return div;
+}
+
 function _preencherGridBanner(gridId, vazioId, modoEditar) {
   const grid = document.getElementById(gridId);
   const vazio = document.getElementById(vazioId);
@@ -45717,35 +45781,49 @@ function _preencherGridBanner(gridId, vazioId, modoEditar) {
 
   comImagem.forEach((item, i) => {
     const img = item.querySelector(".imagem-thumb");
-    const div = document.createElement("div");
-    div.className = "banner-ia-imagem-item";
-    div.dataset.src = img.src;
-
-    const imgEl = document.createElement("img");
-    imgEl.src = img.src;
-    imgEl.alt = `Imagem ${i + 1}`;
-
-    const check = document.createElement("span");
-    check.className = "banner-ia-imagem-check";
-    check.textContent = "✓";
-
-    div.appendChild(imgEl);
-    div.appendChild(check);
-
-    div.addEventListener("click", () => {
-      if (modoEditar) {
-        const jaSelecionada = div.classList.contains("selecionada");
-        grid.querySelectorAll(".banner-ia-imagem-item").forEach(d => d.classList.remove("selecionada"));
-        if (!jaSelecionada) div.classList.add("selecionada");
-        const aviso = document.getElementById("banner_aviso_editar");
-        if (aviso) aviso.style.display = "none";
-      } else {
-        div.classList.toggle("selecionada");
-      }
-    });
-
-    grid.appendChild(div);
+    _criarItemGridBanner(img.src, `Imagem ${i + 1}`, grid, modoEditar);
   });
+}
+
+function _lerArquivoComoDataUrl(arquivo) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(arquivo);
+  });
+}
+
+// Anexa uma imagem de fora do carrossel (do computador do usuário) como
+// referência/base pro gerador — sem precisar adicionar ela na campanha primeiro.
+async function anexarImagemExternaBanner(modo, inputEl) {
+  const arquivo = inputEl.files?.[0];
+  if (!arquivo) return;
+
+  const modoEditar = modo === "editar";
+  const grid = document.getElementById(modoEditar ? "banner_ia_grid_editar" : "banner_ia_grid_gerar");
+  const vazio = document.getElementById(modoEditar ? "banner_ia_vazio_editar" : "banner_ia_vazio_gerar");
+  if (!grid) return;
+
+  try {
+    const dataUrl = await _lerArquivoComoDataUrl(arquivo);
+    if (vazio) vazio.style.display = "none";
+    grid.style.display = "grid";
+    const div = _criarItemGridBanner(dataUrl, arquivo.name || "Imagem anexada", grid, modoEditar);
+
+    // No modo editar só cabe 1 imagem — anexar já seleciona direto, sem precisar
+    // clicar de novo (o usuário anexou justamente pra usar essa imagem).
+    if (modoEditar) {
+      grid.querySelectorAll(".banner-ia-imagem-item").forEach(d => d.classList.remove("selecionada"));
+      div.classList.add("selecionada");
+      const aviso = document.getElementById("banner_aviso_editar");
+      if (aviso) aviso.style.display = "none";
+    }
+  } catch (err) {
+    console.error("ANEXAR IMAGEM EXTERNA BANNER:", err);
+  } finally {
+    inputEl.value = "";
+  }
 }
 
 function abrirModalGerarBanner() {

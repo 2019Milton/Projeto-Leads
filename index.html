@@ -26396,6 +26396,10 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_frequencia", "frequência"],
     ["#nicho_area_atendida", "área atendida"],
     ["#nicho_publico_alvo_higienizacao", "público-alvo"],
+    ["#nicho_tipo_servico_telecom", "tipo de serviço"],
+    ["#nicho_porte_empresa", "porte da empresa"],
+    ["#nicho_situacao_atual", "situação atual"],
+    ["#nicho_area_atendida_telecom", "área atendida"],
     ["#adv_cbo", "CBO (otimização de orçamento)"],
     ["#adv_attribution_spec", "janela de atribuição"],
     ["#campanha_google_titulo_1", "título 1 (Google)"],
@@ -26432,6 +26436,10 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_frequencia", "frequência"],
     ["#nicho_area_atendida", "área atendida"],
     ["#nicho_publico_alvo_higienizacao", "público-alvo"],
+    ["#nicho_tipo_servico_telecom", "tipo de serviço"],
+    ["#nicho_porte_empresa", "porte da empresa"],
+    ["#nicho_situacao_atual", "situação atual"],
+    ["#nicho_area_atendida_telecom", "área atendida"],
     ["#adv_platform_facebook", "Facebook/Instagram"],
     ["#adv_inicio_btn", "data de início"],
     ["#adv_device_mobile", "dispositivos"],
@@ -26696,6 +26704,52 @@ function aplicarCampanhaIA(indice) {
       industrial: "industrial"
     }
   );
+  preencherSelectIA(
+    "#nicho_tipo_servico_telecom",
+    s.nicho_tipo_servico || s.tipo_servico,
+    {
+      "internet dedicada": "link_dedicado",
+      "link dedicado": "link_dedicado",
+      link_dedicado: "link_dedicado",
+      firewall: "firewall",
+      seguranca: "firewall",
+      hotspot: "hotspot",
+      wifi: "hotspot",
+      pabx: "pabx",
+      telefonia: "pabx",
+      smartchat: "smartchat",
+      chatbot: "smartchat",
+      consultoria: "consultoria"
+    }
+  );
+  preencherSelectIA(
+    "#nicho_porte_empresa",
+    s.nicho_porte_empresa || s.porte_empresa,
+    {
+      pequena: "pequena",
+      pequeno: "pequena",
+      media: "media",
+      médio: "media",
+      medio: "media",
+      grande: "grande"
+    }
+  );
+  preencherSelectIA(
+    "#nicho_situacao_atual",
+    s.nicho_situacao_atual || s.situacao_atual,
+    {
+      "primeira contratacao": "primeira_contratacao",
+      "primeira contratação": "primeira_contratacao",
+      primeira_contratacao: "primeira_contratacao",
+      "trocando de fornecedor": "trocando_fornecedor",
+      troca: "trocando_fornecedor",
+      trocando_fornecedor: "trocando_fornecedor",
+      ampliando: "ampliando_estrutura",
+      "ampliando estrutura": "ampliando_estrutura",
+      ampliando_estrutura: "ampliando_estrutura"
+    }
+  );
+  preencherCampoIA("#nicho_area_atendida_telecom", s.localidade);
   if (s.genero !== undefined && s.genero !== null) {
     preencherCampoIA("#adv_genero", s.genero);
   }
@@ -38185,7 +38239,9 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
         ["Tipo de produto", "tipo_produto"],
         ["Tipo de serviço", "tipo_servico"],
         ["Frequência", "frequencia"],
-        ["Área atendida", "area_atendida", "full"]
+        ["Área atendida", "area_atendida", "full"],
+        ["Porte da empresa", "porte_empresa"],
+        ["Situação atual", "situacao_atual"]
       ])}
     </div>
   `;
@@ -42102,6 +42158,7 @@ function corSolidaNicho(nicho = {}) {
   if (slug.includes("suplement") || id === 3) return "#C2410C";
   if (slug.includes("saas") || slug.includes("plataforma") || id === 4) return "#7C3AED";
   if (slug.includes("higien") || id === 5) return "#16A34A";
+  if (slug.includes("telecom") || id === 6) return "#DC2626";
   return nicho.cor || nicho.nicho_cor || "#2563EB";
 }
 function estiloNichoBadge(nicho = {}) {
@@ -42184,6 +42241,23 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
+  if (slug.includes("telecom") || id === 6) {
+    return {
+      cor,
+      bg: "#2a0a0a",
+      border: "#dc2626",
+      text: "#fee2e2",
+      title: "#fecaca",
+      inputBg: "#3a1212",
+      inputBorder: "#ef4444",
+      bgLight: "#fef2f2",
+      borderLight: "#dc2626",
+      textLight: "#450a0a",
+      titleLight: "#b91c1c",
+      inputBorderLight: "#dc2626"
+    };
+  }
+
   return {
     cor,
     bg: "#0b1f3f",
@@ -42210,12 +42284,14 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("suplement")) return "Suplementos";
   if (slug.includes("saas") || slug.includes("plataforma")) return "Plataforma / SaaS";
   if (slug.includes("higien")) return "Higienização";
+  if (slug.includes("telecom")) return "Telecom Empresarial";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";
   if (id === 3) return "Suplementos";
   if (id === 4) return "Plataforma / SaaS";
   if (id === 5) return "Higienização";
+  if (id === 6) return "Telecom Empresarial";
   return escaparHtml(nicho.slug || "");
 }
 
@@ -42235,7 +42311,8 @@ function detectarNichoPorNome(nomeCampanha = "") {
     suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
     imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
     saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"],
-    higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"]
+    higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"],
+    telecom:     ["telecom", "internet dedicada", "link dedicado", "firewall", "pabx", "hotspot", "wifi corporativo", "provedor"]
   };
 
   for (const nicho of nichos) {
@@ -42390,6 +42467,14 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Qual item você quer higienizar?",
     interesse: "Ex: limpeza residencial, higienização de estofados, casa limpa"
   };
+  if (slug === "telecom") return {
+    ia:        "Opcional: descreva o servico, publico-alvo ou diferencial (ex: internet dedicada para empresas de medio porte, SLA de 99,9%, implantacao em 24h)",
+    nome:      "Ex: Internet Dedicada para Empresas",
+    titulo:    "Ex: Internet Dedicada com SLA Garantido",
+    descricao: "Ex: Implementação em 24h, suporte especializado",
+    perguntas: "Uma pergunta por linha. Ex: Qual o porte da sua empresa?",
+    interesse: "Ex: telecomunicações empresariais, TI para empresas, segurança da informação"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -42431,6 +42516,12 @@ window.PERGUNTAS_RAPIDAS_FORMULARIO = window.PERGUNTAS_RAPIDAS_FORMULARIO || {
     "Prefere um servico avulso ou recorrente?",
     "Tem alguma urgencia para agendar?"
   ],
+  telecom: [
+    "Qual servico voce tem interesse?",
+    "Qual o porte da sua empresa?",
+    "Voce ja tem um fornecedor hoje?",
+    "Qual a cidade da sua empresa?"
+  ],
   default: [
     "Qual sua principal necessidade?",
     "Qual melhor horario para contato?",
@@ -42451,6 +42542,7 @@ function perguntasRapidasDoNicho(slug = "") {
   if (chave.includes("saas") || chave.includes("plataforma")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.saas;
   if (chave.includes("imove")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.imoveis;
   if (chave.includes("higien")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.higienizacao;
+  if (chave.includes("telecom")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.telecom;
 
   return window.PERGUNTAS_RAPIDAS_FORMULARIO.default;
 }
@@ -42575,6 +42667,11 @@ function _salvarEstadoFormNicho(slug) {
     state.frequencia    = get("nicho_frequencia");
     state.area_atendida = get("nicho_area_atendida");
     state.publico_alvo  = get("nicho_publico_alvo_higienizacao");
+  } else if (slug === "telecom") {
+    state.tipo_servico    = get("nicho_tipo_servico_telecom");
+    state.porte_empresa   = get("nicho_porte_empresa");
+    state.situacao_atual  = get("nicho_situacao_atual");
+    state.area_atendida   = get("nicho_area_atendida_telecom");
   }
   window._nichoFormState[slug] = state;
 }
@@ -42626,6 +42723,11 @@ function _restaurarEstadoFormNicho(slug) {
     set("nicho_frequencia",               state.frequencia);
     set("nicho_area_atendida",            state.area_atendida);
     set("nicho_publico_alvo_higienizacao",state.publico_alvo);
+  } else if (slug === "telecom") {
+    set("nicho_tipo_servico_telecom", state.tipo_servico);
+    set("nicho_porte_empresa",        state.porte_empresa);
+    set("nicho_situacao_atual",       state.situacao_atual);
+    set("nicho_area_atendida_telecom",state.area_atendida);
   }
 }
 
@@ -42862,6 +42964,45 @@ function selecionarNichoTab(nicho, btnEl) {
         </div>
       </div>
     `;
+  } else if (nicho.slug === "telecom") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de serviço ${_i('Qual solucao voce esta anunciando: internet dedicada, firewall, hotspot WiFi, PABX virtual, SmartChat (chatbot) ou consultoria.')}</label>
+          <select id="nicho_tipo_servico_telecom" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="link_dedicado">Link Dedicado</option>
+            <option value="firewall">Firewall</option>
+            <option value="hotspot">Hotspot WiFi</option>
+            <option value="pabx">PABX Virtual</option>
+            <option value="smartchat">SmartChat</option>
+            <option value="consultoria">Consultoria</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Porte da empresa ${_i('Tamanho da empresa-alvo do anuncio: pequena (ate 10 funcionarios), media (11 a 50) ou grande (mais de 50).')}</label>
+          <select id="nicho_porte_empresa" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="pequena">Pequena (até 10)</option>
+            <option value="media">Média (11 a 50)</option>
+            <option value="grande">Grande (50+)</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Situação atual ${_i('O cliente ja tem um fornecedor de telecom/TI (trocando) ou seria a primeira contratacao dele.')}</label>
+          <select id="nicho_situacao_atual" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="primeira_contratacao">Primeira contratação</option>
+            <option value="trocando_fornecedor">Trocando de fornecedor</option>
+            <option value="ampliando_estrutura">Ampliando estrutura</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Área atendida ${_i('Informe a cidade ou regiao atendida — especialmente importante pra Link Dedicado, que depende de cobertura fisica.')}</label>
+          <input type="text" id="nicho_area_atendida_telecom" placeholder="Ex: São Paulo, SP" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
@@ -42902,6 +43043,11 @@ function coletarDadosNichoAtivo() {
     dados.frequencia    = document.getElementById("nicho_frequencia")?.value    || null;
     dados.area_atendida = document.getElementById("nicho_area_atendida")?.value || null;
     dados.publico_alvo  = document.getElementById("nicho_publico_alvo_higienizacao")?.value || null;
+  } else if (nicho.slug === "telecom") {
+    dados.tipo_servico   = document.getElementById("nicho_tipo_servico_telecom")?.value  || null;
+    dados.porte_empresa  = document.getElementById("nicho_porte_empresa")?.value         || null;
+    dados.situacao_atual = document.getElementById("nicho_situacao_atual")?.value        || null;
+    dados.area_atendida  = document.getElementById("nicho_area_atendida_telecom")?.value || null;
   }
 
   return dados;
@@ -46768,7 +46914,8 @@ function detectarNichoPorNome(nomeCampanha = "") {
     suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
     imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
     saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"],
-    higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"]
+    higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"],
+    telecom:     ["telecom", "internet dedicada", "link dedicado", "firewall", "pabx", "hotspot", "wifi corporativo", "provedor"]
   };
 
   for (const nicho of nichos) {
@@ -46807,6 +46954,10 @@ function corSolidaNicho(nicho = {}) {
 
   if (slug.includes("higien") || id === 5) {
     return "#16A34A";
+  }
+
+  if (slug.includes("telecom") || id === 6) {
+    return "#DC2626";
   }
 
   return nicho.cor || nicho.nicho_cor || "#2563EB";
@@ -46885,6 +47036,23 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
+  if (slug.includes("telecom") || id === 6) {
+    return {
+      cor,
+      bg: "#2a0a0a",
+      border: "#dc2626",
+      text: "#fee2e2",
+      title: "#fecaca",
+      inputBg: "#3a1212",
+      inputBorder: "#ef4444",
+      bgLight: "#fef2f2",
+      borderLight: "#dc2626",
+      textLight: "#450a0a",
+      titleLight: "#b91c1c",
+      inputBorderLight: "#dc2626"
+    };
+  }
+
   return {
     cor,
     bg: "#0b1f3f",
@@ -46940,12 +47108,14 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("suplement")) return "Suplementos";
   if (slug.includes("saas") || slug.includes("plataforma")) return "Plataforma / SaaS";
   if (slug.includes("higien")) return "Higienização";
+  if (slug.includes("telecom")) return "Telecom Empresarial";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";
   if (id === 3) return "Suplementos";
   if (id === 4) return "Plataforma / SaaS";
   if (id === 5) return "Higienização";
+  if (id === 6) return "Telecom Empresarial";
   return escaparHtml(nicho.slug || "");
 }
 
@@ -47065,6 +47235,14 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Qual item você quer higienizar?",
     interesse: "Ex: limpeza residencial, higienização de estofados, casa limpa"
   };
+  if (slug === "telecom") return {
+    ia:        "Opcional: descreva o servico, publico-alvo ou diferencial (ex: internet dedicada para empresas de medio porte, SLA de 99,9%, implantacao em 24h)",
+    nome:      "Ex: Internet Dedicada para Empresas",
+    titulo:    "Ex: Internet Dedicada com SLA Garantido",
+    descricao: "Ex: Implementação em 24h, suporte especializado",
+    perguntas: "Uma pergunta por linha. Ex: Qual o porte da sua empresa?",
+    interesse: "Ex: telecomunicações empresariais, TI para empresas, segurança da informação"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -47119,6 +47297,11 @@ function _salvarEstadoFormNicho(slug) {
     state.frequencia    = get("nicho_frequencia");
     state.area_atendida = get("nicho_area_atendida");
     state.publico_alvo  = get("nicho_publico_alvo_higienizacao");
+  } else if (slug === "telecom") {
+    state.tipo_servico    = get("nicho_tipo_servico_telecom");
+    state.porte_empresa   = get("nicho_porte_empresa");
+    state.situacao_atual  = get("nicho_situacao_atual");
+    state.area_atendida   = get("nicho_area_atendida_telecom");
   }
   window._nichoFormState[slug] = state;
 }
@@ -47170,6 +47353,11 @@ function _restaurarEstadoFormNicho(slug) {
     set("nicho_frequencia",               state.frequencia);
     set("nicho_area_atendida",            state.area_atendida);
     set("nicho_publico_alvo_higienizacao",state.publico_alvo);
+  } else if (slug === "telecom") {
+    set("nicho_tipo_servico_telecom", state.tipo_servico);
+    set("nicho_porte_empresa",        state.porte_empresa);
+    set("nicho_situacao_atual",       state.situacao_atual);
+    set("nicho_area_atendida_telecom",state.area_atendida);
   }
 }
 
@@ -47403,6 +47591,45 @@ function selecionarNichoTab(nicho, btnEl) {
         <div>
           <label style="color:#9ca3af;font-size:12px;">Área atendida ${_i('Informe a cidade, bairro ou regiao atendida pelo servico.')}</label>
           <input type="text" id="nicho_area_atendida" placeholder="Ex: Zona Sul de São Paulo" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
+  } else if (nicho.slug === "telecom") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de serviço ${_i('Qual solucao voce esta anunciando: internet dedicada, firewall, hotspot WiFi, PABX virtual, SmartChat (chatbot) ou consultoria.')}</label>
+          <select id="nicho_tipo_servico_telecom" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="link_dedicado">Link Dedicado</option>
+            <option value="firewall">Firewall</option>
+            <option value="hotspot">Hotspot WiFi</option>
+            <option value="pabx">PABX Virtual</option>
+            <option value="smartchat">SmartChat</option>
+            <option value="consultoria">Consultoria</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Porte da empresa ${_i('Tamanho da empresa-alvo do anuncio: pequena (ate 10 funcionarios), media (11 a 50) ou grande (mais de 50).')}</label>
+          <select id="nicho_porte_empresa" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="pequena">Pequena (até 10)</option>
+            <option value="media">Média (11 a 50)</option>
+            <option value="grande">Grande (50+)</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Situação atual ${_i('O cliente ja tem um fornecedor de telecom/TI (trocando) ou seria a primeira contratacao dele.')}</label>
+          <select id="nicho_situacao_atual" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="primeira_contratacao">Primeira contratação</option>
+            <option value="trocando_fornecedor">Trocando de fornecedor</option>
+            <option value="ampliando_estrutura">Ampliando estrutura</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Área atendida ${_i('Informe a cidade ou regiao atendida — especialmente importante pra Link Dedicado, que depende de cobertura fisica.')}</label>
+          <input type="text" id="nicho_area_atendida_telecom" placeholder="Ex: São Paulo, SP" style="margin-top:4px;">
         </div>
       </div>
     `;

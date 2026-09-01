@@ -30920,6 +30920,20 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
 function configurarEdicaoDestinoCampanha(campanha = null) {
   const publicada = campanhaJaFoiPublicada(campanha);
 
+  // Marca o radio (Formulario de Leads / WhatsApp) de acordo com o destino
+  // real ja salvo na campanha — antes disso, o modal sempre abria mostrando
+  // o valor deixado pela ultima campanha criada/editada, nao o desta.
+  const cfgDestino = obterConfiguracoesCampanha(campanha) || {};
+  const destinoReal = cfgDestino.destino === "whatsapp" ? "whatsapp" : "lead_ads";
+  const radioDestino = document.querySelector(
+    `input[name="campanha_destino"][value="${destinoReal}"]`
+  );
+  if (radioDestino) {
+    radioDestino.checked = true;
+  }
+  destinoCampanhaSelecionado = destinoReal;
+  aplicarDestinoCampanha();
+
   document
     .querySelectorAll('input[name="campanha_destino"]')
     .forEach(input => {
@@ -38064,6 +38078,7 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
       ${detalheItem("Texto do anúncio", cfg.texto, "full")}
       ${detalheItem("CTA", cfg.cta)}
       ${detalheItem("Categoria especial", labelCategoriaEspecial(cfg.categoria_especial))}
+      ${detalheItem("Destino da campanha", cfg.destino === "whatsapp" ? "WhatsApp (clique para conversar)" : "Formulário de Leads")}
       ${detalheItem("Objetivo", campanha.objetivo || "Leads")}
       ${detalheItem("Título do anúncio", cfg.titulo)}
       ${detalheItem("Descrição", cfg.descricao, "full")}

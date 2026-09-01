@@ -38259,6 +38259,11 @@ async function carregarPreviewAnuncioCampanha(campanhaId, botao, adFormat) {
       throw new Error(data.error || "Erro ao carregar preview do anúncio");
     }
 
+    const nomeRedeLink =
+      data.link_rede === "instagram" ? "no Instagram"
+      : data.link_rede === "facebook" ? "no Facebook"
+      : "na Meta";
+
     const linkHtml =
       data.link_anuncio
         ? `
@@ -38268,7 +38273,7 @@ async function carregarPreviewAnuncioCampanha(campanhaId, botao, adFormat) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            🔗 Ver anúncio real na Meta →
+            🔗 Ver anúncio real ${nomeRedeLink} →
           </a>
         `
         : "";

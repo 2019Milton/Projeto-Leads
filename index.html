@@ -36133,6 +36133,49 @@ async function salvarWhatsappBot() {
   }
 }
 
+// Atualiza o "Limite de gastos da conta" (spend_cap) direto na Meta — mesmo
+// campo editavel em Cobranca e pagamentos > Limite de gastos da conta.
+async function editarLimiteGastosMeta(atual) {
+  const novoValor = prompt(
+    "Novo limite de gastos da conta na Meta (em R$):",
+    atual ? String(atual).replace(".", ",") : ""
+  );
+
+  if (novoValor === null) return;
+
+  const numero = Number(String(novoValor).replace(/\./g, "").replace(",", "."));
+
+  if (!numero || numero <= 0) {
+    alert("Informe um valor válido maior que zero.");
+    return;
+  }
+
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API}/meta/limite-gastos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ usuario_id, limite: numero })
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || `Erro HTTP ${res.status}`);
+    }
+
+    alert("Limite de gastos atualizado na Meta.");
+    await carregarStatusMeta();
+  } catch (err) {
+    alert(err.message || "Erro ao atualizar limite de gastos.");
+  }
+}
+
 async function carregarStatusMeta() {
 
   try {
@@ -36430,6 +36473,28 @@ async function carregarStatusMeta() {
                   ? `<p style="margin:0;color:#4ade80;">🟢 Pagamento habilitado</p>`
                   : `<p style="margin:0;color:#fca5a5;">🔴 Pagamento não identificado</p>`
                 }
+              </div>
+
+              <div style="margin:8px 0;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:12.5px;line-height:1.6;">
+                <strong>💡 Você pagará usando:</strong> a Meta usa primeiro qualquer saldo/Fundos disponível na conta, e só cobra a forma de pagamento automática (cartão) se esse saldo acabar. O valor exato do saldo de Fundos não é possível confirmar por aqui — <a href="${billingUrl}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;">veja no Gerenciador de Anúncios</a>.
+              </div>
+
+              <div style="margin:8px 0;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                  <div>
+                    <strong style="font-size:12.5px;">🛡️ Limite de gastos da conta</strong>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:2px;">
+                      ${data.conta_anuncios?.limite_gastos
+                        ? `Gasto atual: ${formatarMoeda(data.conta_anuncios.gasto_periodo_atual || 0)} de ${formatarMoeda(data.conta_anuncios.limite_gastos)}`
+                        : "Nenhum limite definido na Meta — a conta pode gastar sem teto."}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onclick="editarLimiteGastosMeta(${data.conta_anuncios?.limite_gastos || 0})"
+                    style="padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.25);background:transparent;color:inherit;font-size:12px;cursor:pointer;"
+                  >✏️ Editar limite</button>
+                </div>
               </div>
 
               <button

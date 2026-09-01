@@ -12574,6 +12574,45 @@ body.tema-claro .targeting-chip {
 }
 .chat-janela-fechar:hover { color: #e2e8f0; }
 
+/* ✨ Atalho flutuante pro Gerar Banner com IA — mesma posição e mesmo estilo de
+   pílula do antigo fab do ChatIALeads, cores emprestadas do próprio botão
+   "Gerar Banner com IA" de dentro de Criar Campanha (.btn-gerar-banner-ia)
+   pra manter a identidade visual do recurso. */
+.banner-ia-fab {
+  position: fixed;
+  left: 24px;
+  right: auto;
+  bottom: 178px;
+  z-index: 5200;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  min-width: auto;
+  padding: 13px 18px;
+  border: 1px solid rgba(245,158,11,0.5);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7c3aed, #f59e0b);
+  color: #fff7ed;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 18px 44px rgba(124,58,237,0.28), 0 0 0 1px rgba(255,255,255,0.08) inset;
+  cursor: pointer;
+}
+
+.banner-ia-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 56px rgba(245,158,11,0.32), 0 0 0 1px rgba(255,255,255,0.12) inset;
+}
+
+@media (max-width: 720px) {
+  .banner-ia-fab {
+    left: 16px;
+    right: auto;
+    bottom: 16px;
+  }
+}
+
 /* Janelas flutuantes de suporte (admin/suporte) */
 .chat-admin-janela {
   position: fixed;
@@ -18248,6 +18287,16 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
         <button class="chat-enviar" onclick="enviarMensagemChat()">Enviar</button>
       </div>
     </div>
+
+    <!-- ✨ Atalho flutuante pro Gerar Banner com IA (mesmo lugar onde ficava o ChatIALeads) -->
+    <button
+      class="banner-ia-fab"
+      type="button"
+      onclick="abrirModalGerarBanner()"
+      title="Gerar Banner com IA"
+    >
+      ✨ Gerar Banner com IA
+    </button>
 
     <!-- 🔍 LIGHTBOX (visualização de imagem do chat) -->
     <div id="chat_lightbox" class="chat-lightbox" style="display:none;" onclick="fecharLightboxChat()">

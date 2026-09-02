@@ -35898,6 +35898,16 @@ async function carregarStatusMeta() {
                 </div>
               </div>
 
+              ${data.conta_anuncios?.gasto_cartao_estimado !== null && data.conta_anuncios?.gasto_cartao_estimado !== undefined
+                ? `
+                <div style="margin:8px 0;padding:10px 12px;background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.25);border-radius:8px;">
+                  <strong style="font-size:12.5px;">💳 Gasto estimado no cartão</strong>
+                  <div style="font-size:14px;font-weight:700;color:#fb923c;margin-top:2px;">${formatarMoeda(data.conta_anuncios.gasto_cartao_estimado)}</div>
+                  <div style="font-size:11px;color:#64748b;margin-top:4px;">${escaparHtml(data.conta_anuncios.gasto_cartao_estimado_observacao || "")}</div>
+                </div>
+                `
+                : ""}
+
               <button
                 type="button"
                 onclick="abrirGerenciarPagamentoMeta('${billingUrl}')"

@@ -35557,6 +35557,12 @@ async function editarLimiteGastosMeta(atual) {
     }
 
     alert("Limite de gastos atualizado na Meta.");
+
+    // A Meta as vezes leva um instante pra propagar o novo spend_cap antes de um
+    // GET seguinte já refletir a mudança — sem essa espera, esse refresh podia
+    // pegar o valor de ANTES da edição (ex: usuário confirma "6", mas o painel
+    // mostra o limite antigo por uma fração de segundo até a Meta atualizar).
+    await new Promise(resolve => setTimeout(resolve, 1500));
     await carregarStatusMeta();
   } catch (err) {
     alert(err.message || "Erro ao atualizar limite de gastos.");

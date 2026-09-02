@@ -35566,6 +35566,11 @@ async function editarLimiteGastosMeta(atual) {
     await carregarStatusMeta();
   } catch (err) {
     alert(err.message || "Erro ao atualizar limite de gastos.");
+    // Mesmo numa tentativa que falhou (ex: limite de alterações por dia da Meta),
+    // atualiza o painel — sem isso ele fica preso mostrando o valor de antes da
+    // tentativa, mesmo que o valor real na Meta já tenha mudado por outro caminho
+    // (ex: uma tentativa anterior bem-sucedida que o usuário não viu refletir).
+    await carregarStatusMeta();
   }
 }
 

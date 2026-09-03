@@ -30514,7 +30514,7 @@ async function salvarEdicaoCampanha() {
 
     fecharEdicaoCampanha();
     await sincronizarCampanhas();
-    alert("Campanha atualizada com sucesso");
+    alert(data.aviso ? `Campanha atualizada com sucesso.\n\n⚠️ ${data.aviso}` : "Campanha atualizada com sucesso");
 
   } catch (err) {
 

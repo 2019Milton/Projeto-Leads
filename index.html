@@ -11419,6 +11419,16 @@ body.tema-claro .btn-recolher-card:hover {
 .integ-detalhe-label { color: #64748b; flex-shrink: 0; }
 .integ-detalhe-valor { color: #cbd5e1; font-weight: 600; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
 
+/* 🪟 MODAL DE DETALHES DE INTEGRAÇÃO — abre no centro da tela em vez de empurrar o layout */
+.integ-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9500; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+.integ-modal-box { background: linear-gradient(145deg, rgba(15,23,42,0.98), rgba(8,15,35,0.99)); border: 1px solid rgba(99,102,241,0.25); border-radius: 18px; width: 100%; max-width: 640px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 32px 80px rgba(0,0,0,0.6); overflow: hidden; }
+.integ-modal-header { padding: 18px 22px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.integ-modal-header span { font-size: 16px; font-weight: 700; color: #e2e8f0; }
+.integ-modal-fechar { background: none; border: none; color: #64748b; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; }
+.integ-modal-fechar:hover { color: #e2e8f0; }
+.integ-modal-corpo { overflow-y: auto; padding: 20px 22px; flex: 1; }
+.integ-modal-corpo .integ-card-detalhes { border-top: none; padding-top: 0; margin-top: 0; }
+
 /* 🟢 CONECTAR META — verde */
 .meta-card {
   background: #06251a !important;
@@ -16945,6 +16955,19 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
         <!-- 🔴 GOOGLE ADS — detalhes expandíveis; conteúdo gerenciado por carregarStatusGoogle() -->
         <div class="meta-card" id="card-google" style="display:none;">
           <div id="google_info">Carregando conexão...</div>
+        </div>
+      </div>
+
+      <!-- 🪟 MODAL DE DETALHES DE INTEGRAÇÃO — o conteúdo real (#card-meta, #card-google ou
+           #integ-detalhes-*) é movido pra dentro ao abrir e devolvido ao lugar original ao
+           fechar (ver abrirIntegDetalhesModal/fecharIntegDetalhesModal) — evita duplicar HTML. -->
+      <div id="integ_detalhes_modal" class="integ-modal-overlay" style="display:none;" onclick="if(event.target===this) fecharIntegDetalhesModal()">
+        <div class="integ-modal-box">
+          <div class="integ-modal-header">
+            <span id="integ_modal_titulo">Detalhes</span>
+            <button onclick="fecharIntegDetalhesModal()" class="integ-modal-fechar" aria-label="Fechar">✕</button>
+          </div>
+          <div id="integ_modal_corpo" class="integ-modal-corpo"></div>
         </div>
       </div>
 
@@ -33866,46 +33889,66 @@ function renderIntegCard(p, conn, statusCompleto = null) {
     </div>`;
 }
 
-function rolarParaIntegDetalhes(el) {
-  if (!el) return;
-  requestAnimationFrame(() => {
-    el.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  });
+const NOMES_INTEG_MODAL = { meta: "Meta Ads", google: "Google Ads", tiktok: "TikTok Ads", linkedin: "LinkedIn Ads", kwai: "Kwai Ads" };
+
+let integModalConteudoAtual = null;
+let integModalOrigemAtual = null;
+
+function abrirIntegDetalhesModal(titulo, elConteudo) {
+  fecharIntegDetalhesModal(); // só um painel de detalhes aberto por vez
+
+  const modal = document.getElementById("integ_detalhes_modal");
+  const corpo = document.getElementById("integ_modal_corpo");
+  const tituloEl = document.getElementById("integ_modal_titulo");
+  if (!modal || !corpo || !elConteudo) return;
+
+  integModalConteudoAtual = elConteudo;
+  integModalOrigemAtual = elConteudo.parentElement;
+
+  tituloEl.textContent = titulo;
+  elConteudo.style.display = "";
+  corpo.appendChild(elConteudo);
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function fecharIntegDetalhesModal() {
+  const modal = document.getElementById("integ_detalhes_modal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+
+  if (integModalConteudoAtual) {
+    integModalConteudoAtual.style.display = "none";
+    // se o hub foi atualizado enquanto o modal estava aberto, o pai original (card
+    // dentro do grid) pode ter sido substituído — nesse caso o conteúdo antigo é
+    // descartado em vez de devolvido a um elemento que não existe mais.
+    if (integModalOrigemAtual && document.body.contains(integModalOrigemAtual)) {
+      integModalOrigemAtual.appendChild(integModalConteudoAtual);
+    }
+  }
+  integModalConteudoAtual = null;
+  integModalOrigemAtual = null;
 }
 
 function toggleIntegDetalhes(plataforma) {
-  const btn = document.getElementById(`btn-det-${plataforma}`);
+  const titulo = NOMES_INTEG_MODAL[plataforma] || "Detalhes";
 
   if (plataforma === "meta" || plataforma === "google") {
     // Para Meta e Google mostramos o painel completo de conexão (card-meta / card-google)
     const card = document.getElementById(plataforma === "meta" ? "card-meta" : "card-google");
     if (!card) return;
-    // o card comeca com display:none, "" significa que ja foi exibido antes
-    const visivel = card.offsetParent !== null && card.style.display !== "none";
-    card.style.display = visivel ? "none" : "";
-    if (btn) btn.textContent = visivel ? "Ver detalhes ▾" : "Ocultar ▴";
-    if (!visivel) {
-      if (plataforma === "meta") carregarStatusMeta();
-      else carregarStatusGoogle();
-      rolarParaIntegDetalhes(card);
-    }
+    abrirIntegDetalhesModal(titulo, card);
+    if (plataforma === "meta") carregarStatusMeta();
+    else carregarStatusGoogle();
     return;
   }
 
   const el = document.getElementById(`integ-detalhes-${plataforma}`);
   if (!el) return;
-  const abrindo = el.style.display === "none";
-  el.style.display = abrindo ? "" : "none";
-  if (btn) btn.textContent = abrindo ? "Ocultar ▴" : "Ver detalhes ▾";
-  if (abrindo) {
-    rolarParaIntegDetalhes(el);
-    if (plataforma === "tiktok") carregarDetalhesTikTokHub();
-    else if (plataforma === "linkedin") carregarDetalhesLinkedInHub();
-    else if (plataforma === "kwai") carregarDetalhesKwaiHub();
-  }
+  abrirIntegDetalhesModal(titulo, el);
+  if (plataforma === "tiktok") carregarDetalhesTikTokHub();
+  else if (plataforma === "linkedin") carregarDetalhesLinkedInHub();
+  else if (plataforma === "kwai") carregarDetalhesKwaiHub();
 }
 
 async function carregarDetalhesMetaHub() {
@@ -33938,9 +33981,7 @@ async function carregarDetalhesMetaHub() {
 async function recarregarHubMantendoDetalhesTikTokAbertos() {
   await carregarHub();
   const el = document.getElementById("integ-detalhes-tiktok");
-  const btn = document.getElementById("btn-det-tiktok");
-  if (el) el.style.display = "";
-  if (btn) btn.textContent = "Ocultar ▴";
+  if (el) abrirIntegDetalhesModal(NOMES_INTEG_MODAL.tiktok, el);
   await carregarDetalhesTikTokHub();
 }
 
@@ -34094,9 +34135,7 @@ async function sincronizarTikTok() {
 async function recarregarHubMantendoDetalhesLinkedInAbertos() {
   await carregarHub();
   const el = document.getElementById("integ-detalhes-linkedin");
-  const btn = document.getElementById("btn-det-linkedin");
-  if (el) el.style.display = "";
-  if (btn) btn.textContent = "Ocultar ▴";
+  if (el) abrirIntegDetalhesModal(NOMES_INTEG_MODAL.linkedin, el);
   await carregarDetalhesLinkedInHub();
 }
 
@@ -34240,9 +34279,7 @@ async function sincronizarLinkedIn() {
 async function recarregarHubMantendoDetalhesKwaiAbertos() {
   await carregarHub();
   const el = document.getElementById("integ-detalhes-kwai");
-  const btn = document.getElementById("btn-det-kwai");
-  if (el) el.style.display = "";
-  if (btn) btn.textContent = "Ocultar ▴";
+  if (el) abrirIntegDetalhesModal(NOMES_INTEG_MODAL.kwai, el);
   await carregarDetalhesKwaiHub();
 }
 
@@ -45798,6 +45835,7 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     fecharPassoMetaAnuncios();
     fecharPassoMetaInstagram();
+    fecharIntegDetalhesModal();
   }
 });
 

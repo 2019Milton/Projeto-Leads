@@ -4033,6 +4033,11 @@ body.tema-claro .perguntas-rapidas-ajuda {
   opacity: 0.9;
 }
 
+.btn-criar-campanha-topo {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  box-shadow: 0 0 12px rgba(34,197,94,0.3);
+}
+
 .btn-sync.syncing,
 .btn-sync-manual.syncing {
 
@@ -11429,6 +11434,7 @@ body.tema-claro .btn-recolher-card:hover {
 .integ-modal-fechar:hover { color: #e2e8f0; }
 .integ-modal-corpo { overflow-y: auto; padding: 20px 22px; flex: 1; }
 .integ-modal-corpo .integ-card-detalhes { border-top: none; padding-top: 0; margin-top: 0; }
+.integ-modal-box.integ-modal-largo { max-width: 960px; }
 
 /* 🟢 CONECTAR META — verde */
 .meta-card {
@@ -16098,11 +16104,11 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
   }
 }
 
-/* Campanhas: criação sempre visível à esquerda e gestão à direita. */
+/* Campanhas: "Criar Campanha" agora vive só dentro do modal (ver
+   abrirCriarCampanhaModal) — "Minhas Campanhas" ocupa a tela inteira. */
 #app.sidebar-ativa.campanhas-layout-ativo #app-content-area {
   display: grid;
-  grid-template-columns:
-    12px minmax(360px, 35fr) 14px minmax(0, 65fr) 12px;
+  grid-template-columns: 12px minmax(0, 1fr) 12px;
   grid-template-rows: auto auto;
   align-content: start;
   align-items: start;
@@ -16113,26 +16119,12 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
   grid-row: 1;
 }
 
-#app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #nicho_campanha_container.secao-visivel,
-#app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-criar-campanha.secao-visivel {
+#app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel {
   grid-column: 2;
   grid-row: 2;
   width: 100%;
   min-width: 0;
   margin: 0 !important;
-}
-
-#app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel {
-  grid-column: 4;
-  grid-row: 2;
-  width: 100%;
-  min-width: 0;
-  margin: 0 !important;
-}
-
-#app.sidebar-ativa.campanhas-layout-ativo #nicho_campanha_container,
-#app.sidebar-ativa.campanhas-layout-ativo #card-criar-campanha,
-#app.sidebar-ativa.campanhas-layout-ativo #card-campanhas {
   box-sizing: border-box;
 }
 
@@ -16159,30 +16151,6 @@ body.tema-claro .suporte-filtro-btn:hover:not(.ativo) {
 
 body.tema-claro .criar-campanha-descricao {
   color: #64748b;
-}
-
-body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel {
-  grid-column: 2 / 5;
-}
-
-@media (max-width: 1180px) {
-  #app.sidebar-ativa.campanhas-layout-ativo #app-content-area {
-    grid-template-columns: 12px minmax(0, 1fr) 12px;
-    grid-template-rows: auto auto auto;
-    row-gap: 14px;
-  }
-
-  #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #nicho_campanha_container.secao-visivel,
-  #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-criar-campanha.secao-visivel {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel,
-  body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-content-area > #card-campanhas.secao-visivel {
-    grid-column: 2;
-    grid-row: 3;
-  }
 }
 
 </style>
@@ -18897,6 +18865,14 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
         </span>
 
         <button
+          id="btn-abrir-criar-campanha"
+          class="btn-sync btn-criar-campanha-topo"
+          onclick="abrirCriarCampanhaModal()"
+        >
+          ➕ Criar campanha
+        </button>
+
+        <button
           id="btn-sync"
           class="btn-sync"
           onclick="sincronizarCampanhas()"
@@ -18914,6 +18890,19 @@ body.usuario-corretor-receptor #app.sidebar-ativa.campanhas-layout-ativo #app-co
 
     </div>
 
+  </div>
+
+  <!-- 🪟 MODAL "CRIAR CAMPANHA" — #nicho_campanha_container (abas de nicho +
+       card de criação) é movido pra dentro ao abrir e devolvido ao lugar
+       original ao fechar (ver abrirCriarCampanhaModal/fecharCriarCampanhaModal). -->
+  <div id="criar_campanha_modal" class="integ-modal-overlay" style="display:none;" onclick="if(event.target===this) fecharCriarCampanhaModal()">
+    <div class="integ-modal-box integ-modal-largo">
+      <div class="integ-modal-header">
+        <span>📢 Criar Campanha</span>
+        <button onclick="fecharCriarCampanhaModal()" class="integ-modal-fechar" aria-label="Fechar">✕</button>
+      </div>
+      <div id="criar_campanha_modal_corpo" class="integ-modal-corpo"></div>
+    </div>
   </div>
 
 
@@ -20998,19 +20987,21 @@ function aplicarPermissoesCampanhasUsuario() {
   const esconderCriacao =
     usuarioEhCorretorReceptor();
 
+  // "Criar Campanha" só existe dentro do modal agora (abrirCriarCampanhaModal) —
+  // aqui só garante que fique escondida inline; e esconde o botão que abre o
+  // modal pra quem não pode criar campanha (corretor receptor).
   [
     "nicho_campanha_container",
     "card-criar-campanha"
   ].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    if (esconderCriacao) {
-      el.style.display = "none";
-      el.classList.remove("secao-visivel");
-    } else if (secaoAtiva === "campanhas") {
-      definirVisibilidadeSecao(id, true);
-    }
+    el.style.display = "none";
+    el.classList.remove("secao-visivel");
   });
+
+  const btnAbrirModal = document.getElementById("btn-abrir-criar-campanha");
+  if (btnAbrirModal) btnAbrirModal.style.display = esconderCriacao ? "none" : "";
 }
 
 // Indicador de "última sincronização" na sidebar — só lê do banco
@@ -21281,6 +21272,8 @@ function navegarPara(secao) {
     definirVisibilidadeSecao(id, true);
   });
 
+  // aplicarPermissoesCampanhasUsuario() esconde "card-criar-campanha" de novo
+  // logo abaixo — ela só existe dentro do modal agora (abrirCriarCampanhaModal).
   aplicarPermissoesCampanhasUsuario();
 
   // Destacar item ativo no menu
@@ -25143,6 +25136,52 @@ function toggleCriarCampanha() {
   aplicarEstadoCriarCampanha(
     !card.classList.contains("recolhido")
   );
+}
+
+let criarCampanhaModalOrigem = null;
+
+function abrirCriarCampanhaModal() {
+  const modal = document.getElementById("criar_campanha_modal");
+  const corpo = document.getElementById("criar_campanha_modal_corpo");
+  // #nicho_campanha_container envolve as abas de nicho + o card — só cai no
+  // card puro se as abas de nicho nunca chegaram a ser inicializadas.
+  const conteudo =
+    document.getElementById("nicho_campanha_container") ||
+    document.getElementById("card-criar-campanha");
+  if (!modal || !corpo || !conteudo) return;
+
+  aplicarEstadoCriarCampanha(false); // sempre expandido dentro do modal
+
+  criarCampanhaModalOrigem = conteudo.parentElement;
+  conteudo.style.display = "";
+  conteudo.classList.add("secao-visivel");
+  // .card-criar-campanha.secao-visivel (não só o wrapper) é o que zera a altura
+  // fixa herdada do layout de seção antigo — sem isso o card fica esticado.
+  document.getElementById("card-criar-campanha")?.classList.add("secao-visivel");
+  corpo.appendChild(conteudo);
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function fecharCriarCampanhaModal() {
+  const modal = document.getElementById("criar_campanha_modal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+
+  const conteudo =
+    document.getElementById("nicho_campanha_container") ||
+    document.getElementById("card-criar-campanha");
+  if (conteudo) {
+    conteudo.style.display = "none";
+    conteudo.classList.remove("secao-visivel");
+    document.getElementById("card-criar-campanha")?.classList.remove("secao-visivel");
+    // se as abas de nicho foram reinicializadas enquanto o modal estava aberto,
+    // o pai original pode não existir mais — nesse caso não há pra onde devolver.
+    if (criarCampanhaModalOrigem && document.body.contains(criarCampanhaModalOrigem)) {
+      criarCampanhaModalOrigem.appendChild(conteudo);
+    }
+  }
+  criarCampanhaModalOrigem = null;
 }
 
 const redesSelecionadasCampanha = new Set();
@@ -32741,6 +32780,10 @@ async function criarCampanhaCompleta() {
 
   if (resultados.some(r => r.ok)) {
     await sincronizarCampanhas();
+    // fecha o modal de criação assim que pelo menos uma rede publicar com
+    // sucesso, pra já mostrar "Minhas Campanhas" atualizada; erro total mantém
+    // o modal aberto pra corrigir e tentar de novo sem perder o preenchido.
+    fecharCriarCampanhaModal();
   }
 
   setTimeout(() => mostrarResumoPublicacaoMultiRede(resultados), 800);
@@ -45837,6 +45880,7 @@ document.addEventListener("keydown", (event) => {
     fecharPassoMetaAnuncios();
     fecharPassoMetaInstagram();
     fecharIntegDetalhesModal();
+    fecharCriarCampanhaModal();
   }
 });
 

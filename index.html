@@ -17273,6 +17273,7 @@ body.tema-claro .criar-campanha-descricao {
                 <input
                   type="checkbox"
                   id="adv_platform_instagram"
+                  onchange="atualizarBlocoEscolhaMidiaCarrossel()"
                 >
                 Instagram
               </label>
@@ -17353,6 +17354,24 @@ body.tema-claro .criar-campanha-descricao {
                   <button type="button" class="btn-video-anuncio" id="btn-adicionar-video" onclick="document.getElementById('video_anuncio_input').click()">+ Adicionar vídeo</button>
                   <button type="button" class="btn-video-anuncio remover" id="btn-remover-video" style="display:none">Remover</button>
                 </div>
+              </div>
+
+              <div id="video_posicao_carrossel_bloco" style="display:none;margin-top:8px;">
+                <label style="font-size:12px;">Posição do vídeo no carrossel</label>
+                <select id="video_posicao_carrossel_select" style="width:100%;"></select>
+              </div>
+
+              <div id="instagram_escolha_midia_bloco" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:8px;">
+                <label style="font-size:12px;font-weight:600;">📌 No Instagram, use:</label>
+                <div style="display:flex;gap:16px;margin-top:6px;">
+                  <label style="font-size:12.5px;font-weight:400;display:flex;align-items:center;gap:5px;">
+                    <input type="radio" name="escolha_midia_instagram" value="video" checked> Vídeo
+                  </label>
+                  <label style="font-size:12.5px;font-weight:400;display:flex;align-items:center;gap:5px;">
+                    <input type="radio" name="escolha_midia_instagram" value="imagens"> Imagens (carrossel)
+                  </label>
+                </div>
+                <p style="font-size:11px;opacity:.6;margin:6px 0 0;">A Meta não aceita vídeo e imagens juntos no mesmo carrossel para o Instagram — no Facebook, os dois entram juntos, na ordem definida acima.</p>
               </div>
             </div>
 
@@ -29798,7 +29817,13 @@ function coletarConfiguracoesAvancadas() {
       )?.checked ?? true,
     attribution_spec:
       valorCampo("adv_attribution_spec"),
-    custom_audiences: publicosPersonalizadosSelecionados.map(p => p.id)
+    custom_audiences: publicosPersonalizadosSelecionados.map(p => p.id),
+    escolha_midia_instagram:
+      document.querySelector('input[name="escolha_midia_instagram"]:checked')?.value || "video",
+    video_posicao_carrossel:
+      document.getElementById("video_posicao_carrossel_bloco")?.style.display !== "none"
+        ? valorCampo("video_posicao_carrossel_select")
+        : null
   };
 }
 
@@ -30058,6 +30083,12 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
   const plataformas = cfg.plataformas || [];
   definirCheckbox("adv_platform_facebook", plataformas.includes("facebook"));
   definirCheckbox("adv_platform_instagram", plataformas.includes("instagram"));
+
+  const radioEscolhaMidia = document.querySelector(
+    `input[name="escolha_midia_instagram"][value="${cfg.escolha_midia_instagram === "imagens" ? "imagens" : "video"}"]`
+  );
+  if (radioEscolhaMidia) radioEscolhaMidia.checked = true;
+  atualizarBlocoEscolhaMidiaCarrossel();
 
   const destinoRadio = document.getElementById(cfg.destino === "whatsapp" ? "destino_whatsapp" : "destino_lead_ads");
   if (destinoRadio) destinoRadio.checked = true;
@@ -30730,6 +30761,59 @@ function atualizarPosicoes() {
     const btnRemover = item.querySelector(".btn-remover-imagem");
     if (btnRemover) btnRemover.title = total === 1 ? "Limpar imagem" : "Remover";
   });
+  atualizarBlocoEscolhaMidiaCarrossel();
+}
+
+// Mostra/esconde os controles de vídeo+imagens juntos (posição no carrossel
+// quando só Facebook, ou a escolha vídeo/imagens quando Instagram também está
+// marcado — a Meta não aceita os dois juntos num carrossel do Instagram, ver
+// montarConteudoCriativoMeta no backend). Chamada sempre que imagens, vídeo ou
+// os checkboxes de rede mudam, pra nunca ficar com o bloco errado visível.
+function atualizarBlocoEscolhaMidiaCarrossel() {
+  const temVideo =
+    document.getElementById("video_anuncio_card")?.classList.contains("preenchido") || false;
+
+  const qtdImagens = Array.from(
+    document.querySelectorAll("#imagens-container .imagem-item")
+  ).filter(item =>
+    item.querySelector(".imagem-input")?.files?.[0] ||
+    item.dataset.hashExistente ||
+    item.dataset.urlExistente
+  ).length;
+
+  const instagramSelecionado =
+    document.getElementById("adv_platform_instagram")?.checked || false;
+
+  const temAmbiguidade = temVideo && qtdImagens > 0;
+
+  const blocoInstagram = document.getElementById("instagram_escolha_midia_bloco");
+  if (blocoInstagram) {
+    blocoInstagram.style.display = (temAmbiguidade && instagramSelecionado) ? "" : "none";
+  }
+
+  const blocoPosicao = document.getElementById("video_posicao_carrossel_bloco");
+  const selectPosicao = document.getElementById("video_posicao_carrossel_select");
+  const mostrarPosicao = temAmbiguidade && !instagramSelecionado;
+
+  if (blocoPosicao) {
+    blocoPosicao.style.display = mostrarPosicao ? "" : "none";
+  }
+
+  if (selectPosicao && mostrarPosicao) {
+    const valorAtual = selectPosicao.value;
+    selectPosicao.innerHTML = "";
+    for (let i = 0; i <= qtdImagens; i++) {
+      const opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent =
+        i === 0 ? "Primeiro" :
+        i === qtdImagens ? "Último" :
+        `Depois da imagem ${i}`;
+      selectPosicao.appendChild(opt);
+    }
+    selectPosicao.value =
+      (valorAtual && Number(valorAtual) <= qtdImagens) ? valorAtual : String(qtdImagens);
+  }
 }
 
 function criarItemImagem(arquivoInicial) {
@@ -31016,6 +31100,7 @@ function limparVideoCampanha() {
   if (status) status.textContent = "Use MP4, MOV ou WebM. Se adicionar vídeo, ele será enviado como criativo da campanha.";
   if (remover) remover.style.display = "none";
   if (card) card.classList.remove("preenchido");
+  atualizarBlocoEscolhaMidiaCarrossel();
 }
 
 function aplicarVideoCampanha(arquivo) {
@@ -31047,6 +31132,7 @@ function aplicarVideoCampanha(arquivo) {
   if (status) status.textContent = `${arquivo.type || "video"} · ${formatarTamanhoArquivo(arquivo.size)}`;
   if (remover) remover.style.display = "";
   if (card) card.classList.add("preenchido");
+  atualizarBlocoEscolhaMidiaCarrossel();
 }
 
 function preencherVideoCampanhaSalvo(cfg = {}) {
@@ -31093,6 +31179,7 @@ function preencherVideoCampanhaSalvo(cfg = {}) {
   if (status) status.textContent = videoId ? `Vídeo Meta: ${videoId}` : "Vídeo salvo nos dados da campanha.";
   if (remover) remover.style.display = "";
   if (card) card.classList.add("preenchido");
+  atualizarBlocoEscolhaMidiaCarrossel();
 }
 
 // Repopula o carrossel de imagens com o que já está salvo/publicado na campanha

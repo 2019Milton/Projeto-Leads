@@ -1635,6 +1635,106 @@ body.tema-claro .card h3 { color: #0f172a; }
   font-weight: 600;
 }
 
+#modal_passo_google_leadform_termos .passo-meta-body {
+  gap: 14px;
+  padding: 20px 28px 28px;
+}
+
+#modal_passo_google_leadform_termos .passo-meta-step {
+  padding: 16px 18px;
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-path {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-path span {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: #e0ecff;
+  border: 1px solid #a8c7fa;
+  color: #174ea6 !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-path b {
+  color: #64748b !important;
+  font-size: 12px;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-list {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  color: #1f2937;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-list li + li {
+  margin-top: 4px;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-warning,
+#modal_passo_google_leadform_termos .google-leadform-success,
+#modal_passo_google_leadform_termos .google-leadform-tip {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-warning {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-warning,
+#modal_passo_google_leadform_termos .google-leadform-warning * {
+  color: #9a3412 !important;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-tip {
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-tip,
+#modal_passo_google_leadform_termos .google-leadform-tip * {
+  color: #1e40af !important;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-success {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+#modal_passo_google_leadform_termos .google-leadform-success,
+#modal_passo_google_leadform_termos .google-leadform-success * {
+  color: #166534 !important;
+}
+
+@media (max-width: 720px) {
+  #modal_passo_google_leadform_termos .passo-meta-body {
+    padding: 14px;
+  }
+
+  #modal_passo_google_leadform_termos .passo-meta-step {
+    padding: 14px;
+  }
+}
+
 .passo-meta-step img {
   display: block;
   width: 100%;
@@ -46329,8 +46429,8 @@ async function enviarFeedback() {
           Aceitar os Termos de Serviço de Lead Form
         </h2>
         <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
-          O Google exige esse aceite manualmente, uma única vez por conta — não existe forma de fazer isso
-          pela API. Depois de aceitar, a conta fica liberada permanentemente.
+          O Google exige esse aceite manualmente uma única vez por conta. Siga todas as etapas abaixo na
+          conta de anúncios correta. A campanha usada nesse procedimento deve permanecer pausada.
         </p>
       </div>
 
@@ -46345,16 +46445,22 @@ async function enviarFeedback() {
     </div>
 
     <div class="passo-meta-body">
+      <div class="google-leadform-warning">
+        ⚠️ Antes de começar: confira no seletor do canto superior esquerdo se você está na
+        <strong>conta de anúncios do cliente</strong>, e não em uma conta gerenciadora. Não ative nem publique
+        a campanha temporária usada neste procedimento.
+      </div>
+
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">1. Abra o Google Ads na conta de anúncios em uso</h3>
-          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
-            Entre logado com a mesma Conta Google usada na Plataforma de Leads, na
-            <strong>conta de anúncios</strong> selecionada (não a gerenciadora).
+          <h3>1. Abra o Google Ads e expanda o menu lateral</h3>
+          <p>
+            Entre com a mesma Conta Google conectada à Plataforma de Leads. Se o menu estiver mostrando apenas
+            ícones, clique em <strong>"Abrir"</strong>, no canto inferior esquerdo, para exibir os nomes das opções.
           </p>
           <p style="margin:10px 0 0;">
             <a href="https://ads.google.com/aw/overview" target="_blank" rel="noopener noreferrer"
-              style="display:inline-flex;align-items:center;padding:6px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+              style="display:inline-flex;align-items:center;padding:7px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
             >Abrir Google Ads →</a>
           </p>
         </div>
@@ -46362,39 +46468,125 @@ async function enviarFeedback() {
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">2. Comece a criar uma campanha nova (temporária)</h3>
-          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
-            No menu lateral clique em <strong>"Campanhas"</strong>, depois no botão <strong>"+"</strong> →
-            <strong>"Nova campanha"</strong>. Escolha o objetivo <strong>"Leads"</strong> e o tipo
-            <strong>"Pesquisa"</strong>, depois clique em <strong>"Continuar"</strong>.
+          <h3>2. Tenha uma campanha de Pesquisa pausada</h3>
+          <p>
+            Se já existir uma campanha temporária de <strong>Pesquisa</strong> com objetivo
+            <strong>Leads</strong>, reutilize-a. Caso contrário, crie uma:
           </p>
+          <div class="google-leadform-path" aria-label="Caminho para criar uma campanha temporária">
+            <span>Campanhas</span><b>→</b><span>+</span><b>→</b><span>Nova campanha</span><b>→</b>
+            <span>Leads</span><b>→</b><span>Pesquisa</span>
+          </div>
+          <div class="google-leadform-warning">
+            Assim que terminar a configuração mínima, deixe essa campanha como <strong>Pausada</strong> para
+            evitar qualquer veiculação ou cobrança. Se ela já foi criada e está pausada, vá direto ao passo 3.
+          </div>
         </div>
       </div>
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Na seção "Anúncios", adicione um Formulário de lead</h3>
-          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
-            Clique em <strong>"+ Formulários de lead"</strong> e depois em <strong>"Novo formulário de lead"</strong>.
-            Preencha um formulário de exemplo: nome do negócio, título, descrição, pelo menos uma pergunta e
-            a URL da política de privacidade. Não precisa ser o formulário definitivo — qualquer conteúdo
-            válido serve, é só pra chegar até o final do fluxo.
-          </p>
+          <h3>3. Abra a página correta de Recursos</h3>
+          <p>Use o menu lateral expandido e siga este caminho:</p>
+          <div class="google-leadform-path" aria-label="Caminho para recursos do Google Ads">
+            <span>Recursos</span><b>→</b><span>Associações</span><b>→</b><span>Formulário de lead</span>
+          </div>
+          <ul class="google-leadform-list">
+            <li>Clique em <strong>"Recursos"</strong>, abaixo do bloco de Campanhas.</li>
+            <li>Não confunda com <strong>"Grupos de recursos"</strong>, que é outra opção.</li>
+            <li>Na página Recursos, permaneça na aba <strong>"Associações"</strong>.</li>
+            <li>
+              Remova filtros restritivos clicando no <strong>"X"</strong>, principalmente
+              <strong>"Motivo do status contém algum Reprovado"</strong>.
+            </li>
+            <li>
+              Na faixa de tipos, clique em <strong>"Formulário de lead"</strong>, que fica entre
+              <strong>"Ligar para"</strong> e <strong>"Mensagem"</strong>.
+            </li>
+          </ul>
         </div>
       </div>
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">4. Revise e aceite os Termos de Serviço</h3>
-          <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
-            Na última etapa desse formulário, o Google mostra os <strong>Termos de Serviço de Lead Forms</strong>
-            para revisão. Aceite e clique em <strong>"Salvar"</strong>.
+          <h3>4. Crie e vincule o formulário à campanha pausada</h3>
+          <ol class="google-leadform-list">
+            <li>Clique no botão azul <strong>"+"</strong>, acima da tabela de recursos.</li>
+            <li>Escolha <strong>"Formulário de lead"</strong>.</li>
+            <li>
+              No campo <strong>"Adicionar a"</strong>, troque <strong>"Conta"</strong> por
+              <strong>"Campanha"</strong>.
+            </li>
+            <li>Selecione a campanha temporária que está <strong>Pausada</strong>.</li>
+            <li>Escolha <strong>"Criar novo"</strong>.</li>
+          </ol>
+          <div class="google-leadform-warning">
+            Não deixe <strong>"Adicionar a: Conta"</strong>. Vincule somente à campanha temporária pausada para
+            não aplicar esse formulário a todas as campanhas elegíveis da conta.
+          </div>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>5. Preencha todos os campos obrigatórios</h3>
+          <p>Use informações verdadeiras da empresa. O formulário pode ser simples, mas precisa ser válido.</p>
+          <ul class="google-leadform-list">
+            <li><strong>Título</strong> do formulário.</li>
+            <li><strong>Nome da empresa</strong>.</li>
+            <li><strong>Descrição</strong> curta da oferta ou do atendimento.</li>
+            <li>Em Dados de contato, marque pelo menos <strong>Nome, E-mail e Telefone</strong>.</li>
+            <li>Adicione uma pergunta qualificadora somente se desejar.</li>
+            <li>Informe a <strong>URL pública da Política de Privacidade</strong> da empresa.</li>
+            <li>Preencha a <strong>mensagem após o envio</strong> e escolha a chamada para ação.</li>
+          </ul>
+          <div class="google-leadform-tip">
+            💡 Role o painel da esquerda até o final. A política de privacidade, a mensagem de confirmação e o
+            aceite dos termos ficam abaixo dos primeiros campos mostrados na tela.
+          </div>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>6. Aceite os termos e salve</h3>
+          <p>
+            No final do formulário, leia e aceite os <strong>Termos de Serviço de Formulários de Lead</strong>.
+            Em seguida, clique em <strong>"Salvar"</strong>. O Google voltará para a tabela de Recursos.
           </p>
-          <p style="margin:10px 0 0;background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:8px 12px;color:#166534!important;font-size:13px;font-weight:600;">
-            ✅ Pronto — o aceite já fica registrado na conta assim que você salva o formulário. Não precisa
-            terminar nem publicar essa campanha de teste: pode fechar a aba ou sair do assistente sem salvar
-            a campanha. Volte na Plataforma de Leads e tente criar a campanha novamente.
+          <div class="google-leadform-success">
+            ✅ O aceite fica registrado na conta no momento em que o formulário é salvo. Não é necessário
+            ativar ou publicar a campanha temporária.
+          </div>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>7. Confirme que o formulário foi salvo</h3>
+          <ol class="google-leadform-list">
+            <li>Na página Recursos, remova novamente qualquer filtro de recurso reprovado.</li>
+            <li>Desmarque <strong>"Mensagem"</strong> caso ela esteja selecionada.</li>
+            <li>Clique em <strong>"Formulário de lead"</strong>.</li>
+            <li>Confira se o formulário aparece como <strong>"Pendente / Em análise"</strong> ou <strong>"Qualificado"</strong>.</li>
+          </ol>
+          <div class="google-leadform-tip">
+            O status <strong>"Pendente / Em análise"</strong> é normal e se refere à análise do recurso. Ele não
+            significa que o aceite dos termos falhou.
+          </div>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>8. Volte à Plataforma de Leads</h3>
+          <p>
+            Aguarde de <strong>1 a 2 minutos</strong>, volte para esta plataforma e tente publicar a campanha
+            novamente. Se a mesma mensagem aparecer, atualize a página, espere alguns minutos e tente mais uma vez.
           </p>
+          <div class="google-leadform-success">
+            ✅ Finalizado: formulário visível na tabela, campanha temporária pausada e termos aceitos.
+          </div>
         </div>
       </div>
     </div>

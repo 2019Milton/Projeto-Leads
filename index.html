@@ -10601,6 +10601,61 @@ body.tema-claro .info-tooltip-popup {
   max-width: 780px;
 }
 
+.iapm-status-avisos {
+  position: relative;
+  gap: 16px;
+  margin-bottom: 0;
+  padding: 20px 22px;
+  overflow: hidden;
+  border-color: rgba(37,211,102,0.30);
+  border-radius: 18px;
+  background:
+    radial-gradient(340px 150px at 100% 0%, rgba(37,211,102,0.12), transparent 70%),
+    linear-gradient(135deg, rgba(6,78,59,0.26), rgba(15,23,42,0.30));
+  box-shadow: 0 14px 34px rgba(2,8,23,0.20);
+}
+
+.iapm-status-avisos .iapm-status-icon {
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(37,211,102,0.30);
+  border-radius: 14px;
+  background: rgba(37,211,102,0.13);
+  font-size: 20px;
+}
+
+.iapm-status-avisos .iapm-status-kicker {
+  color: #4ade80;
+}
+
+.iapm-status-avisos .iapm-status-copy > b {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.iapm-status-avisos p {
+  margin: 0;
+  color: #b7d9c4;
+}
+
+.iapm-status-avisos .iapm-status-facts span {
+  border-color: rgba(37,211,102,0.18);
+  background: rgba(21,128,61,0.14);
+  color: #bbf7d0;
+}
+
+.iapm-status-avisos .iapm-status-timing {
+  border-top-color: rgba(37,211,102,0.14);
+}
+
+.iapm-explain-avisos {
+  --iapm-accent: #22c55e;
+  --iapm-accent-rgb: 34,197,94;
+  max-width: 780px;
+}
+
 /* ---- painel "tempo real" ---- */
 
 .iapm-live {
@@ -13931,6 +13986,29 @@ body.tema-claro .iapm-status-facts span {
 body.tema-claro .iapm-status-timing {
   color: #64748b;
   border-top-color: rgba(13,148,136,0.14);
+}
+
+body.tema-claro .iapm-status-avisos {
+  background:
+    radial-gradient(340px 150px at 100% 0%, rgba(37,211,102,0.13), transparent 70%),
+    linear-gradient(135deg, #f0fdf4, #eff6ff);
+  border-color: rgba(22,163,74,0.24);
+  box-shadow: 0 12px 28px rgba(15,23,42,0.08);
+}
+
+body.tema-claro .iapm-status-avisos p {
+  color: #3a5c47;
+}
+
+body.tema-claro .iapm-status-avisos .iapm-status-facts span {
+  color: #15803d;
+  background: rgba(22,163,74,0.08);
+  border-color: rgba(22,163,74,0.16);
+}
+
+body.tema-claro .iapm-status-avisos .iapm-status-timing {
+  color: #64748b;
+  border-top-color: rgba(22,163,74,0.14);
 }
 
 body.tema-claro .iapm-stat {
@@ -18115,6 +18193,32 @@ body.tema-claro .criar-campanha-descricao {
                     <li>Somente quando existe conteúdo novo na conversa e a IA identifica o estágio com <b>alta confiança</b>.</li>
                     <li>Se a confiança for baixa ou a análise falhar, o card permanece onde está.</li>
                     <li>O corretor pode corrigir o estágio manualmente a qualquer momento.</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="iapm-status iapm-status-avisos">
+            <span class="iapm-status-icon">📲</span>
+            <div class="iapm-status-copy">
+              <span class="iapm-status-kicker">Avisos automáticos</span>
+              <b>A plataforma avisa você direto no WhatsApp nos 3 momentos que mais importam — sem precisar ficar checando a tela.</b>
+              <p>Além de aparecer no sino de notificações da plataforma, cada situação abaixo também dispara uma mensagem automática pro seu WhatsApp cadastrado.</p>
+              <div class="iapm-status-facts">
+                <span>🎯 Novo lead chegou — assim que cai</span>
+                <span>📅 Lembrete de contato do lead — 1 dia antes e no dia marcado</span>
+                <span>⏰ Fim de campanha — 1 dia antes e no dia da "Data de término"</span>
+              </div>
+              <span class="iapm-status-timing">⏱ Os lembretes de contato e de fim de campanha rodam uma vez por dia, às 8h (horário de Brasília); o aviso de novo lead sai na hora, assim que o lead entra.</span>
+              <details class="iapm-explain iapm-explain-avisos">
+                <summary>O que preciso configurar pra receber esses avisos?</summary>
+                <div class="iapm-explain-body">
+                  <ul>
+                    <li>Cadastre seu número em <b>Configurações → Meu Perfil → WhatsApp para lembretes</b>. Sem número cadastrado, nenhum aviso é enviado por lá (mas continuam aparecendo no sino de notificações).</li>
+                    <li>O aviso de <b>novo lead</b> pode ser desligado em Configurações → Notificações, na opção "Notificar novo lead por WhatsApp".</li>
+                    <li>O <b>lembrete de contato</b> depende do campo "Contato em" estar preenchido no lead (botão "Agendar contato" na Central de Leads).</li>
+                    <li>O aviso de <b>fim de campanha</b> só dispara pra campanhas com "Data de término" preenchida na criação ou edição.</li>
                   </ul>
                 </div>
               </details>

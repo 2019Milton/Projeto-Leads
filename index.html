@@ -19001,6 +19001,20 @@ body.tema-claro .criar-campanha-descricao {
     </div>
   </div>
 
+  <!-- 🪟 MODAL "COMPLETAR CAMPANHA DO GOOGLE ADS" — campanhas sincronizadas de fora da
+       plataforma (ex: AgenteSmart) chegam sem nenhuma configuração salva localmente; este
+       modal consulta o que já existe no Google Ads (ver abrirModalCompletarCampanhaGoogle)
+       e só pede os campos realmente faltantes. -->
+  <div id="cgc_modal" class="integ-modal-overlay" style="display:none;" onclick="if(event.target===this) fecharModalCompletarCampanhaGoogle()">
+    <div class="integ-modal-box">
+      <div class="integ-modal-header">
+        <span>🔎 Completar campanha do Google Ads</span>
+        <button onclick="fecharModalCompletarCampanhaGoogle()" class="integ-modal-fechar" aria-label="Fechar">✕</button>
+      </div>
+      <div id="cgc_modal_corpo" class="integ-modal-corpo"></div>
+    </div>
+  </div>
+
 
 
   <!-- =========================================
@@ -32524,6 +32538,290 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
   }
 }
 
+// ─── "Completar campanha do Google Ads" — para campanhas sincronizadas de fora da
+// plataforma (ex: AgenteSmart), que chegam sem nenhuma configuração salva localmente.
+// Diferente de publicarCampanhaGoogle: NUNCA cria a campanha (ela já existe), consulta
+// o que já existe (/google/campanha-status) e só cria o que falta. ──────────────────
+
+let cgcStatusAtual = null;
+
+async function abrirModalCompletarCampanhaGoogle(campanha) {
+  const modal = document.getElementById("cgc_modal");
+  const corpo = document.getElementById("cgc_modal_corpo");
+  if (!modal || !corpo) return;
+
+  cgcStatusAtual = null;
+  corpo.innerHTML = `<p>Consultando o que já existe no Google Ads para esta campanha...</p>`;
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+
+  const token = localStorage.getItem("token");
+  if (!token) { fecharModalCompletarCampanhaGoogle(); return; }
+
+  try {
+    const [statusRes, formulariosRes] = await Promise.all([
+      fetch(`${API}/google/campanha-status/${campanha.campaign_id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      fetch(`${API}/google/formularios`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => null)
+    ]);
+
+    const status = await statusRes.json();
+    if (!statusRes.ok || status.error) {
+      corpo.innerHTML = `<div class="channel-picker-status alerta">❌ ${escaparHtml(status.error || "Não foi possível consultar esta campanha no Google Ads.")}</div>`;
+      return;
+    }
+
+    cgcStatusAtual = status;
+    const formulariosData = formulariosRes ? await formulariosRes.json().catch(() => ({})) : {};
+    renderizarModalCompletarCampanhaGoogle(campanha, status, formulariosData.formularios || []);
+  } catch (err) {
+    console.error("ERRO abrirModalCompletarCampanhaGoogle:", err);
+    corpo.innerHTML = `<div class="channel-picker-status alerta">❌ Erro ao consultar a campanha no Google Ads. Tente novamente.</div>`;
+  }
+}
+
+function fecharModalCompletarCampanhaGoogle() {
+  const modal = document.getElementById("cgc_modal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+  cgcStatusAtual = null;
+}
+
+function ativarCampanhaGoogleJaCompleta(campaignId, statusAtual) {
+  fecharModalCompletarCampanhaGoogle();
+  toggleCampanha(campaignId, statusAtual, null, "google");
+}
+
+function renderizarModalCompletarCampanhaGoogle(campanha, status, formularios) {
+  const corpo = document.getElementById("cgc_modal_corpo");
+  if (!corpo) return;
+
+  if (status.tem_anuncio) {
+    corpo.innerHTML = `
+      <div class="channel-picker-status">✅ Esta campanha do Google Ads já está completa (grupo de anúncios, anúncio e palavras-chave já existem). Falta apenas ativá-la.</div>
+      <button type="button" style="margin-top:16px;width:100%;" onclick="ativarCampanhaGoogleJaCompleta('${escaparHtml(campanha.campaign_id)}', '${escaparHtml(campanha.status)}')">▶ Ativar campanha agora</button>
+    `;
+    return;
+  }
+
+  const resumo = status.tem_grupo_anuncios
+    ? `Encontramos o grupo de anúncios "${escaparHtml(status.adgroup_nome || status.adgroup_id)}" já existente nesta campanha — ele será reaproveitado${status.tem_palavras_chave ? " (já tem palavras-chave configuradas)" : ""}. Vamos criar o anúncio de texto e vincular o formulário de lead.`
+    : "Nenhum grupo de anúncios encontrado nesta campanha — vamos criar um novo, junto com o anúncio e o formulário de lead.";
+
+  const orcamentoBloco = status.orcamento_diario_atual
+    ? `<div class="advanced-full">
+         <label>Orçamento diário</label>
+         <div class="channel-picker-status">Já definido no Google Ads: <strong>${formatarMoeda(status.orcamento_diario_atual)}/dia</strong>. Para alterar, edite direto no Google Ads Manager.</div>
+         <input type="hidden" id="cgc_orcamento" value="${status.orcamento_diario_atual}">
+       </div>`
+    : `<div class="advanced-full">
+         <label>Orçamento diário (R$)</label>
+         <input type="number" id="cgc_orcamento" min="1" step="0.01" placeholder="Ex: 30,00">
+       </div>`;
+
+  const formularioBloco = status.tem_formulario_vinculado
+    ? `<div class="advanced-full">
+         <input type="hidden" id="cgc_form_resource_name" value="${escaparHtml(status.form_resource_name)}">
+         <div class="channel-picker-status">Formulário de lead já vinculado a esta campanha — será reaproveitado.</div>
+       </div>`
+    : `<div class="advanced-full">
+         <label>Formulário Google (opcional)</label>
+         <select id="cgc_formulario_select" onchange="alternarFormularioManualCGC()">
+           <option value="">Criar um novo automaticamente</option>
+           ${formularios.map(f => `<option value="${escaparHtml(f.resource_name)}">${escaparHtml(f.nome || f.resource_name)}</option>`).join("")}
+           <option value="__manual__">Digitar resource name manualmente...</option>
+         </select>
+         <div id="cgc_formulario_manual_wrap" style="display:none;margin-top:8px;">
+           <label>Resource name do formulário (manual)</label>
+           <input type="text" id="cgc_formulario_manual" placeholder="customers/123.../assets/456...">
+         </div>
+       </div>`;
+
+  corpo.innerHTML = `
+    <div class="channel-picker-status">${resumo}</div>
+    <div class="advanced-grid">
+      <div><label>Título 1 (Google)</label><input type="text" id="cgc_titulo_1" maxlength="30" placeholder="Até 30 caracteres"></div>
+      <div><label>Título 2 (Google)</label><input type="text" id="cgc_titulo_2" maxlength="30" placeholder="Até 30 caracteres"></div>
+      <div><label>Título 3 (Google)</label><input type="text" id="cgc_titulo_3" maxlength="30" placeholder="Até 30 caracteres"></div>
+      <div><label>Descrição 1 (Google)</label><input type="text" id="cgc_descricao_1" maxlength="90" placeholder="Até 90 caracteres"></div>
+      <div><label>Descrição 2 (Google)</label><input type="text" id="cgc_descricao_2" maxlength="90" placeholder="Até 90 caracteres"></div>
+      <div><label>Nome do anunciante (Google)</label><input type="text" id="cgc_nome_anunciante" maxlength="25" placeholder="Até 25 caracteres"></div>
+      <div class="advanced-full"><label>URL de destino</label><input type="text" id="cgc_url" placeholder="https://plataformadeleads.com.br" value="https://plataformadeleads.com.br"></div>
+      ${orcamentoBloco}
+      <div class="advanced-subsection"><h5>Formulário de lead (Google)</h5></div>
+      ${formularioBloco}
+    </div>
+    <div id="cgc_mensagem_erro" class="channel-picker-status alerta" style="display:none;margin-top:14px;"></div>
+    <div id="cgc_progresso_texto" style="display:none;margin-top:14px;font-size:13px;color:#94a3b8;"></div>
+    <button type="button" id="cgc_btn_confirmar" style="margin-top:16px;width:100%;"
+      onclick="confirmarCompletarCampanhaGoogle(${Number(campanha.id)}, '${escaparHtml(campanha.campaign_id)}')">
+      🚀 Completar e publicar anúncio
+    </button>
+  `;
+}
+
+function alternarFormularioManualCGC() {
+  const select = document.getElementById("cgc_formulario_select");
+  const wrap = document.getElementById("cgc_formulario_manual_wrap");
+  if (wrap) wrap.style.display = select?.value === "__manual__" ? "" : "none";
+}
+
+function obterFormularioEscolhidoCGC() {
+  const hidden = document.getElementById("cgc_form_resource_name");
+  if (hidden) return hidden.value; // já vinculado, travado
+  const select = document.getElementById("cgc_formulario_select");
+  if (select?.value === "__manual__") {
+    return document.getElementById("cgc_formulario_manual")?.value?.trim() || "";
+  }
+  return select?.value?.trim() || "";
+}
+
+function validarModalCompletarCampanhaGoogle() {
+  const titulos = [
+    document.getElementById("cgc_titulo_1")?.value?.trim(),
+    document.getElementById("cgc_titulo_2")?.value?.trim(),
+    document.getElementById("cgc_titulo_3")?.value?.trim()
+  ].filter(Boolean);
+  if (titulos.length < 3) return "Informe os 3 títulos do anúncio.";
+  const descricoes = [
+    document.getElementById("cgc_descricao_1")?.value?.trim(),
+    document.getElementById("cgc_descricao_2")?.value?.trim()
+  ].filter(Boolean);
+  if (descricoes.length < 2) return "Informe as 2 descrições do anúncio.";
+  if (!document.getElementById("cgc_nome_anunciante")?.value?.trim()) return "Informe o nome do anunciante.";
+  const orcamentoEl = document.getElementById("cgc_orcamento");
+  if (orcamentoEl && orcamentoEl.type === "number" && !(Number(orcamentoEl.value) > 0)) {
+    return "Informe um orçamento diário válido.";
+  }
+  return null;
+}
+
+async function confirmarCompletarCampanhaGoogle(campanhaId, campaignId) {
+  const erro = validarModalCompletarCampanhaGoogle();
+  const erroEl = document.getElementById("cgc_mensagem_erro");
+  const progressoEl = document.getElementById("cgc_progresso_texto");
+  const btn = document.getElementById("cgc_btn_confirmar");
+  if (erro) {
+    if (erroEl) { erroEl.style.display = ""; erroEl.textContent = "❌ " + erro; }
+    return;
+  }
+  if (erroEl) erroEl.style.display = "none";
+
+  const dadosFormulario = {
+    titulos: [1, 2, 3].map(n => document.getElementById(`cgc_titulo_${n}`)?.value?.trim()).filter(Boolean),
+    descricoes: [1, 2].map(n => document.getElementById(`cgc_descricao_${n}`)?.value?.trim()).filter(Boolean),
+    nome_anunciante: document.getElementById("cgc_nome_anunciante")?.value?.trim(),
+    url_destino: document.getElementById("cgc_url")?.value?.trim(),
+    orcamento: Number(document.getElementById("cgc_orcamento")?.value) || null,
+    form_id: obterFormularioEscolhidoCGC()
+  };
+
+  if (btn) { btn.disabled = true; btn.textContent = "Publicando..."; }
+  if (progressoEl) { progressoEl.style.display = ""; progressoEl.textContent = "Completando campanha..."; }
+
+  const resultado = await completarCampanhaGoogleExistente(campanhaId, campaignId, cgcStatusAtual, dadosFormulario);
+
+  if (!resultado.ok) {
+    if (erroEl) { erroEl.style.display = ""; erroEl.textContent = "❌ " + resultado.mensagem; }
+    if (btn) { btn.disabled = false; btn.textContent = "🚀 Completar e publicar anúncio"; }
+    if (progressoEl) progressoEl.style.display = "none";
+    return;
+  }
+
+  fecharModalCompletarCampanhaGoogle();
+  await carregarCampanhas();
+  mostrarSucessoPublicacao(resultado.mensagem || "Campanha completada e publicada no Google Ads.");
+}
+
+async function completarCampanhaGoogleExistente(campanhaId, campaignId, statusExistente, dadosFormulario) {
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+  if (!token) return { ok: false, mensagem: "Sessão expirada. Atualize a página e tente novamente." };
+
+  let adgroupId = statusExistente.adgroup_id;
+  let adgroupCriadoNestaTentativa = false;
+
+  try {
+    if (!statusExistente.tem_grupo_anuncios) {
+      const r = await fetch(`${API}/google/adgroup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ usuario_id, campaign_id: campaignId, orcamento: dadosFormulario.orcamento })
+      });
+      const data = await r.json();
+      if (data.error) return { ok: false, mensagem: data.error };
+      adgroupId = data.adgroup_id;
+      adgroupCriadoNestaTentativa = true;
+    }
+
+    let formId = statusExistente.tem_formulario_vinculado
+      ? statusExistente.form_resource_name
+      : dadosFormulario.form_id;
+
+    if (!statusExistente.tem_formulario_vinculado && !formId) {
+      const formRes = await fetch(`${API}/google/formulario`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          usuario_id,
+          nome_negocio: dadosFormulario.nome_anunciante,
+          headline: dadosFormulario.titulos[0],
+          descricao: dadosFormulario.descricoes[0],
+          url_destino: dadosFormulario.url_destino
+        })
+      });
+      const formData = await formRes.json();
+      if (formData.error) {
+        if (adgroupCriadoNestaTentativa) await removerAdGroupGoogleCriadoPorFalha(campaignId, adgroupId, token);
+        return { ok: false, mensagem: formData.error };
+      }
+      formId = formData.resource_name;
+    }
+
+    const anuncioRes = await fetch(`${API}/google/anuncio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        usuario_id, campaign_id: campaignId, adgroup_id: adgroupId, form_id: formId,
+        titulos: dadosFormulario.titulos, descricoes: dadosFormulario.descricoes,
+        nome_anunciante: dadosFormulario.nome_anunciante, url_destino: dadosFormulario.url_destino,
+        daily_budget: statusExistente.orcamento_diario_atual ?? dadosFormulario.orcamento
+      })
+    });
+    const anuncio = await anuncioRes.json();
+    if (anuncio.error) {
+      if (adgroupCriadoNestaTentativa) await removerAdGroupGoogleCriadoPorFalha(campaignId, adgroupId, token);
+      return { ok: false, mensagem: anuncio.error };
+    }
+
+    return { ok: true, mensagem: "Campanha completada e publicada no Google Ads." };
+  } catch (err) {
+    console.error("ERRO completarCampanhaGoogleExistente:", err);
+    if (adgroupCriadoNestaTentativa) await removerAdGroupGoogleCriadoPorFalha(campaignId, adgroupId, token);
+    return { ok: false, mensagem: "Erro ao completar campanha Google Ads: " + (err?.message || String(err)) };
+  }
+}
+
+// Limpeza pontual: só remove o grupo de anúncios criado NESTA tentativa (nunca a campanha,
+// que já existia antes de nós e nunca deve ser apagada por este fluxo). Best-effort — se
+// falhar, só loga; não é crítico como o /google/excluir-campanha usado no fluxo de "Criar
+// Campanha" (lá excluir a campanha inteira evita lixo órfão cobrando; aqui um grupo de
+// anúncios pausado sem anúncio não gera gasto).
+async function removerAdGroupGoogleCriadoPorFalha(campaignId, adgroupId, token) {
+  if (!adgroupId || !token) return;
+  try {
+    await fetch(`${API}/google/excluir-adgroup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ campaign_id: campaignId, adgroup_id: adgroupId })
+    });
+  } catch (err) {
+    console.warn("Não foi possível remover o grupo de anúncios criado após falha:", err);
+  }
+}
+
 function validarPublicacaoCampanhaLinkedIn() {
   // Sem campos obrigatórios próprios além dos compartilhados (nome, texto,
   // orçamento) — geo padrão é Brasil e o Lead Gen Form é sempre criado
@@ -38492,6 +38790,18 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
   // de qualquer forma e devolvia um erro da API do Facebook sem nexo numa
   // campanha marcada como Google Ads.
   if (plataforma && plataforma !== "meta") {
+    // Campanha do Google Ads com campaign_id real (chegou por sincronização externa,
+    // ex: AgenteSmart) — nesse caso dá pra completar consultando o que já existe no
+    // Google Ads, em vez de só bloquear. Sem campaign_id (rascunho puramente local)
+    // ou qualquer outra plataforma continua caindo no bloqueio de sempre abaixo.
+    if (plataforma === "google") {
+      const campanhaGoogle =
+        campanhasAtuais.find(c => Number(c.id) === Number(campanhaId));
+      if (campanhaGoogle?.campaign_id) {
+        abrirModalCompletarCampanhaGoogle(campanhaGoogle);
+        return;
+      }
+    }
     mostrarErroPublicacao(
       `Publicação automática de campanhas recebidas ainda só funciona para Meta Ads. Esta campanha é ${plataforma === "google" ? "Google Ads" : plataforma === "tiktok" ? "TikTok Ads" : plataforma}: recrie-a em "Criar Campanha" selecionando essa plataforma para publicá-la.`
     );

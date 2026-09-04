@@ -17302,9 +17302,9 @@ body.tema-claro .criar-campanha-descricao {
           </div>
 
           <section class="campaign-setup-section" id="bloco_onde_anunciar" data-plat-only="meta">
-            <h4>Onde anunciar <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha se o anúncio vai aparecer no Facebook, no Instagram ou nos dois ao mesmo tempo. Quanto mais canais, mais pessoas podem ver.', event)">i</button></h4>
+            <h4>Onde anunciar <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha se o anúncio vai aparecer no Facebook ou no Instagram. Só é possível escolher uma rede por campanha — pra anunciar nas duas, crie duas campanhas separadas.', event)">i</button></h4>
             <p>
-              Escolha os canais disponiveis para a Pagina selecionada.
+              Escolha só uma rede — Facebook ou Instagram. Pra anunciar nas duas, crie duas campanhas separadas.
             </p>
 
             <div class="advanced-checks">
@@ -30517,7 +30517,16 @@ async function salvarEdicaoCampanha() {
   if (!configuracoes_avancadas.plataformas.length) {
     if (feedback) {
       feedback.textContent =
-        "Escolha Facebook, Instagram ou os dois para anunciar.";
+        "Escolha Facebook ou Instagram para anunciar.";
+      feedback.style.display = "block";
+    }
+    return;
+  }
+
+  if (configuracoes_avancadas.plataformas.length > 1) {
+    if (feedback) {
+      feedback.textContent =
+        "Escolha só uma rede — Facebook ou Instagram. Pra anunciar nas duas, use duas campanhas separadas (uma pra cada).";
       feedback.style.display = "block";
     }
     return;
@@ -31865,7 +31874,14 @@ function validarPublicacaoCampanha({
   if (!configuracoes_avancadas.plataformas.length) {
     return conduzirParaCampoCampanha(
       "#bloco_onde_anunciar",
-      "Escolha onde anunciar: Facebook, Instagram ou os dois."
+      "Escolha onde anunciar: Facebook ou Instagram."
+    );
+  }
+
+  if (configuracoes_avancadas.plataformas.length > 1) {
+    return conduzirParaCampoCampanha(
+      "#bloco_onde_anunciar",
+      "Escolha só uma rede — Facebook ou Instagram. Pra anunciar nas duas, publique duas campanhas separadas (uma pra cada)."
     );
   }
 

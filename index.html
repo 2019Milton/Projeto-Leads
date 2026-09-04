@@ -37582,8 +37582,17 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
     `;
   }
 
+  // Campanhas antigas (de antes do campo "plataformas" existir) não têm essa
+  // escolha registrada — nesse caso mantém os dois botões, como sempre foi.
+  // Quando o campo existe, só mostra o botão da rede que a campanha ainda usa
+  // de fato, senão o preview/link do Instagram continuava aparecendo mesmo
+  // depois do usuário remover o Instagram numa edição.
+  const plataformasMeta = Array.isArray(cfg.plataformas) ? cfg.plataformas : null;
+  const mostrarPreviewFacebook = !plataformasMeta || plataformasMeta.includes("facebook");
+  const mostrarPreviewInstagram = !plataformasMeta || plataformasMeta.includes("instagram");
+
   const previewBox =
-    capacidadesPlataforma(campanha.plataforma).previewReal
+    capacidadesPlataforma(campanha.plataforma).previewReal && (mostrarPreviewFacebook || mostrarPreviewInstagram)
       ? `
         <div class="preview-anuncio-meta-box">
           <h4>Anúncio real na Meta</h4>
@@ -37591,14 +37600,18 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
             Veja o anúncio exatamente como a Meta exibe, com dados atualizados direto do Facebook ou do Instagram.
           </p>
           <div class="preview-anuncio-toggle">
-            <button
-              class="preview-anuncio-toggle-btn"
-              onclick="carregarPreviewAnuncioCampanha(${Number(campanha.id)}, this, 'DESKTOP_FEED_STANDARD')"
-            >${ICONES_META_PUBLISHER.facebook} Facebook</button>
-            <button
-              class="preview-anuncio-toggle-btn"
-              onclick="carregarPreviewAnuncioCampanha(${Number(campanha.id)}, this, 'INSTAGRAM_STANDARD')"
-            >${ICONES_META_PUBLISHER.instagram} Instagram</button>
+            ${mostrarPreviewFacebook ? `
+              <button
+                class="preview-anuncio-toggle-btn"
+                onclick="carregarPreviewAnuncioCampanha(${Number(campanha.id)}, this, 'DESKTOP_FEED_STANDARD')"
+              >${ICONES_META_PUBLISHER.facebook} Facebook</button>
+            ` : ""}
+            ${mostrarPreviewInstagram ? `
+              <button
+                class="preview-anuncio-toggle-btn"
+                onclick="carregarPreviewAnuncioCampanha(${Number(campanha.id)}, this, 'INSTAGRAM_STANDARD')"
+              >${ICONES_META_PUBLISHER.instagram} Instagram</button>
+            ` : ""}
           </div>
           <div
             id="preview_anuncio_meta_resultado"

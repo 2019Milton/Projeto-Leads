@@ -8358,6 +8358,8 @@ body.tema-claro .cal-nav span { color: #111827; }
   border: 1px solid transparent;
 }
 .plat-badge.meta      { background: rgba(59,130,246,.15); border-color: rgba(59,130,246,.4); color: #60a5fa; }
+.plat-badge.facebook  { background: rgba(24,119,242,.15); border-color: rgba(24,119,242,.4); color: #60a5fa; }
+.plat-badge.instagram { background: rgba(225,48,108,.15); border-color: rgba(225,48,108,.4); color: #f472b6; }
 .plat-badge.google    { background: rgba(234,67,53,.15);  border-color: rgba(234,67,53,.4);  color: #f87171; }
 .plat-badge.tiktok    { background: rgba(0,0,0,.25);       border-color: rgba(255,255,255,.15); color: #e2e8f0; }
 .plat-badge.linkedin  { background: rgba(10,102,194,.15); border-color: rgba(10,102,194,.4); color: #93c5fd; }
@@ -17202,9 +17204,13 @@ body.tema-claro .criar-campanha-descricao {
         <div class="advanced-full" style="margin-bottom:16px;">
           <label>Plataforma de anúncio</label>
           <div class="campanha-plat-selector" id="campanha_plat_selector">
-            <button type="button" class="plat-sel-btn" data-plat="meta"
-              onclick="selecionarPlataformaCampanha('meta')">
-              <span style="color:#0081FB;font-weight:900;">∞</span> Meta Ads
+            <button type="button" class="plat-sel-btn" data-plat="facebook"
+              onclick="selecionarPlataformaCampanha('facebook')">
+              <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path fill="#fff" d="M13.6 21v-7.6h2.5l.4-3h-2.9V8.4c0-.9.2-1.5 1.5-1.5h1.5V4.3C15.9 4.2 15 4.1 14 4.1c-2.1 0-3.6 1.3-3.6 3.7v2.6H8v3h2.4V21h3.2Z"/></svg> Facebook Ads
+            </button>
+            <button type="button" class="plat-sel-btn" data-plat="instagram"
+              onclick="selecionarPlataformaCampanha('instagram')">
+              <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><rect x="1" y="1" width="22" height="22" rx="6" fill="#E1306C"/><rect x="6.5" y="6.5" width="11" height="11" rx="3.5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="3.1" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="17" cy="7" r="1.1" fill="#fff"/></svg> Instagram Ads
             </button>
             <button type="button" class="plat-sel-btn" data-plat="tiktok"
               onclick="selecionarPlataformaCampanha('tiktok')">
@@ -17226,7 +17232,7 @@ body.tema-claro .criar-campanha-descricao {
             <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">🪟 Microsoft Ads</button>
           </div>
-          <small style="display:block;margin-top:6px;color:#64748b;">Marque uma ou mais redes antes de gerar com IA — o mesmo nome, imagens/vídeo e texto são reaproveitados em todas.</small>
+          <small style="display:block;margin-top:6px;color:#64748b;">Marque uma ou mais redes antes de gerar com IA — o mesmo nome, imagens/vídeo e texto são reaproveitados em todas, exceto entre Facebook e Instagram: cada uma vira uma campanha própria, com tudo configurado separadamente.</small>
         </div>
 
         <div
@@ -17273,9 +17279,9 @@ body.tema-claro .criar-campanha-descricao {
               >
             </div>
 
-            <div class="advanced-full" data-plat-only="meta">
+            <div class="advanced-full" data-plat-only="facebook,instagram">
               <label>Página Facebook <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione qual página do Facebook vai aparecer como anunciante. É a página que seus clientes vão ver quando o anúncio aparecer para eles.', event)">i</button></label>
-              <select id="pagina_select" onchange="atualizarTosHint()">
+              <select id="pagina_select" onchange="atualizarTosHint(); atualizarCanaisPaginaMeta()">
                 <option>Carregando páginas...</option>
               </select>
               <div id="tos_lead_ads_hint" style="display:none;margin-top:6px;margin-bottom:4px;padding:8px 10px;background:#422006;border:1px solid #d97706;border-radius:6px;">
@@ -17301,7 +17307,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
           </div>
 
-          <section class="campaign-setup-section" id="bloco_onde_anunciar" data-plat-only="meta">
+          <section class="campaign-setup-section" id="bloco_onde_anunciar" data-plat-only="facebook,instagram">
             <h4>Onde anunciar <button type="button" class="info-icone" onclick="mostrarInfoCampo('Escolha se o anúncio vai aparecer no Facebook ou no Instagram. Só é possível escolher uma rede por campanha — pra anunciar nas duas, crie duas campanhas separadas.', event)">i</button></h4>
             <p>
               Escolha só uma rede — Facebook ou Instagram. Pra anunciar nas duas, crie duas campanhas separadas.
@@ -17334,7 +17340,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
           </section>
 
-          <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="meta,linkedin,kwai">
+          <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="facebook,instagram,linkedin,kwai">
             <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro da própria rede (Facebook/Instagram, LinkedIn ou Kwai). WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma — no LinkedIn isso abre um link wa.me pré-preenchido, já que o LinkedIn não tem um botão nativo de WhatsApp como a Meta.', event)">i</button></h4>
             <div class="advanced-checks">
               <label>
@@ -17469,7 +17475,7 @@ body.tema-claro .criar-campanha-descricao {
             </p>
 
             <div class="campaign-setup-grid">
-              <div data-plat-only="meta">
+              <div data-plat-only="facebook,instagram">
                 <label>País do público <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o país onde as pessoas que verão o anúncio estão. Para o Brasil, deixe BR.', event)">i</button></label>
                 <input
                   type="text"
@@ -17480,7 +17486,7 @@ body.tema-claro .criar-campanha-descricao {
                 >
               </div>
 
-              <div data-plat-only="meta,tiktok">
+              <div data-plat-only="facebook,instagram,tiktok">
                 <label>Gênero <button type="button" class="info-icone" onclick="mostrarInfoCampo('Filtre o público por gênero. Se seu produto é para todo mundo, deixe em Todos.', event)">i</button></label>
                 <select id="adv_genero">
                   <option value="">Todos</option>
@@ -17489,7 +17495,7 @@ body.tema-claro .criar-campanha-descricao {
                 </select>
               </div>
 
-              <div data-plat-only="meta,tiktok">
+              <div data-plat-only="facebook,instagram,tiktok">
                 <label>Idade mínima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade mínima das pessoas que vão ver o anúncio. O Facebook não permite anunciar para menores de 18 anos.', event)">i</button></label>
                 <input
                   type="number"
@@ -17500,7 +17506,7 @@ body.tema-claro .criar-campanha-descricao {
                 >
               </div>
 
-              <div data-plat-only="meta,tiktok">
+              <div data-plat-only="facebook,instagram,tiktok">
                 <label>Idade máxima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade máxima das pessoas que vão ver o anúncio. Deixe em 65 se não quiser limitar a faixa etária superior.', event)">i</button></label>
                 <input
                   type="number"
@@ -17512,7 +17518,7 @@ body.tema-claro .criar-campanha-descricao {
               </div>
             </div>
 
-            <div class="detailed-targeting-panel admin-only-targeting" data-plat-only="meta">
+            <div class="detailed-targeting-panel admin-only-targeting" data-plat-only="facebook,instagram">
               <strong>Direcionamento detalhado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Digite palavras que descrevem o interesse do seu público ideal. O Facebook vai mostrar o anúncio para pessoas que curtem essas páginas ou assuntos. Ex: &quot;imóveis, financiamento&quot;.', event)">i</button></strong>
               <p>
                 Procure interesses que descrevem o perfil do público. Eles serão enviados à Meta junto com o público do conjunto de anúncios.
@@ -17566,7 +17572,7 @@ body.tema-claro .criar-campanha-descricao {
           </section>
         </details>
 
-        <details class="advanced-campaign" id="bloco_agendamento_custo" open data-plat-only="meta,tiktok">
+        <details class="advanced-campaign" id="bloco_agendamento_custo" open data-plat-only="facebook,instagram,tiktok">
           <summary>
             📅 Agendamento e custo
           </summary>
@@ -17577,7 +17583,7 @@ body.tema-claro .criar-campanha-descricao {
             </p>
 
             <!-- CONTROLE DE CUSTO -->
-            <div data-plat-only="meta">
+            <div data-plat-only="facebook,instagram">
               <label>Controle de custo</label>
               <select id="adv_bid_strategy" onchange="atualizarDescricaoCusto()">
                 <option value="">Automático da Meta</option>
@@ -17589,7 +17595,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <!-- VALOR DE CONTROLE -->
-            <div data-plat-only="meta">
+            <div data-plat-only="facebook,instagram">
               <label>Valor de controle (R$)</label>
               <input
                 type="number"
@@ -17605,7 +17611,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <!-- CBO -->
-            <div class="advanced-full" data-plat-only="meta">
+            <div class="advanced-full" data-plat-only="facebook,instagram">
               <label>Otimização de orçamento da campanha (CBO) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Com CBO ativado, você define o orçamento total na campanha e a Meta distribui automaticamente entre os conjuntos de anúncios conforme a performance de cada um. Ideal quando você quer testar múltiplos públicos sem precisar gerenciar o budget de cada adset manualmente. Sem CBO, cada conjunto de anúncios recebe um orçamento fixo independente.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
@@ -17619,7 +17625,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <!-- JANELA DE ATRIBUIÇÃO -->
-            <div class="advanced-full" data-plat-only="meta">
+            <div class="advanced-full" data-plat-only="facebook,instagram">
               <label>Janela de atribuição <button type="button" class="info-icone" onclick="mostrarInfoCampo('Define por quantos dias após uma ação a Meta considera que um lead veio do seu anúncio. Exemplo: com &quot;7 dias após clique&quot;, se alguém clicar no anúncio hoje e preencher o formulário em até 7 dias, isso é contado como conversão desse anúncio. Janelas menores são mais conservadoras e precisas para medir custo por lead real; janelas maiores capturam mais eventos mas podem inflar os números.', event)">i</button></label>
               <select id="adv_attribution_spec" onchange="atualizarDescricaoAtribuicao()">
                 <option value="">Padrão da Meta</option>
@@ -17633,7 +17639,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <!-- DATA DE INÍCIO -->
-            <div data-plat-only="meta,tiktok">
+            <div data-plat-only="facebook,instagram,tiktok">
               <label>Data de início</label>
               <input type="hidden" id="adv_inicio">
               <button type="button" class="cal-picker-btn" id="adv_inicio_btn" onclick="abrirCalendario('inicio')">
@@ -17643,7 +17649,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <!-- DATA DE TÉRMINO -->
-            <div data-plat-only="meta,tiktok">
+            <div data-plat-only="facebook,instagram,tiktok">
               <label>Data de término <small style="color:#64748b;">(opcional)</small></label>
               <input type="hidden" id="adv_fim">
               <button type="button" class="cal-picker-btn" id="adv_fim_btn" onclick="abrirCalendario('fim')">
@@ -17653,7 +17659,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <!-- ÁREA DA CAMPANHA -->
-            <div class="advanced-full" data-plat-only="meta">
+            <div class="advanced-full" data-plat-only="facebook,instagram">
               <label>Área da campanha</label>
               <div class="geo-busca-wrap">
                 <input
@@ -17672,7 +17678,7 @@ body.tema-claro .criar-campanha-descricao {
           </div>
         </details>
 
-        <details class="advanced-campaign" id="bloco_segmentacao_adicional" data-plat-only="meta">
+        <details class="advanced-campaign" id="bloco_segmentacao_adicional" data-plat-only="facebook,instagram">
 
           <summary>
             🎯 Segmentação adicional
@@ -17820,12 +17826,12 @@ body.tema-claro .criar-campanha-descricao {
               >
             </div>
 
-            <div class="advanced-subsection" data-plat-only="meta,google" data-destino-only="lead_ads">
+            <div class="advanced-subsection" data-plat-only="facebook,instagram,google" data-destino-only="lead_ads">
               <h5>Formulário de leads</h5>
               <p>Perguntas e filtro de qualidade aplicados antes do envio do contato.</p>
             </div>
 
-            <div class="advanced-full" data-plat-only="meta,google" data-destino-only="lead_ads">
+            <div class="advanced-full" data-plat-only="facebook,instagram,google" data-destino-only="lead_ads">
               <label>Perguntas qualificadoras <button type="button" class="info-icone" onclick="mostrarInfoCampo('Perguntas que o cliente responde antes de enviar os dados de contato. Ajudam a filtrar quem está mais interessado. Coloque uma pergunta por linha.', event)">i</button></label>
               <textarea
                 id="adv_perguntas"
@@ -17838,7 +17844,7 @@ body.tema-claro .criar-campanha-descricao {
               </small>
             </div>
 
-            <div class="advanced-full" data-plat-only="meta" data-destino-only="lead_ads">
+            <div class="advanced-full" data-plat-only="facebook,instagram" data-destino-only="lead_ads">
               <label>Filtro de qualidade do formulário <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse ajuste é diferente do Público Advantage+. Aqui a Meta tenta priorizar pessoas com maior chance de preencher o formulário corretamente. Pode gerar menos leads, mas tende a melhorar a qualidade dos contatos.', event)">i</button></label>
               <div class="advanced-checks">
                 <label>
@@ -17848,12 +17854,12 @@ body.tema-claro .criar-campanha-descricao {
               </div>
             </div>
 
-            <div class="advanced-subsection" data-plat-only="meta,linkedin" data-destino-only="lead_ads">
+            <div class="advanced-subsection" data-plat-only="facebook,instagram,linkedin" data-destino-only="lead_ads">
               <h5>Tela de obrigado</h5>
               <p>Mensagem exibida depois que o lead envia o formulário.</p>
             </div>
 
-            <div data-plat-only="meta,linkedin" data-destino-only="lead_ads">
+            <div data-plat-only="facebook,instagram,linkedin" data-destino-only="lead_ads">
               <label>Título do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Mensagem principal que aparece para o cliente depois que ele preenche e envia o formulário. Ex: \"Obrigado! Em breve entraremos em contato.\"', event)">i</button></label>
               <input
                 type="text"
@@ -17862,7 +17868,7 @@ body.tema-claro .criar-campanha-descricao {
               >
             </div>
 
-            <div data-plat-only="meta" data-destino-only="lead_ads">
+            <div data-plat-only="facebook,instagram" data-destino-only="lead_ads">
               <label>Botão do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto do botão que aparece na tela de confirmação. Pode ser \"Ver mais\", \"Acessar site\" ou qualquer chamada para ação.', event)">i</button></label>
               <input
                 type="text"
@@ -17871,7 +17877,7 @@ body.tema-claro .criar-campanha-descricao {
               >
             </div>
 
-            <div class="advanced-full" data-plat-only="meta,linkedin" data-destino-only="lead_ads">
+            <div class="advanced-full" data-plat-only="facebook,instagram,linkedin" data-destino-only="lead_ads">
               <label>Mensagem de obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto completo que aparece na tela de confirmação. Aproveite para tranquilizar o cliente e dar um próximo passo, como \"Em breve nossa equipe vai entrar em contato\".', event)">i</button></label>
               <input
                 type="text"
@@ -21926,6 +21932,20 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
     return;
   }
 
+  // Um grupo novo pode conter duas linhas Meta independentes (Facebook e
+  // Instagram). Cada uma deve abrir a própria edição; a aba ativa no drawer
+  // informa qual delas o usuário escolheu. Campanhas legadas combinadas têm
+  // apenas uma linha Meta e continuam no fluxo antigo abaixo.
+  const paresMeta = pares.filter(p => (p.campanha.plataforma || "meta") === "meta");
+  if (paresMeta.length > 1) {
+    const parEscolhido =
+      paresMeta.find(p => p.chave === chaveAtivaInicial) || paresMeta[0];
+    camposEdicaoGrupo = [parEscolhido];
+    esconderAbasEdicaoCampanha();
+    await abrirEdicaoCampanhaPorChave(parEscolhido.chave);
+    return;
+  }
+
   camposEdicaoGrupo = pares;
 
   if (pares.length < 2) {
@@ -21971,7 +21991,7 @@ function renderizarAbasEdicaoCampanha(pares, chaveAtiva) {
       class="campanha-drawer-aba${p.chave === chaveAtiva ? " ativa" : ""}"
       data-aba-edicao-chave="${p.chave}"
       onclick="ativarAbaEdicaoCampanha('${p.chave}')"
-    >${platBadge(p.campanha.plataforma || "meta")}</button>
+    >${platBadgeCampanha(p.campanha)}</button>
   `).join("");
 }
 
@@ -25333,19 +25353,30 @@ function fecharCriarCampanhaModal() {
     }
   }
   criarCampanhaModalOrigem = null;
+  _dadosCampanhaPorRede = { facebook: null, instagram: null };
 }
 
 const redesSelecionadasCampanha = new Set();
 
 // Plataformas que ganham aba própria dentro do formulário de Criar Campanha
 // quando 2+ delas estão marcadas ao mesmo tempo. LinkedIn/Kwai continuam
-// mostrando/escondendo campos do jeito de sempre, sem aba.
-const PLATAFORMAS_COM_ABA_CAMPANHA = ["meta", "google", "tiktok"];
+// mostrando/escondendo campos do jeito de sempre, sem aba. Facebook/Instagram
+// substituem o antigo "meta" único — cada uma vira uma campanha Meta
+// independente (ver snapshotFormularioMeta/restaurarFormularioMeta), então
+// quando as duas estão marcadas juntas elas precisam da mesma aba própria que
+// Google/TikTok já tinham, não só um filtro de visibilidade sobre campos
+// compartilhados.
+const PLATAFORMAS_COM_ABA_CAMPANHA = ["facebook", "instagram", "google", "tiktok"];
 let abaAtivaCampanha = null;
 
 function selecionarPlataformaCampanha(plat) {
   const btn = document.querySelector(`.plat-sel-btn[data-plat="${plat}"]`);
   if (!btn) return;
+
+  const redeMetaAnterior = redeMetaFormularioAtual();
+  if (redeMetaAnterior) {
+    _dadosCampanhaPorRede[redeMetaAnterior] = snapshotFormularioMeta(redeMetaAnterior);
+  }
 
   if (redesSelecionadasCampanha.has(plat)) {
     redesSelecionadasCampanha.delete(plat);
@@ -25355,6 +25386,15 @@ function selecionarPlataformaCampanha(plat) {
 
   btn.classList.toggle("ativa", redesSelecionadasCampanha.has(plat));
   aplicarRedesCampanha();
+
+  const redeMetaAtual = redeMetaFormularioAtual();
+  if (redeMetaAtual && redeMetaAtual !== redeMetaAnterior) {
+    const dados =
+      _dadosCampanhaPorRede[redeMetaAtual] ||
+      (redeMetaAnterior ? _dadosCampanhaPorRede[redeMetaAnterior] : null);
+    if (dados) restaurarFormularioMeta(redeMetaAtual, dados);
+    else aplicarRedeMetaAoFormulario(redeMetaAtual);
+  }
   atualizarEstadoBotaoGerarIA();
 
   if (plat === "tiktok" && redesSelecionadasCampanha.has("tiktok")) {
@@ -25372,8 +25412,16 @@ function selecionarPlataformaCampanha(plat) {
 }
 
 function aplicarRedesCampanha() {
+  // Na edição, facebook+instagram entram juntos no Set só pra manter os
+  // campos data-plat-only="facebook,instagram" visíveis (campanhas Meta já
+  // publicadas ainda são uma campanha só, plataforma='meta') — não deve virar
+  // aba Facebook/Instagram ali, isso só faz sentido na criação de campanha nova.
+  const emEdicao = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
   const platsComAbaMarcadas =
-    PLATAFORMAS_COM_ABA_CAMPANHA.filter(p => redesSelecionadasCampanha.has(p));
+    PLATAFORMAS_COM_ABA_CAMPANHA.filter(p =>
+      redesSelecionadasCampanha.has(p) &&
+      !(emEdicao && (p === "facebook" || p === "instagram"))
+    );
 
   if (platsComAbaMarcadas.length < 2) {
     abaAtivaCampanha = null;
@@ -25395,6 +25443,35 @@ function aplicarRedesCampanha() {
 
     el.style.display = (mostrarPorPlataforma && mostrarPorAba) ? "" : "none";
   });
+
+  // Na criação, a própria aba já define a rede. Os checkboxes antigos permanecem
+  // no DOM exclusivamente para editar campanhas Meta legadas combinadas.
+  const blocoOndeAnunciar = document.getElementById("bloco_onde_anunciar");
+  const checksOndeAnunciar = blocoOndeAnunciar?.querySelector(".advanced-checks");
+  const textoOndeAnunciar = blocoOndeAnunciar?.querySelector("p");
+  const feedbackInstagram = document.getElementById("instagram_pagina_feedback");
+
+  if (emEdicao) {
+    if (checksOndeAnunciar) checksOndeAnunciar.style.display = "";
+    if (textoOndeAnunciar) {
+      textoOndeAnunciar.textContent =
+        "Escolha só uma rede — Facebook ou Instagram. Pra anunciar nas duas, crie duas campanhas separadas.";
+    }
+  } else {
+    const redeMetaAtual = redeMetaFormularioAtual();
+    if (!redeMetaAtual) {
+      if (blocoOndeAnunciar) blocoOndeAnunciar.style.display = "none";
+    } else {
+      if (blocoOndeAnunciar) blocoOndeAnunciar.style.display = "";
+      if (checksOndeAnunciar) checksOndeAnunciar.style.display = "none";
+      if (textoOndeAnunciar) {
+        textoOndeAnunciar.textContent =
+          `Esta aba cria uma campanha exclusiva no ${redeMetaAtual === "instagram" ? "Instagram" : "Facebook"}.`;
+      }
+      if (feedbackInstagram) feedbackInstagram.style.display = redeMetaAtual === "instagram" ? "" : "none";
+      aplicarRedeMetaAoFormulario(redeMetaAtual);
+    }
+  }
 
   // Reaplica a sub-camada Pesquisa/Display por cima da camada de plataforma acima —
   // evita o campo "Display" reaparecer sozinho se o usuário desmarcar e remarcar
@@ -25458,9 +25535,48 @@ function renderizarAbasCampanha(platsComAba) {
   `).join("");
 }
 
+const REDES_META_COM_FORMULARIO_PROPRIO = ["facebook", "instagram"];
+
+function redeMetaFormularioAtual() {
+  if (typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao) return null;
+  if (REDES_META_COM_FORMULARIO_PROPRIO.includes(abaAtivaCampanha)) {
+    return abaAtivaCampanha;
+  }
+  const selecionadas = REDES_META_COM_FORMULARIO_PROPRIO.filter(rede =>
+    redesSelecionadasCampanha.has(rede)
+  );
+  return selecionadas.length === 1 ? selecionadas[0] : null;
+}
+
+function aplicarRedeMetaAoFormulario(rede) {
+  if (!REDES_META_COM_FORMULARIO_PROPRIO.includes(rede)) return;
+  definirCheckbox("adv_platform_facebook", rede === "facebook");
+  definirCheckbox("adv_platform_instagram", rede === "instagram");
+  atualizarBlocoEscolhaMidiaCarrossel();
+}
+
 function selecionarAbaCampanha(plat) {
+  const redeMetaAnterior = redeMetaFormularioAtual();
+
+  // Facebook/Instagram são campanhas Meta totalmente independentes (nome,
+  // orçamento, segmentação, criativo, tudo) — ao trocar de aba entre elas,
+  // salva o que está no formulário compartilhado como pertencendo à aba que
+  // está saindo, e repõe os dados da aba que está entrando (ou copia da outra
+  // rede na primeira vez, pra não obrigar preencher tudo de novo do zero).
+  // Google/TikTok continuam só trocando visibilidade, sem esse passo.
+  if (redeMetaAnterior) {
+    _dadosCampanhaPorRede[redeMetaAnterior] = snapshotFormularioMeta(redeMetaAnterior);
+  }
+
   abaAtivaCampanha = plat;
   aplicarRedesCampanha();
+
+  if (REDES_META_COM_FORMULARIO_PROPRIO.includes(plat)) {
+    const outraRede = plat === "facebook" ? "instagram" : "facebook";
+    const dados = _dadosCampanhaPorRede[plat] || _dadosCampanhaPorRede[outraRede];
+    if (dados) restaurarFormularioMeta(plat, dados);
+    else aplicarRedeMetaAoFormulario(plat);
+  }
 }
 
 let destinoCampanhaSelecionado = "lead_ads";
@@ -29952,6 +30068,7 @@ function coletarConfiguracoesAvancadas() {
       valorCampo("adv_categoria_especial"),
     titulo: valorCampo("adv_titulo"),
     descricao: valorCampo("adv_descricao"),
+    link: valorCampo("adv_link"),
     pais: valorCampo("adv_pais"),
     genero: valorCampo("adv_genero"),
     idade_min: valorCampo("adv_idade_min"),
@@ -29969,6 +30086,9 @@ function coletarConfiguracoesAvancadas() {
     obrigado_titulo: valorCampo("adv_obrigado_titulo"),
     obrigado_texto: valorCampo("adv_obrigado_texto"),
     obrigado_botao: valorCampo("adv_obrigado_botao"),
+    obrigado_url: valorCampo("adv_obrigado_url"),
+    privacidade_url: valorCampo("adv_privacidade_url"),
+    privacidade_texto: valorCampo("adv_privacidade_texto"),
     perguntas,
     plataformas,
     instagram_actor_id:
@@ -30053,6 +30173,93 @@ const BLOCOS_SEGMENTACAO_ABERTO_PADRAO = {
 
 let campanhaEmEdicao = null;
 let _snapshotCriarCampanha = null;
+
+// Dados independentes de Facebook/Instagram na criação de campanha — cada
+// chave guarda um snapshot completo do formulário Meta (mesmo formato de
+// _snapshotCriarCampanha) pra aquela rede especificamente. Trocado por
+// selecionarAbaCampanha() ao alternar entre as duas abas; lido por
+// criarCampanhaCompleta() na hora de publicar cada uma. Zerado ao fechar ou
+// publicar o modal de Criar Campanha (fecharCriarCampanhaModal).
+let _dadosCampanhaPorRede = { facebook: null, instagram: null };
+
+function snapshotFormularioMeta(rede) {
+  const avancadasColetadas = coletarConfiguracoesAvancadas();
+  const avancadas = REDES_META_COM_FORMULARIO_PROPRIO.includes(rede)
+    ? {
+        ...avancadasColetadas,
+        plataformas: [rede],
+        instagram_actor_id: rede === "instagram" ? instagramActorIdSelecionado : null,
+        interesses_detalhados: interessesDetalhadosSelecionados.map(item => ({ ...item }))
+      }
+    : avancadasColetadas;
+
+  return {
+    destino: destinoCampanhaSelecionado,
+    basicos: coletarCamposBasicosCampanha(),
+    avancadas,
+    nicho: coletarDadosNichoAtivo(),
+    publicosPersonalizados: publicosPersonalizadosSelecionados.map(item => ({ ...item })),
+    orcamento: valorCampo("orcamento"),
+    imagensArquivos: Array.from(document.querySelectorAll(".imagem-input"))
+      .map(input => input.files?.[0])
+      .filter(Boolean),
+    videoArquivo: obterArquivoVideoCampanha()
+  };
+}
+
+function restaurarFormularioMeta(rede, dados) {
+  dados = dados || {};
+
+  const destinoRadio = document.getElementById(
+    dados.destino === "whatsapp" ? "destino_whatsapp" : "destino_lead_ads"
+  );
+  if (destinoRadio) destinoRadio.checked = true;
+  aplicarDestinoCampanha();
+
+  definirValorCampo("campanha_nome", dados.basicos?.nome || "");
+  definirValorCampo("pagina_select", dados.basicos?.page_id || "");
+  definirValorCampo("texto", dados.basicos?.texto || "");
+  definirValorCampo("cta", dados.basicos?.cta || "LEARN_MORE");
+  atualizarTosHint();
+  atualizarCanaisPaginaMeta();
+  preencherConfiguracoesAvancadas(dados.avancadas || {}, null);
+  if (Array.isArray(dados.publicosPersonalizados)) {
+    publicosPersonalizadosSelecionados = dados.publicosPersonalizados.map(item => ({ ...item }));
+    atualizarChipsPublicos();
+  }
+  restaurarDadosNichoAtivo(dados.nicho || {});
+  definirValorCampo("orcamento", dados.orcamento || "");
+
+  const containerImagens = document.getElementById("imagens-container");
+  if (containerImagens) {
+    containerImagens.innerHTML = "";
+    const arquivosSalvos = dados.imagensArquivos || [];
+    if (arquivosSalvos.length) {
+      arquivosSalvos.forEach(arquivo => {
+        containerImagens.appendChild(criarItemImagem(arquivo));
+      });
+    } else {
+      containerImagens.appendChild(criarItemImagem());
+    }
+    atualizarPosicoes();
+  }
+
+  if (dados.videoArquivo) {
+    try {
+      const inputVideo = document.getElementById("video_anuncio_input");
+      const dt = new DataTransfer();
+      dt.items.add(dados.videoArquivo);
+      if (inputVideo) inputVideo.files = dt.files;
+      aplicarVideoCampanha(dados.videoArquivo);
+    } catch (_) {
+      limparVideoCampanha();
+    }
+  } else {
+    limparVideoCampanha();
+  }
+
+  aplicarRedeMetaAoFormulario(rede);
+}
 
 function moverBloco(blocoId, destinoId) {
 
@@ -30434,7 +30641,20 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     };
 
     redesSelecionadasCampanha.clear();
-    redesSelecionadasCampanha.add(campanha.plataforma || "meta");
+    // Campanhas Meta já publicadas continuam guardadas com plataforma='meta'
+    // (o INSERT nunca grava 'facebook'/'instagram' ali — essa granularidade
+    // vive só em configuracoes_avancadas.plataformas). Os campos do formulário
+    // agora ficam atrás de data-plat-only="facebook,instagram" (não mais
+    // "meta"), então precisa adicionar as duas pra esses campos continuarem
+    // visíveis na edição — a aba Facebook/Instagram em si não se aplica aqui
+    // (edição continua editando uma campanha só, ver PLATAFORMAS_COM_ABA_CAMPANHA).
+    const plataformaCampanhaEdicao = campanha.plataforma || "meta";
+    if (plataformaCampanhaEdicao === "meta") {
+      redesSelecionadasCampanha.add("facebook");
+      redesSelecionadasCampanha.add("instagram");
+    } else {
+      redesSelecionadasCampanha.add(plataformaCampanhaEdicao);
+    }
     aplicarRedesCampanha();
 
     BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
@@ -30556,6 +30776,7 @@ function fecharEdicaoCampanha() {
   } finally {
     _snapshotCriarCampanha = null;
     campanhaEmEdicao = null;
+    aplicarRedesCampanha();
     configurarEdicaoDestinoCampanha(null);
     document
       .getElementById("campanhaEditarModal")
@@ -32046,7 +32267,9 @@ function validarCamposCompartilhadosCampanha({
   // (Responsive Display Ad) — a checagem de "exatamente 1 imagem" é mais específica
   // e roda depois, em validarPublicacaoCampanhaGoogle.
   const precisaDeCriativoVisual =
-    (redes || []).some(r => r === "meta" || r === "tiktok" || r === "kwai") ||
+    (redes || []).some(r =>
+      r === "meta" || r === "facebook" || r === "instagram" || r === "tiktok" || r === "kwai"
+    ) ||
     ((redes || []).includes("google") && tipoCampanhaGoogleSelecionado === "display");
 
   if (precisaDeCriativoVisual && !imagensArquivos.length && !videoArquivo) {
@@ -32147,17 +32370,6 @@ function mostrarResumoPublicacaoMultiRede(resultados) {
     abrirPassoGoogleLeadFormTermos();
   }
 
-  if (resultados.length === 1 && resultados[0].rede === "Facebook/Instagram") {
-    if (resultados[0].semFormaPagamento) {
-      mostrarToastAvisoCampanha(resultados[0].mensagem);
-    } else if (resultados[0].ok) {
-      mostrarToastSucessoCampanha();
-    } else {
-      mostrarErroPublicacao(resultados[0].mensagem || "Erro ao publicar campanha.");
-    }
-    return;
-  }
-
   if (resultados.length === 1 && resultados[0].ok) {
     if (resultados[0].semFormaPagamento || resultados[0].formularioNaoAnexado) {
       mostrarToastAvisoCampanha(resultados[0].mensagem);
@@ -32185,14 +32397,22 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
-    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
+    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId,
+    destino: destinoContexto, redeMeta
   } = contexto;
-  const prefixo = isMultiRede ? "[Facebook/Instagram] " : "";
+  const nomeRede = redeMeta === "instagram" ? "Instagram" : "Facebook";
+  const prefixo = isMultiRede ? `[${nomeRede}] ` : "";
 
   try {
-    const destino = destinoCampanhaSelecionado === "whatsapp" ? "whatsapp" : "lead_ads";
+    const destino = destinoContexto === "whatsapp" ? "whatsapp" : "lead_ads";
     const objetivo = destino === "whatsapp" ? "OUTCOME_ENGAGEMENT" : "OUTCOME_LEADS";
-    const configuracoes_avancadas = { ...configuracoesBase, destino };
+    const configuracoes_avancadas = {
+      ...configuracoesBase,
+      destino,
+      plataformas: [redeMeta],
+      instagram_actor_id:
+        redeMeta === "instagram" ? configuracoesBase.instagram_actor_id : null
+    };
     if (publicacaoGrupoId) configuracoes_avancadas.publicacao_grupo_id = publicacaoGrupoId;
 
     const imageHashes = [];
@@ -33293,6 +33513,44 @@ async function publicarCampanhaKwai(contexto, isMultiRede) {
 // ─── Orquestrador: publica em todas as redes marcadas (fan-out) ───────────────
 // Falha em uma rede não desfaz nem impede o sucesso das outras — cada rede
 // roda sua própria pipeline e o resultado final é reportado por rede.
+function montarContextoPublicacaoMeta(contextoComum, rede, dados) {
+  const basicos = dados?.basicos || {};
+  const page_id = basicos.page_id ?? contextoComum.page_id;
+  const texto = basicos.texto ?? contextoComum.texto;
+  const cta = basicos.cta ?? contextoComum.cta;
+  const instagramActorId =
+    rede === "instagram"
+      ? (dados?.avancadas?.instagram_actor_id ||
+        contextoComum.configuracoesBase?.instagram_actor_id ||
+        instagramActorIdSelecionado || null)
+      : null;
+
+  const configuracoesBase = normalizarConfiguracoesAvancadasParaEnvio({
+    ...contextoComum.configuracoesBase,
+    ...(dados?.avancadas || {}),
+    ...(dados?.nicho || coletarDadosNichoAtivo()),
+    page_id,
+    texto,
+    cta,
+    plataformas: [rede],
+    instagram_actor_id: instagramActorId
+  });
+
+  return {
+    ...contextoComum,
+    redeMeta: rede,
+    destino: dados?.destino === "whatsapp" ? "whatsapp" : "lead_ads",
+    campanha_nome: basicos.nome ?? contextoComum.campanha_nome,
+    page_id,
+    texto,
+    cta,
+    orcamento: dados?.orcamento ?? contextoComum.orcamento,
+    configuracoesBase,
+    imagensArquivos: dados?.imagensArquivos || [],
+    videoArquivo: dados?.videoArquivo || null
+  };
+}
+
 async function criarCampanhaCompleta() {
 
   const redes = Array.from(redesSelecionadasCampanha);
@@ -33324,19 +33582,69 @@ async function criarCampanhaCompleta() {
 
   const videoArquivo = obterArquivoVideoCampanha();
 
-  if (!validarCamposCompartilhadosCampanha({
-    campanha_nome, texto, orcamento, imagensArquivos, videoArquivo, redes
-  })) {
-    return;
+  const redeMetaAtual = redeMetaFormularioAtual();
+  if (redeMetaAtual) {
+    _dadosCampanhaPorRede[redeMetaAtual] = snapshotFormularioMeta(redeMetaAtual);
   }
 
-  // A validação específica do Meta (Página, "onde anunciar") só roda se o Meta
-  // estiver marcado — no caso comum (só Meta selecionado) o comportamento é
-  // idêntico ao de antes do multi-rede existir.
-  if (redes.includes("meta")) {
+  const snapshotAtual = snapshotFormularioMeta(redeMetaAtual);
+  const redesMeta = REDES_META_COM_FORMULARIO_PROPRIO.filter(rede => redes.includes(rede));
+  redesMeta.forEach(rede => {
+    if (_dadosCampanhaPorRede[rede]) return;
+    const outraRede = rede === "facebook" ? "instagram" : "facebook";
+    _dadosCampanhaPorRede[rede] = _dadosCampanhaPorRede[outraRede] || snapshotAtual;
+  });
+
+  const redesNaoMeta = redes.filter(rede => !REDES_META_COM_FORMULARIO_PROPRIO.includes(rede));
+  if (redesNaoMeta.length) {
+    if (!validarCamposCompartilhadosCampanha({
+      campanha_nome, texto, orcamento, imagensArquivos, videoArquivo, redes: redesNaoMeta
+    })) {
+      return;
+    }
+  }
+
+  const publicacaoGrupoId =
+    redes.length > 1
+      ? ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `grp_${Date.now()}_${Math.random().toString(36).slice(2)}`)
+      : null;
+
+  const contexto = {
+    token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
+    destino: destinoCampanhaSelecionado,
+    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
+  };
+
+  const contextosMeta = new Map(
+    redesMeta.map(rede => [
+      rede,
+      montarContextoPublicacaoMeta(contexto, rede, _dadosCampanhaPorRede[rede])
+    ])
+  );
+
+  // Valida cada aba com os dados dela já restaurados na tela. Assim, se faltar
+  // algo no Instagram, por exemplo, o usuário é levado exatamente para essa aba.
+  for (const rede of redesMeta) {
+    selecionarAbaCampanha(rede);
+    const contextoMeta = contextosMeta.get(rede);
+    if (!validarCamposCompartilhadosCampanha({
+      campanha_nome: contextoMeta.campanha_nome,
+      texto: contextoMeta.texto,
+      orcamento: contextoMeta.orcamento,
+      imagensArquivos: contextoMeta.imagensArquivos,
+      videoArquivo: contextoMeta.videoArquivo,
+      redes: [rede]
+    })) {
+      return;
+    }
     if (!validarPublicacaoCampanha({
-      campanha_nome, page_id, texto, orcamento,
-      configuracoes_avancadas: configuracoesBase, imagensArquivos, videoArquivo
+      campanha_nome: contextoMeta.campanha_nome,
+      page_id: contextoMeta.page_id,
+      texto: contextoMeta.texto,
+      orcamento: contextoMeta.orcamento,
+      configuracoes_avancadas: contextoMeta.configuracoesBase,
+      imagensArquivos: contextoMeta.imagensArquivos,
+      videoArquivo: contextoMeta.videoArquivo
     })) {
       return;
     }
@@ -33374,21 +33682,11 @@ async function criarCampanhaCompleta() {
     }
   }
 
-  const publicacaoGrupoId =
-    redes.length > 1
-      ? ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `grp_${Date.now()}_${Math.random().toString(36).slice(2)}`)
-      : null;
-
-  const contexto = {
-    token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
-    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
-  };
-
   const resultados = [];
 
-  if (redes.includes("meta")) {
-    const r = await publicarCampanhaMeta(contexto, redes.length > 1);
-    resultados.push({ rede: "Facebook/Instagram", ...r });
+  for (const rede of redesMeta) {
+    const r = await publicarCampanhaMeta(contextosMeta.get(rede), redes.length > 1);
+    resultados.push({ rede: rede === "instagram" ? "Instagram Ads" : "Facebook Ads", ...r });
   }
 
   if (redes.includes("tiktok")) {
@@ -33904,6 +34202,8 @@ function kpiCard(icone, label, valor, cor) {
 
 const PLATAFORMA_META = {
   meta:       { nome: "Meta Ads",      icone: `<span style="color:#0081FB;font-weight:900;">∞</span>` },
+  facebook:   { nome: "Facebook Ads",  icone: `<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path fill="#fff" d="M13.6 21v-7.6h2.5l.4-3h-2.9V8.4c0-.9.2-1.5 1.5-1.5h1.5V4.3C15.9 4.2 15 4.1 14 4.1c-2.1 0-3.6 1.3-3.6 3.7v2.6H8v3h2.4V21h3.2Z"/></svg>` },
+  instagram:  { nome: "Instagram Ads", icone: `<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><rect x="1" y="1" width="22" height="22" rx="6" fill="#E1306C"/><rect x="6.5" y="6.5" width="11" height="11" rx="3.5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="3.1" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="17" cy="7" r="1.1" fill="#fff"/></svg>` },
   google:     { nome: "Google Ads",    icone: `<svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg>` },
   tiktok:     { nome: "TikTok Ads",   icone: "🎵" },
   linkedin:   { nome: "LinkedIn Ads",  icone: "💼" },
@@ -33918,6 +34218,32 @@ function platBadge(plataforma) {
   const id = (plataforma || "formulario").toLowerCase();
   const p  = PLATAFORMA_META[id] || { nome: id, icone: "📣" };
   return `<span class="plat-badge ${id}">${p.icone} ${p.nome}</span>`;
+}
+
+// O banco mantém 'meta' para compatibilidade, mas campanhas novas de uma rede
+// só carregam a identidade real em configuracoes_avancadas.plataformas.
+function plataformaCampanhaExibicao(campanha) {
+  const plataforma = String(campanha?.plataforma || "meta").toLowerCase();
+  if (plataforma !== "meta") return plataforma;
+
+  const plataformas = obterConfiguracoesCampanha(campanha)?.plataformas;
+  if (
+    Array.isArray(plataformas) &&
+    plataformas.length === 1 &&
+    REDES_META_COM_FORMULARIO_PROPRIO.includes(plataformas[0])
+  ) {
+    return plataformas[0];
+  }
+  return "meta";
+}
+
+function platBadgeCampanha(campanha, mostrarPosicionamentos = false) {
+  const plataforma = plataformaCampanhaExibicao(campanha);
+  const posicionamentos =
+    mostrarPosicionamentos && plataforma === "meta"
+      ? iconesPlacementMeta(obterConfiguracoesCampanha(campanha))
+      : "";
+  return platBadge(plataforma) + posicionamentos;
 }
 
 // Mesma ideia do NULLIF já usada no backend (/leads/stats/plataformas,
@@ -37005,7 +37331,9 @@ async function carregarCampanhas() {
     chavePorLinhaCampanha.set(c, registrarCampanhaRenderizada(c, indice));
   });
 
-  const ORDEM_PLATAFORMA_GRUPO = { meta: 0, google: 1, tiktok: 2, linkedin: 3, kwai: 4 };
+  const ORDEM_PLATAFORMA_GRUPO = {
+    facebook: 0, instagram: 1, meta: 2, google: 3, tiktok: 4, linkedin: 5, kwai: 6
+  };
   const gruposPublicacaoCampanha = new Map();
   campanhasFiltradas.forEach(c => {
     const gid = c.publicacao_grupo_id;
@@ -37018,7 +37346,8 @@ async function carregarCampanhas() {
     // pelo status atual, ou ainda nao sincronizadas) nao tem o que agrupar.
     if (linhas.length < 2) { gruposPublicacaoCampanha.delete(gid); return; }
     linhas.sort((a, b) =>
-      (ORDEM_PLATAFORMA_GRUPO[a.plataforma] ?? 9) - (ORDEM_PLATAFORMA_GRUPO[b.plataforma] ?? 9)
+      (ORDEM_PLATAFORMA_GRUPO[plataformaCampanhaExibicao(a)] ?? 9) -
+      (ORDEM_PLATAFORMA_GRUPO[plataformaCampanhaExibicao(b)] ?? 9)
     );
   });
 
@@ -37184,11 +37513,9 @@ async function carregarCampanhas() {
             ` : ""}
             ${linhasGrupoCampanha
               ? linhasGrupoCampanha.map(l =>
-                  platBadge(l.plataforma || "meta") +
-                  ((l.plataforma || "meta") === "meta" ? iconesPlacementMeta(l.configuracoes_avancadas) : "")
+                  platBadgeCampanha(l, true)
                 ).join("")
-              : platBadge(c.plataforma || "meta") +
-                ((c.plataforma || "meta") === "meta" ? iconesPlacementMeta(c.configuracoes_avancadas) : "")}
+              : platBadgeCampanha(c, true)}
             <span class="badge meta" style="display:none;">${escaparHtml(c.origem)}</span>
           </div>
 
@@ -38225,7 +38552,7 @@ function abrirCampanhaDrawer(pares, chaveAtivaInicial) {
         class="campanha-drawer-aba"
         data-drawer-aba-chave="${p.chave}"
         onclick="ativarAbaCampanhaDrawer('${p.chave}')"
-      >${platBadge(p.campanha.plataforma || "meta")}</button>
+      >${platBadgeCampanha(p.campanha)}</button>
     `).join("");
   } else {
     abasEl.style.display = "none";
@@ -43037,6 +43364,53 @@ function coletarDadosNichoAtivo() {
   }
 
   return dados;
+}
+
+function restaurarDadosNichoAtivo(dados = {}) {
+  const slug = window._nichoAtivo?.slug;
+  const camposPorNicho = {
+    imoveis: {
+      tipo_imovel: "nicho_tipo_imovel",
+      finalidade: "nicho_finalidade",
+      valor_min: "nicho_valor_min",
+      valor_max: "nicho_valor_max",
+      regiao: "nicho_regiao"
+    },
+    saude: {
+      operadora: "nicho_operadora",
+      tipo_plano: "nicho_tipo_plano",
+      faixa_etaria_min: "nicho_faixa_min",
+      faixa_etaria_max: "nicho_faixa_max",
+      cobertura: "nicho_cobertura",
+      acomodacao: "nicho_acomodacao"
+    },
+    suplementos: {
+      produto: "nicho_produto",
+      objetivo: "nicho_objetivo",
+      marca: "nicho_marca",
+      publico_alvo: "nicho_publico_alvo"
+    },
+    saas: {
+      tipo_produto: "nicho_tipo_produto",
+      publico_alvo: "nicho_publico_alvo_saas"
+    },
+    higienizacao: {
+      tipo_servico: "nicho_tipo_servico",
+      frequencia: "nicho_frequencia",
+      area_atendida: "nicho_area_atendida",
+      publico_alvo: "nicho_publico_alvo_higienizacao"
+    },
+    telecom: {
+      tipo_servico: "nicho_tipo_servico_telecom",
+      porte_empresa: "nicho_porte_empresa",
+      situacao_atual: "nicho_situacao_atual",
+      area_atendida: "nicho_area_atendida_telecom"
+    }
+  };
+
+  Object.entries(camposPorNicho[slug] || {}).forEach(([chave, id]) => {
+    definirValorCampo(id, dados[chave] ?? "");
+  });
 }
 
 if (renderizarPaginaLegal()) {

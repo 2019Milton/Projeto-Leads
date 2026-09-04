@@ -33968,6 +33968,8 @@ function dashboardRenderPlatformRows(plataformas) {
 
   const cores = {
     meta: "#3b82f6",
+    facebook: "#1877F2",
+    instagram: "#E1306C",
     google: "#ef4444",
     tiktok: "#a78bfa",
     linkedin: "#2563eb",
@@ -34032,7 +34034,7 @@ function dashboardRenderCampaignTable(campanhas) {
             const gasto = dashboardPrimeiroNumero(campanha, ["gasto", "spend", "valor_gasto"]);
             const cpl = dashboardPrimeiroNumero(campanha, ["custo_por_lead", "cpl"]);
             const cplFinal = cpl || (leads > 0 ? gasto / leads : 0);
-            const plataformaId = dashboardPlataformaId(campanha.plataforma || campanha.origem || "meta");
+            const plataformaId = dashboardPlataformaId(plataformaCampanhaExibicao(campanha) || campanha.origem || "meta");
             const plataforma = PLATAFORMA_META[plataformaId] || { nome: plataformaId, icone: "📣" };
             return `
               <tr>
@@ -36712,6 +36714,29 @@ async function editarLimiteGastosMeta(atual) {
   }
 }
 
+// Sub-painel de Facebook/Instagram dentro do card "Status Meta" do Dashboard —
+// dados vêm de metricas.por_rede (backend, /meta/status-completo), que só
+// enxerga campanhas publicadas separadamente por rede (ver montarContextoPublicacaoMeta
+// no front) — campanhas legadas combinadas não entram em nenhuma das duas.
+function montarSubpainelStatusMetaRede(nome, icone, dados) {
+  const campanhas = dados?.campanhas || 0;
+  const ativas = dados?.campanhas_ativas || 0;
+  const gasto = formatarMoeda(dados?.gasto_hoje || 0);
+  const leads = dados?.leads_hoje || 0;
+
+  return `
+    <div style="padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+      <strong style="font-size:11.5px;display:flex;align-items:center;gap:5px;margin-bottom:6px;">${icone} ${nome}</strong>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;">
+        <div><span style="font-size:15px;font-weight:800;color:#c4b5fd;display:block;">${campanhas}</span><small style="font-size:10px;">Campanhas</small></div>
+        <div><span style="font-size:15px;font-weight:800;color:#4ade80;display:block;">${ativas}</span><small style="font-size:10px;">Ativas</small></div>
+        <div><span style="font-size:12px;font-weight:800;color:#fbbf24;display:block;line-height:1.5;">${gasto}</span><small style="font-size:10px;">Gasto hoje</small></div>
+        <div><span style="font-size:15px;font-weight:800;color:#60a5fa;display:block;">${leads}</span><small style="font-size:10px;">Leads hoje</small></div>
+      </div>
+    </div>
+  `;
+}
+
 async function carregarStatusMeta() {
 
   try {
@@ -37106,6 +37131,12 @@ async function carregarStatusMeta() {
               <small style="margin-top:4px;font-size:11px;">🧲 Leads hoje</small>
             </div>
           </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+            ${montarSubpainelStatusMetaRede("Facebook", ICONES_META_PUBLISHER.facebook, data.metricas?.por_rede?.facebook)}
+            ${montarSubpainelStatusMetaRede("Instagram", ICONES_META_PUBLISHER.instagram, data.metricas?.por_rede?.instagram)}
+          </div>
+
           <div class="sync-box" style="margin-top:0;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
             <div style="font-size:11px;color:#94a3b8;line-height:1.7;">
               🕒 <span style="color:#cbd5e1;">Último sync</span><br>

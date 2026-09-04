@@ -17381,9 +17381,13 @@ body.tema-claro .criar-campanha-descricao {
                 onclick="abrirModalGerarBanner()"
               >✨ Gerar/Editar Criativo</button>
               <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
-              <p data-plat-only="google" style="font-size:11px;opacity:.55;margin:6px 0 0">
-                ℹ️ O anúncio do Google Ads é só texto (títulos e descrições) — as imagens acima
-                não são usadas nele, só em Meta/TikTok.
+              <p data-plat-only="google" data-google-tipo-only="search" style="font-size:11px;opacity:.55;margin:6px 0 0">
+                ℹ️ No Google Ads (Pesquisa), o anúncio é só texto (títulos e descrições) — as
+                imagens acima não são usadas nele, só em Meta/TikTok.
+              </p>
+              <p data-plat-only="google" data-google-tipo-only="display" style="font-size:11px;opacity:.55;margin:6px 0 0;display:none;">
+                ℹ️ No Google Ads (Display), selecione <strong>exatamente 1 imagem</strong> acima —
+                ela é recortada automaticamente nos dois formatos exigidos pela Google (paisagem e quadrada).
               </p>
 
               <label style="margin-top:14px;">Vídeo do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(opcional)</span></label>
@@ -17910,9 +17914,36 @@ body.tema-claro .criar-campanha-descricao {
               <div id="campanha_kwai_formulario_feedback" class="channel-picker-status alerta" style="display:none;"></div>
             </div>
 
-            <div class="advanced-subsection" data-plat-only="google" style="display:none;">
+            <section class="campaign-setup-section" id="bloco_tipo_campanha_google" data-plat-only="google" style="display:none;">
+              <h4>Tipo de campanha (Google Ads) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Pesquisa: anúncio de texto nas buscas do Google. Display: anúncio com imagem exibido em sites/apps parceiros da Google — pode levar direto para uma URL ou, opcionalmente, tentar usar um formulário de leads (recurso que pode ser recusado pela Google em contas novas).', event)">i</button></h4>
+              <div class="advanced-checks">
+                <label>
+                  <input type="radio" name="campanha_google_tipo" id="google_tipo_search" value="search" checked onchange="aplicarTipoCampanhaGoogle()">
+                  Pesquisa (texto)
+                </label>
+                <label>
+                  <input type="radio" name="campanha_google_tipo" id="google_tipo_display" value="display" onchange="aplicarTipoCampanhaGoogle()">
+                  Display (imagem)
+                </label>
+              </div>
+              <div data-google-tipo-only="display" style="display:none;margin-top:8px;">
+                <label style="display:flex;align-items:center;gap:8px;font-weight:400;">
+                  <input type="checkbox" id="campanha_google_tentar_formulario" onchange="atualizarVisibilidadeFormularioGoogle()">
+                  Tentar anexar um Formulário de Leads a este anúncio (opcional)
+                </label>
+                <p style="font-size:11px;opacity:.65;margin:4px 0 0">
+                  A Google só libera Lead Form em Display para contas com histórico de gasto (US$ 1.000+) e verificação de identidade do anunciante já concluída. Se a conta não for elegível, a campanha é criada normalmente do mesmo jeito, só que levando o clique para a URL de destino em vez de abrir o formulário.
+                </p>
+              </div>
+            </section>
+
+            <div class="advanced-subsection" data-plat-only="google" data-google-tipo-only="search" style="display:none;">
               <h5>Anúncio de Pesquisa (Google Ads)</h5>
               <p>Anúncio de texto (Responsive Search Ad) exibido nas buscas do Google — sem imagem. Use os 3 títulos abaixo como base; eles também viram as palavras-chave que fazem o anúncio aparecer.</p>
+            </div>
+            <div class="advanced-subsection" data-plat-only="google" data-google-tipo-only="display" style="display:none;">
+              <h5>Anúncio de Display (Google Ads)</h5>
+              <p>Anúncio com imagem (Responsive Display Ad) exibido em sites e apps parceiros da Google. Use a imagem selecionada mais acima (recortada automaticamente em paisagem e quadrada) e os textos abaixo como títulos/descrições do anúncio.</p>
             </div>
 
             <div data-plat-only="google" style="display:none;">
@@ -17928,7 +17959,7 @@ body.tema-claro .criar-campanha-descricao {
               <input type="text" id="campanha_google_titulo_3" maxlength="30" placeholder="Até 30 caracteres">
             </div>
             <div class="advanced-full" data-plat-only="google" style="display:none;">
-              <label>Título longo (Google) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Título mais completo, usado quando o Google mostra o anúncio em formatos maiores.', event)">i</button></label>
+              <label>Título longo (Google) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Título mais completo. Na Pesquisa é opcional (usado só em formatos maiores). No Display é obrigatório — vira o título longo do anúncio.', event)">i</button></label>
               <input type="text" id="campanha_google_titulo_longo" maxlength="90" placeholder="Até 90 caracteres">
             </div>
             <div data-plat-only="google" style="display:none;">
@@ -17948,21 +17979,23 @@ body.tema-claro .criar-campanha-descricao {
               <input type="text" id="campanha_google_url" placeholder="https://plataformadeleads.com.br" value="https://plataformadeleads.com.br">
             </div>
 
-            <div class="advanced-subsection" data-plat-only="google" style="display:none;">
-              <h5>Formulário de lead (Google)</h5>
-              <p>Opcional: escolha um Lead Form já existente na conta do Google Ads para reaproveitar. Se deixar em branco, a plataforma cria um novo automaticamente usando o título, a descrição, o nome do anunciante e as perguntas qualificadoras já preenchidos acima.</p>
-            </div>
-
-            <div class="advanced-full" data-plat-only="google" style="display:none;">
-              <label>Formulário Google (opcional) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Deixe em branco para a plataforma criar um Lead Form novo automaticamente. Ou selecione um Lead Form já criado no Google Ads Manager para reaproveitar. Se a lista não aparecer, informe o resource name manualmente.', event)">i</button></label>
-              <select id="campanha_google_formulario_select" onchange="alternarFormularioGoogleManual()">
-                <option value="">Criar um novo automaticamente</option>
-              </select>
-              <div id="campanha_google_formulario_manual_wrap" style="display:none;margin-top:8px;">
-                <label>Resource name do formulário (manual)</label>
-                <input type="text" id="campanha_google_formulario_manual" placeholder="customers/123.../assets/456...">
+            <div id="bloco_formulario_google" data-plat-only="google" style="display:none;">
+              <div class="advanced-subsection">
+                <h5>Formulário de lead (Google)</h5>
+                <p>Opcional: escolha um Lead Form já existente na conta do Google Ads para reaproveitar. Se deixar em branco, a plataforma cria um novo automaticamente usando o título, a descrição, o nome do anunciante e as perguntas qualificadoras já preenchidos acima.</p>
               </div>
-              <div id="campanha_google_formulario_feedback" class="channel-picker-status alerta" style="display:none;"></div>
+
+              <div class="advanced-full">
+                <label>Formulário Google (opcional) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Deixe em branco para a plataforma criar um Lead Form novo automaticamente. Ou selecione um Lead Form já criado no Google Ads Manager para reaproveitar. Se a lista não aparecer, informe o resource name manualmente.', event)">i</button></label>
+                <select id="campanha_google_formulario_select" onchange="alternarFormularioGoogleManual()">
+                  <option value="">Criar um novo automaticamente</option>
+                </select>
+                <div id="campanha_google_formulario_manual_wrap" style="display:none;margin-top:8px;">
+                  <label>Resource name do formulário (manual)</label>
+                  <input type="text" id="campanha_google_formulario_manual" placeholder="customers/123.../assets/456...">
+                </div>
+                <div id="campanha_google_formulario_feedback" class="channel-picker-status alerta" style="display:none;"></div>
+              </div>
             </div>
 
           </div>
@@ -25362,6 +25395,44 @@ function aplicarRedesCampanha() {
 
     el.style.display = (mostrarPorPlataforma && mostrarPorAba) ? "" : "none";
   });
+
+  // Reaplica a sub-camada Pesquisa/Display por cima da camada de plataforma acima —
+  // evita o campo "Display" reaparecer sozinho se o usuário desmarcar e remarcar
+  // Google com tipo=search já selecionado (mesma classe de bug que o mecanismo de
+  // data-destino-only já tinha antes desta função existir).
+  aplicarTipoCampanhaGoogle();
+}
+
+let tipoCampanhaGoogleSelecionado = "search";
+
+function aplicarTipoCampanhaGoogle() {
+  const googleSelecionado = redesSelecionadasCampanha.has("google");
+  const radioChecado = document.querySelector('input[name="campanha_google_tipo"]:checked');
+  tipoCampanhaGoogleSelecionado = radioChecado?.value === "display" ? "display" : "search";
+
+  // Sem Google selecionado, esconde tudo e nao deixa a sub-camada "vazar" por cima do
+  // esconde-por-plataforma que ja rodou logo acima em aplicarRedesCampanha().
+  document.querySelectorAll("[data-google-tipo-only]").forEach(el => {
+    if (!googleSelecionado) { el.style.display = "none"; return; }
+    const tipos = el.dataset.googleTipoOnly.split(",");
+    el.style.display = tipos.includes(tipoCampanhaGoogleSelecionado) ? "" : "none";
+  });
+
+  atualizarVisibilidadeFormularioGoogle();
+}
+
+// Formulário de lead: sempre visível em Pesquisa (obrigatório); em Display só
+// aparece se o usuário marcar "Tentar anexar um Formulário de Leads" acima.
+function atualizarVisibilidadeFormularioGoogle() {
+  const bloco = document.getElementById("bloco_formulario_google");
+  if (!bloco) return;
+  // Google nao selecionado: data-plat-only ja escondeu esse bloco acima, nao mexe.
+  if (!redesSelecionadasCampanha.has("google")) return;
+  const tentarFormulario = document.getElementById("campanha_google_tentar_formulario")?.checked;
+  const mostrar =
+    tipoCampanhaGoogleSelecionado === "search" ||
+    (tipoCampanhaGoogleSelecionado === "display" && tentarFormulario);
+  bloco.style.display = mostrar ? "" : "none";
 }
 
 // Faixa de abas (Meta/Google/TikTok) do formulario de Criar Campanha — só
@@ -28506,26 +28577,43 @@ function obterFormularioGoogleEscolhido() {
   return select?.value?.trim() || "";
 }
 
-function validarPublicacaoCampanhaGoogle() {
-  // Responsive Search Ad (texto, sem imagem) exige no minimo 3 titulos e 2 descricoes
-  // -- mesma regra fixa aplicada no backend em /google/anuncio.
+function validarPublicacaoCampanhaGoogle(imagensArquivos) {
+  // Pesquisa (Responsive Search Ad, texto) exige no minimo 3 titulos e 2 descricoes;
+  // Display (Responsive Display Ad, imagem) exige 1 titulo, titulo longo, 1 descricao
+  // e exatamente 1 imagem -- mesmas regras fixas aplicadas no backend em /google/anuncio.
+  const emDisplay = tipoCampanhaGoogleSelecionado === "display";
+
   const titulos = [
     document.getElementById("campanha_google_titulo_1")?.value?.trim(),
     document.getElementById("campanha_google_titulo_2")?.value?.trim(),
     document.getElementById("campanha_google_titulo_3")?.value?.trim()
   ].filter(Boolean);
-  if (titulos.length < 3) {
+  if (!emDisplay && titulos.length < 3) {
     return "Informe os 3 títulos do anúncio do Google Ads.";
+  }
+  if (emDisplay && titulos.length < 1) {
+    return "Informe ao menos 1 título do anúncio do Google Ads.";
   }
   const descricoes = [
     document.getElementById("campanha_google_descricao_1")?.value?.trim(),
     document.getElementById("campanha_google_descricao_2")?.value?.trim()
   ].filter(Boolean);
-  if (descricoes.length < 2) {
+  if (!emDisplay && descricoes.length < 2) {
     return "Informe as 2 descrições do anúncio do Google Ads.";
+  }
+  if (emDisplay && descricoes.length < 1) {
+    return "Informe ao menos 1 descrição do anúncio do Google Ads.";
   }
   if (!document.getElementById("campanha_google_nome_anunciante")?.value?.trim()) {
     return "Informe o nome do anunciante para o anúncio do Google Ads.";
+  }
+  if (emDisplay) {
+    if (!document.getElementById("campanha_google_titulo_longo")?.value?.trim()) {
+      return "Informe o título longo do anúncio de Display do Google Ads.";
+    }
+    if (!imagensArquivos || imagensArquivos.length !== 1) {
+      return "Selecione exatamente 1 imagem para o anúncio de Display do Google Ads.";
+    }
   }
   return null;
 }
@@ -31952,10 +32040,14 @@ function validarCamposCompartilhadosCampanha({
   }
 
   // Imagem/vídeo só é exigido quando Meta, TikTok ou Kwai estão selecionados — o
-  // anúncio do Google (Responsive Search Ad) é só texto e não usa nenhum dos três.
-  // Kwai entra na mesma regra do TikTok: é um app de vídeo curto, o anúncio sempre
-  // precisa de um criativo visual.
-  const precisaDeCriativoVisual = (redes || []).some(r => r === "meta" || r === "tiktok" || r === "kwai");
+  // anúncio de Pesquisa do Google (Responsive Search Ad) é só texto e não usa nenhum
+  // dos três. Kwai entra na mesma regra do TikTok: é um app de vídeo curto, o anúncio
+  // sempre precisa de um criativo visual. Google em Display também exige imagem
+  // (Responsive Display Ad) — a checagem de "exatamente 1 imagem" é mais específica
+  // e roda depois, em validarPublicacaoCampanhaGoogle.
+  const precisaDeCriativoVisual =
+    (redes || []).some(r => r === "meta" || r === "tiktok" || r === "kwai") ||
+    ((redes || []).includes("google") && tipoCampanhaGoogleSelecionado === "display");
 
   if (precisaDeCriativoVisual && !imagensArquivos.length && !videoArquivo) {
     return conduzirParaCampoCampanha(
@@ -32067,7 +32159,7 @@ function mostrarResumoPublicacaoMultiRede(resultados) {
   }
 
   if (resultados.length === 1 && resultados[0].ok) {
-    if (resultados[0].semFormaPagamento) {
+    if (resultados[0].semFormaPagamento || resultados[0].formularioNaoAnexado) {
       mostrarToastAvisoCampanha(resultados[0].mensagem);
     } else {
       mostrarToastSucessoCampanha();
@@ -32077,7 +32169,9 @@ function mostrarResumoPublicacaoMultiRede(resultados) {
 
   const linhas = resultados.map(r =>
     r.ok
-      ? `✅ ${r.rede}: publicada com sucesso`
+      ? (r.semFormaPagamento || r.formularioNaoAnexado)
+        ? `⚠️ ${r.rede}: publicada com sucesso — ${r.mensagem}`
+        : `✅ ${r.rede}: publicada com sucesso`
       : `❌ ${r.rede}: ${r.mensagem || "erro ao publicar"}`
   );
   mostrarToastResumoCampanha(linhas, resultados.some(r => r.ok));
@@ -32430,18 +32524,18 @@ async function descartarCampanhaGoogleCriadaPorFalha(campaign_id, token) {
   }
 }
 
-// Mesma orquestração do Meta/TikTok, adaptada: sem etapa de criar formulário (usa um
-// Lead Form já existente, escolhido pelo usuário) e sem imagem — o anúncio Google é uma
-// campanha de Pesquisa com Responsive Search Ad (só texto). Campanhas Display com Lead
-// Form exigem a conta já ter gasto histórico (gate da própria Google), então a
-// plataforma usa Pesquisa, que não tem essa exigência.
+// Mesma orquestração do Meta/TikTok, com dois caminhos: Pesquisa (texto, Lead Form
+// sempre obrigatório — comportamento 100% original) e Display (imagem, Lead Form
+// opcional/best-effort — ver /google/anuncio no backend para a degradação graciosa
+// quando a conta não é elegível pra Lead Form em Display).
 async function publicarCampanhaGoogle(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, orcamento,
-    publicacaoGrupoId
+    publicacaoGrupoId, imagensArquivos
   } = contexto;
   const prefixo = isMultiRede ? "[Google Ads] " : "";
+  const tipoCampanha = tipoCampanhaGoogleSelecionado === "display" ? "display" : "search";
 
   try {
     setPublishProgress(20, `${prefixo}Criando campanha no Google Ads...`);
@@ -32453,7 +32547,8 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         usuario_id,
         nome: campanha_nome,
         orcamento: Number(orcamento),
-        publicacao_grupo_id: publicacaoGrupoId
+        publicacao_grupo_id: publicacaoGrupoId,
+        tipo_campanha: tipoCampanha
       })
     });
     const campanha = await campanhaRes.json();
@@ -32463,7 +32558,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
     }
 
     campanhaCriadaId = campanha.campaign_id || campanha.id;
-    setPublishProgress(60, `${prefixo}Criando grupo de anúncios...`);
+    setPublishProgress(45, `${prefixo}Criando grupo de anúncios...`);
 
     const adgroupRes = await fetch(`${API}/google/adgroup`, {
       method: "POST",
@@ -32471,7 +32566,8 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
       body: JSON.stringify({
         usuario_id,
         campaign_id: campanhaCriadaId,
-        orcamento: Number(orcamento)
+        orcamento: Number(orcamento),
+        tipo_campanha: tipoCampanha
       })
     });
     const adgroup = await adgroupRes.json();
@@ -32481,16 +32577,61 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
       return { ok: false, mensagem: adgroup.error };
     }
 
-    setPublishProgress(75, `${prefixo}Preparando formulário de lead...`);
-
-    let formularioId = obterFormularioGoogleEscolhido();
-    if (!formularioId) {
-      const formularioAuto = await criarFormularioGoogleAutomatico(usuario_id, token, campanha_nome);
-      if (formularioAuto.error) {
+    // ── Imagens (só Display) — chama /google/upload-imagem 2x com o mesmo arquivo,
+    // uma vez por "tipo", pra gerar os dois recortes (paisagem+quadrada) exigidos
+    // pelo Responsive Display Ad a partir de uma imagem só enviada pelo usuário. ──
+    let imagemPaisagemAsset = null;
+    let imagemQuadradaAsset = null;
+    if (tipoCampanha === "display") {
+      setPublishProgress(58, `${prefixo}Enviando imagem do anúncio...`);
+      const arquivoImagem = imagensArquivos?.[0];
+      if (!arquivoImagem) {
         await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
-        return { ok: false, mensagem: formularioAuto.error };
+        return { ok: false, mensagem: "Selecione uma imagem para o anúncio de Display do Google Ads." };
       }
-      formularioId = formularioAuto.resource_name;
+      for (const tipo of ["paisagem", "quadrada"]) {
+        const formImagem = new FormData();
+        formImagem.append("imagem", arquivoImagem);
+        formImagem.append("usuario_id", usuario_id);
+        formImagem.append("tipo", tipo);
+        const uploadRes = await fetch(`${API}/google/upload-imagem`, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+          body: formImagem
+        });
+        const upload = await uploadRes.json();
+        if (upload.error) {
+          await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+          return { ok: false, mensagem: upload.error };
+        }
+        if (tipo === "paisagem") imagemPaisagemAsset = upload.resource_name;
+        else imagemQuadradaAsset = upload.resource_name;
+      }
+    }
+
+    // ── Lead Form: sempre em Pesquisa (obrigatório); em Display só se o usuário
+    // marcou "Tentar anexar um Formulário de Leads" — e, se der errado, não bloqueia
+    // a campanha (best-effort, degradação tratada em /google/anuncio). ──
+    let formularioId = "";
+    const tentarFormularioDisplay =
+      tipoCampanha === "display" &&
+      document.getElementById("campanha_google_tentar_formulario")?.checked;
+
+    if (tipoCampanha === "search" || tentarFormularioDisplay) {
+      setPublishProgress(75, `${prefixo}Preparando formulário de lead...`);
+      formularioId = obterFormularioGoogleEscolhido();
+      if (!formularioId) {
+        const formularioAuto = await criarFormularioGoogleAutomatico(usuario_id, token, campanha_nome);
+        if (formularioAuto.error) {
+          if (tipoCampanha === "search") {
+            await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+            return { ok: false, mensagem: formularioAuto.error };
+          }
+          formularioId = ""; // Display: best-effort, segue sem formulário em vez de falhar tudo.
+        } else {
+          formularioId = formularioAuto.resource_name;
+        }
+      }
     }
 
     setPublishProgress(88, `${prefixo}Publicando anúncio...`);
@@ -32512,12 +32653,16 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         usuario_id,
         campaign_id: campanhaCriadaId,
         adgroup_id: adgroup.adgroup_id,
-        form_id: formularioId,
+        form_id: formularioId || null,
+        tipo_campanha: tipoCampanha,
         titulos,
         descricoes,
+        titulo_longo: document.getElementById("campanha_google_titulo_longo")?.value?.trim(),
         nome_anunciante: document.getElementById("campanha_google_nome_anunciante")?.value?.trim(),
         url_destino: document.getElementById("campanha_google_url")?.value?.trim(),
-        daily_budget: Number(orcamento)
+        daily_budget: Number(orcamento),
+        imagem_paisagem_asset: imagemPaisagemAsset,
+        imagem_quadrada_asset: imagemQuadradaAsset
       })
     });
     const anuncio = await anuncioRes.json();
@@ -32528,6 +32673,10 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
     }
 
     setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
+
+    if (anuncio.aviso) {
+      return { ok: true, formularioNaoAnexado: true, mensagem: anuncio.aviso };
+    }
     return { ok: true };
   } catch (err) {
     console.error("ERRO publicarCampanhaGoogle:", err);
@@ -33194,7 +33343,7 @@ async function criarCampanhaCompleta() {
   }
 
   if (redes.includes("google")) {
-    const erroGoogle = validarPublicacaoCampanhaGoogle();
+    const erroGoogle = validarPublicacaoCampanhaGoogle(imagensArquivos);
     if (erroGoogle) {
       mostrarErroPublicacao(erroGoogle);
       return;

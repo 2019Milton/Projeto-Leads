@@ -26906,6 +26906,9 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_porte_empresa", "porte da empresa"],
     ["#nicho_situacao_atual", "situação atual"],
     ["#nicho_area_atendida_telecom", "área atendida"],
+    ["#nicho_area_curso", "área do curso"],
+    ["#nicho_objetivo_aluno", "objetivo do aluno"],
+    ["#nicho_publico_alvo_cursos_online", "público-alvo"],
     ["#adv_cbo", "CBO (otimização de orçamento)"],
     ["#adv_attribution_spec", "janela de atribuição"],
     ["#campanha_google_titulo_1", "título 1 (Google)"],
@@ -26946,6 +26949,9 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_porte_empresa", "porte da empresa"],
     ["#nicho_situacao_atual", "situação atual"],
     ["#nicho_area_atendida_telecom", "área atendida"],
+    ["#nicho_area_curso", "área do curso"],
+    ["#nicho_objetivo_aluno", "objetivo do aluno"],
+    ["#nicho_publico_alvo_cursos_online", "público-alvo"],
     ["#adv_platform_facebook", "Facebook/Instagram"],
     ["#adv_inicio_btn", "data de início"],
     ["#adv_device_mobile", "dispositivos"],
@@ -27256,6 +27262,49 @@ function aplicarCampanhaIA(indice) {
     }
   );
   preencherCampoIA("#nicho_area_atendida_telecom", s.localidade);
+  preencherSelectIA(
+    "#nicho_area_curso",
+    s.nicho_area_curso || s.area_curso,
+    {
+      "beleza e estetica": "beleza_estetica",
+      "beleza e estética": "beleza_estetica",
+      estetica: "beleza_estetica",
+      estética: "beleza_estetica",
+      beleza_estetica: "beleza_estetica",
+      tecnologia: "tecnologia",
+      "gestao de negocios": "gestao_negocios",
+      "gestão de negócios": "gestao_negocios",
+      negocios: "gestao_negocios",
+      negócios: "gestao_negocios",
+      gestao_negocios: "gestao_negocios",
+      "saude e bem-estar": "saude_bemestar",
+      "saúde e bem-estar": "saude_bemestar",
+      bemestar: "saude_bemestar",
+      saude_bemestar: "saude_bemestar",
+      idiomas: "idiomas",
+      culinaria: "culinaria",
+      culinária: "culinaria",
+      outro: "outro"
+    }
+  );
+  preencherSelectIA(
+    "#nicho_objetivo_aluno",
+    s.nicho_objetivo_aluno || s.objetivo_aluno,
+    {
+      "nova profissao": "nova_profissao",
+      "nova profissão": "nova_profissao",
+      profissao: "nova_profissao",
+      nova_profissao: "nova_profissao",
+      "renda extra": "renda_extra",
+      renda_extra: "renda_extra",
+      hobby: "hobby_interesse",
+      interesse: "hobby_interesse",
+      hobby_interesse: "hobby_interesse",
+      certificacao: "certificacao",
+      certificação: "certificacao"
+    }
+  );
+  preencherCampoIA("#nicho_publico_alvo_cursos_online", s.nicho_publico_alvo || s.publico_alvo);
   if (s.genero !== undefined && s.genero !== null) {
     preencherCampoIA("#adv_genero", s.genero);
   }
@@ -39961,7 +40010,9 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
         ["Frequência", "frequencia"],
         ["Área atendida", "area_atendida", "full"],
         ["Porte da empresa", "porte_empresa"],
-        ["Situação atual", "situacao_atual"]
+        ["Situação atual", "situacao_atual"],
+        ["Área do curso", "area_curso"],
+        ["Objetivo do aluno", "objetivo_aluno"]
       ])}
     </div>
   `;
@@ -43956,6 +44007,7 @@ function corSolidaNicho(nicho = {}) {
   if (slug.includes("saas") || slug.includes("plataforma") || id === 4) return "#7C3AED";
   if (slug.includes("higien") || id === 5) return "#16A34A";
   if (slug.includes("telecom") || id === 6) return "#DC2626";
+  if (slug.includes("curso") || id === 7) return "#DB2777";
   return nicho.cor || nicho.nicho_cor || "#2563EB";
 }
 function estiloNichoBadge(nicho = {}) {
@@ -44055,6 +44107,23 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
+  if (slug.includes("curso") || id === 7) {
+    return {
+      cor,
+      bg: "#2a0a1c",
+      border: "#db2777",
+      text: "#fce7f3",
+      title: "#fbcfe8",
+      inputBg: "#3a1228",
+      inputBorder: "#ec4899",
+      bgLight: "#fdf2f8",
+      borderLight: "#db2777",
+      textLight: "#500724",
+      titleLight: "#9d174d",
+      inputBorderLight: "#db2777"
+    };
+  }
+
   return {
     cor,
     bg: "#0b1f3f",
@@ -44082,6 +44151,7 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("saas") || slug.includes("plataforma")) return "Plataforma / SaaS";
   if (slug.includes("higien")) return "Higienização";
   if (slug.includes("telecom")) return "Telecom Empresarial";
+  if (slug.includes("curso")) return "Cursos Online";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";
@@ -44089,6 +44159,7 @@ function nomeExibirNicho(nicho = {}) {
   if (id === 4) return "Plataforma / SaaS";
   if (id === 5) return "Higienização";
   if (id === 6) return "Telecom Empresarial";
+  if (id === 7) return "Cursos Online";
   return escaparHtml(nicho.slug || "");
 }
 
@@ -44109,7 +44180,8 @@ function detectarNichoPorNome(nomeCampanha = "") {
     imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
     saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"],
     higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"],
-    telecom:     ["telecom", "internet dedicada", "link dedicado", "firewall", "pabx", "hotspot", "wifi corporativo", "provedor"]
+    telecom:     ["telecom", "internet dedicada", "link dedicado", "firewall", "pabx", "hotspot", "wifi corporativo", "provedor"],
+    cursos_online: ["curso online", "curso", "aula", "infoproduto", "certificado", "formacao", "formação", "capacitacao", "capacitação"]
   };
 
   for (const nicho of nichos) {
@@ -44272,6 +44344,14 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Qual o porte da sua empresa?",
     interesse: "Ex: telecomunicações empresariais, TI para empresas, segurança da informação"
   };
+  if (slug === "cursos_online") return {
+    ia:        "Opcional: descreva o curso, publico-alvo ou diferencial (ex: curso online de estetica para iniciantes, certificado incluso, acesso vitalicio, voltado para mulheres que buscam uma nova profissao)",
+    nome:      "Ex: Curso de Estética para Iniciantes",
+    titulo:    "Ex: Aprenda uma Nova Profissão em Casa",
+    descricao: "Ex: Certificado incluso e acesso vitalício",
+    perguntas: "Uma pergunta por linha. Ex: Qual seu objetivo com o curso?",
+    interesse: "Ex: cursos online, empreendedorismo feminino, renda extra"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -44319,6 +44399,12 @@ window.PERGUNTAS_RAPIDAS_FORMULARIO = window.PERGUNTAS_RAPIDAS_FORMULARIO || {
     "Voce ja tem um fornecedor hoje?",
     "Qual a cidade da sua empresa?"
   ],
+  cursos_online: [
+    "Qual area voce quer aprender?",
+    "Qual seu objetivo com o curso?",
+    "Quanto tempo por semana voce teria para estudar?",
+    "Ja fez algum curso online antes?"
+  ],
   default: [
     "Qual sua principal necessidade?",
     "Qual melhor horario para contato?",
@@ -44340,6 +44426,7 @@ function perguntasRapidasDoNicho(slug = "") {
   if (chave.includes("imove")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.imoveis;
   if (chave.includes("higien")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.higienizacao;
   if (chave.includes("telecom")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.telecom;
+  if (chave.includes("curso")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.cursos_online;
 
   return window.PERGUNTAS_RAPIDAS_FORMULARIO.default;
 }
@@ -44469,6 +44556,10 @@ function _salvarEstadoFormNicho(slug) {
     state.porte_empresa   = get("nicho_porte_empresa");
     state.situacao_atual  = get("nicho_situacao_atual");
     state.area_atendida   = get("nicho_area_atendida_telecom");
+  } else if (slug === "cursos_online") {
+    state.area_curso      = get("nicho_area_curso");
+    state.objetivo_aluno  = get("nicho_objetivo_aluno");
+    state.publico_alvo    = get("nicho_publico_alvo_cursos_online");
   }
   window._nichoFormState[slug] = state;
 }
@@ -44525,6 +44616,10 @@ function _restaurarEstadoFormNicho(slug) {
     set("nicho_porte_empresa",        state.porte_empresa);
     set("nicho_situacao_atual",       state.situacao_atual);
     set("nicho_area_atendida_telecom",state.area_atendida);
+  } else if (slug === "cursos_online") {
+    set("nicho_area_curso",                  state.area_curso);
+    set("nicho_objetivo_aluno",              state.objetivo_aluno);
+    set("nicho_publico_alvo_cursos_online",  state.publico_alvo);
   }
 }
 
@@ -44800,6 +44895,38 @@ function selecionarNichoTab(nicho, btnEl) {
         </div>
       </div>
     `;
+  } else if (nicho.slug === "cursos_online") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Área do curso ${_i('Qual area de conhecimento o curso ensina: beleza e estetica, tecnologia, gestao de negocios, saude e bem-estar, idiomas, culinaria ou outra.')}</label>
+          <select id="nicho_area_curso" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="beleza_estetica">Beleza e Estética</option>
+            <option value="tecnologia">Tecnologia</option>
+            <option value="gestao_negocios">Gestão de Negócios</option>
+            <option value="saude_bemestar">Saúde e Bem-estar</option>
+            <option value="idiomas">Idiomas</option>
+            <option value="culinaria">Culinária</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Objetivo do aluno ${_i('O que a aluna busca com o curso: uma nova profissao, renda extra, apenas um hobby/interesse pessoal ou uma certificacao especifica.')}</label>
+          <select id="nicho_objetivo_aluno" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="nova_profissao">Nova Profissão</option>
+            <option value="renda_extra">Renda Extra</option>
+            <option value="hobby_interesse">Hobby / Interesse</option>
+            <option value="certificacao">Certificação</option>
+          </select>
+        </div>
+        <div style="grid-column:1 / -1;">
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Descreva livremente o publico-alvo do curso, ex: mulheres de 25 a 45 anos buscando uma nova fonte de renda.')}</label>
+          <input type="text" id="nicho_publico_alvo_cursos_online" placeholder="Ex: mulheres buscando uma nova profissão" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
@@ -44845,6 +44972,10 @@ function coletarDadosNichoAtivo() {
     dados.porte_empresa  = document.getElementById("nicho_porte_empresa")?.value         || null;
     dados.situacao_atual = document.getElementById("nicho_situacao_atual")?.value        || null;
     dados.area_atendida  = document.getElementById("nicho_area_atendida_telecom")?.value || null;
+  } else if (nicho.slug === "cursos_online") {
+    dados.area_curso     = document.getElementById("nicho_area_curso")?.value || null;
+    dados.objetivo_aluno = document.getElementById("nicho_objetivo_aluno")?.value || null;
+    dados.publico_alvo   = document.getElementById("nicho_publico_alvo_cursos_online")?.value || null;
   }
 
   return dados;
@@ -44889,6 +45020,11 @@ function restaurarDadosNichoAtivo(dados = {}) {
       porte_empresa: "nicho_porte_empresa",
       situacao_atual: "nicho_situacao_atual",
       area_atendida: "nicho_area_atendida_telecom"
+    },
+    cursos_online: {
+      area_curso: "nicho_area_curso",
+      objetivo_aluno: "nicho_objetivo_aluno",
+      publico_alvo: "nicho_publico_alvo_cursos_online"
     }
   };
 
@@ -48990,7 +49126,8 @@ function detectarNichoPorNome(nomeCampanha = "") {
     imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
     saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"],
     higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"],
-    telecom:     ["telecom", "internet dedicada", "link dedicado", "firewall", "pabx", "hotspot", "wifi corporativo", "provedor"]
+    telecom:     ["telecom", "internet dedicada", "link dedicado", "firewall", "pabx", "hotspot", "wifi corporativo", "provedor"],
+    cursos_online: ["curso online", "curso", "aula", "infoproduto", "certificado", "formacao", "formação", "capacitacao", "capacitação"]
   };
 
   for (const nicho of nichos) {
@@ -49033,6 +49170,10 @@ function corSolidaNicho(nicho = {}) {
 
   if (slug.includes("telecom") || id === 6) {
     return "#DC2626";
+  }
+
+  if (slug.includes("curso") || id === 7) {
+    return "#DB2777";
   }
 
   return nicho.cor || nicho.nicho_cor || "#2563EB";
@@ -49128,6 +49269,23 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
+  if (slug.includes("curso") || id === 7) {
+    return {
+      cor,
+      bg: "#2a0a1c",
+      border: "#db2777",
+      text: "#fce7f3",
+      title: "#fbcfe8",
+      inputBg: "#3a1228",
+      inputBorder: "#ec4899",
+      bgLight: "#fdf2f8",
+      borderLight: "#db2777",
+      textLight: "#500724",
+      titleLight: "#9d174d",
+      inputBorderLight: "#db2777"
+    };
+  }
+
   return {
     cor,
     bg: "#0b1f3f",
@@ -49184,6 +49342,7 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("saas") || slug.includes("plataforma")) return "Plataforma / SaaS";
   if (slug.includes("higien")) return "Higienização";
   if (slug.includes("telecom")) return "Telecom Empresarial";
+  if (slug.includes("curso")) return "Cursos Online";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";
@@ -49191,6 +49350,7 @@ function nomeExibirNicho(nicho = {}) {
   if (id === 4) return "Plataforma / SaaS";
   if (id === 5) return "Higienização";
   if (id === 6) return "Telecom Empresarial";
+  if (id === 7) return "Cursos Online";
   return escaparHtml(nicho.slug || "");
 }
 
@@ -49318,6 +49478,14 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Qual o porte da sua empresa?",
     interesse: "Ex: telecomunicações empresariais, TI para empresas, segurança da informação"
   };
+  if (slug === "cursos_online") return {
+    ia:        "Opcional: descreva o curso, publico-alvo ou diferencial (ex: curso online de estetica para iniciantes, certificado incluso, acesso vitalicio, voltado para mulheres que buscam uma nova profissao)",
+    nome:      "Ex: Curso de Estética para Iniciantes",
+    titulo:    "Ex: Aprenda uma Nova Profissão em Casa",
+    descricao: "Ex: Certificado incluso e acesso vitalício",
+    perguntas: "Uma pergunta por linha. Ex: Qual seu objetivo com o curso?",
+    interesse: "Ex: cursos online, empreendedorismo feminino, renda extra"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -49377,6 +49545,10 @@ function _salvarEstadoFormNicho(slug) {
     state.porte_empresa   = get("nicho_porte_empresa");
     state.situacao_atual  = get("nicho_situacao_atual");
     state.area_atendida   = get("nicho_area_atendida_telecom");
+  } else if (slug === "cursos_online") {
+    state.area_curso      = get("nicho_area_curso");
+    state.objetivo_aluno  = get("nicho_objetivo_aluno");
+    state.publico_alvo    = get("nicho_publico_alvo_cursos_online");
   }
   window._nichoFormState[slug] = state;
 }
@@ -49433,6 +49605,10 @@ function _restaurarEstadoFormNicho(slug) {
     set("nicho_porte_empresa",        state.porte_empresa);
     set("nicho_situacao_atual",       state.situacao_atual);
     set("nicho_area_atendida_telecom",state.area_atendida);
+  } else if (slug === "cursos_online") {
+    set("nicho_area_curso",                  state.area_curso);
+    set("nicho_objetivo_aluno",              state.objetivo_aluno);
+    set("nicho_publico_alvo_cursos_online",  state.publico_alvo);
   }
 }
 
@@ -49705,6 +49881,38 @@ function selecionarNichoTab(nicho, btnEl) {
         <div>
           <label style="color:#9ca3af;font-size:12px;">Área atendida ${_i('Informe a cidade ou regiao atendida — especialmente importante pra Link Dedicado, que depende de cobertura fisica.')}</label>
           <input type="text" id="nicho_area_atendida_telecom" placeholder="Ex: São Paulo, SP" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
+  } else if (nicho.slug === "cursos_online") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Área do curso ${_i('Qual area de conhecimento o curso ensina: beleza e estetica, tecnologia, gestao de negocios, saude e bem-estar, idiomas, culinaria ou outra.')}</label>
+          <select id="nicho_area_curso" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="beleza_estetica">Beleza e Estética</option>
+            <option value="tecnologia">Tecnologia</option>
+            <option value="gestao_negocios">Gestão de Negócios</option>
+            <option value="saude_bemestar">Saúde e Bem-estar</option>
+            <option value="idiomas">Idiomas</option>
+            <option value="culinaria">Culinária</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Objetivo do aluno ${_i('O que a aluna busca com o curso: uma nova profissao, renda extra, apenas um hobby/interesse pessoal ou uma certificacao especifica.')}</label>
+          <select id="nicho_objetivo_aluno" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="nova_profissao">Nova Profissão</option>
+            <option value="renda_extra">Renda Extra</option>
+            <option value="hobby_interesse">Hobby / Interesse</option>
+            <option value="certificacao">Certificação</option>
+          </select>
+        </div>
+        <div style="grid-column:1 / -1;">
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Descreva livremente o publico-alvo do curso, ex: mulheres de 25 a 45 anos buscando uma nova fonte de renda.')}</label>
+          <input type="text" id="nicho_publico_alvo_cursos_online" placeholder="Ex: mulheres buscando uma nova profissão" style="margin-top:4px;">
         </div>
       </div>
     `;

@@ -22602,6 +22602,17 @@ function ativarAbaEdicaoCampanha(chave) {
     resumoEl.style.display = ehMeta ? "none" : "";
     resumoEl.innerHTML = ehMeta ? "" : renderizarResumoEdicaoSomenteLeitura(par.campanha);
   }
+
+  // "Adicionar plataforma" só faz sentido ancorado na aba Meta (é onde os
+  // campos compartilhados de nome/texto/orçamento/imagens estão vivos).
+  const addPlatBloco = document.getElementById("editar_campanha_add_plataforma_bloco");
+  const addPlatBtn = document.getElementById("editar_campanha_btn_publicar_adicionais");
+  if (ehMeta) {
+    renderizarSeletorPlataformasAdicionaisEdicao();
+  } else {
+    if (addPlatBloco) addPlatBloco.style.display = "none";
+    if (addPlatBtn) addPlatBtn.style.display = "none";
+  }
 }
 
 function renderizarResumoEdicaoSomenteLeitura(campanha) {
@@ -22635,6 +22646,9 @@ function abrirModalEdicaoSomenteLeitura(campanhaRef) {
 
   const btnSalvar = document.getElementById("editar_campanha_btn_salvar");
   if (btnSalvar) btnSalvar.style.display = "none";
+
+  document.getElementById("editar_campanha_add_plataforma_bloco")?.style.setProperty("display", "none");
+  document.getElementById("editar_campanha_btn_publicar_adicionais")?.style.setProperty("display", "none");
 
   document.getElementById("campanhaEditarModal")?.classList.add("active");
 }
@@ -25989,17 +26003,131 @@ function selecionarPlataformaCampanha(plat) {
   }
 }
 
+// Redes que podem ser adicionadas a uma campanha já existente durante a
+// edição. Kwai fica de fora por decisão do usuário (o endpoint ainda é um
+// stub que sempre falha) e Meta fica de fora do v1 (exigiria a sub-escolha
+// Facebook/Instagram e o snapshot próprio dessas redes).
+const PLATAFORMAS_ADICIONAVEIS_EDICAO = ["google", "tiktok", "linkedin"];
+
+function renderizarSeletorPlataformasAdicionaisEdicao() {
+  const bloco = document.getElementById("editar_campanha_add_plataforma_bloco");
+  if (!bloco) return;
+
+  const publicavel =
+    campanhaJaFoiPublicada(campanhaEmEdicao) &&
+    !campanhaEstaExcluida(campanhaEmEdicao);
+  const disponiveis = PLATAFORMAS_ADICIONAVEIS_EDICAO.filter(
+    p => !plataformasExistentesEdicaoGrupo.has(p)
+  );
+
+  if (!publicavel || !disponiveis.length) {
+    bloco.style.display = "none";
+    atualizarBotaoPublicarPlataformasAdicionais();
+    return;
+  }
+
+  bloco.style.display = "";
+  bloco.querySelectorAll(".plat-sel-btn").forEach(btn => {
+    const plat = btn.dataset.plat;
+    const ehDisponivel = disponiveis.includes(plat);
+    btn.style.display = ehDisponivel ? "" : "none";
+    btn.classList.toggle("ativa", redesSelecionadasCampanha.has(plat));
+  });
+
+  atualizarBotaoPublicarPlataformasAdicionais();
+}
+
+function selecionarPlataformaAdicionalEdicao(plat) {
+  // Escopado ao seletor de edição — o seletor da Criação usa o mesmo
+  // data-plat, e os dois seletores coexistem no DOM quando o modal de
+  // edição está aberto.
+  const btn = document.querySelector(
+    `#editar_campanha_plat_selector .plat-sel-btn[data-plat="${plat}"]`
+  );
+  if (!btn) return;
+
+  if (redesSelecionadasCampanha.has(plat)) {
+    redesSelecionadasCampanha.delete(plat);
+  } else {
+    redesSelecionadasCampanha.add(plat);
+  }
+  btn.classList.toggle("ativa", redesSelecionadasCampanha.has(plat));
+
+  aplicarRedesCampanha();
+
+  if (plat === "tiktok" && redesSelecionadasCampanha.has("tiktok")) {
+    carregarIdentidadesTikTokCampanha();
+    carregarFormulariosTikTokCampanha();
+  }
+  if (plat === "google" && redesSelecionadasCampanha.has("google")) {
+    carregarFormulariosGoogleCampanha();
+  }
+
+  atualizarBotaoPublicarPlataformasAdicionais();
+}
+
+function atualizarBotaoPublicarPlataformasAdicionais() {
+  const btn = document.getElementById("editar_campanha_btn_publicar_adicionais");
+  if (!btn) return;
+  btn.style.display = plataformasNovasParaPublicarEdicao().length ? "" : "none";
+}
+
+function plataformasNovasParaPublicarEdicao() {
+  return PLATAFORMAS_ADICIONAVEIS_EDICAO.filter(
+    p => redesSelecionadasCampanha.has(p) && !plataformasOriginaisEdicao.has(p)
+  );
+}
+
+// Campos exclusivos de cada rede adicionável, pra limpar se o usuário marcar
+// a rede, digitar algo e fechar o modal sem publicar — sem isso o texto
+// vazaria pro formulário de "Criar Campanha" na próxima abertura, já que
+// esses campos nunca foram alcançáveis de dentro da edição antes disso e por
+// isso não fazem parte do snapshot/restore de _snapshotCriarCampanha.
+const CAMPOS_EXCLUSIVOS_PLATAFORMA_EDICAO = {
+  google: [
+    "campanha_google_titulo_1", "campanha_google_titulo_2", "campanha_google_titulo_3",
+    "campanha_google_titulo_longo",
+    "campanha_google_descricao_1", "campanha_google_descricao_2",
+    "campanha_google_nome_anunciante", "campanha_google_url",
+    "campanha_google_whatsapp_mensagem", "campanha_google_formulario_manual"
+  ],
+  tiktok: [
+    "campanha_tiktok_url", "campanha_tiktok_formulario_manual"
+  ],
+  linkedin: []
+};
+
+function limparCamposPlataformaAdicionalEdicao(plat) {
+  (CAMPOS_EXCLUSIVOS_PLATAFORMA_EDICAO[plat] || []).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = el.defaultValue ?? "";
+  });
+
+  if (plat === "tiktok") {
+    removerLocalidadeTikTok();
+    document.querySelector('input[name="campanha_tiktok_destino"][value="lead_ads"]')?.click();
+  }
+  if (plat === "google") {
+    document.querySelector('input[name="campanha_google_tipo"][value="search"]')?.click();
+    document.querySelector('input[name="campanha_google_destino"][value="lead_ads"]')?.click();
+  }
+}
+
 function aplicarRedesCampanha() {
   // Na edição, facebook+instagram entram juntos no Set só pra manter os
   // campos data-plat-only="facebook,instagram" visíveis (campanhas Meta já
   // publicadas ainda são uma campanha só, plataforma='meta') — não deve virar
   // aba Facebook/Instagram ali, isso só faz sentido na criação de campanha nova.
   const emEdicao = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
+  // Em edição o modal não tem sistema de abas próprio (o de Criação vive em
+  // outro container, #campanha_plat_abas) — nunca deve ativar aqui, mesmo que
+  // 2+ plataformas com aba (ex: google+tiktok) sejam marcadas juntas ao
+  // adicionar plataformas a uma campanha existente.
   const platsComAbaMarcadas =
-    PLATAFORMAS_COM_ABA_CAMPANHA.filter(p =>
-      redesSelecionadasCampanha.has(p) &&
-      !(emEdicao && (p === "facebook" || p === "instagram"))
-    );
+    emEdicao
+      ? []
+      : PLATAFORMAS_COM_ABA_CAMPANHA.filter(p => redesSelecionadasCampanha.has(p));
 
   if (platsComAbaMarcadas.length < 2) {
     abaAtivaCampanha = null;
@@ -30957,6 +31085,18 @@ const BLOCOS_SEGMENTACAO_ABERTO_PADRAO = {
 let campanhaEmEdicao = null;
 let _snapshotCriarCampanha = null;
 
+// Plataformas que a campanha já tinha ao abrir o editor (facebook+instagram
+// pra Meta, ou a própria plataforma isolada pra Google/TikTok/LinkedIn) —
+// usado pra distinguir "rede original" de "rede recém-marcada pra adicionar"
+// dentro de redesSelecionadasCampanha, que os dois fluxos compartilham.
+let plataformasOriginaisEdicao = new Set();
+
+// Plataformas que já existem em alguma linha do grupo desta campanha (ela
+// mesma + eventuais linhas-irmãs com o mesmo publicacao_grupo_id) — usado só
+// pra filtrar o seletor "adicionar plataforma" (não repetir uma rede que já
+// está publicada em outra linha do mesmo grupo).
+let plataformasExistentesEdicaoGrupo = new Set();
+
 // Dados independentes de Facebook/Instagram na criação de campanha — cada
 // chave guarda um snapshot completo do formulário Meta (mesmo formato de
 // _snapshotCriarCampanha) pra aquela rede especificamente. Trocado por
@@ -31440,6 +31580,17 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     }
     aplicarRedesCampanha();
 
+    plataformasOriginaisEdicao = new Set(redesSelecionadasCampanha);
+    const grupoIdAtualEdicao = campanha.publicacao_grupo_id || null;
+    plataformasExistentesEdicaoGrupo = new Set(
+      grupoIdAtualEdicao
+        ? campanhasAtuais
+            .filter(c => c.publicacao_grupo_id === grupoIdAtualEdicao)
+            .map(c => plataformaCampanhaExibicao(c))
+        : [plataformaCampanhaExibicao(campanha)]
+    );
+    renderizarSeletorPlataformasAdicionaisEdicao();
+
     BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
       moverBloco(blocoId, "editar_campanha_campos");
       const bloco = document.getElementById(blocoId);
@@ -31498,6 +31649,13 @@ function fecharEdicaoCampanha() {
   try {
 
     esconderAbasEdicaoCampanha();
+
+    // Limpa campos de qualquer rede marcada-mas-nunca-publicada nesta sessão
+    // de edição, antes que o snapshot abaixo restaure redesSelecionadasCampanha
+    // (depois disso a rede abandonada já não estaria mais no Set pra detectar).
+    PLATAFORMAS_ADICIONAVEIS_EDICAO
+      .filter(p => redesSelecionadasCampanha.has(p) && !plataformasOriginaisEdicao.has(p))
+      .forEach(limparCamposPlataformaAdicionalEdicao);
 
     BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
       restaurarBloco(blocoId);
@@ -31559,6 +31717,10 @@ function fecharEdicaoCampanha() {
   } finally {
     _snapshotCriarCampanha = null;
     campanhaEmEdicao = null;
+    plataformasOriginaisEdicao = new Set();
+    plataformasExistentesEdicaoGrupo = new Set();
+    document.getElementById("editar_campanha_add_plataforma_bloco")?.style.setProperty("display", "none");
+    document.getElementById("editar_campanha_btn_publicar_adicionais")?.style.setProperty("display", "none");
     aplicarRedesCampanha();
     configurarEdicaoDestinoCampanha(null);
     document
@@ -33310,7 +33472,8 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
         configuracoes_avancadas,
         nicho_id: window._nichoAtivo?.id || null,
         cbo: configuracoes_avancadas.cbo ?? true,
-        daily_budget: configuracoes_avancadas.cbo ? (orcamento * 100) : undefined
+        daily_budget: configuracoes_avancadas.cbo ? (orcamento * 100) : undefined,
+        publicacao_grupo_id: publicacaoGrupoId || null
       })
     });
     const campanha = await campanhaRes.json();
@@ -34558,6 +34721,149 @@ async function criarCampanhaCompleta() {
   }
 
   setTimeout(() => mostrarResumoPublicacaoMultiRede(resultados), 800);
+}
+
+// Irmã menor de criarCampanhaCompleta(), usada só dentro da edição pra
+// publicar as redes recém-marcadas no seletor "Publicar esta campanha também
+// em" — reaproveita os mesmos campos compartilhados (já visíveis no modal de
+// edição) e as mesmas funções de publicação/validação por rede, sem tocar em
+// Meta (a campanha original nunca é republicada aqui).
+async function publicarPlataformasAdicionaisCampanha() {
+  if (!campanhaEmEdicao) return;
+
+  const novasRedes = plataformasNovasParaPublicarEdicao();
+  if (!novasRedes.length) return;
+
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  const campanha_nome = document.getElementById("campanha_nome").value;
+  const page_id = document.getElementById("pagina_select")?.value || "";
+  const texto = document.getElementById("texto").value;
+  const cta = document.getElementById("cta").value;
+  const orcamento = document.getElementById("orcamento").value;
+
+  const configuracoesBase = normalizarConfiguracoesAvancadasParaEnvio({
+    ...coletarConfiguracoesAvancadas(),
+    ...coletarDadosNichoAtivo(),
+    page_id,
+    texto,
+    cta
+  });
+
+  const imagensArquivos = Array.from(document.querySelectorAll(".imagem-input"))
+    .map(input => input.files[0])
+    .filter(Boolean);
+
+  const videoArquivo = obterArquivoVideoCampanha();
+
+  const feedback = document.getElementById("editar_campanha_add_plataforma_feedback");
+  const btn = document.getElementById("editar_campanha_btn_publicar_adicionais");
+  if (feedback) {
+    feedback.style.display = "none";
+    feedback.textContent = "";
+  }
+
+  if (!validarCamposCompartilhadosCampanha({
+    campanha_nome, texto, orcamento, imagensArquivos, videoArquivo, redes: novasRedes
+  })) {
+    return;
+  }
+
+  if (novasRedes.includes("google")) {
+    const erroGoogle = validarPublicacaoCampanhaGoogle(imagensArquivos);
+    if (erroGoogle) { mostrarErroPublicacao(erroGoogle); return; }
+  }
+  if (novasRedes.includes("tiktok")) {
+    const erroTikTok = validarPublicacaoCampanhaTikTok();
+    if (erroTikTok) { mostrarErroPublicacao(erroTikTok); return; }
+  }
+  if (novasRedes.includes("linkedin")) {
+    const erroLinkedIn = validarPublicacaoCampanhaLinkedIn();
+    if (erroLinkedIn) { mostrarErroPublicacao(erroLinkedIn); return; }
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = "Publicando..."; }
+
+  try {
+    // Reaproveita o grupo já existente da campanha (se ela já for uma perna de
+    // um grupo) ou tapa o buraco criando um novo e gravando na linha atual
+    // antes de publicar as novas pernas. Gravar isso antes de publicar é
+    // seguro mesmo que a publicação adiante falhe: uma linha sozinha com um
+    // publicacao_grupo_id órfão se comporta idêntico a uma com NULL (a lista
+    // só agrupa com 2+ linhas), então não há corrupção possível dos dados da
+    // campanha existente.
+    let grupoId = campanhaEmEdicao.publicacao_grupo_id || null;
+    if (!grupoId) {
+      const grupoGerado =
+        (window.crypto && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : `grp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+      const res = await fetch(`${API}/campanhas/${campanhaEmEdicao.id}/grupo`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ publicacao_grupo_id: grupoGerado })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Erro ao preparar o agrupamento da campanha");
+      }
+      grupoId = data.publicacao_grupo_id || grupoGerado;
+      campanhaEmEdicao.publicacao_grupo_id = grupoId;
+    }
+
+    const contexto = {
+      token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
+      destino: destinoCampanhaSelecionado,
+      configuracoesBase, imagensArquivos, videoArquivo,
+      publicacaoGrupoId: grupoId
+    };
+
+    const resultados = [];
+    if (novasRedes.includes("tiktok")) {
+      resultados.push({ rede: "TikTok", ...(await publicarCampanhaTikTok(contexto, true)) });
+    }
+    if (novasRedes.includes("google")) {
+      resultados.push({ rede: "Google Ads", ...(await publicarCampanhaGoogle(contexto, true)) });
+    }
+    if (novasRedes.includes("linkedin")) {
+      resultados.push({ rede: "LinkedIn Ads", ...(await publicarCampanhaLinkedIn(contexto, true)) });
+    }
+
+    // Só marca como "já publicada" (deixa de contar como "nova") quem
+    // realmente deu certo — quem falhou continua marcado/selecionado no
+    // seletor pra tentar de novo sem perder o que já foi digitado.
+    const chaveRedePorNome = { "TikTok": "tiktok", "Google Ads": "google", "LinkedIn Ads": "linkedin" };
+    resultados.filter(r => r.ok).forEach(r => {
+      const plat = chaveRedePorNome[r.rede];
+      if (plat) {
+        plataformasOriginaisEdicao.add(plat);
+        plataformasExistentesEdicaoGrupo.add(plat);
+      }
+    });
+
+    setPublishProgress(null);
+
+    if (resultados.some(r => r.ok)) {
+      await sincronizarCampanhas();
+    }
+
+    renderizarSeletorPlataformasAdicionaisEdicao();
+    setTimeout(() => mostrarResumoPublicacaoMultiRede(resultados), 800);
+
+  } catch (err) {
+    console.error("PUBLICAR PLATAFORMAS ADICIONAIS:", err);
+    const msg = err?.message || "Erro ao publicar nas novas plataformas";
+    if (feedback) {
+      feedback.textContent = msg;
+      feedback.style.display = "block";
+    } else {
+      mostrarErroPublicacao(msg);
+    }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "🚀 Publicar nas novas plataformas"; }
+  }
 }
 
 // =============================================
@@ -46043,6 +46349,39 @@ async function enviarFeedback() {
     <div id="editar_campanha_abas" class="campanha-drawer-abas" style="display:none;"></div>
 
     <div id="editar_campanha_campos" class="card campanha-editar-campos"></div>
+
+    <div id="editar_campanha_add_plataforma_bloco" class="advanced-full" style="display:none;margin-top:16px;">
+      <label>Publicar esta campanha também em</label>
+      <div class="campanha-plat-selector" id="editar_campanha_plat_selector">
+        <button type="button" class="plat-sel-btn" data-plat="google"
+          onclick="selecionarPlataformaAdicionalEdicao('google')">
+          <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads
+        </button>
+        <button type="button" class="plat-sel-btn" data-plat="tiktok"
+          onclick="selecionarPlataformaAdicionalEdicao('tiktok')">
+          🎵 TikTok Ads
+        </button>
+        <button type="button" class="plat-sel-btn" data-plat="linkedin"
+          onclick="selecionarPlataformaAdicionalEdicao('linkedin')">
+          💼 LinkedIn Ads
+        </button>
+      </div>
+      <small style="display:block;margin-top:6px;color:#64748b;">
+        Marque uma rede para revelar os campos dela logo acima. Nome, texto e orçamento desta campanha são reaproveitados — imagem/vídeo e a cópia do anúncio da nova rede precisam ser preenchidos aqui, já que cada plataforma publica seu próprio criativo.
+      </small>
+    </div>
+
+    <div id="editar_campanha_add_plataforma_feedback" class="pagamento-modal-alerta erro" style="display:none;"></div>
+
+    <button
+      type="button"
+      id="editar_campanha_btn_publicar_adicionais"
+      class="btn"
+      style="display:none;margin-top:10px;width:100%;"
+      onclick="publicarPlataformasAdicionaisCampanha()"
+    >
+      🚀 Publicar nas novas plataformas
+    </button>
 
     <div id="editar_campanha_resumo_outra_plataforma" style="display:none;"></div>
 

@@ -3707,11 +3707,13 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   margin: 0;
 }
 
-.google-destino-opcoes {
+.google-destino-opcoes,
+.tiktok-destino-opcoes {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.google-destino-opcoes label {
+.google-destino-opcoes label,
+.tiktok-destino-opcoes label {
   min-height: 54px;
 }
 
@@ -3721,7 +3723,8 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
 }
 
 @media (max-width: 720px) {
-  .google-destino-opcoes {
+  .google-destino-opcoes,
+  .tiktok-destino-opcoes {
     grid-template-columns: 1fr;
   }
 }
@@ -18005,12 +18008,48 @@ body.tema-claro .criar-campanha-descricao {
               >
             </div>
 
-            <div class="advanced-subsection" data-plat-only="tiktok" style="display:none;">
+            <section class="campaign-setup-section advanced-full" id="bloco_destino_tiktok" data-plat-only="tiktok" style="display:none;">
+              <h4>Para onde o anúncio deve levar? <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário instantâneo coleta o lead dentro do TikTok. Endereço do site abre o link informado. WhatsApp cria um anúncio nativo de mensagens para o mesmo número conectado ao bot da plataforma.', event)">i</button></h4>
+              <div class="advanced-checks tiktok-destino-opcoes">
+                <label>
+                  <input type="radio" name="campanha_tiktok_destino" id="tiktok_destino_lead_ads" value="lead_ads" checked onchange="aplicarDestinoCampanhaTikTok()">
+                  Formulário de Leads
+                </label>
+                <label>
+                  <input type="radio" name="campanha_tiktok_destino" id="tiktok_destino_site" value="site" onchange="aplicarDestinoCampanhaTikTok()">
+                  Endereço do site
+                </label>
+                <label>
+                  <input type="radio" name="campanha_tiktok_destino" id="tiktok_destino_whatsapp" value="whatsapp" onchange="aplicarDestinoCampanhaTikTok()">
+                  WhatsApp
+                </label>
+              </div>
+              <div id="destino_tiktok_leadform_info" class="channel-picker-status" style="display:none;">
+                O formulário será aberto dentro do TikTok, sem tirar a pessoa do aplicativo.
+              </div>
+              <div id="destino_tiktok_site_info" class="channel-picker-status" style="display:none;">
+                O clique será direcionado para o endereço informado abaixo.
+              </div>
+              <div id="destino_tiktok_whatsapp_info" class="channel-picker-status alerta" style="display:none;">
+                Verificando o WhatsApp conectado à plataforma...
+              </div>
+              <p style="font-size:11px;opacity:.65;margin:8px 0 0;">
+                No WhatsApp, o TikTok usa o número Business API conectado e abre a conversa com a mensagem inicial padrão do próprio TikTok.
+              </p>
+            </section>
+
+            <div class="advanced-full" data-plat-only="tiktok" data-tiktok-destino-only="site" style="display:none;">
+              <label>Endereço do site (TikTok) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o link completo, começando com https://, para onde a pessoa será direcionada ao tocar no anúncio.', event)">i</button></label>
+              <input type="url" id="campanha_tiktok_url" placeholder="https://seusite.com.br" autocomplete="url">
+              <small style="display:block;margin-top:5px;opacity:.65;">Use uma página que funcione bem no celular e, de preferência, tenha seu formulário de contato.</small>
+            </div>
+
+            <div class="advanced-subsection" data-plat-only="tiktok" data-tiktok-destino-only="lead_ads" style="display:none;">
               <h5>Formulário instantâneo (TikTok)</h5>
               <p>A TikTok não cria formulário automaticamente — escolha um já existente no TikTok Ads Manager.</p>
             </div>
 
-            <div class="advanced-full" data-plat-only="tiktok" style="display:none;">
+            <div class="advanced-full" data-plat-only="tiktok" data-tiktok-destino-only="lead_ads" style="display:none;">
               <label>Formulário TikTok <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione um formulário instantâneo já criado no TikTok Ads Manager. Se a lista não aparecer, informe o ID manualmente.', event)">i</button></label>
               <select id="campanha_tiktok_formulario_select" onchange="alternarFormularioTikTokManual()">
                 <option value="">Carregando formulários...</option>
@@ -26017,6 +26056,7 @@ function aplicarRedesCampanha() {
   // Google com tipo=search já selecionado (mesma classe de bug que o mecanismo de
   // data-destino-only já tinha antes desta função existir).
   aplicarTipoCampanhaGoogle();
+  aplicarDestinoCampanhaTikTok();
 }
 
 let tipoCampanhaGoogleSelecionado = "search";
@@ -26142,6 +26182,84 @@ async function aplicarDestinoCampanhaGoogle() {
     }
   } catch (e) {
     if (verificacaoId !== verificacaoWhatsappGoogleAtual) return;
+    infoWhatsapp.classList.add("alerta");
+    infoWhatsapp.textContent = "Não foi possível confirmar o WhatsApp agora. Verifique a conexão na aba WhatsApp Bot.";
+  }
+}
+
+let destinoCampanhaTikTokSelecionado = "lead_ads";
+let verificacaoWhatsappTikTokAtual = 0;
+
+// Assim como no Google, o TikTok tem destinos próprios e independentes das
+// escolhas feitas nas abas Meta/LinkedIn/Kwai de uma publicação multirrede.
+async function aplicarDestinoCampanhaTikTok() {
+  const radioChecado = document.querySelector('input[name="campanha_tiktok_destino"]:checked');
+  const valor = radioChecado?.value;
+  destinoCampanhaTikTokSelecionado = ["lead_ads", "site", "whatsapp"].includes(valor)
+    ? valor
+    : "lead_ads";
+
+  const tiktokSelecionado = redesSelecionadasCampanha.has("tiktok");
+  const tiktokEmFoco = tiktokSelecionado && (!abaAtivaCampanha || abaAtivaCampanha === "tiktok");
+
+  document.querySelectorAll('input[name="campanha_tiktok_destino"]').forEach(input => {
+    const label = input.closest("label");
+    if (!label) return;
+    const ehAtual = input.value === destinoCampanhaTikTokSelecionado;
+    label.style.borderColor = ehAtual ? "#22c55e" : "";
+    label.style.background = ehAtual ? "rgba(34,197,94,0.12)" : "";
+  });
+
+  document.querySelectorAll("[data-tiktok-destino-only]").forEach(el => {
+    if (!tiktokEmFoco) {
+      el.style.display = "none";
+      return;
+    }
+    const destinos = el.dataset.tiktokDestinoOnly.split(",");
+    el.style.display = destinos.includes(destinoCampanhaTikTokSelecionado) ? "" : "none";
+  });
+
+  const infoFormulario = document.getElementById("destino_tiktok_leadform_info");
+  const infoSite = document.getElementById("destino_tiktok_site_info");
+  const infoWhatsapp = document.getElementById("destino_tiktok_whatsapp_info");
+  if (infoFormulario) {
+    infoFormulario.style.display = tiktokEmFoco && destinoCampanhaTikTokSelecionado === "lead_ads" ? "" : "none";
+  }
+  if (infoSite) {
+    infoSite.style.display = tiktokEmFoco && destinoCampanhaTikTokSelecionado === "site" ? "" : "none";
+  }
+
+  if (!infoWhatsapp) return;
+  if (!tiktokEmFoco || destinoCampanhaTikTokSelecionado !== "whatsapp") {
+    infoWhatsapp.style.display = "none";
+    return;
+  }
+
+  infoWhatsapp.style.display = "";
+  infoWhatsapp.classList.add("alerta");
+  infoWhatsapp.textContent = "Verificando o WhatsApp conectado à plataforma...";
+  const verificacaoId = ++verificacaoWhatsappTikTokAtual;
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/whatsapp/diagnostico`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = res.ok ? await res.json() : null;
+    if (verificacaoId !== verificacaoWhatsappTikTokAtual) return;
+
+    if (data?.conectado && data?.pronto_para_mensagens !== false) {
+      infoWhatsapp.classList.remove("alerta");
+      infoWhatsapp.textContent = "WhatsApp conectado. O TikTok usará o mesmo número Business API atendido pelo bot da plataforma.";
+    } else if (data?.conectado) {
+      infoWhatsapp.classList.add("alerta");
+      infoWhatsapp.textContent = "O WhatsApp está conectado, mas ainda não está pronto para mensagens. Revise a aba WhatsApp Bot antes de publicar.";
+    } else {
+      infoWhatsapp.classList.add("alerta");
+      infoWhatsapp.textContent = "Conecte o WhatsApp na aba WhatsApp Bot antes de publicar com este destino.";
+    }
+  } catch (_) {
+    if (verificacaoId !== verificacaoWhatsappTikTokAtual) return;
     infoWhatsapp.classList.add("alerta");
     infoWhatsapp.textContent = "Não foi possível confirmar o WhatsApp agora. Verifique a conexão na aba WhatsApp Bot.";
   }
@@ -29498,8 +29616,17 @@ function validarPublicacaoCampanhaTikTok() {
   if (!tiktokLocalidadeSelecionada) {
     return "Busque e selecione ao menos uma localização para o TikTok antes de publicar.";
   }
-  if (!obterFormularioTikTokEscolhido()) {
+  if (destinoCampanhaTikTokSelecionado === "lead_ads" && !obterFormularioTikTokEscolhido()) {
     return "Escolha ou informe o ID de um formulário instantâneo do TikTok antes de publicar.";
+  }
+  if (destinoCampanhaTikTokSelecionado === "site") {
+    const url = document.getElementById("campanha_tiktok_url")?.value?.trim() || "";
+    try {
+      const destino = new URL(url);
+      if (!["http:", "https:"].includes(destino.protocol)) throw new Error("protocolo inválido");
+    } catch (_) {
+      return "Informe um endereço completo e válido para o anúncio do TikTok (começando com https://).";
+    }
   }
   return null;
 }
@@ -33248,9 +33375,17 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
   } = contexto;
   const prefixo = isMultiRede ? "[TikTok] " : "";
+  const destinoTikTok = ["lead_ads", "site", "whatsapp"].includes(destinoCampanhaTikTokSelecionado)
+    ? destinoCampanhaTikTokSelecionado
+    : "lead_ads";
+  const urlDestinoTikTok = document.getElementById("campanha_tiktok_url")?.value?.trim() || "";
 
   try {
-    const configuracoes_avancadas = { ...configuracoesBase };
+    const configuracoes_avancadas = {
+      ...configuracoesBase,
+      destino: destinoTikTok,
+      url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null
+    };
     if (publicacaoGrupoId) configuracoes_avancadas.publicacao_grupo_id = publicacaoGrupoId;
     if (tiktokLocalidadeSelecionada) configuracoes_avancadas.localidades = [tiktokLocalidadeSelecionada];
 
@@ -33312,7 +33447,8 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
         configuracoes_avancadas,
         nicho_id: window._nichoAtivo?.id || null,
         daily_budget: Number(orcamento) * 100,
-        publicacao_grupo_id: publicacaoGrupoId
+        publicacao_grupo_id: publicacaoGrupoId,
+        destino: destinoTikTok
       })
     });
     const campanha = await campanhaRes.json();
@@ -33331,7 +33467,8 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
         usuario_id,
         campaign_id: campanhaCriadaId,
         daily_budget: Number(orcamento) * 100,
-        configuracoes_avancadas
+        configuracoes_avancadas,
+        destino: destinoTikTok
       })
     });
     const adgroup = await adgroupRes.json();
@@ -33343,7 +33480,7 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
 
     setPublishProgress(88, `${prefixo}Publicando anúncio...`);
 
-    const formularioId = obterFormularioTikTokEscolhido();
+    const formularioId = destinoTikTok === "lead_ads" ? obterFormularioTikTokEscolhido() : null;
 
     const anuncioRes = await fetch(`${API}/tiktok/anuncio`, {
       method: "POST",
@@ -33353,6 +33490,8 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
         campaign_id: campanhaCriadaId,
         adgroup_id: adgroup.adgroup_id,
         form_id: formularioId,
+        destino: destinoTikTok,
+        url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null,
         texto,
         cta,
         configuracoes_avancadas,

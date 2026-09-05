@@ -34860,7 +34860,12 @@ async function criarCampanhaCompleta() {
   setPublishProgress(null);
 
   if (resultados.some(r => r.ok)) {
-    await sincronizarCampanhas();
+    // carregarCampanhas() só busca no nosso próprio banco (rápido, sem alert) —
+    // sincronizarCampanhas() faria isso, mas também re-consulta cada plataforma
+    // conectada de novo (redundante, já sabemos o resultado por `resultados`) e
+    // termina com um alert() bloqueante, o que deixava o modal preso até o
+    // usuário clicar OK mesmo com a lista já atualizada atrás dele.
+    await carregarCampanhas();
     // fecha o modal de criação assim que pelo menos uma rede publicar com
     // sucesso, pra já mostrar "Minhas Campanhas" atualizada; erro total mantém
     // o modal aberto pra corrigir e tentar de novo sem perder o preenchido.
@@ -34993,7 +34998,9 @@ async function publicarPlataformasAdicionaisCampanha() {
     setPublishProgress(null);
 
     if (resultados.some(r => r.ok)) {
-      await sincronizarCampanhas();
+      // carregarCampanhas() é suficiente e não bloqueia com alert() — ver
+      // comentário equivalente em criarCampanhaCompleta().
+      await carregarCampanhas();
     }
 
     renderizarSeletorPlataformasAdicionaisEdicao();

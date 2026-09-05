@@ -19190,6 +19190,25 @@ body.tema-claro .criar-campanha-descricao {
 
         </select>
 
+        <select
+          id="filtro_origem"
+          onchange="carregarCampanhas()"
+        >
+
+          <option value="">
+            Nativas e importadas
+          </option>
+
+          <option value="nativa">
+            Só nativas
+          </option>
+
+          <option value="importada">
+            Só importadas
+          </option>
+
+        </select>
+
         <input
           type="date"
           id="filtro_data_inicio"
@@ -38562,6 +38581,9 @@ async function carregarCampanhas() {
   const filtro =
     document.getElementById("filtro_status")?.value;
 
+  const filtroOrigem =
+    document.getElementById("filtro_origem")?.value || "";
+
   const filtroNicho =
     selectNicho?.value || "";
 
@@ -38637,6 +38659,14 @@ async function carregarCampanhas() {
       filtro === "ACTIVE"
         ? campanhaEstaAtiva(c)
         : String(c.status || "").toUpperCase() === filtro
+    );
+  }
+
+  if (filtroOrigem) {
+    campanhasFiltradas = campanhasFiltradas.filter(c =>
+      filtroOrigem === "importada"
+        ? campanhaOrigemImportada(c)
+        : !campanhaOrigemImportada(c)
     );
   }
 

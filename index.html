@@ -27948,7 +27948,7 @@ function configurarCliquesDinamicos() {
             await toggleCampanha(campanha.campaign_id, campanha.status, acaoCampanha, plataforma);
           }
         } else if (action === "detalhes" && typeof abrirCampanhaDrawerPorChaves === "function") {
-          abrirCampanhaDrawerPorChaves(chaves, parEscolhido.chave);
+          abrirCampanhaDrawerPorChaves([parEscolhido.chave], parEscolhido.chave);
         } else if (action === "editar" && typeof abrirEdicaoCampanhaPorChaves === "function") {
           await abrirEdicaoCampanhaPorChaves([parEscolhido.chave], parEscolhido.chave);
         } else if (action === "duplicar" && typeof duplicarCampanhaPorChave === "function") {
@@ -35687,20 +35687,28 @@ function platNome(plataforma) {
   return (PLATAFORMA_META[id] || { nome: id }).nome;
 }
 
-// O que cada plataforma suporta no drawer de detalhes da campanha. Hoje só a
-// Meta tem preview real de anúncio (fala direto com graph.facebook.com) —
-// as outras redes não têm endpoint equivalente no backend ainda.
+// Matriz única de capacidades usada nos cards e no drawer. Uma ação só aparece
+// quando existe implementação remota segura para a plataforma correspondente.
 const CAPACIDADES_PLATAFORMA = {
-  meta:      { previewReal: true,  restaurar: true },
-  facebook:  { previewReal: true,  restaurar: true },
-  instagram: { previewReal: true,  restaurar: true },
-  google:    { previewReal: false, restaurar: false },
-  tiktok:    { previewReal: false, restaurar: true },
-  linkedin:  { previewReal: false, restaurar: false },
-  kwai:      { previewReal: false, restaurar: true },
+  meta:      { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true },
+  facebook:  { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true },
+  instagram: { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true },
+  google:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false },
+  tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false },
+  linkedin:  { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false },
+  kwai:      { previewReal: false, restaurar: false, alterarStatus: false, publicarRascunho: false, sincronizar: false, excluir: false, duplicar: false, encaminhar: false },
 };
 function capacidadesPlataforma(plataforma) {
-  return CAPACIDADES_PLATAFORMA[(plataforma || "meta").toLowerCase()] || { previewReal: false, restaurar: false };
+  return CAPACIDADES_PLATAFORMA[(plataforma || "meta").toLowerCase()] || {
+    previewReal: false,
+    restaurar: false,
+    alterarStatus: false,
+    publicarRascunho: false,
+    sincronizar: false,
+    excluir: false,
+    duplicar: false,
+    encaminhar: false
+  };
 }
 
 // =============================================
@@ -38790,15 +38798,44 @@ async function carregarCampanhas() {
     const chavesNaoExcluidas = chavesDasLinhas(
       linhasCardCampanha.filter(linha => !campanhaEstaExcluida(linha))
     );
+    const chavesSincronizaveis = chavesDasLinhas(
+      linhasCardCampanha.filter(linha =>
+        capacidadesPlataforma(plataformaCampanhaExibicao(linha)).sincronizar
+      )
+    );
     const chavesComAcaoStatus = chavesDasLinhas(
       linhasCardCampanha.filter(linha =>
-        !campanhaEstaExcluida(linha) && !campanhaPublicacaoExpirada(linha)
+        !campanhaEstaExcluida(linha) &&
+        !campanhaPublicacaoExpirada(linha) &&
+        (
+          campanhaJaFoiPublicada(linha)
+            ? capacidadesPlataforma(plataformaCampanhaExibicao(linha)).alterarStatus
+            : capacidadesPlataforma(plataformaCampanhaExibicao(linha)).publicarRascunho
+        )
+      )
+    );
+    const chavesDuplicaveis = chavesDasLinhas(
+      linhasCardCampanha.filter(linha =>
+        !campanhaEstaExcluida(linha) &&
+        capacidadesPlataforma(plataformaCampanhaExibicao(linha)).duplicar
+      )
+    );
+    const chavesEncaminhaveis = chavesDasLinhas(
+      linhasCardCampanha.filter(linha =>
+        !campanhaEstaExcluida(linha) &&
+        capacidadesPlataforma(plataformaCampanhaExibicao(linha)).encaminhar
       )
     );
     const chavesRestauraveis = chavesDasLinhas(
       linhasCardCampanha.filter(linha =>
         campanhaEstaExcluida(linha) &&
         capacidadesPlataforma(plataformaCampanhaExibicao(linha)).restaurar
+      )
+    );
+    const chavesRemoviveis = chavesDasLinhas(
+      linhasCardCampanha.filter(linha =>
+        !campanhaJaFoiPublicada(linha) ||
+        capacidadesPlataforma(plataformaCampanhaExibicao(linha)).excluir
       )
     );
     const cardMultiplataforma = chavesGrupoCampanha.length > 1;
@@ -38965,7 +39002,7 @@ async function carregarCampanhas() {
           title="A data de publicação expirou. Edite a campanha e escolha uma nova data para publicar."
         >Encerrada</button>
             ` : "")
-            : cardMultiplataforma
+            : chavesComAcaoStatus.length > 1
             ? `
         <button
           class="btn-campanha-toggle"
@@ -39335,16 +39372,16 @@ async function carregarCampanhas() {
             ⚙️
           </button>
     
-          <button
+          ${chavesSincronizaveis.length ? `<button
             class="btn-acao"
             type="button"
             data-campanha-action="sync"
             data-campanha-key="${campanhaCacheKey}"
-            data-campanha-keys='${JSON.stringify(chavesGrupoCampanha)}'
-            title="${cardMultiplataforma ? "Escolher a plataforma e sincronizar" : "Sincronizar"}"
+            data-campanha-keys='${JSON.stringify(chavesSincronizaveis)}'
+            title="${chavesSincronizaveis.length > 1 ? "Escolher a plataforma e sincronizar" : "Sincronizar"}"
           >
             🔄
-          </button>
+          </button>` : ""}
 
           ${
             !chavesNaoExcluidas.length
@@ -39364,7 +39401,7 @@ async function carregarCampanhas() {
           }
 
           ${
-            !chavesNaoExcluidas.length || usuarioReceptorCampanha
+            !chavesDuplicaveis.length || usuarioReceptorCampanha
               ? ""
               : `
                 <button
@@ -39372,7 +39409,7 @@ async function carregarCampanhas() {
                   type="button"
                   data-campanha-action="duplicar"
                   data-campanha-key="${campanhaCacheKey}"
-                  data-campanha-keys='${JSON.stringify(chavesNaoExcluidas)}'
+                  data-campanha-keys='${JSON.stringify(chavesDuplicaveis)}'
                   title="Duplicar campanha"
                 >
                   📋
@@ -39381,14 +39418,14 @@ async function carregarCampanhas() {
           }
 
           ${
-            podeEncaminhar && chavesNaoExcluidas.length
+            podeEncaminhar && chavesEncaminhaveis.length
               ? `
                 <button
                   class="btn-acao btn-encaminhar-campanha ${botaoEnvioCriadorCampanha ? "btn-enviar-corretor" : ""}"
                   type="button"
                   data-campanha-action="encaminhar"
                   data-campanha-key="${campanhaCacheKey}"
-                  data-campanha-keys='${JSON.stringify(chavesNaoExcluidas)}'
+                  data-campanha-keys='${JSON.stringify(chavesEncaminhaveis)}'
                   title="${botaoEnvioCriadorCampanha ? "Enviar campanha ao corretor solicitante" : "Encaminhar para corretor"}"
                 >
                   ${botaoEnvioCriadorCampanha ? "Enviar" : "↗"}
@@ -39410,16 +39447,16 @@ async function carregarCampanhas() {
             </button>
           ` : ""}
 
-          <button
+          ${chavesRemoviveis.length ? `<button
             class="btn-danger${!cardMultiplataforma && campanhaEstaExcluida(c) ? " btn-definitivo" : ""}"
             type="button"
             data-campanha-action="remover"
             data-campanha-key="${campanhaCacheKey}"
-            data-campanha-keys='${JSON.stringify(chavesGrupoCampanha)}'
-            title="${cardMultiplataforma ? "Escolher a plataforma e excluir" : (campanhaEstaExcluida(c) || !campanhaJaFoiPublicada(c) ? "Excluir definitivamente" : "Excluir")}"
+            data-campanha-keys='${JSON.stringify(chavesRemoviveis)}'
+            title="${chavesRemoviveis.length > 1 ? "Escolher a plataforma e excluir" : (campanhaEstaExcluida(c) || !campanhaJaFoiPublicada(c) ? "Excluir definitivamente" : "Excluir")}"
           >
             🗑️${!cardMultiplataforma && campanhaEstaExcluida(c) ? " definitivo" : ""}
-          </button>
+          </button>` : ""}
     
         </div>
     
@@ -39729,37 +39766,45 @@ function formatarLocalidadesResumo(cfg) {
 function renderizarPainelPlataformaCampanha(campanha, chave) {
   const cfg =
     campanha.configuracoes_avancadas || {};
-  const podeRestaurarCampanha =
-    capacidadesPlataforma(plataformaCampanhaExibicao(campanha)).restaurar;
+  const capacidades =
+    capacidadesPlataforma(plataformaCampanhaExibicao(campanha));
+  const podeRestaurarCampanha = capacidades.restaurar;
   const campanhaJsonSeguro =
     codificarJsonInline(campanha);
   const ehMetaPainel =
     (campanha.plataforma || "meta") === "meta";
   const aindaNaoPublicada =
     campanhaEhRascunhoLocal(campanha) && !campanhaEstaExcluida(campanha);
+  const podeAlterarStatusCampanha = aindaNaoPublicada
+    ? capacidades.publicarRascunho
+    : capacidades.alterarStatus;
+  const podeExcluirCampanha =
+    !campanhaJaFoiPublicada(campanha) || capacidades.excluir;
 
   const acoesPainel = `
     <div class="campanha-drawer-acoes-aba">
       ${campanhaEstaExcluida(campanha)
         ? `
           ${podeRestaurarCampanha ? `<button class="btn-acao" type="button" data-campanha-action="restaurar" data-campanha-key="${chave}">↩ Restaurar</button>` : ""}
-          <button class="btn-acao" type="button" data-campanha-action="excluir-definitivo" data-campanha-key="${chave}">🗑 Excluir definitivamente</button>
+          ${podeExcluirCampanha ? `<button class="btn-acao" type="button" data-campanha-action="excluir-definitivo" data-campanha-key="${chave}">🗑 Excluir definitivamente</button>` : ""}
         `
         : `
           <button class="btn-acao" type="button" onclick='abrirEdicaoCampanhaPorChaves(${JSON.stringify(campanhaDrawerParesAtuais.map(p => p.chave))}, "${chave}")'>✏️ Editar</button>
-          ${aindaNaoPublicada
+          ${!podeAlterarStatusCampanha
+            ? ""
+            : aindaNaoPublicada
             ? `<button class="btn-acao" type="button" onclick="publicarCampanhaRecebida(${Number(campanha.id)}, this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">🚀 Publicar</button>`
             : campanhaEstaAtiva(campanha)
               ? `<button class="btn-acao" type="button" onclick="toggleCampanha('${campanha.campaign_id}', '${campanha.status}', this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">⏸ Pausar</button>`
               : `<button class="btn-acao" type="button" onclick="toggleCampanha('${campanha.campaign_id}', '${campanha.status}', this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">▶ Publicar</button>`
           }
-          ${!usuarioEhCorretorReceptor() ? `
-            <button class="btn-acao" type="button" data-campanha-action="duplicar" data-campanha-key="${chave}">📋 Duplicar</button>
-            ${usuarioPodeEncaminharCampanhas() && !campanha.recebida_por_encaminhamento
-              ? `<button class="btn-acao" type="button" data-campanha-action="encaminhar" data-campanha-key="${chave}">➡️ Encaminhar</button>`
-              : ""}
-          ` : ""}
-          <button class="btn-acao" type="button" data-campanha-action="excluir" data-campanha-key="${chave}">🗑 Excluir</button>
+          ${!usuarioEhCorretorReceptor() && capacidades.duplicar
+            ? `<button class="btn-acao" type="button" data-campanha-action="duplicar" data-campanha-key="${chave}">📋 Duplicar</button>`
+            : ""}
+          ${!usuarioEhCorretorReceptor() && capacidades.encaminhar && usuarioPodeEncaminharCampanhas() && !campanha.recebida_por_encaminhamento
+            ? `<button class="btn-acao" type="button" data-campanha-action="encaminhar" data-campanha-key="${chave}">➡️ Encaminhar</button>`
+            : ""}
+          ${podeExcluirCampanha ? `<button class="btn-acao" type="button" data-campanha-action="excluir" data-campanha-key="${chave}">🗑 Excluir</button>` : ""}
         `}
     </div>
   `;

@@ -27777,7 +27777,7 @@ function configurarCliquesDinamicos() {
         } else if (action === "excluir-definitivo" && typeof excluirCampanhaDefinitiva === "function") {
           excluirCampanhaDefinitiva(Number(campanha.id));
         } else if (action === "excluir" && typeof excluirCampanha === "function") {
-          excluirCampanha(campanha.campaign_id);
+          excluirCampanha(campanha.campaign_id, plataformaCampanhaExibicao(campanha));
         } else {
           console.warn("Acao de campanha sem handler disponivel:", action);
         }

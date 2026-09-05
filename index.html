@@ -22698,7 +22698,7 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
   if (pares.length < 2) {
     esconderAbasEdicaoCampanha();
     camposEdicaoGrupo = pares;
-    if (String(pares[0].campanha.plataforma || "meta").toLowerCase() === "meta") {
+    if (capacidadesPlataforma(pares[0].campanha.plataforma).editar) {
       await abrirEdicaoCampanhaPorChave(pares[0].chave);
     } else {
       abrirModalEdicaoSomenteLeitura(pares[0].campanha);
@@ -22706,19 +22706,19 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
     return;
   }
 
-  const parMeta =
-    pares.find(p => (p.campanha.plataforma || "meta") === "meta");
+  const parEditavel =
+    pares.find(p => capacidadesPlataforma(p.campanha.plataforma).editar);
 
   const chaveInicial =
     (chaveAtivaInicial && pares.some(p => p.chave === chaveAtivaInicial))
       ? chaveAtivaInicial
-      : (parMeta?.chave || pares[0].chave);
+      : (parEditavel?.chave || pares[0].chave);
 
   renderizarAbasEdicaoCampanha(pares, chaveInicial);
 
-  if (parMeta) {
+  if (parEditavel) {
     // Fluxo existente, 100% inalterado — so reaproveitado aqui.
-    await abrirEdicaoCampanhaPorChave(parMeta.chave);
+    await abrirEdicaoCampanhaPorChave(parEditavel.chave);
   } else {
     abrirModalEdicaoSomenteLeitura(pares[0].campanha);
   }
@@ -22762,6 +22762,7 @@ function ativarAbaEdicaoCampanha(chave) {
   const par = camposEdicaoGrupo.find(p => p.chave === chave);
   if (!par) return;
 
+  const ehEditavel = capacidadesPlataforma(par.campanha.plataforma).editar;
   const ehMeta = (par.campanha.plataforma || "meta") === "meta";
   const camposEl = document.getElementById("editar_campanha_campos");
   const resumoEl = document.getElementById("editar_campanha_resumo_outra_plataforma");
@@ -22769,16 +22770,18 @@ function ativarAbaEdicaoCampanha(chave) {
   const nomeEl = document.getElementById("editar_campanha_nome");
 
   if (nomeEl) nomeEl.textContent = par.campanha.nome || "Campanha";
-  if (camposEl) camposEl.style.display = ehMeta ? "" : "none";
-  if (btnSalvar) btnSalvar.style.display = ehMeta ? "" : "none";
+  if (camposEl) camposEl.style.display = ehEditavel ? "" : "none";
+  if (btnSalvar) btnSalvar.style.display = ehEditavel ? "" : "none";
 
   if (resumoEl) {
-    resumoEl.style.display = ehMeta ? "none" : "";
-    resumoEl.innerHTML = ehMeta ? "" : renderizarResumoEdicaoSomenteLeitura(par.campanha);
+    resumoEl.style.display = ehEditavel ? "none" : "";
+    resumoEl.innerHTML = ehEditavel ? "" : renderizarResumoEdicaoSomenteLeitura(par.campanha);
   }
 
   // "Adicionar plataforma" só faz sentido ancorado na aba Meta (é onde os
-  // campos compartilhados de nome/texto/orçamento/imagens estão vivos).
+  // campos compartilhados de nome/texto/orçamento/imagens estão vivos) — não
+  // em qualquer aba editável (ex: Google), então continua checando ehMeta
+  // especificamente, não ehEditavel.
   const addPlatBloco = document.getElementById("editar_campanha_add_plataforma_bloco");
   const addPlatBtn = document.getElementById("editar_campanha_btn_publicar_adicionais");
   if (ehMeta) {
@@ -31596,6 +31599,45 @@ function definirDataCampo(campo, isoLocal) {
   }
 }
 
+// Campos de texto do anúncio exclusivos do Google (títulos/descrições/nome do
+// anunciante/URL/título longo) — compartilhados entre a Criação (publicarCampanhaGoogle)
+// e a Edição (salvarEdicaoCampanhaGoogle), já que os dois leem/escrevem os
+// mesmos elementos físicos do DOM (bloco_titulo_formulario, sempre presente
+// tanto no formulário de Criar Campanha quanto, via BLOCOS_SEGMENTACAO_EDITAVEL,
+// realocado pro modal de edição).
+function coletarCamposGoogleAnuncio() {
+  return {
+    titulos: [
+      document.getElementById("campanha_google_titulo_1")?.value?.trim(),
+      document.getElementById("campanha_google_titulo_2")?.value?.trim(),
+      document.getElementById("campanha_google_titulo_3")?.value?.trim()
+    ].filter(Boolean),
+    descricoes: [
+      document.getElementById("campanha_google_descricao_1")?.value?.trim(),
+      document.getElementById("campanha_google_descricao_2")?.value?.trim()
+    ].filter(Boolean),
+    titulo_longo: document.getElementById("campanha_google_titulo_longo")?.value?.trim() || "",
+    nome_anunciante: document.getElementById("campanha_google_nome_anunciante")?.value?.trim() || "",
+    url_destino: document.getElementById("campanha_google_url")?.value?.trim() || "",
+    mensagem_whatsapp: document.getElementById("campanha_google_whatsapp_mensagem")?.value?.trim() || ""
+  };
+}
+
+function preencherCamposGoogleAnuncio(cfg) {
+  cfg = cfg || {};
+  const titulos = Array.isArray(cfg.titulos) ? cfg.titulos : [];
+  const descricoes = Array.isArray(cfg.descricoes) ? cfg.descricoes : [];
+  definirValorCampo("campanha_google_titulo_1", titulos[0] || "");
+  definirValorCampo("campanha_google_titulo_2", titulos[1] || "");
+  definirValorCampo("campanha_google_titulo_3", titulos[2] || "");
+  definirValorCampo("campanha_google_descricao_1", descricoes[0] || "");
+  definirValorCampo("campanha_google_descricao_2", descricoes[1] || "");
+  definirValorCampo("campanha_google_titulo_longo", cfg.titulo_longo || "");
+  definirValorCampo("campanha_google_nome_anunciante", cfg.nome_anunciante || "");
+  definirValorCampo("campanha_google_url", cfg.url_destino || "");
+  definirValorCampo("campanha_google_whatsapp_mensagem", cfg.mensagem_whatsapp || "");
+}
+
 function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
 
   cfg = cfg || {};
@@ -31852,6 +31894,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       configuracoesCampanha,
       campanha.daily_budget
     );
+    preencherCamposGoogleAnuncio(configuracoesCampanha);
     configurarEdicaoDestinoCampanha(campanha);
     preencherCamposBasicosCampanha({
       ...campanha,
@@ -31967,6 +32010,9 @@ function fecharEdicaoCampanha() {
   }
 }
 
+// Dispatcher fino, no mesmo espírito de criarCampanhaCompleta()/publicarCampanhaX():
+// coleta o token uma vez e despacha pra uma função de salvamento dedicada por
+// plataforma — cada uma sabe seu próprio payload/endpoint/unidade de orçamento.
 async function salvarEdicaoCampanha() {
 
   if (!campanhaEmEdicao) {
@@ -31981,6 +32027,121 @@ async function salvarEdicaoCampanha() {
 
   const decoded = atob(token);
   const [usuario_id] = decoded.split(":");
+
+  const plataforma = plataformaCampanhaExibicao(campanhaEmEdicao);
+
+  if (plataforma === "google") {
+    await salvarEdicaoCampanhaGoogle(token, usuario_id);
+  } else {
+    await salvarEdicaoCampanhaMeta(token, usuario_id);
+  }
+}
+
+// Salvamento do Google Ads: nome + orçamento (sempre) e texto do anúncio
+// (melhor esforço — o backend cria um novo anúncio e pausa o antigo, já que o
+// Google não permite editar o texto de um anúncio já publicado). Validação
+// espelha a já usada na Criação (validarPublicacaoCampanhaGoogle), sem repetir
+// a checagem de imagem/vídeo aqui porque a troca de criativo do Display não é
+// suportada nesta primeira versão — só texto.
+async function salvarEdicaoCampanhaGoogle(token, usuario_id) {
+  const orcamento = valorCampo("orcamento");
+  const nomeCampanha = coletarCamposBasicosCampanha().nome;
+  const camposGoogle = coletarCamposGoogleAnuncio();
+  const cfgAtual = obterConfiguracoesCampanha(campanhaEmEdicao);
+  const tipoCampanhaBanco = String(cfgAtual?.tipo_campanha || "search").toLowerCase();
+
+  const feedback = document.getElementById("editar_campanha_feedback");
+  const btn = document.getElementById("editar_campanha_btn_salvar");
+
+  if (feedback) {
+    feedback.style.display = "none";
+    feedback.textContent = "";
+  }
+
+  const mostrarErroGoogle = mensagem => {
+    if (feedback) {
+      feedback.textContent = mensagem;
+      feedback.style.display = "block";
+    } else {
+      alert(mensagem);
+    }
+  };
+
+  if (tipoCampanhaBanco === "search") {
+    if (camposGoogle.titulos.length < 3) {
+      return mostrarErroGoogle("Informe ao menos 3 títulos para o anúncio de Pesquisa.");
+    }
+    if (camposGoogle.descricoes.length < 2) {
+      return mostrarErroGoogle("Informe ao menos 2 descrições para o anúncio de Pesquisa.");
+    }
+  } else {
+    if (!camposGoogle.titulos.length) {
+      return mostrarErroGoogle("Informe ao menos 1 título para o anúncio de Display.");
+    }
+    if (!camposGoogle.titulo_longo) {
+      return mostrarErroGoogle("Informe o título longo para o anúncio de Display.");
+    }
+    if (!camposGoogle.descricoes.length) {
+      return mostrarErroGoogle("Informe ao menos 1 descrição para o anúncio de Display.");
+    }
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Salvando...";
+  }
+
+  try {
+    const payloadEdicao = {
+      usuario_id,
+      campanha_local_id: campanhaEmEdicao.id ?? null,
+      campaign_id: campanhaEhRascunhoLocal(campanhaEmEdicao) ? null : campanhaEmEdicao.campaign_id,
+      nome: nomeCampanha,
+      // Google guarda orçamento em reais crus (não centavos) — diferente do
+      // Meta/TikTok. Não multiplicar por 100 aqui.
+      daily_budget: orcamento ? Number(orcamento) : null,
+      titulos: camposGoogle.titulos,
+      descricoes: camposGoogle.descricoes,
+      titulo_longo: camposGoogle.titulo_longo,
+      nome_anunciante: camposGoogle.nome_anunciante,
+      url_destino: camposGoogle.url_destino,
+      configuracoes_avancadas: {
+        tipo_campanha: tipoCampanhaBanco,
+        destino: cfgAtual?.destino || "lead_ads"
+      }
+    };
+
+    const res = await fetch(`${API}/google/editar-campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify(payloadEdicao)
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.error) {
+      mostrarErroGoogle(data.error || "Erro ao salvar alterações");
+      return;
+    }
+
+    fecharEdicaoCampanha();
+    await sincronizarCampanhas("google");
+    alert(data.aviso ? `Campanha atualizada com sucesso.\n\n⚠️ ${data.aviso}` : "Campanha atualizada com sucesso");
+
+  } catch (err) {
+    console.error("EDITAR CAMPANHA GOOGLE:", err);
+    mostrarErroGoogle(err?.message || "Erro ao salvar alterações");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "💾 Salvar alterações";
+    }
+  }
+}
+
+// Salvamento do Meta (Facebook/Instagram) — lógica 100% inalterada, só
+// extraída do dispatcher acima pra não bloquear/afetar outras plataformas com
+// sua validação de "escolha só uma rede".
+async function salvarEdicaoCampanhaMeta(token, usuario_id) {
 
   const orcamento = valorCampo("orcamento");
   const camposBasicos = coletarCamposBasicosCampanha();
@@ -34091,15 +34252,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
 
     setPublishProgress(88, `${prefixo}Publicando anúncio...`);
 
-    const titulos = [
-      document.getElementById("campanha_google_titulo_1")?.value?.trim(),
-      document.getElementById("campanha_google_titulo_2")?.value?.trim(),
-      document.getElementById("campanha_google_titulo_3")?.value?.trim()
-    ].filter(Boolean);
-    const descricoes = [
-      document.getElementById("campanha_google_descricao_1")?.value?.trim(),
-      document.getElementById("campanha_google_descricao_2")?.value?.trim()
-    ].filter(Boolean);
+    const camposAnuncioGoogle = coletarCamposGoogleAnuncio();
 
     const anuncioRes = await fetch(`${API}/google/anuncio`, {
       method: "POST",
@@ -34111,12 +34264,12 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         form_id: formularioId || null,
         tipo_campanha: tipoCampanha,
         destino: destinoGoogle,
-        mensagem_whatsapp: document.getElementById("campanha_google_whatsapp_mensagem")?.value?.trim() || null,
-        titulos,
-        descricoes,
-        titulo_longo: document.getElementById("campanha_google_titulo_longo")?.value?.trim(),
-        nome_anunciante: document.getElementById("campanha_google_nome_anunciante")?.value?.trim(),
-        url_destino: document.getElementById("campanha_google_url")?.value?.trim(),
+        mensagem_whatsapp: camposAnuncioGoogle.mensagem_whatsapp || null,
+        titulos: camposAnuncioGoogle.titulos,
+        descricoes: camposAnuncioGoogle.descricoes,
+        titulo_longo: camposAnuncioGoogle.titulo_longo,
+        nome_anunciante: camposAnuncioGoogle.nome_anunciante,
+        url_destino: camposAnuncioGoogle.url_destino,
         daily_budget: Number(orcamento),
         imagem_paisagem_asset: imagemPaisagemAsset,
         imagem_quadrada_asset: imagemQuadradaAsset,
@@ -35739,13 +35892,13 @@ function platNome(plataforma) {
 // Matriz única de capacidades usada nos cards e no drawer. Uma ação só aparece
 // quando existe implementação remota segura para a plataforma correspondente.
 const CAPACIDADES_PLATAFORMA = {
-  meta:      { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true },
-  facebook:  { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true },
-  instagram: { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true },
-  google:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false },
-  tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false },
-  linkedin:  { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false },
-  kwai:      { previewReal: false, restaurar: false, alterarStatus: false, publicarRascunho: false, sincronizar: false, excluir: false, duplicar: false, encaminhar: false },
+  meta:      { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
+  facebook:  { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
+  instagram: { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
+  google:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
+  tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: false },
+  linkedin:  { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: false },
+  kwai:      { previewReal: false, restaurar: false, alterarStatus: false, publicarRascunho: false, sincronizar: false, excluir: false, duplicar: false, encaminhar: false, editar: false },
 };
 function capacidadesPlataforma(plataforma) {
   return CAPACIDADES_PLATAFORMA[(plataforma || "meta").toLowerCase()] || {
@@ -35756,7 +35909,8 @@ function capacidadesPlataforma(plataforma) {
     sincronizar: false,
     excluir: false,
     duplicar: false,
-    encaminhar: false
+    encaminhar: false,
+    editar: false
   };
 }
 

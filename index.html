@@ -8333,6 +8333,31 @@ body.tema-claro .cal-nav span { color: #111827; }
     0 8px 22px rgba(0,0,0,0.32);
 }
 
+/* Faixa diagonal no canto superior direito do card, indicando se a campanha
+   nasceu na Plataforma de Leads ou foi sincronizada de uma campanha criada
+   direto no gerenciador de anúncios (Meta/Google/TikTok/LinkedIn). Depende do
+   .campanha-card ter position:relative + overflow:hidden (já tem, acima) pra
+   recortar o excesso da faixa em formato de canto. */
+.campanha-origem-fita {
+  position: absolute;
+  top: 14px;
+  right: -34px;
+  width: 140px;
+  transform: rotate(45deg);
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 4px 0;
+  color: #fff;
+  z-index: 5;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.campanha-origem-fita.nativa { background: linear-gradient(135deg, #0891b2, #0e7490); }
+.campanha-origem-fita.importada { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+
 
 /* STATUS VISUAL */
 
@@ -35537,6 +35562,32 @@ function plataformaCampanhaExibicao(campanha) {
   return "meta";
 }
 
+// Distingue campanhas criadas pela própria Plataforma de Leads (origem
+// 'plataforma'/'manual'/'rascunho' — Criar Campanha, Duplicar, campanha
+// recebida de corretor) das que já existiam direto no gerenciador de
+// anúncios e foram encontradas/importadas durante um sync (nesse caso o
+// backend grava origem = o próprio nome da rede: 'meta'/'google'/'tiktok'/
+// 'linkedin'/'kwai' — ver INSERT INTO campanhas nos endpoints de sincronizar-
+// campanhas de cada plataforma). Qualquer valor não reconhecido cai no lado
+// "nativa", igual o próprio default da coluna no banco (DEFAULT 'plataforma').
+const REDES_ORIGEM_IMPORTADA_CAMPANHA = ["meta", "google", "tiktok", "linkedin", "kwai"];
+
+function campanhaOrigemImportada(campanha) {
+  return REDES_ORIGEM_IMPORTADA_CAMPANHA.includes(
+    String(campanha?.origem || "").toLowerCase()
+  );
+}
+
+function fitaOrigemCampanha(campanha) {
+  const importada = campanhaOrigemImportada(campanha);
+  const classe = importada ? "importada" : "nativa";
+  const texto = importada ? "Importada" : "Nativa";
+  const titulo = importada
+    ? "Campanha criada direto no gerenciador de anúncios e sincronizada para cá"
+    : "Campanha criada na Plataforma de Leads";
+  return `<span class="campanha-origem-fita ${classe}" title="${titulo}">${texto}</span>`;
+}
+
 function platBadgeCampanha(campanha, mostrarPosicionamentos = false) {
   const plataforma = plataformaCampanhaExibicao(campanha);
   const posicionamentos =
@@ -38844,6 +38895,8 @@ async function carregarCampanhas() {
     "
       style="${nichoCampanhaTema ? `background: ${nichoCampanhaCardBg}; border: 1px solid ${nichoCampanhaCardBorder}; border-top: 4px solid ${nichoCampanhaTema.cor}; color: ${nichoCampanhaCardText}; box-shadow: ${sombraCampanhaCard};` : ""}"
     >
+
+      ${fitaOrigemCampanha(c)}
 
       <div class="campanha-topo">
 

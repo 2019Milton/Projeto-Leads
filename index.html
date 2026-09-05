@@ -44007,7 +44007,7 @@ function corSolidaNicho(nicho = {}) {
   if (slug.includes("saas") || slug.includes("plataforma") || id === 4) return "#7C3AED";
   if (slug.includes("higien") || id === 5) return "#16A34A";
   if (slug.includes("telecom") || id === 6) return "#DC2626";
-  if (slug.includes("curso") || id === 7) return "#DB2777";
+  if (slug.includes("curso") || id === 1327) return "#DB2777";
   return nicho.cor || nicho.nicho_cor || "#2563EB";
 }
 function estiloNichoBadge(nicho = {}) {
@@ -44107,7 +44107,7 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
-  if (slug.includes("curso") || id === 7) {
+  if (slug.includes("curso") || id === 1327) {
     return {
       cor,
       bg: "#2a0a1c",
@@ -44159,7 +44159,7 @@ function nomeExibirNicho(nicho = {}) {
   if (id === 4) return "Plataforma / SaaS";
   if (id === 5) return "Higienização";
   if (id === 6) return "Telecom Empresarial";
-  if (id === 7) return "Cursos Online";
+  if (id === 1327) return "Cursos Online";
   return escaparHtml(nicho.slug || "");
 }
 
@@ -49172,7 +49172,7 @@ function corSolidaNicho(nicho = {}) {
     return "#DC2626";
   }
 
-  if (slug.includes("curso") || id === 7) {
+  if (slug.includes("curso") || id === 1327) {
     return "#DB2777";
   }
 
@@ -49269,7 +49269,7 @@ function temaVisualNicho(nicho = {}) {
     };
   }
 
-  if (slug.includes("curso") || id === 7) {
+  if (slug.includes("curso") || id === 1327) {
     return {
       cor,
       bg: "#2a0a1c",
@@ -49350,7 +49350,7 @@ function nomeExibirNicho(nicho = {}) {
   if (id === 4) return "Plataforma / SaaS";
   if (id === 5) return "Higienização";
   if (id === 6) return "Telecom Empresarial";
-  if (id === 7) return "Cursos Online";
+  if (id === 1327) return "Cursos Online";
   return escaparHtml(nicho.slug || "");
 }
 

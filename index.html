@@ -22466,6 +22466,131 @@ function campanhaEncodedPorChave(chave) {
   return encodeURIComponent(JSON.stringify(campanha));
 }
 
+// Toda ação disparada por um card passa por este resolvedor. Uma publicação
+// multirrede tem uma linha local por plataforma; portanto nunca podemos usar
+// silenciosamente a primeira linha do grupo para decidir qual API chamar.
+const ROTULOS_ACAO_CAMPANHA = {
+  status: "alterar o status da campanha",
+  toggle: "alterar o status da campanha",
+  detalhes: "ver os detalhes",
+  editar: "editar a campanha",
+  sync: "sincronizar a campanha",
+  duplicar: "duplicar a campanha",
+  encaminhar: "encaminhar a campanha",
+  restaurar: "restaurar a campanha",
+  remover: "excluir a campanha",
+  excluir: "excluir a campanha",
+  "excluir-definitivo": "excluir definitivamente a campanha"
+};
+
+function chavesAcaoCampanha(botao) {
+  const chaveUnica = botao?.dataset?.campanhaKey;
+  const chavesJson = botao?.dataset?.campanhaKeys;
+
+  if (!chavesJson) return chaveUnica ? [chaveUnica] : [];
+
+  try {
+    const chaves = JSON.parse(chavesJson);
+    return (Array.isArray(chaves) ? chaves : [chaves]).filter(Boolean);
+  } catch (err) {
+    console.warn("Chaves de campanha inválidas:", err);
+    return chaveUnica ? [chaveUnica] : [];
+  }
+}
+
+function paresAcaoCampanha(chaves) {
+  const vistos = new Set();
+  return (Array.isArray(chaves) ? chaves : [chaves])
+    .filter(Boolean)
+    .map(chave => ({ chave, campanha: obterCampanhaRenderizada(chave) }))
+    .filter(par => {
+      if (!par.campanha || vistos.has(String(par.chave))) return false;
+      vistos.add(String(par.chave));
+      return true;
+    });
+}
+
+let fecharSeletorPlataformaCampanhaAtual = null;
+
+function escolherCampanhaParaAcao(chaves, acao, chavePreferida) {
+  const pares = paresAcaoCampanha(chaves);
+  if (!pares.length) return Promise.resolve(null);
+  if (pares.length === 1) return Promise.resolve(pares[0]);
+
+  if (fecharSeletorPlataformaCampanhaAtual) {
+    fecharSeletorPlataformaCampanhaAtual(null);
+  }
+
+  return new Promise(resolve => {
+    const fundo = document.createElement("div");
+    fundo.setAttribute("role", "presentation");
+    fundo.style.cssText = "position:fixed;inset:0;z-index:100000;background:rgba(2,6,23,.78);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);";
+
+    const ordem = pares.slice().sort((a, b) => {
+      if (a.chave === chavePreferida) return -1;
+      if (b.chave === chavePreferida) return 1;
+      return 0;
+    });
+    const verbo = ROTULOS_ACAO_CAMPANHA[acao] || "continuar com esta ação";
+
+    fundo.innerHTML = `
+      <div role="dialog" aria-modal="true" aria-labelledby="seletor_plataforma_titulo"
+        style="width:min(480px,100%);background:#0f172a;border:1px solid #334155;border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.55);padding:22px;color:#e2e8f0;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+          <div>
+            <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#818cf8;margin-bottom:7px;">Campanha multiplataforma</div>
+            <h3 id="seletor_plataforma_titulo" style="margin:0;font-size:20px;line-height:1.3;color:#f8fafc;">Em qual plataforma deseja ${escaparHtml(verbo)}?</h3>
+          </div>
+          <button type="button" data-fechar-seletor-plataforma aria-label="Cancelar"
+            style="border:0;background:#1e293b;color:#cbd5e1;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:18px;">×</button>
+        </div>
+        <p style="margin:10px 0 17px;color:#94a3b8;font-size:13px;line-height:1.5;">Cada opção atua somente na campanha publicada naquela rede.</p>
+        <div style="display:grid;gap:10px;">
+          ${ordem.map((par, indice) => {
+            const plataforma = plataformaCampanhaExibicao(par.campanha);
+            const dados = PLATAFORMA_META[plataforma] || { nome: plataforma, icone: "📣" };
+            const status = String(par.campanha.status || "").toUpperCase() || "SEM STATUS";
+            return `
+              <button type="button" data-escolher-plataforma-indice="${indice}"
+                style="display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;padding:14px 15px;border:1px solid #334155;border-radius:12px;background:#111c31;color:#f8fafc;cursor:pointer;text-align:left;">
+                <span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:750;">${dados.icone} ${escaparHtml(dados.nome)}</span>
+                <span style="font-size:11px;color:#94a3b8;">${escaparHtml(status)}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    `;
+
+    let encerrado = false;
+    const aoTeclado = event => {
+      if (event.key === "Escape") encerrar(null);
+    };
+    const encerrar = par => {
+      if (encerrado) return;
+      encerrado = true;
+      document.removeEventListener("keydown", aoTeclado);
+      fundo.remove();
+      fecharSeletorPlataformaCampanhaAtual = null;
+      resolve(par);
+    };
+
+    fecharSeletorPlataformaCampanhaAtual = encerrar;
+    fundo.addEventListener("click", event => {
+      const escolha = event.target.closest("[data-escolher-plataforma-indice]");
+      if (escolha) {
+        encerrar(ordem[Number(escolha.dataset.escolherPlataformaIndice)] || null);
+        return;
+      }
+      if (event.target === fundo || event.target.closest("[data-fechar-seletor-plataforma]")) {
+        encerrar(null);
+      }
+    });
+    document.addEventListener("keydown", aoTeclado);
+    document.body.appendChild(fundo);
+  });
+}
+
 // Recebe uma ou mais chaves (uma por plataforma, quando a campanha foi
 // publicada em mais de uma rede ao mesmo tempo — mesmo publicacao_grupo_id)
 // e abre o drawer com uma aba por linha.
@@ -22528,7 +22653,12 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
 
   if (pares.length < 2) {
     esconderAbasEdicaoCampanha();
-    await abrirEdicaoCampanhaPorChave(pares[0].chave);
+    camposEdicaoGrupo = pares;
+    if (String(pares[0].campanha.plataforma || "meta").toLowerCase() === "meta") {
+      await abrirEdicaoCampanhaPorChave(pares[0].chave);
+    } else {
+      abrirModalEdicaoSomenteLeitura(pares[0].campanha);
+    }
     return;
   }
 
@@ -22640,8 +22770,13 @@ function abrirModalEdicaoSomenteLeitura(campanhaRef) {
 
   const camposEl = document.getElementById("editar_campanha_campos");
   if (camposEl) {
-    camposEl.innerHTML = "";
     camposEl.style.display = "none";
+  }
+
+  const resumoEl = document.getElementById("editar_campanha_resumo_outra_plataforma");
+  if (resumoEl) {
+    resumoEl.style.display = "";
+    resumoEl.innerHTML = renderizarResumoEdicaoSomenteLeitura(campanhaRef);
   }
 
   const btnSalvar = document.getElementById("editar_campanha_btn_salvar");
@@ -23035,7 +23170,9 @@ function campanhaEstaPausada(campanha) {
 }
 
 function campanhaEstaExcluida(campanha) {
-  return String(campanha?.status || "").toUpperCase() === "DELETED";
+  return ["DELETED", "REMOVED"].includes(
+    String(campanha?.status || "").toUpperCase()
+  );
 }
 
 function obterConfiguracoesCampanha(campanha) {
@@ -27741,43 +27878,51 @@ function configurarCliquesDinamicos() {
           return;
         }
 
-        if (action === "sync") {
-          if (typeof sincronizarCampanhas === "function") {
-            sincronizarCampanhas();
-          }
-          return;
-        }
-
-        const campanha =
-          obterCampanhaPorBotaoAcao(acaoCampanha);
+        const chaves = chavesAcaoCampanha(acaoCampanha);
+        const parEscolhido = await escolherCampanhaParaAcao(
+          chaves,
+          action,
+          acaoCampanha.dataset.campanhaKey
+        );
+        const campanha = parEscolhido?.campanha || null;
 
         if (!campanha) {
-          if (action !== "sync") {
+          if (parEscolhido !== null || !chaves.length) {
             alert("Não foi possível carregar os dados desta campanha. Clique em Sincronizar e tente novamente.");
           }
           return;
         }
 
-        if (action === "toggle" && typeof toggleCampanha === "function") {
-          toggleCampanha(campanha.campaign_id, campanha.status);
+        const plataforma = plataformaCampanhaExibicao(campanha);
+
+        if (action === "sync" && typeof sincronizarCampanhas === "function") {
+          await sincronizarCampanhas(plataforma);
+        } else if (["status", "toggle"].includes(action)) {
+          if (campanhaEhRascunhoLocal(campanha) && typeof publicarCampanhaRecebida === "function") {
+            await publicarCampanhaRecebida(Number(campanha.id), acaoCampanha, plataforma);
+          } else if (typeof toggleCampanha === "function") {
+            await toggleCampanha(campanha.campaign_id, campanha.status, acaoCampanha, plataforma);
+          }
         } else if (action === "detalhes" && typeof abrirCampanhaDrawerPorChaves === "function") {
-          const chavesJson = acaoCampanha.dataset.campanhaKeys;
-          const chaves = chavesJson ? JSON.parse(chavesJson) : [acaoCampanha.dataset.campanhaKey];
-          abrirCampanhaDrawerPorChaves(chaves, acaoCampanha.dataset.campanhaKey);
+          abrirCampanhaDrawerPorChaves(chaves, parEscolhido.chave);
         } else if (action === "editar" && typeof abrirEdicaoCampanhaPorChaves === "function") {
-          const chavesEditarJson = acaoCampanha.dataset.campanhaKeys;
-          const chavesEditar = chavesEditarJson ? JSON.parse(chavesEditarJson) : [acaoCampanha.dataset.campanhaKey];
-          abrirEdicaoCampanhaPorChaves(chavesEditar, acaoCampanha.dataset.campanhaKey);
+          await abrirEdicaoCampanhaPorChaves([parEscolhido.chave], parEscolhido.chave);
         } else if (action === "duplicar" && typeof duplicarCampanhaPorChave === "function") {
-          duplicarCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+          duplicarCampanhaPorChave(parEscolhido.chave);
         } else if (action === "encaminhar" && typeof abrirModalEncaminharCampanhaPorChave === "function") {
-          abrirModalEncaminharCampanhaPorChave(acaoCampanha.dataset.campanhaKey);
+          abrirModalEncaminharCampanhaPorChave(parEscolhido.chave);
         } else if (action === "restaurar" && typeof restaurarCampanha === "function") {
-          restaurarCampanha(campanha.campaign_id);
+          await restaurarCampanha(campanha.campaign_id, plataforma);
+        } else if (action === "remover") {
+          if (campanhaEstaExcluida(campanha) || !campanhaJaFoiPublicada(campanha)) {
+            await excluirCampanhaDefinitiva(Number(campanha.id));
+          } else {
+            await excluirCampanha(campanha.campaign_id, plataforma);
+          }
         } else if (action === "excluir-definitivo" && typeof excluirCampanhaDefinitiva === "function") {
-          excluirCampanhaDefinitiva(Number(campanha.id));
+          await excluirCampanhaDefinitiva(Number(campanha.id));
         } else if (action === "excluir" && typeof excluirCampanha === "function") {
-          excluirCampanha(campanha.campaign_id, plataformaCampanhaExibicao(campanha));
+          await excluirCampanha(campanha.campaign_id, plataforma);
         } else {
           console.warn("Acao de campanha sem handler disponivel:", action);
         }
@@ -31944,8 +32089,10 @@ async function salvarEdicaoCampanha() {
       return;
     }
 
+    const plataformaAtualizada =
+      plataformaCampanhaExibicao(campanhaEmEdicao);
     fecharEdicaoCampanha();
-    await sincronizarCampanhas();
+    await sincronizarCampanhas(plataformaAtualizada);
     alert(data.aviso ? `Campanha atualizada com sucesso.\n\n⚠️ ${data.aviso}` : "Campanha atualizada com sucesso");
 
   } catch (err) {
@@ -35467,14 +35614,16 @@ function platNome(plataforma) {
 // Meta tem preview real de anúncio (fala direto com graph.facebook.com) —
 // as outras redes não têm endpoint equivalente no backend ainda.
 const CAPACIDADES_PLATAFORMA = {
-  meta:     { previewReal: true },
-  google:   { previewReal: false },
-  tiktok:   { previewReal: false },
-  linkedin: { previewReal: false },
-  kwai:     { previewReal: false },
+  meta:      { previewReal: true,  restaurar: true },
+  facebook:  { previewReal: true,  restaurar: true },
+  instagram: { previewReal: true,  restaurar: true },
+  google:    { previewReal: false, restaurar: false },
+  tiktok:    { previewReal: false, restaurar: true },
+  linkedin:  { previewReal: false, restaurar: false },
+  kwai:      { previewReal: false, restaurar: true },
 };
 function capacidadesPlataforma(plataforma) {
-  return CAPACIDADES_PLATAFORMA[(plataforma || "meta").toLowerCase()] || { previewReal: false };
+  return CAPACIDADES_PLATAFORMA[(plataforma || "meta").toLowerCase()] || { previewReal: false, restaurar: false };
 }
 
 // =============================================
@@ -38547,6 +38696,25 @@ async function carregarCampanhas() {
         ? linhasGrupoCampanha.map(l => chavePorLinhaCampanha.get(l))
         : [campanhaCacheKey];
 
+    const linhasCardCampanha = linhasGrupoCampanha || [c];
+    const chavesDasLinhas = linhas =>
+      linhas.map(linha => chavePorLinhaCampanha.get(linha)).filter(Boolean);
+    const chavesNaoExcluidas = chavesDasLinhas(
+      linhasCardCampanha.filter(linha => !campanhaEstaExcluida(linha))
+    );
+    const chavesComAcaoStatus = chavesDasLinhas(
+      linhasCardCampanha.filter(linha =>
+        !campanhaEstaExcluida(linha) && !campanhaPublicacaoExpirada(linha)
+      )
+    );
+    const chavesRestauraveis = chavesDasLinhas(
+      linhasCardCampanha.filter(linha =>
+        campanhaEstaExcluida(linha) &&
+        capacidadesPlataforma(plataformaCampanhaExibicao(linha)).restaurar
+      )
+    );
+    const cardMultiplataforma = chavesGrupoCampanha.length > 1;
+
     const usuarioReceptorCampanha =
       usuarioEhCorretorReceptor();
 
@@ -38698,33 +38866,44 @@ async function carregarCampanhas() {
         </div>
     
         ${
-          campanhaEstaExcluida(c)
-            ? ""
-            : publicacaoExpirada
-            ? `
+          !chavesComAcaoStatus.length
+            ? (chavesNaoExcluidas.length && publicacaoExpirada ? `
         <button
           class="btn-campanha-toggle encerrada"
           type="button"
           disabled
           title="A data de publicação expirou. Edite a campanha e escolha uma nova data para publicar."
         >Encerrada</button>
+            ` : "")
+            : cardMultiplataforma
+            ? `
+        <button
+          class="btn-campanha-toggle"
+          type="button"
+          data-campanha-action="status"
+          data-campanha-key="${campanhaCacheKey}"
+          data-campanha-keys='${JSON.stringify(chavesComAcaoStatus)}'
+          title="Escolher a plataforma e alterar o status"
+        >Status</button>
             `
             : campanhaEstaAtiva(c)
             ? `
         <button
           class="btn-campanha-toggle btn-campanha-pausar"
-          onclick="toggleCampanha('${c.campaign_id}', '${c.status}', this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')"
+          type="button"
+          data-campanha-action="status"
+          data-campanha-key="${campanhaCacheKey}"
+          data-campanha-keys='${JSON.stringify(chavesComAcaoStatus)}'
           title="Pausar campanha"
         >⏸ Pausar</button>
             `
             : `
         <button
           class="btn-campanha-toggle btn-campanha-publicar${veiculacaoSubcategoria === "campanha_pausada" ? " btn-campanha-publicar-destaque" : ""}"
-          onclick="${
-            campanhaLocalPublicavel
-              ? `publicarCampanhaRecebida(${Number(c.id)}, this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
-              : `toggleCampanha('${c.campaign_id}', '${c.status}', this, '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}')`
-          }"
+          type="button"
+          data-campanha-action="status"
+          data-campanha-key="${campanhaCacheKey}"
+          data-campanha-keys='${JSON.stringify(chavesComAcaoStatus)}'
           title="${campanhaLocalPublicavel ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
         >Publicar</button>
             `
@@ -39062,7 +39241,6 @@ async function carregarCampanhas() {
             data-campanha-key="${campanhaCacheKey}"
             data-campanha-keys='${JSON.stringify(chavesGrupoCampanha)}'
             title="${linhasGrupoCampanha ? `Detalhes (${linhasGrupoCampanha.length} plataformas)` : "Detalhes"}"
-            onclick="abrirCampanhaDrawerPorChaves(JSON.parse(this.dataset.campanhaKeys), '${campanhaCacheKey}')"
           >
             ⚙️
           </button>
@@ -39071,14 +39249,15 @@ async function carregarCampanhas() {
             class="btn-acao"
             type="button"
             data-campanha-action="sync"
-            title="Sincronizar"
-            onclick="sincronizarCampanhas()"
+            data-campanha-key="${campanhaCacheKey}"
+            data-campanha-keys='${JSON.stringify(chavesGrupoCampanha)}'
+            title="${cardMultiplataforma ? "Escolher a plataforma e sincronizar" : "Sincronizar"}"
           >
             🔄
           </button>
 
           ${
-            campanhaEstaExcluida(c)
+            !chavesNaoExcluidas.length
               ? ""
               : `
                 <button
@@ -39086,9 +39265,8 @@ async function carregarCampanhas() {
                   type="button"
                   data-campanha-action="editar"
                   data-campanha-key="${campanhaCacheKey}"
-                  data-campanha-keys='${JSON.stringify(chavesGrupoCampanha)}'
+                  data-campanha-keys='${JSON.stringify(chavesNaoExcluidas)}'
                   title="Editar campanha"
-                  onclick="abrirEdicaoCampanhaPorChaves(JSON.parse(this.dataset.campanhaKeys), '${campanhaCacheKey}')"
                 >
                   ✏️
                 </button>
@@ -39096,7 +39274,7 @@ async function carregarCampanhas() {
           }
 
           ${
-            campanhaEstaExcluida(c) || usuarioReceptorCampanha
+            !chavesNaoExcluidas.length || usuarioReceptorCampanha
               ? ""
               : `
                 <button
@@ -39104,6 +39282,7 @@ async function carregarCampanhas() {
                   type="button"
                   data-campanha-action="duplicar"
                   data-campanha-key="${campanhaCacheKey}"
+                  data-campanha-keys='${JSON.stringify(chavesNaoExcluidas)}'
                   title="Duplicar campanha"
                 >
                   📋
@@ -39112,13 +39291,14 @@ async function carregarCampanhas() {
           }
 
           ${
-            podeEncaminhar
+            podeEncaminhar && chavesNaoExcluidas.length
               ? `
                 <button
                   class="btn-acao btn-encaminhar-campanha ${botaoEnvioCriadorCampanha ? "btn-enviar-corretor" : ""}"
                   type="button"
                   data-campanha-action="encaminhar"
                   data-campanha-key="${campanhaCacheKey}"
+                  data-campanha-keys='${JSON.stringify(chavesNaoExcluidas)}'
                   title="${botaoEnvioCriadorCampanha ? "Enviar campanha ao corretor solicitante" : "Encaminhar para corretor"}"
                 >
                   ${botaoEnvioCriadorCampanha ? "Enviar" : "↗"}
@@ -39127,72 +39307,29 @@ async function carregarCampanhas() {
               : ""
           }
     
-          ${
-            campanhaEstaExcluida(c)
-              ? `
-                <button
-                  class="btn-acao"
-                  type="button"
-                  data-campanha-action="restaurar"
-                  data-campanha-key="${campanhaCacheKey}"
-                  title="Restaurar"
-                  onclick="
-                    restaurarCampanha(
-                      '${c.campaign_id}', '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}'
-                    )
-                  "
-                >
-                  ♻
-                </button>
-                <button
-                  class="btn-danger btn-definitivo"
-                  type="button"
-                  data-campanha-action="excluir-definitivo"
-                  data-campanha-key="${campanhaCacheKey}"
-                  title="Excluir definitivamente"
-                  onclick="
-                    excluirCampanhaDefinitiva(
-                      ${Number(c.id)}
-                    )
-                  "
-                >
-                  🗑️ definitivo
-                </button>
-              `
-              : campanhaJaFoiPublicada(c)
-              ? `
-                <button
-                  class="btn-danger"
-                  type="button"
-                  data-campanha-action="excluir"
-                  data-campanha-key="${campanhaCacheKey}"
-                  title="Excluir"
-                  onclick="
-                    excluirCampanha(
-                      '${c.campaign_id}', '${(c.plataforma || "meta").replace(/[^a-z]/g, "")}'
-                    )
-                  "
-                >
-                  🗑️
-                </button>
-              `
-              : `
-                <button
-                  class="btn-danger"
-                  type="button"
-                  data-campanha-action="excluir-definitivo"
-                  data-campanha-key="${campanhaCacheKey}"
-                  title="Excluir"
-                  onclick="
-                    excluirCampanhaDefinitiva(
-                      ${Number(c.id)}
-                    )
-                  "
-                >
-                  🗑️
-                </button>
-              `
-          }
+          ${chavesRestauraveis.length ? `
+            <button
+              class="btn-acao"
+              type="button"
+              data-campanha-action="restaurar"
+              data-campanha-key="${campanhaCacheKey}"
+              data-campanha-keys='${JSON.stringify(chavesRestauraveis)}'
+              title="Restaurar"
+            >
+              ♻
+            </button>
+          ` : ""}
+
+          <button
+            class="btn-danger${!cardMultiplataforma && campanhaEstaExcluida(c) ? " btn-definitivo" : ""}"
+            type="button"
+            data-campanha-action="remover"
+            data-campanha-key="${campanhaCacheKey}"
+            data-campanha-keys='${JSON.stringify(chavesGrupoCampanha)}'
+            title="${cardMultiplataforma ? "Escolher a plataforma e excluir" : (campanhaEstaExcluida(c) || !campanhaJaFoiPublicada(c) ? "Excluir definitivamente" : "Excluir")}"
+          >
+            🗑️${!cardMultiplataforma && campanhaEstaExcluida(c) ? " definitivo" : ""}
+          </button>
     
         </div>
     
@@ -39502,6 +39639,8 @@ function formatarLocalidadesResumo(cfg) {
 function renderizarPainelPlataformaCampanha(campanha, chave) {
   const cfg =
     campanha.configuracoes_avancadas || {};
+  const podeRestaurarCampanha =
+    capacidadesPlataforma(plataformaCampanhaExibicao(campanha)).restaurar;
   const campanhaJsonSeguro =
     codificarJsonInline(campanha);
   const ehMetaPainel =
@@ -39513,7 +39652,7 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
     <div class="campanha-drawer-acoes-aba">
       ${campanhaEstaExcluida(campanha)
         ? `
-          <button class="btn-acao" type="button" data-campanha-action="restaurar" data-campanha-key="${chave}">↩ Restaurar</button>
+          ${podeRestaurarCampanha ? `<button class="btn-acao" type="button" data-campanha-action="restaurar" data-campanha-key="${chave}">↩ Restaurar</button>` : ""}
           <button class="btn-acao" type="button" data-campanha-action="excluir-definitivo" data-campanha-key="${chave}">🗑 Excluir definitivamente</button>
         `
         : `
@@ -40236,7 +40375,7 @@ async function cancelarEnvioCampanha() {
   await salvarEncaminhamentoCampanha([]);
 }
 
-async function sincronizarCampanhas() {
+async function sincronizarCampanhas(plataformaAlvo = null) {
 
   const token =
     localStorage.getItem("token");
@@ -40266,19 +40405,38 @@ async function sincronizarCampanhas() {
         .map(c => String(c.plataforma || "").toLowerCase())
     );
 
-    const plataformas = [
+    const catalogoPlataformas = [
       { id: "meta", nome: "Meta", endpoint: "/meta/sincronizar-campanhas" },
       { id: "google", nome: "Google Ads", endpoint: "/google/sincronizar-campanhas" },
-      { id: "tiktok", nome: "TikTok Ads", endpoint: "/tiktok/sincronizar-campanhas" }
-    ].filter(item => conectadas.has(item.id));
+      { id: "tiktok", nome: "TikTok Ads", endpoint: "/tiktok/sincronizar-campanhas" },
+      { id: "linkedin", nome: "LinkedIn Ads", endpoint: "/linkedin/sincronizar-campanhas" },
+      { id: "kwai", nome: "Kwai Ads", endpoint: "/kwai/sincronizar-campanhas" }
+    ];
+
+    // Facebook e Instagram são identidades/posicionamentos da mesma conexão
+    // Meta. As demais plataformas sempre conservam seu próprio endpoint.
+    const alvoNormalizado = ["facebook", "instagram"].includes(
+      String(plataformaAlvo || "").toLowerCase()
+    )
+      ? "meta"
+      : String(plataformaAlvo || "").toLowerCase();
+
+    const plataformas = catalogoPlataformas.filter(item =>
+      conectadas.has(item.id) && (!alvoNormalizado || item.id === alvoNormalizado)
+    );
 
     // Compatibilidade com conexões Meta antigas, anteriores ao hub genérico.
-    if (!plataformas.length) {
+    if (!plataformas.length && (!alvoNormalizado || alvoNormalizado === "meta")) {
       plataformas.push({
         id: "meta",
         nome: "Meta",
         endpoint: "/meta/sincronizar-campanhas"
       });
+    }
+
+    if (!plataformas.length && alvoNormalizado) {
+      alert(`${platNome(alvoNormalizado)} não está conectado. Conecte essa plataforma antes de sincronizar.`);
+      return;
     }
 
     const resultados = await Promise.all(
@@ -40306,8 +40464,10 @@ async function sincronizarCampanhas() {
     console.log("SYNC MULTIPLATAFORMA:", resultados);
 
     await carregarCampanhas();
-    await carregarStatusMeta();
-    await carregarPerformanceMeta();
+    if (plataformas.some(item => item.id === "meta")) {
+      await carregarStatusMeta();
+      await carregarPerformanceMeta();
+    }
     await carregarLeads();
     carregarUltimoSyncSidebar();
 
@@ -40344,13 +40504,11 @@ async function sincronizarCampanhas() {
 async function toggleCampanha(campaign_id, statusAtual, btnEl, plataforma) {
 
   const token = localStorage.getItem("token");
+  const plataformaNormalizada =
+    String(plataforma || "meta").toLowerCase();
 
   const endpointToggle =
-    plataforma === "google" ? "/google/toggle-campanha" :
-    plataforma === "tiktok" ? "/tiktok/toggle-campanha" :
-    plataforma === "linkedin" ? "/linkedin/toggle-campanha" :
-    plataforma === "kwai" ? "/kwai/toggle-campanha" :
-    "/meta/toggle-campanha";
+    endpointPorPlataforma(plataformaNormalizada, "toggle-campanha");
 
   const statusNormalizado =
     String(statusAtual || "").toUpperCase();
@@ -40361,9 +40519,17 @@ async function toggleCampanha(campaign_id, statusAtual, btnEl, plataforma) {
   const novoStatus = publicando ? "ACTIVE" : "PAUSED";
 
   if (publicando) {
+    const familiaMeta = new Set(["meta", "facebook", "instagram"]);
     const campanha =
       campanhasAtuais.find(c =>
-        String(c.campaign_id) === String(campaign_id)
+        String(c.campaign_id) === String(campaign_id) &&
+        (
+          plataformaCampanhaExibicao(c) === plataformaNormalizada ||
+          (
+            familiaMeta.has(plataformaCampanhaExibicao(c)) &&
+            familiaMeta.has(plataformaNormalizada)
+          )
+        )
       );
 
     if (campanhaPublicacaoExpirada(campanha)) {
@@ -40429,6 +40595,11 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
 
   const token =
     localStorage.getItem("token");
+  const plataformaPublicacao = ["facebook", "instagram"].includes(
+    String(plataforma || "meta").toLowerCase()
+  )
+    ? "meta"
+    : String(plataforma || "meta").toLowerCase();
 
   if (!token || !campanhaId) {
     return;
@@ -40441,12 +40612,12 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
   // "Criar Campanha". Sem esta checagem, o botão chamava o endpoint da Meta
   // de qualquer forma e devolvia um erro da API do Facebook sem nexo numa
   // campanha marcada como Google Ads.
-  if (plataforma && plataforma !== "meta") {
+  if (plataformaPublicacao !== "meta") {
     // Campanha do Google Ads com campaign_id real (chegou por sincronização externa,
     // ex: AgenteSmart) — nesse caso dá pra completar consultando o que já existe no
     // Google Ads, em vez de só bloquear. Sem campaign_id (rascunho puramente local)
     // ou qualquer outra plataforma continua caindo no bloqueio de sempre abaixo.
-    if (plataforma === "google") {
+    if (plataformaPublicacao === "google") {
       const campanhaGoogle =
         campanhasAtuais.find(c => Number(c.id) === Number(campanhaId));
       if (campanhaGoogle?.campaign_id) {
@@ -40455,7 +40626,7 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
       }
     }
     mostrarErroPublicacao(
-      `Publicação automática de campanhas recebidas ainda só funciona para Meta Ads. Esta campanha é ${plataforma === "google" ? "Google Ads" : plataforma === "tiktok" ? "TikTok Ads" : plataforma}: recrie-a em "Criar Campanha" selecionando essa plataforma para publicá-la.`
+      `Publicação automática de campanhas recebidas ainda só funciona para Meta Ads. Esta campanha é ${plataformaPublicacao === "google" ? "Google Ads" : plataformaPublicacao === "tiktok" ? "TikTok Ads" : plataformaPublicacao}: recrie-a em "Criar Campanha" selecionando essa plataforma para publicá-la.`
     );
     return;
   }
@@ -40526,11 +40697,12 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
 // Existe pra nao repetir o erro ja documentado neste arquivo de deixar uma acao nova
 // hardcoded pra /meta/... e ter que corrigir plataforma por plataforma depois.
 function endpointPorPlataforma(plataforma, sufixo) {
+  const id = String(plataforma || "meta").toLowerCase();
   const base =
-    plataforma === "google" ? "/google" :
-    plataforma === "tiktok" ? "/tiktok" :
-    plataforma === "linkedin" ? "/linkedin" :
-    plataforma === "kwai" ? "/kwai" :
+    id === "google" ? "/google" :
+    id === "tiktok" ? "/tiktok" :
+    id === "linkedin" ? "/linkedin" :
+    id === "kwai" ? "/kwai" :
     "/meta";
   return `${base}/${sufixo}`;
 }

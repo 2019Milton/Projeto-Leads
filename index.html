@@ -29610,6 +29610,14 @@ function removerLocalidadeTikTok() {
 }
 
 function validarPublicacaoCampanhaTikTok() {
+  // Mínimo documentado oficialmente pelo TikTok Ads (ads.tiktok.com/help/article/budget)
+  // é USD 50/dia no nível da campanha — sem essa checagem, a publicação só
+  // descobria isso quando a própria API do TikTok já tivesse rejeitado.
+  const limiteTikTok = FINANCEIRO_LIMITES_ORCAMENTO_REDE?.tiktok;
+  const orcamentoAtual = Number(valorCampo("orcamento"));
+  if (limiteTikTok?.minimo && orcamentoAtual > 0 && orcamentoAtual < limiteTikTok.minimo) {
+    return `O orçamento está abaixo do mínimo exigido pelo TikTok Ads (~R$${limiteTikTok.minimo.toFixed(2).replace(".", ",")}/dia, equivalente a US$50 — varia com o câmbio).`;
+  }
   if (!tiktokIdentidadeSelecionada?.identity_id) {
     return "Selecione a identidade (perfil) do TikTok antes de publicar.";
   }
@@ -32560,6 +32568,21 @@ function setPublishProgress(pct, label) {
   if (labelEl) labelEl.textContent = label || "";
 }
 
+// Limites por rede, cada um com sua própria fonte:
+// - Meta: rejeição real observada abaixo de R$15, recomendação de mercado R$30+.
+// - Google Ads: não tem mínimo técnico — abaixo de ~R$20/dia o algoritmo tende a
+//   não ter dados suficientes pra otimizar bem (não é rejeição, é ineficácia).
+// - TikTok Ads: mínimo documentado oficialmente (ads.tiktok.com/help/article/budget)
+//   é USD 50/dia no nível da campanha — convertido aqui pra um valor aproximado em
+//   reais (varia com câmbio, por isso o aviso deixa isso explícito).
+const FINANCEIRO_LIMITES_ORCAMENTO_REDE = {
+  meta:      { minimo: 15, recomendado: 30, textoRecomendado: "pode ser rejeitado pela Meta em algumas contas" },
+  facebook:  { minimo: 15, recomendado: 30, textoRecomendado: "pode ser rejeitado pela Meta em algumas contas" },
+  instagram: { minimo: 15, recomendado: 30, textoRecomendado: "pode ser rejeitado pela Meta em algumas contas" },
+  google:    { minimo: null, recomendado: 20, textoRecomendado: "é baixo pro Google Ads — tende a não gerar dados suficientes pro algoritmo otimizar bem" },
+  tiktok:    { minimo: 250, recomendado: null, textoRecomendado: "está abaixo do mínimo exigido pelo TikTok Ads (~R$250,00/dia, equivalente a US$50 — varia com o câmbio)" }
+};
+
 function validarOrcamentoRealtime(input) {
   const val = Number(input.value);
   const aviso = document.getElementById("orcamento_aviso_rt");
@@ -32568,20 +32591,50 @@ function validarOrcamentoRealtime(input) {
     aviso.style.display = "none";
     return;
   }
-  if (val < 15) {
-    aviso.style.display = "block";
+
+  // Se uma aba Facebook/Instagram estiver ativa, esse campo de orçamento é só
+  // dessa rede (cada uma tem o próprio, ver snapshotFormularioMeta) — senão,
+  // vale pra todas as redes marcadas que ainda compartilham este mesmo campo
+  // (Google/TikTok/LinkedIn/Kwai).
+  const redesRelevantes =
+    typeof REDES_META_COM_FORMULARIO_PROPRIO !== "undefined" &&
+    REDES_META_COM_FORMULARIO_PROPRIO.includes(abaAtivaCampanha)
+      ? [abaAtivaCampanha]
+      : Array.from(redesSelecionadasCampanha || []);
+
+  const valorFormatado = `R$ ${val.toFixed(2).replace(".", ",")}`;
+  const mensagens = [];
+  let nivelPior = null; // "erro" > "aviso"
+
+  redesRelevantes.forEach(rede => {
+    const limite = FINANCEIRO_LIMITES_ORCAMENTO_REDE[rede];
+    if (!limite) return;
+
+    if (limite.minimo !== null && val < limite.minimo) {
+      mensagens.push(`${valorFormatado} ${limite.textoRecomendado}. Use pelo menos R$ ${limite.minimo.toFixed(2).replace(".", ",")}.`);
+      nivelPior = "erro";
+    } else if (limite.recomendado !== null && val < limite.recomendado) {
+      mensagens.push(`${valorFormatado} ${limite.textoRecomendado}. Recomendado: R$ ${limite.recomendado.toFixed(2).replace(".", ",")}+.`);
+      if (nivelPior !== "erro") nivelPior = "aviso";
+    }
+  });
+
+  if (!mensagens.length) {
+    aviso.style.display = "none";
+    return;
+  }
+
+  aviso.style.display = "block";
+  if (nivelPior === "erro") {
     aviso.style.background = "rgba(239,68,68,0.15)";
     aviso.style.border = "1px solid rgba(239,68,68,0.4)";
     aviso.style.color = "#fca5a5";
-    aviso.textContent = `⚠️ R$ ${val.toFixed(2).replace(".",",")} está abaixo do mínimo. Use pelo menos R$ 15,00.`;
-  } else if (val < 30) {
-    aviso.style.display = "block";
+    aviso.innerHTML = mensagens.map(m => `⚠️ ${escaparHtml(m)}`).join("<br>");
+  } else {
     aviso.style.background = "rgba(245,158,11,0.12)";
     aviso.style.border = "1px solid rgba(245,158,11,0.35)";
     aviso.style.color = "#fcd34d";
-    aviso.textContent = `💡 R$ ${val.toFixed(2).replace(".",",")} pode ser rejeitado pela Meta em algumas contas. Recomendado: R$ 30,00+.`;
-  } else {
-    aviso.style.display = "none";
+    aviso.innerHTML = mensagens.map(m => `💡 ${escaparHtml(m)}`).join("<br>");
   }
 }
 

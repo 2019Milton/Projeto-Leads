@@ -17421,7 +17421,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <div class="advanced-full" data-plat-only="tiktok" style="display:none;">
-              <label>Identidade TikTok <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione qual perfil do TikTok vai aparecer como anunciante. Equivalente à Página do Facebook, mas é um cadastro próprio da TikTok Business.', event)">i</button></label>
+              <label>Identidade TikTok <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione qual perfil do TikTok aparecerá como anunciante. Essa identidade precisa estar disponível na conta TikTok Business conectada.', event)">i</button></label>
               <select id="campanha_tiktok_identidade_select" onchange="selecionarIdentidadeTikTokCampanha(this.value)">
                 <option value="">Carregando identidades...</option>
               </select>
@@ -17495,7 +17495,7 @@ body.tema-claro .criar-campanha-descricao {
 
           <div class="advanced-grid">
             <div class="advanced-full">
-              <label>Imagens do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(carrossel — máx. 10)</span></label>
+              <label>Imagens do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(máx. 10)</span></label>
               <div id="imagens-container" class="imagens-lista"></div>
               <input type="file" id="input-multiplas-imagens" accept="image/*" multiple style="display:none">
               <button
@@ -17508,14 +17508,14 @@ body.tema-claro .criar-campanha-descricao {
                 class="btn-gerar-banner-ia"
                 onclick="abrirModalGerarBanner()"
               >✨ Gerar/Editar Criativo</button>
-              <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione varias imagens de uma vez. Use ▲ ▼ para definir a ordem. A imagem <strong>1</strong> aparece primeiro no carrossel.</p>
+              <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione várias imagens de uma vez e use ▲ ▼ para definir a ordem. Nos formatos que aceitam carrossel, a imagem <strong>1</strong> aparece primeiro.</p>
               <p data-plat-only="google" data-google-tipo-only="search" style="font-size:11px;opacity:.55;margin:6px 0 0">
-                ℹ️ No Google Ads (Pesquisa), o anúncio é só texto (títulos e descrições) — as
-                imagens acima não são usadas nele, só em Meta/TikTok.
+                ℹ️ No Google Ads (Pesquisa), o anúncio é composto por títulos e descrições — as
+                imagens acima não são utilizadas nesse formato.
               </p>
               <p data-plat-only="google" data-google-tipo-only="display" style="font-size:11px;opacity:.55;margin:6px 0 0;display:none;">
                 ℹ️ No Google Ads (Display), selecione <strong>exatamente 1 imagem</strong> acima —
-                ela é recortada automaticamente nos dois formatos exigidos pela Google (paisagem e quadrada).
+                ela é recortada automaticamente nos dois formatos exigidos pelo Google (paisagem e quadrada).
               </p>
 
               <label style="margin-top:14px;">Vídeo do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(opcional)</span></label>
@@ -17526,7 +17526,7 @@ body.tema-claro .criar-campanha-descricao {
                 </div>
                 <div class="video-anuncio-info">
                   <strong id="video_anuncio_nome">Nenhum vídeo selecionado</strong>
-                  <span id="video_anuncio_status">Use MP4, MOV ou WebM. Se adicionar vídeo, ele será enviado como criativo da campanha.</span>
+                  <span id="video_anuncio_status">Use MP4, MOV ou WebM. O vídeo será utilizado quando a plataforma e o formato selecionados aceitarem esse tipo de criativo.</span>
                 </div>
                 <div class="video-anuncio-acoes">
                   <input type="file" id="video_anuncio_input" accept="video/mp4,video/quicktime,video/webm" style="display:none">
@@ -17564,7 +17564,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <div class="advanced-full">
-              <label>Botão do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse é o texto do botão que aparece no anúncio da Meta. Não muda o tipo de conteúdo, só a chamada para ação. Saiba mais: convite mais leve para conhecer a oferta. Cadastre-se: melhor para formulário de leads. Solicitar agora: chamada mais direta para quem já está pronto para pedir contato ou proposta.', event)">i</button></label>
+              <label>Botão do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('Este é o texto da chamada para ação exibida no anúncio, conforme as opções aceitas pela plataforma selecionada. Saiba mais: convite mais leve para conhecer a oferta. Cadastre-se: indicado para formulário de leads. Solicitar agora: chamada mais direta para quem já está pronto para pedir contato ou proposta.', event)">i</button></label>
               <select id="cta">
                 <option value="LEARN_MORE">Saiba mais</option>
                 <option value="SIGN_UP">Cadastre-se</option>
@@ -17579,7 +17579,7 @@ body.tema-claro .criar-campanha-descricao {
           <summary>👥 Público e orçamento</summary>
 
           <div id="bloco_orcamento" style="margin-top:12px;">
-            <label>Orçamento diário (R$) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quanto você quer gastar por dia com esse anúncio. O Facebook vai usar esse valor para mostrar o anúncio para o máximo de pessoas possível dentro do orçamento.', event)">i</button></label>
+            <label>Orçamento diário (R$) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quanto você quer investir por dia nesta campanha. A plataforma de anúncios selecionada usará esse orçamento para veicular o anúncio conforme o objetivo e as configurações definidos.', event)">i</button></label>
             <input
               type="number"
               id="orcamento"
@@ -17618,7 +17618,7 @@ body.tema-claro .criar-campanha-descricao {
               </div>
 
               <div data-plat-only="facebook,instagram,tiktok">
-                <label>Idade mínima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade mínima das pessoas que vão ver o anúncio. O Facebook não permite anunciar para menores de 18 anos.', event)">i</button></label>
+                <label>Idade mínima <button type="button" class="info-icone" onclick="mostrarInfoCampo('Idade mínima das pessoas que poderão ver o anúncio. Respeite a idade mínima permitida pela plataforma e pela categoria anunciada.', event)">i</button></label>
                 <input
                   type="number"
                   id="adv_idade_min"
@@ -17641,7 +17641,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <div class="detailed-targeting-panel admin-only-targeting" data-plat-only="facebook,instagram">
-              <strong>Direcionamento detalhado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Digite palavras que descrevem o interesse do seu público ideal. O Facebook vai mostrar o anúncio para pessoas que curtem essas páginas ou assuntos. Ex: &quot;imóveis, financiamento&quot;.', event)">i</button></strong>
+              <strong>Direcionamento detalhado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Digite palavras que descrevem os interesses do seu público ideal. A Meta usará esses sinais para alcançar pessoas relacionadas a essas páginas ou assuntos. Ex: &quot;imóveis, financiamento&quot;.', event)">i</button></strong>
               <p>
                 Procure interesses que descrevem o perfil do público. Eles serão enviados à Meta junto com o público do conjunto de anúncios.
               </p>
@@ -17670,7 +17670,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <div class="detailed-targeting-panel admin-only-targeting" data-plat-only="tiktok" style="display:none;">
-              <strong>Localização (TikTok) <button type="button" class="info-icone" onclick="mostrarInfoCampo('A TikTok exige escolher pelo menos uma localização da lista (diferente do Meta, que aceita um país simples). Busque e selecione uma cidade, região ou país.', event)">i</button></strong>
+              <strong>Localização (TikTok) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione pelo menos uma localização disponível no TikTok. Busque e escolha uma cidade, região ou país para definir onde o anúncio será veiculado.', event)">i</button></strong>
               <p>
                 Busque e selecione a localização que vai receber os anúncios no TikTok.
               </p>
@@ -17927,7 +17927,7 @@ body.tema-claro .criar-campanha-descricao {
 
             <div class="advanced-subsection">
               <h5>Criativo do anúncio</h5>
-              <p>Textos que aparecem no anúncio exibido pela Meta.</p>
+              <p>Textos usados na composição do anúncio na plataforma selecionada.</p>
             </div>
 
             <div class="advanced-full">
@@ -17962,7 +17962,7 @@ body.tema-claro .criar-campanha-descricao {
               ></textarea>
               <div id="adv_perguntas_rapidas" class="perguntas-rapidas"></div>
               <small class="perguntas-rapidas-ajuda">
-                Escolha poucas perguntas-chave. Elas entram no formulário da Meta e ajudam a filtrar quem tem interesse real.
+                Escolha poucas perguntas-chave. Elas entram no formulário da plataforma selecionada e ajudam a filtrar quem tem interesse real.
               </small>
             </div>
 

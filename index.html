@@ -17381,14 +17381,11 @@ body.tema-claro .criar-campanha-descricao {
               onclick="selecionarPlataformaCampanha('google')">
               <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads
             </button>
-            <button type="button" class="plat-sel-btn" data-plat="linkedin"
-              onclick="selecionarPlataformaCampanha('linkedin')">
-              💼 LinkedIn Ads
-            </button>
             <button type="button" class="plat-sel-btn" data-plat="kwai"
               onclick="selecionarPlataformaCampanha('kwai')">
               🎬 Kwai Ads
             </button>
+            <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">🪟 Microsoft Ads</button>
@@ -26253,9 +26250,14 @@ function selecionarPlataformaCampanha(plat) {
 
 // Redes que podem ser adicionadas a uma campanha já existente durante a
 // edição. Kwai fica de fora por decisão do usuário (o endpoint ainda é um
-// stub que sempre falha) e Meta fica de fora do v1 (exigiria a sub-escolha
-// Facebook/Instagram e o snapshot próprio dessas redes).
-const PLATAFORMAS_ADICIONAVEIS_EDICAO = ["google", "tiktok", "linkedin"];
+// stub que sempre falha). LinkedIn fica de fora aqui (e do seletor de Criar
+// Campanha) enquanto o acesso à Advertising API do LinkedIn não for aprovado
+// pelo próprio LinkedIn — o código existe e compila, mas nenhuma conta real
+// consegue conectar/publicar ainda (ver memória do projeto). Facebook e
+// Instagram entram como opção de adicionar mesmo exigindo a mesma sub-escolha
+// e o mesmo mecanismo de troca de dados por rede que a Criação já usa (ver
+// redeMetaFormularioAtual/selecionarAbaAddPlataformaEdicao).
+const PLATAFORMAS_ADICIONAVEIS_EDICAO = ["google", "tiktok", "facebook", "instagram"];
 
 function renderizarSeletorPlataformasAdicionaisEdicao() {
   const bloco = document.getElementById("editar_campanha_add_plataforma_bloco");
@@ -26335,6 +26337,13 @@ function plataformasNovasParaPublicarEdicao() {
 // campanha base.
 let abaAtivaAddPlataformaEdicao = null;
 
+// Snapshot dedicado pra troca de dados entre Facebook/Instagram quando as
+// duas são adicionadas como pernas novas ao mesmo tempo durante a edição —
+// store próprio, não o _dadosCampanhaPorRede da Criação, pra nunca vazar
+// dado de uma sessão de Criação abandonada pra dentro de uma edição (aquele
+// só é limpo ao fechar o modal de Criar Campanha, não o de editar).
+let _dadosAddPlataformaEdicaoPorRede = { facebook: null, instagram: null };
+
 function renderizarAbasAddPlataformaEdicao() {
   const container = document.getElementById("editar_campanha_add_plataforma_abas");
   if (!container) return;
@@ -26348,6 +26357,7 @@ function renderizarAbasAddPlataformaEdicao() {
     return;
   }
 
+  const abaAnterior = abaAtivaAddPlataformaEdicao;
   if (!abaAtivaAddPlataformaEdicao || !novas.includes(abaAtivaAddPlataformaEdicao)) {
     abaAtivaAddPlataformaEdicao = novas[0];
   }
@@ -26360,11 +26370,38 @@ function renderizarAbasAddPlataformaEdicao() {
       onclick="selecionarAbaAddPlataformaEdicao('${p}')"
     >${platBadge(p)}</button>
   `).join("");
+
+  // A aba pode nascer "ativa" aqui (não por um clique em
+  // selecionarAbaAddPlataformaEdicao) na primeira vez que 2 redes novas
+  // ficam marcadas ao mesmo tempo — ex: usuário marca Facebook, depois
+  // Instagram, e só na 2ª marcação as abas passam a existir. Sem isso, se a
+  // aba recém-nascida for uma perna Meta, ela nunca passaria pelo
+  // restore/checkbox-flip que normalmente acontece ao entrar numa aba.
+  if (abaAtivaAddPlataformaEdicao !== abaAnterior) {
+    aplicarEntradaAbaAddPlataformaEdicao(abaAtivaAddPlataformaEdicao);
+  }
+}
+
+function aplicarEntradaAbaAddPlataformaEdicao(plat) {
+  if (!REDES_META_COM_FORMULARIO_PROPRIO.includes(plat)) return;
+  // Confirma que essa realmente é a rede Meta "ativa" agora (protege contra
+  // reentrância caso redeMetaFormularioAtual() ainda não considere as 2
+  // pernas Meta como novas simultaneamente, ex: alguma delas já publicou).
+  if (redeMetaFormularioAtual() !== plat) return;
+  const outraRede = plat === "facebook" ? "instagram" : "facebook";
+  const dados = _dadosAddPlataformaEdicaoPorRede[plat] || _dadosAddPlataformaEdicaoPorRede[outraRede];
+  if (dados) restaurarFormularioMeta(plat, dados);
+  else aplicarRedeMetaAoFormulario(plat);
 }
 
 function selecionarAbaAddPlataformaEdicao(plat) {
+  const redeMetaAnterior = redeMetaFormularioAtual();
+  if (redeMetaAnterior) {
+    _dadosAddPlataformaEdicaoPorRede[redeMetaAnterior] = snapshotFormularioMeta(redeMetaAnterior);
+  }
   abaAtivaAddPlataformaEdicao = plat;
   aplicarRedesCampanha();
+  aplicarEntradaAbaAddPlataformaEdicao(plat);
 }
 
 // Campos exclusivos de cada rede adicionável, pra limpar se o usuário marcar
@@ -26382,8 +26419,11 @@ const CAMPOS_EXCLUSIVOS_PLATAFORMA_EDICAO = {
   ],
   tiktok: [
     "campanha_tiktok_url", "campanha_tiktok_formulario_manual"
-  ],
-  linkedin: []
+  ]
+  // facebook/instagram não têm campos exclusivos aqui — tudo que elas usam
+  // (nome, texto, cta, orçamento, targeting) já é coberto pela restauração
+  // via _snapshotCriarCampanha em fecharEdicaoCampanha(), igual a própria
+  // campanha base já usava antes dessas duas virarem opção de adicionar.
 };
 
 function limparCamposPlataformaAdicionalEdicao(plat) {
@@ -26721,7 +26761,25 @@ function renderizarAbasCampanha(platsComAba) {
 const REDES_META_COM_FORMULARIO_PROPRIO = ["facebook", "instagram"];
 
 function redeMetaFormularioAtual() {
-  if (typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao) return null;
+  // Na edição, só existe "rede Meta atual" de verdade quando as DUAS —
+  // Facebook e Instagram — estão sendo adicionadas como pernas novas ao
+  // mesmo tempo (única situação em que faz sentido trocar dados entre elas
+  // aqui). Uma campanha base já é sozinha uma rede só, então nunca pode
+  // ter as duas como "novas" simultaneamente — ver o comentário de
+  // plataformaBaseEdicao em abrirEdicaoCampanha(). Com 0 ou 1 perna Meta
+  // nova, retorna null (mesmo padrão do Google/TikTok: só visibilidade,
+  // sem troca de dados) — isso também protege a identidade Meta já
+  // publicada da campanha base de ser mexida por engano.
+  const emEdicao = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
+  if (emEdicao) {
+    const novasMeta = REDES_META_COM_FORMULARIO_PROPRIO.filter(r =>
+      plataformasNovasParaPublicarEdicao().includes(r)
+    );
+    if (novasMeta.length < 2) return null;
+    return REDES_META_COM_FORMULARIO_PROPRIO.includes(abaAtivaAddPlataformaEdicao)
+      ? abaAtivaAddPlataformaEdicao
+      : novasMeta[0];
+  }
   if (REDES_META_COM_FORMULARIO_PROPRIO.includes(abaAtivaCampanha)) {
     return abaAtivaCampanha;
   }
@@ -31965,20 +32023,29 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     // Campanhas Meta já publicadas continuam guardadas com plataforma='meta'
     // (o INSERT nunca grava 'facebook'/'instagram' ali — essa granularidade
     // vive só em configuracoes_avancadas.plataformas). Os campos do formulário
-    // agora ficam atrás de data-plat-only="facebook,instagram" (não mais
-    // "meta"), então precisa adicionar as duas pra esses campos continuarem
-    // visíveis na edição — a aba Facebook/Instagram em si não se aplica aqui
-    // (edição continua editando uma campanha só, ver PLATAFORMAS_COM_ABA_CAMPANHA).
-    const plataformaCampanhaEdicao = campanha.plataforma || "meta";
-    if (plataformaCampanhaEdicao === "meta") {
+    // ficam atrás de data-plat-only="facebook,instagram" — usar a rede real
+    // (via plataformaCampanhaExibicao, que já sabe extrair isso de
+    // configuracoes_avancadas.plataformas) já basta pra esses campos
+    // continuarem visíveis (o filtro de visibilidade é "algum bate", não
+    // "os dois precisam bater"), e só assim plataformasOriginaisEdicao abaixo
+    // reflete a rede real da campanha — importante pra detectar corretamente
+    // "rede nova" quando Facebook/Instagram também viram opção de adicionar
+    // (senão uma campanha Facebook já nasceria com Instagram marcado como
+    // "original", e adicionar Instagram de verdade nunca seria detectado
+    // como novo). Caso raro/legado sem plataforma específica salva cai em
+    // "meta" mesmo, mantendo as duas — aba Facebook/Instagram em si não se
+    // aplica aqui (edição continua editando uma campanha só).
+    const plataformaBaseEdicao = plataformaCampanhaExibicao(campanha);
+    if (plataformaBaseEdicao === "meta") {
       redesSelecionadasCampanha.add("facebook");
       redesSelecionadasCampanha.add("instagram");
     } else {
-      redesSelecionadasCampanha.add(plataformaCampanhaEdicao);
+      redesSelecionadasCampanha.add(plataformaBaseEdicao);
     }
     aplicarRedesCampanha();
 
     plataformasOriginaisEdicao = new Set(redesSelecionadasCampanha);
+    _dadosAddPlataformaEdicaoPorRede = { facebook: null, instagram: null };
     const grupoIdAtualEdicao = campanha.publicacao_grupo_id || null;
     plataformasExistentesEdicaoGrupo = new Set(
       grupoIdAtualEdicao
@@ -32119,6 +32186,7 @@ function fecharEdicaoCampanha() {
     plataformasOriginaisEdicao = new Set();
     plataformasExistentesEdicaoGrupo = new Set();
     abaAtivaAddPlataformaEdicao = null;
+    _dadosAddPlataformaEdicaoPorRede = { facebook: null, instagram: null };
     document.getElementById("editar_campanha_add_plataforma_bloco")?.style.setProperty("display", "none");
     document.getElementById("editar_campanha_btn_publicar_adicionais")?.style.setProperty("display", "none");
     document.getElementById("editar_campanha_add_plataforma_abas")?.style.setProperty("display", "none");
@@ -33945,15 +34013,15 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
 
     const imageHashes = [];
     const imageUrls = [];
-    const totalImagens = imagensArquivos.length;
+    const fontesImagemMeta = montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback);
+    const totalImagens = fontesImagemMeta.length;
 
-    for (let i = 0; i < imagensArquivos.length; i++) {
-      const file = imagensArquivos[i];
+    for (let i = 0; i < fontesImagemMeta.length; i++) {
       const pct = totalImagens ? Math.round(5 + ((i + 1) / totalImagens) * 20) : 20;
       setPublishProgress(pct, `${prefixo}Enviando imagem ${i + 1} de ${totalImagens}...`);
 
       const formData = new FormData();
-      formData.append("imagem", file);
+      anexarImagemFormData(formData, fontesImagemMeta[i]);
       formData.append("usuario_id", usuario_id);
 
       const uploadRes = await fetch(`${API}/meta/upload-imagem`, {
@@ -35328,9 +35396,65 @@ async function publicarPlataformasAdicionaisCampanha() {
     const erroTikTok = validarPublicacaoCampanhaTikTok();
     if (erroTikTok) { mostrarErroPublicacao(erroTikTok); return; }
   }
-  if (novasRedes.includes("linkedin")) {
-    const erroLinkedIn = validarPublicacaoCampanhaLinkedIn();
-    if (erroLinkedIn) { mostrarErroPublicacao(erroLinkedIn); return; }
+
+  // Facebook/Instagram como redes novas — contexto compartilhado (sem
+  // publicacaoGrupoId ainda, só resolvido dentro do try abaixo) montado aqui
+  // porque validar cada perna Meta já precisa dele via
+  // montarContextoPublicacaoMeta, igual criarCampanhaCompleta() já faz.
+  const novasRedesMeta = novasRedes.filter(r => REDES_META_COM_FORMULARIO_PROPRIO.includes(r));
+  const contextoBaseMeta = {
+    token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
+    destino: destinoCampanhaSelecionado,
+    configuracoesBase, imagensArquivos, imagensUrlsFallback, videoArquivo
+  };
+
+  if (novasRedesMeta.length === 1) {
+    // Só uma perna Meta nova: sem troca de dados (não há outra aba Meta pra
+    // trocar com ela), valida direto com o que já está nos campos
+    // compartilhados — mesmo espírito de Google/TikTok.
+    const rede = novasRedesMeta[0];
+    const configuracoesRede = normalizarConfiguracoesAvancadasParaEnvio({
+      ...configuracoesBase,
+      plataformas: [rede],
+      instagram_actor_id: rede === "instagram" ? instagramActorIdSelecionado : null
+    });
+    if (!validarPublicacaoCampanha({
+      campanha_nome, page_id, texto, orcamento,
+      configuracoes_avancadas: configuracoesRede,
+      imagensArquivos: imagensParaValidar, videoArquivo
+    })) {
+      return;
+    }
+  } else if (novasRedesMeta.length === 2) {
+    // As duas pernas Meta novas ao mesmo tempo: cada uma valida com os
+    // próprios dados (já trocados via a aba correspondente), igual
+    // criarCampanhaCompleta() já faz pra Facebook+Instagram na Criação.
+    for (const rede of novasRedesMeta) {
+      selecionarAbaAddPlataformaEdicao(rede);
+      const contextoMeta = montarContextoPublicacaoMeta(contextoBaseMeta, rede, _dadosAddPlataformaEdicaoPorRede[rede]);
+      const imagensMetaParaValidar = contextoMeta.imagensArquivos.length ? contextoMeta.imagensArquivos : imagensUrlsFallback;
+      if (!validarCamposCompartilhadosCampanha({
+        campanha_nome: contextoMeta.campanha_nome,
+        texto: contextoMeta.texto,
+        orcamento: contextoMeta.orcamento,
+        imagensArquivos: imagensMetaParaValidar,
+        videoArquivo: contextoMeta.videoArquivo,
+        redes: [rede]
+      })) {
+        return;
+      }
+      if (!validarPublicacaoCampanha({
+        campanha_nome: contextoMeta.campanha_nome,
+        page_id: contextoMeta.page_id,
+        texto: contextoMeta.texto,
+        orcamento: contextoMeta.orcamento,
+        configuracoes_avancadas: contextoMeta.configuracoesBase,
+        imagensArquivos: imagensMetaParaValidar,
+        videoArquivo: contextoMeta.videoArquivo
+      })) {
+        return;
+      }
+    }
   }
 
   if (btn) { btn.disabled = true; btn.textContent = "Publicando..."; }
@@ -35363,12 +35487,7 @@ async function publicarPlataformasAdicionaisCampanha() {
       campanhaEmEdicao.publicacao_grupo_id = grupoId;
     }
 
-    const contexto = {
-      token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
-      destino: destinoCampanhaSelecionado,
-      configuracoesBase, imagensArquivos, imagensUrlsFallback, videoArquivo,
-      publicacaoGrupoId: grupoId
-    };
+    const contexto = { ...contextoBaseMeta, publicacaoGrupoId: grupoId };
 
     const resultados = [];
     if (novasRedes.includes("tiktok")) {
@@ -35377,14 +35496,33 @@ async function publicarPlataformasAdicionaisCampanha() {
     if (novasRedes.includes("google")) {
       resultados.push({ rede: "Google Ads", ...(await publicarCampanhaGoogle(contexto, true)) });
     }
-    if (novasRedes.includes("linkedin")) {
-      resultados.push({ rede: "LinkedIn Ads", ...(await publicarCampanhaLinkedIn(contexto, true)) });
+    if (novasRedesMeta.length === 1) {
+      const rede = novasRedesMeta[0];
+      const configuracoesRede = normalizarConfiguracoesAvancadasParaEnvio({
+        ...configuracoesBase,
+        plataformas: [rede],
+        instagram_actor_id: rede === "instagram" ? instagramActorIdSelecionado : null
+      });
+      const r = await publicarCampanhaMeta(
+        { ...contexto, redeMeta: rede, configuracoesBase: configuracoesRede },
+        novasRedes.length > 1
+      );
+      resultados.push({ rede: rede === "instagram" ? "Instagram Ads" : "Facebook Ads", ...r });
+    } else if (novasRedesMeta.length === 2) {
+      for (const rede of novasRedesMeta) {
+        const contextoMeta = montarContextoPublicacaoMeta(contexto, rede, _dadosAddPlataformaEdicaoPorRede[rede]);
+        const r = await publicarCampanhaMeta(contextoMeta, true);
+        resultados.push({ rede: rede === "instagram" ? "Instagram Ads" : "Facebook Ads", ...r });
+      }
     }
 
     // Só marca como "já publicada" (deixa de contar como "nova") quem
     // realmente deu certo — quem falhou continua marcado/selecionado no
     // seletor pra tentar de novo sem perder o que já foi digitado.
-    const chaveRedePorNome = { "TikTok": "tiktok", "Google Ads": "google", "LinkedIn Ads": "linkedin" };
+    const chaveRedePorNome = {
+      "TikTok": "tiktok", "Google Ads": "google",
+      "Facebook Ads": "facebook", "Instagram Ads": "instagram"
+    };
     resultados.filter(r => r.ok).forEach(r => {
       const plat = chaveRedePorNome[r.rede];
       if (plat) {
@@ -35392,6 +35530,19 @@ async function publicarPlataformasAdicionaisCampanha() {
         plataformasExistentesEdicaoGrupo.add(plat);
       }
     });
+
+    // Publicar as 2 pernas Meta simultâneas troca nome/texto/orçamento/página
+    // compartilhados entre Facebook e Instagram (mesmo mecanismo da Criação,
+    // onde cada rede pode ter conteúdo diferente) — depois de publicar, repõe
+    // esses campos com os valores reais da campanha base, pra "💾 Salvar
+    // alterações" (que edita só a campanha base) não acabar salvando por
+    // engano o que ficou na última aba Meta usada aqui.
+    if (novasRedesMeta.length === 2) {
+      const cfgBaseAtual = obterConfiguracoesCampanha(campanhaEmEdicao);
+      preencherConfiguracoesAvancadas(cfgBaseAtual, campanhaEmEdicao.daily_budget);
+      preencherCamposGoogleAnuncio(cfgBaseAtual);
+      preencherCamposBasicosCampanha({ ...campanhaEmEdicao, configuracoes_avancadas: cfgBaseAtual });
+    }
 
     setPublishProgress(null);
 
@@ -47136,6 +47287,14 @@ async function enviarFeedback() {
     <div id="editar_campanha_add_plataforma_bloco" class="advanced-full" style="display:none;margin-top:16px;">
       <label>Publicar esta campanha também em</label>
       <div class="campanha-plat-selector" id="editar_campanha_plat_selector">
+        <button type="button" class="plat-sel-btn" data-plat="facebook"
+          onclick="selecionarPlataformaAdicionalEdicao('facebook')">
+          <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path fill="#fff" d="M13.6 21v-7.6h2.5l.4-3h-2.9V8.4c0-.9.2-1.5 1.5-1.5h1.5V4.3C15.9 4.2 15 4.1 14 4.1c-2.1 0-3.6 1.3-3.6 3.7v2.6H8v3h2.4V21h3.2Z"/></svg> Facebook Ads
+        </button>
+        <button type="button" class="plat-sel-btn" data-plat="instagram"
+          onclick="selecionarPlataformaAdicionalEdicao('instagram')">
+          <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><rect x="1" y="1" width="22" height="22" rx="6" fill="#E1306C"/><rect x="6.5" y="6.5" width="11" height="11" rx="3.5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="3.1" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="17" cy="7" r="1.1" fill="#fff"/></svg> Instagram Ads
+        </button>
         <button type="button" class="plat-sel-btn" data-plat="google"
           onclick="selecionarPlataformaAdicionalEdicao('google')">
           <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads
@@ -47144,14 +47303,10 @@ async function enviarFeedback() {
           onclick="selecionarPlataformaAdicionalEdicao('tiktok')">
           🎵 TikTok Ads
         </button>
-        <button type="button" class="plat-sel-btn" data-plat="linkedin"
-          onclick="selecionarPlataformaAdicionalEdicao('linkedin')">
-          💼 LinkedIn Ads
-        </button>
       </div>
       <div id="editar_campanha_add_plataforma_abas" class="campanha-addplat-abas" style="display:none;"></div>
       <small style="display:block;margin-top:6px;color:#64748b;">
-        Marque uma rede para revelar os campos dela logo acima (2 ou mais redes novas aparecem em abas). Nome, texto, orçamento e imagem/vídeo desta campanha já vêm preenchidos — só a cópia do anúncio da nova rede precisa ser revisada, já que cada plataforma publica seu próprio criativo.
+        Marque uma rede para revelar os campos dela logo acima (2 ou mais redes novas aparecem em abas). Nome, texto, orçamento e imagem/vídeo desta campanha já vêm preenchidos — só a cópia do anúncio da nova rede precisa ser revisada, já que cada plataforma publica seu próprio criativo. Facebook e Instagram viram campanhas independentes entre si, com tudo configurado separadamente.
       </small>
     </div>
 

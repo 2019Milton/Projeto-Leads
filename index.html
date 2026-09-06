@@ -22556,10 +22556,44 @@ function paresAcaoCampanha(chaves) {
 
 let fecharSeletorPlataformaCampanhaAtual = null;
 
+function redesMetaCombinadasCampanha(campanha) {
+  const plataforma = String(campanha?.plataforma || "meta").toLowerCase();
+  if (!["meta", "facebook", "instagram"].includes(plataforma)) return [];
+
+  const redes = obterConfiguracoesCampanha(campanha)?.plataformas;
+  if (!Array.isArray(redes)) return [];
+
+  return [...new Set(
+    redes
+      .map(rede => String(rede || "").toLowerCase())
+      .filter(rede => ["facebook", "instagram"].includes(rede))
+  )];
+}
+
+function confirmarAcaoCampanhaMetaCombinada(par, acao) {
+  const redes = redesMetaCombinadasCampanha(par?.campanha);
+  if (redes.length < 2) return Promise.resolve(par);
+
+  const verbo = ROTULOS_ACAO_CAMPANHA[acao] || "continuar com esta ação";
+  const explicacao = acao === "detalhes"
+    ? "Os detalhes das duas redes serão exibidos juntos."
+    : acao === "sync"
+      ? "A sincronização atualizará Facebook e Instagram juntos."
+      : `Não é possível ${verbo} em apenas uma das redes: esta ação afetará Facebook e Instagram juntos.`;
+
+  return Promise.resolve(
+    confirm(
+      `Esta é uma campanha antiga que reúne Facebook e Instagram na mesma estrutura da Meta.\n\n${explicacao}\n\nDeseja continuar?`
+    ) ? par : null
+  );
+}
+
 function escolherCampanhaParaAcao(chaves, acao, chavePreferida) {
   const pares = paresAcaoCampanha(chaves);
   if (!pares.length) return Promise.resolve(null);
-  if (pares.length === 1) return Promise.resolve(pares[0]);
+  if (pares.length === 1) {
+    return confirmarAcaoCampanhaMetaCombinada(pares[0], acao);
+  }
 
   if (fecharSeletorPlataformaCampanhaAtual) {
     fecharSeletorPlataformaCampanhaAtual(null);
@@ -22623,7 +22657,14 @@ function escolherCampanhaParaAcao(chaves, acao, chavePreferida) {
     fundo.addEventListener("click", event => {
       const escolha = event.target.closest("[data-escolher-plataforma-indice]");
       if (escolha) {
-        encerrar(ordem[Number(escolha.dataset.escolherPlataformaIndice)] || null);
+        const parEscolhido =
+          ordem[Number(escolha.dataset.escolherPlataformaIndice)] || null;
+        if (!parEscolhido) {
+          encerrar(null);
+          return;
+        }
+        confirmarAcaoCampanhaMetaCombinada(parEscolhido, acao)
+          .then(encerrar);
         return;
       }
       if (event.target === fundo || event.target.closest("[data-fechar-seletor-plataforma]")) {
@@ -23300,6 +23341,15 @@ function campanhaJaFoiPublicada(campanha) {
   }
 
   return Boolean(campanha?.campaign_id) && !campanhaEhRascunhoLocal(campanha);
+}
+
+function campanhaGooglePodeSerCompletada(campanha) {
+  return (
+    String(campanha?.plataforma || "").toLowerCase() === "google" &&
+    Boolean(campanha?.campaign_id) &&
+    !campanhaEstaExcluida(campanha) &&
+    !campanhaJaFoiPublicada(campanha)
+  );
 }
 
 function mensagemCampanhasVazias(filtro) {
@@ -39013,7 +39063,10 @@ async function carregarCampanhas() {
         (
           campanhaJaFoiPublicada(linha)
             ? capacidadesPlataforma(plataformaCampanhaExibicao(linha)).alterarStatus
-            : capacidadesPlataforma(plataformaCampanhaExibicao(linha)).publicarRascunho
+            : (
+                capacidadesPlataforma(plataformaCampanhaExibicao(linha)).publicarRascunho ||
+                campanhaGooglePodeSerCompletada(linha)
+              )
         )
       )
     );
@@ -39060,6 +39113,8 @@ async function carregarCampanhas() {
     const campanhaLocalPublicavel =
       campanhaEhRascunhoLocal(c) &&
       !campanhaEstaExcluida(c);
+    const campanhaGoogleIncompleta =
+      campanhaGooglePodeSerCompletada(c);
 
     const botaoEnvioCriadorCampanha =
       usuarioUsaEnvioCriadorCampanha();
@@ -39234,8 +39289,8 @@ async function carregarCampanhas() {
           data-campanha-action="status"
           data-campanha-key="${campanhaCacheKey}"
           data-campanha-keys='${JSON.stringify(chavesComAcaoStatus)}'
-          title="${campanhaLocalPublicavel ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
-        >Publicar</button>
+          title="${campanhaGoogleIncompleta ? "Continuar a configuração desta campanha no Google Ads" : campanhaLocalPublicavel ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
+        >${campanhaGoogleIncompleta ? "Completar" : "Publicar"}</button>
             `
         }
     
@@ -39978,36 +40033,65 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
     (campanha.plataforma || "meta") === "meta";
   const aindaNaoPublicada =
     campanhaEhRascunhoLocal(campanha) && !campanhaEstaExcluida(campanha);
+  const campanhaGoogleIncompleta =
+    campanhaGooglePodeSerCompletada(campanha);
   const podeAlterarStatusCampanha = aindaNaoPublicada
-    ? capacidades.publicarRascunho
+    ? (capacidades.publicarRascunho || campanhaGoogleIncompleta)
     : capacidades.alterarStatus;
   const podeExcluirCampanha =
     !campanhaJaFoiPublicada(campanha) || capacidades.excluir;
+  const paresAcoesDrawer = Array.isArray(campanhaDrawerParesAtuais)
+    ? campanhaDrawerParesAtuais.filter(par => par?.campanha && par?.chave)
+    : [{ campanha, chave }];
+  const chavesAcoesDrawer = filtro =>
+    paresAcoesDrawer.filter(par => filtro(par.campanha)).map(par => par.chave);
+  const atributoChavesDrawer = lista =>
+    `data-campanha-keys='${JSON.stringify(lista)}'`;
+  const chavesEditarDrawer = chavesAcoesDrawer(item => !campanhaEstaExcluida(item));
+  const chavesStatusDrawer = chavesAcoesDrawer(item => {
+    if (campanhaEstaExcluida(item) || campanhaPublicacaoExpirada(item)) return false;
+    const capacidadeItem = capacidadesPlataforma(plataformaCampanhaExibicao(item));
+    return campanhaJaFoiPublicada(item)
+      ? capacidadeItem.alterarStatus
+      : (capacidadeItem.publicarRascunho || campanhaGooglePodeSerCompletada(item));
+  });
+  const chavesRestaurarDrawer = chavesAcoesDrawer(item =>
+    campanhaEstaExcluida(item) && capacidadesPlataforma(plataformaCampanhaExibicao(item)).restaurar
+  );
+  const chavesDuplicarDrawer = chavesAcoesDrawer(item =>
+    !campanhaEstaExcluida(item) && capacidadesPlataforma(plataformaCampanhaExibicao(item)).duplicar
+  );
+  const chavesEncaminharDrawer = chavesAcoesDrawer(item =>
+    !campanhaEstaExcluida(item) && capacidadesPlataforma(plataformaCampanhaExibicao(item)).encaminhar
+  );
+  const chavesExcluirDrawer = chavesAcoesDrawer(item =>
+    !campanhaJaFoiPublicada(item) || capacidadesPlataforma(plataformaCampanhaExibicao(item)).excluir
+  );
 
   const acoesPainel = `
     <div class="campanha-drawer-acoes-aba">
       ${campanhaEstaExcluida(campanha)
         ? `
-          ${podeRestaurarCampanha ? `<button class="btn-acao" type="button" data-campanha-action="restaurar" data-campanha-key="${chave}">↩ Restaurar</button>` : ""}
-          ${podeExcluirCampanha ? `<button class="btn-acao" type="button" data-campanha-action="excluir-definitivo" data-campanha-key="${chave}">🗑 Excluir definitivamente</button>` : ""}
+          ${podeRestaurarCampanha ? `<button class="btn-acao" type="button" data-campanha-action="restaurar" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesRestaurarDrawer)}>↩ Restaurar</button>` : ""}
+          ${podeExcluirCampanha ? `<button class="btn-acao" type="button" data-campanha-action="excluir-definitivo" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesExcluirDrawer)}>🗑 Excluir definitivamente</button>` : ""}
         `
         : `
-          <button class="btn-acao" type="button" onclick='abrirEdicaoCampanhaPorChaves(${JSON.stringify(campanhaDrawerParesAtuais.map(p => p.chave))}, "${chave}")'>✏️ Editar</button>
+          <button class="btn-acao" type="button" data-campanha-action="editar" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesEditarDrawer)}>✏️ Editar</button>
           ${!podeAlterarStatusCampanha
             ? ""
             : aindaNaoPublicada
-            ? `<button class="btn-acao" type="button" onclick="publicarCampanhaRecebida(${Number(campanha.id)}, this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">🚀 Publicar</button>`
+            ? `<button class="btn-acao" type="button" data-campanha-action="status" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesStatusDrawer)}>${campanhaGoogleIncompleta ? "🧩 Completar" : "🚀 Publicar"}</button>`
             : campanhaEstaAtiva(campanha)
-              ? `<button class="btn-acao" type="button" onclick="toggleCampanha('${campanha.campaign_id}', '${campanha.status}', this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">⏸ Pausar</button>`
-              : `<button class="btn-acao" type="button" onclick="toggleCampanha('${campanha.campaign_id}', '${campanha.status}', this, '${(campanha.plataforma || "meta").replace(/[^a-z]/g, "")}')">▶ Publicar</button>`
+              ? `<button class="btn-acao" type="button" data-campanha-action="status" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesStatusDrawer)}>⏸ Pausar</button>`
+              : `<button class="btn-acao" type="button" data-campanha-action="status" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesStatusDrawer)}>▶ Publicar</button>`
           }
           ${!usuarioEhCorretorReceptor() && capacidades.duplicar
-            ? `<button class="btn-acao" type="button" data-campanha-action="duplicar" data-campanha-key="${chave}">📋 Duplicar</button>`
+            ? `<button class="btn-acao" type="button" data-campanha-action="duplicar" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesDuplicarDrawer)}>📋 Duplicar</button>`
             : ""}
           ${!usuarioEhCorretorReceptor() && capacidades.encaminhar && usuarioPodeEncaminharCampanhas() && !campanha.recebida_por_encaminhamento
-            ? `<button class="btn-acao" type="button" data-campanha-action="encaminhar" data-campanha-key="${chave}">➡️ Encaminhar</button>`
+            ? `<button class="btn-acao" type="button" data-campanha-action="encaminhar" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesEncaminharDrawer)}>➡️ Encaminhar</button>`
             : ""}
-          ${podeExcluirCampanha ? `<button class="btn-acao" type="button" data-campanha-action="excluir" data-campanha-key="${chave}">🗑 Excluir</button>` : ""}
+          ${podeExcluirCampanha ? `<button class="btn-acao" type="button" data-campanha-action="excluir" data-campanha-key="${chave}" ${atributoChavesDrawer(chavesExcluirDrawer)}>🗑 Excluir</button>` : ""}
         `}
     </div>
   `;

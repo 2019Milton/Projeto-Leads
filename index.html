@@ -26206,6 +26206,28 @@ const redesSelecionadasCampanha = new Set();
 const PLATAFORMAS_COM_ABA_CAMPANHA = ["facebook", "instagram", "google", "tiktok"];
 let abaAtivaCampanha = null;
 
+// Cor de identidade de cada plataforma com aba — usada no botão da aba (ativa)
+// e como borda/fundo nos próprios campos dela, pra ficar visualmente óbvio em
+// qual plataforma se está mexendo no momento (Criação com 2+ marcadas, ou
+// Edição ao adicionar 1+ rede nova). Kwai/LinkedIn ficam de fora de propósito
+// — nunca tiveram aba própria, então também não ganham cor aqui.
+const CORES_PLATAFORMA_ABA = {
+  facebook:  "#1877F2",
+  instagram: "#E1306C",
+  google:    "#4285F4",
+  tiktok:    "#FE2C55"
+};
+
+// Monta o estilo inline do botão de aba com a cor da própria plataforma —
+// compartilhado entre renderizarAbasCampanha (Criação) e
+// renderizarAbasAddPlataformaEdicao (Edição), pra não duplicar a lógica de cor.
+function estiloAbaPlataforma(plat, ativa) {
+  const cor = CORES_PLATAFORMA_ABA[plat] || "#6366f1";
+  return ativa
+    ? `background:${cor}33;border-color:${cor};color:#fff;box-shadow:0 0 0 1px ${cor}66 inset;`
+    : `border-color:${cor}80;`;
+}
+
 function selecionarPlataformaCampanha(plat) {
   const btn = document.querySelector(`.plat-sel-btn[data-plat="${plat}"]`);
   if (!btn) return;
@@ -26367,6 +26389,7 @@ function renderizarAbasAddPlataformaEdicao() {
     <button
       type="button"
       class="campanha-drawer-aba${p === abaAtivaAddPlataformaEdicao ? " ativa" : ""}"
+      style="${estiloAbaPlataforma(p, p === abaAtivaAddPlataformaEdicao)}"
       onclick="selecionarAbaAddPlataformaEdicao('${p}')"
     >${platBadge(p)}</button>
   `).join("");
@@ -26490,6 +26513,28 @@ function aplicarRedesCampanha() {
       !tocaAbaAddEdicao || !abaAtivaAddPlataformaEdicao || redes.includes(abaAtivaAddPlataformaEdicao);
 
     el.style.display = (mostrarPorPlataforma && mostrarPorAba && mostrarPorAbaAddEdicao) ? "" : "none";
+
+    // Borda/fundo na cor da própria plataforma — deixa visualmente óbvio em
+    // qual plataforma o campo pertence no momento. Na Criação só quando uma
+    // aba está mesmo ativa (2+ marcadas); na Edição já vale com 1 rede nova
+    // só (nem precisa virar aba clicável pra ficar destacada).
+    let corPlataforma = null;
+    if (!emEdicao && abaAtivaCampanha && redes.includes(abaAtivaCampanha)) {
+      corPlataforma = CORES_PLATAFORMA_ABA[abaAtivaCampanha];
+    } else if (emEdicao && platsNovasComAba.length === 1 && redes.includes(platsNovasComAba[0])) {
+      corPlataforma = CORES_PLATAFORMA_ABA[platsNovasComAba[0]];
+    } else if (emEdicao && platsNovasComAba.length >= 2 && abaAtivaAddPlataformaEdicao && redes.includes(abaAtivaAddPlataformaEdicao)) {
+      corPlataforma = CORES_PLATAFORMA_ABA[abaAtivaAddPlataformaEdicao];
+    }
+    if (corPlataforma) {
+      el.style.borderLeft = `3px solid ${corPlataforma}`;
+      el.style.paddingLeft = "10px";
+      el.style.background = `${corPlataforma}14`;
+    } else {
+      el.style.borderLeft = "";
+      el.style.paddingLeft = "";
+      el.style.background = "";
+    }
   });
 
   // Na criação, a própria aba já define a rede. Os checkboxes antigos permanecem
@@ -26753,6 +26798,7 @@ function renderizarAbasCampanha(platsComAba) {
     <button
       type="button"
       class="campanha-drawer-aba${p === abaAtivaCampanha ? " ativa" : ""}"
+      style="${estiloAbaPlataforma(p, p === abaAtivaCampanha)}"
       onclick="selecionarAbaCampanha('${p}')"
     >${platBadge(p)}</button>
   `).join("");

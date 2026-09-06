@@ -7216,6 +7216,20 @@ body.tema-claro .cal-nav span { color: #111827; }
   margin: 4px 0 16px;
 }
 
+/* Mesma ideia, mas pras abas locais de "adicionar plataforma" dentro da
+   edição de campanha — terceiro container de abas, independente dos dois
+   acima (esse nunca sai do modal de edição). */
+.campanha-addplat-abas {
+
+  display: flex;
+
+  gap: 6px;
+
+  flex-wrap: wrap;
+
+  margin: 10px 0 4px;
+}
+
 .campanha-drawer-aba {
 
   padding: 6px 12px;
@@ -26257,6 +26271,7 @@ function renderizarSeletorPlataformasAdicionaisEdicao() {
   if (!publicavel || !disponiveis.length) {
     bloco.style.display = "none";
     atualizarBotaoPublicarPlataformasAdicionais();
+    renderizarAbasAddPlataformaEdicao();
     return;
   }
 
@@ -26269,6 +26284,7 @@ function renderizarSeletorPlataformasAdicionaisEdicao() {
   });
 
   atualizarBotaoPublicarPlataformasAdicionais();
+  renderizarAbasAddPlataformaEdicao();
 }
 
 function selecionarPlataformaAdicionalEdicao(plat) {
@@ -26310,6 +26326,45 @@ function plataformasNovasParaPublicarEdicao() {
   return PLATAFORMAS_ADICIONAVEIS_EDICAO.filter(
     p => redesSelecionadasCampanha.has(p) && !plataformasOriginaisEdicao.has(p)
   );
+}
+
+// Abas locais, só para as redes recém-marcadas em "Publicar também em" — não
+// reaproveita o sistema de abas da Criação (#campanha_plat_abas vive fora do
+// modal de edição, por isso a edição sempre força platsComAbaMarcadas = []
+// em aplicarRedesCampanha). Mecanismo paralelo e independente, sem tocar na
+// campanha base.
+let abaAtivaAddPlataformaEdicao = null;
+
+function renderizarAbasAddPlataformaEdicao() {
+  const container = document.getElementById("editar_campanha_add_plataforma_abas");
+  if (!container) return;
+
+  const novas = plataformasNovasParaPublicarEdicao();
+
+  if (novas.length < 2) {
+    container.style.display = "none";
+    container.innerHTML = "";
+    if (!novas.includes(abaAtivaAddPlataformaEdicao)) abaAtivaAddPlataformaEdicao = null;
+    return;
+  }
+
+  if (!abaAtivaAddPlataformaEdicao || !novas.includes(abaAtivaAddPlataformaEdicao)) {
+    abaAtivaAddPlataformaEdicao = novas[0];
+  }
+
+  container.style.display = "";
+  container.innerHTML = novas.map(p => `
+    <button
+      type="button"
+      class="campanha-drawer-aba${p === abaAtivaAddPlataformaEdicao ? " ativa" : ""}"
+      onclick="selecionarAbaAddPlataformaEdicao('${p}')"
+    >${platBadge(p)}</button>
+  `).join("");
+}
+
+function selecionarAbaAddPlataformaEdicao(plat) {
+  abaAtivaAddPlataformaEdicao = plat;
+  aplicarRedesCampanha();
 }
 
 // Campos exclusivos de cada rede adicionável, pra limpar se o usuário marcar
@@ -26371,6 +26426,11 @@ function aplicarRedesCampanha() {
 
   renderizarAbasCampanha(platsComAbaMarcadas);
 
+  // Abas locais de "adicionar plataforma" na edição — mecanismo à parte do
+  // de cima, só entre as redes recém-marcadas (nunca a rede base).
+  if (emEdicao) renderizarAbasAddPlataformaEdicao();
+  const platsNovasComAba = emEdicao ? plataformasNovasParaPublicarEdicao() : [];
+
   document.querySelectorAll("[data-plat-only]").forEach(el => {
     const redes = el.dataset.platOnly.split(",");
     const mostrarPorPlataforma = redes.some(r => redesSelecionadasCampanha.has(r));
@@ -26381,7 +26441,15 @@ function aplicarRedesCampanha() {
     const mostrarPorAba =
       !abaAtivaCampanha || !tocaAbaGerenciada || redes.includes(abaAtivaCampanha);
 
-    el.style.display = (mostrarPorPlataforma && mostrarPorAba) ? "" : "none";
+    // Mesma ideia, mas pro conjunto de redes novas sendo adicionadas na edição
+    // (só entra em jogo com 2+ redes novas — com 0 ou 1, sempre true, igual
+    // era antes desta aba existir; a rede base nunca está em platsNovasComAba,
+    // então seus próprios campos nunca somem por causa disso).
+    const tocaAbaAddEdicao = platsNovasComAba.length >= 2 && redes.some(r => platsNovasComAba.includes(r));
+    const mostrarPorAbaAddEdicao =
+      !tocaAbaAddEdicao || !abaAtivaAddPlataformaEdicao || redes.includes(abaAtivaAddPlataformaEdicao);
+
+    el.style.display = (mostrarPorPlataforma && mostrarPorAba && mostrarPorAbaAddEdicao) ? "" : "none";
   });
 
   // Na criação, a própria aba já define a rede. Os checkboxes antigos permanecem
@@ -32050,8 +32118,10 @@ function fecharEdicaoCampanha() {
     campanhaEmEdicao = null;
     plataformasOriginaisEdicao = new Set();
     plataformasExistentesEdicaoGrupo = new Set();
+    abaAtivaAddPlataformaEdicao = null;
     document.getElementById("editar_campanha_add_plataforma_bloco")?.style.setProperty("display", "none");
     document.getElementById("editar_campanha_btn_publicar_adicionais")?.style.setProperty("display", "none");
+    document.getElementById("editar_campanha_add_plataforma_abas")?.style.setProperty("display", "none");
     aplicarRedesCampanha();
     configurarEdicaoDestinoCampanha(null);
     document
@@ -33682,6 +33752,23 @@ function validarPublicacaoCampanha({
   return true;
 }
 
+// Fonte de uma imagem a enviar pra uma rede: arquivo recém-selecionado (fluxo
+// normal, sempre) ou URL de uma imagem que a campanha já tem (fallback usado
+// só ao adicionar uma nova rede a uma campanha existente sem imagem nova
+// selecionada — ver publicarPlataformasAdicionaisCampanha). O fluxo de Criação
+// nunca passa imagensUrlsFallback, então sempre cai no ramo de arquivo,
+// idêntico ao comportamento de sempre.
+function montarFontesImagem(imagensArquivos, imagensUrlsFallback) {
+  return (imagensArquivos && imagensArquivos.length)
+    ? imagensArquivos.map(arquivo => ({ arquivo }))
+    : (imagensUrlsFallback || []).map(url => ({ url }));
+}
+
+function anexarImagemFormData(formData, fonte) {
+  if (fonte?.arquivo) formData.append("imagem", fonte.arquivo);
+  else if (fonte?.url) formData.append("imagem_url", fonte.url);
+}
+
 // Validação que roda sempre, independente de quais redes estão marcadas — o que
 // é específico do Meta (Página, "onde anunciar") continua só em validarPublicacaoCampanha().
 function validarCamposCompartilhadosCampanha({
@@ -34057,17 +34144,17 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     if (tiktokLocalidadeSelecionada) configuracoes_avancadas.localidades = [tiktokLocalidadeSelecionada];
 
     const imageIds = [];
-    const totalImagens = imagensArquivos.length;
+    const fontesImagem = montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback);
+    const totalImagens = fontesImagem.length;
 
-    for (let i = 0; i < imagensArquivos.length; i++) {
-      const file = imagensArquivos[i];
+    for (let i = 0; i < fontesImagem.length; i++) {
       setPublishProgress(
         totalImagens ? Math.round(5 + ((i + 1) / totalImagens) * 20) : 20,
         `${prefixo}Enviando imagem ${i + 1} de ${totalImagens}...`
       );
 
       const formData = new FormData();
-      formData.append("imagem", file);
+      anexarImagemFormData(formData, fontesImagem[i]);
       formData.append("usuario_id", usuario_id);
 
       const uploadRes = await fetch(`${API}/tiktok/upload-imagem`, {
@@ -34259,14 +34346,14 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
     let imagemQuadradaAsset = null;
     if (tipoCampanha === "display") {
       setPublishProgress(58, `${prefixo}Enviando imagem do anúncio...`);
-      const arquivoImagem = imagensArquivos?.[0];
-      if (!arquivoImagem) {
+      const fonteImagemGoogle = montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback)[0];
+      if (!fonteImagemGoogle) {
         await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
         return { ok: false, mensagem: "Selecione uma imagem para o anúncio de Display do Google Ads." };
       }
       for (const tipo of ["paisagem", "quadrada"]) {
         const formImagem = new FormData();
-        formImagem.append("imagem", arquivoImagem);
+        anexarImagemFormData(formImagem, fonteImagemGoogle);
         formImagem.append("usuario_id", usuario_id);
         formImagem.append("tipo", tipo);
         const uploadRes = await fetch(`${API}/google/upload-imagem`, {
@@ -34713,10 +34800,13 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
     }
 
     let imageUrn = null;
-    if (destino !== "whatsapp" && imagensArquivos?.length) {
+    const fonteImagemLinkedIn = destino !== "whatsapp"
+      ? montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback)[0]
+      : null;
+    if (fonteImagemLinkedIn) {
       setPublishProgress(65, `${prefixo}Enviando imagem...`);
       const formImagem = new FormData();
-      formImagem.append("imagem", imagensArquivos[0]);
+      anexarImagemFormData(formImagem, fonteImagemLinkedIn);
       formImagem.append("usuario_id", usuario_id);
       const uploadRes = await fetch(`${API}/linkedin/upload-imagem`, {
         method: "POST",
@@ -35203,6 +35293,18 @@ async function publicarPlataformasAdicionaisCampanha() {
     .map(input => input.files[0])
     .filter(Boolean);
 
+  // Nenhuma imagem nova selecionada: reaproveita as imagens que a campanha já
+  // tem (mostradas no carrossel como referência, sem arquivo anexado) como
+  // fallback pra rede nova — é isso que faz o "auto-preenchimento" de
+  // imagem funcionar de verdade, não só aparecer visualmente. Tudo-ou-nada:
+  // se o usuário selecionou QUALQUER imagem nova, usa só as novas (sem
+  // misturar slot novo com slot reaproveitado).
+  const imagensUrlsFallback = imagensArquivos.length ? [] :
+    Array.from(document.querySelectorAll("#imagens-container .imagem-item"))
+      .map(item => item.dataset.urlExistente)
+      .filter(Boolean);
+  const imagensParaValidar = imagensArquivos.length ? imagensArquivos : imagensUrlsFallback;
+
   const videoArquivo = obterArquivoVideoCampanha();
 
   const feedback = document.getElementById("editar_campanha_add_plataforma_feedback");
@@ -35213,13 +35315,13 @@ async function publicarPlataformasAdicionaisCampanha() {
   }
 
   if (!validarCamposCompartilhadosCampanha({
-    campanha_nome, texto, orcamento, imagensArquivos, videoArquivo, redes: novasRedes
+    campanha_nome, texto, orcamento, imagensArquivos: imagensParaValidar, videoArquivo, redes: novasRedes
   })) {
     return;
   }
 
   if (novasRedes.includes("google")) {
-    const erroGoogle = validarPublicacaoCampanhaGoogle(imagensArquivos);
+    const erroGoogle = validarPublicacaoCampanhaGoogle(imagensParaValidar);
     if (erroGoogle) { mostrarErroPublicacao(erroGoogle); return; }
   }
   if (novasRedes.includes("tiktok")) {
@@ -35264,7 +35366,7 @@ async function publicarPlataformasAdicionaisCampanha() {
     const contexto = {
       token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
       destino: destinoCampanhaSelecionado,
-      configuracoesBase, imagensArquivos, videoArquivo,
+      configuracoesBase, imagensArquivos, imagensUrlsFallback, videoArquivo,
       publicacaoGrupoId: grupoId
     };
 
@@ -47047,8 +47149,9 @@ async function enviarFeedback() {
           💼 LinkedIn Ads
         </button>
       </div>
+      <div id="editar_campanha_add_plataforma_abas" class="campanha-addplat-abas" style="display:none;"></div>
       <small style="display:block;margin-top:6px;color:#64748b;">
-        Marque uma rede para revelar os campos dela logo acima. Nome, texto e orçamento desta campanha são reaproveitados — imagem/vídeo e a cópia do anúncio da nova rede precisam ser preenchidos aqui, já que cada plataforma publica seu próprio criativo.
+        Marque uma rede para revelar os campos dela logo acima (2 ou mais redes novas aparecem em abas). Nome, texto, orçamento e imagem/vídeo desta campanha já vêm preenchidos — só a cópia do anúncio da nova rede precisa ser revisada, já que cada plataforma publica seu próprio criativo.
       </small>
     </div>
 

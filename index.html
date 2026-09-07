@@ -4097,7 +4097,11 @@ body.tema-claro .perguntas-rapidas-ajuda {
 }
 
 #filtro_status,
-#filtro_nicho {
+#filtro_nicho,
+#filtro_origem,
+#filtro_data_inicio,
+#filtro_data_fim,
+#filtro_corretor_receptor {
 
   background: #111827;
   border: 1px solid #334155;
@@ -4111,6 +4115,8 @@ body.tema-claro .perguntas-rapidas-ajuda {
   font-size: 13px;
 
   outline: none;
+
+  color-scheme: dark;
 }
 
 .campanhas-contador {
@@ -17666,11 +17672,15 @@ body.tema-claro .criar-campanha-descricao {
           </section>
 
           <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="facebook,instagram,linkedin,kwai">
-            <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro da própria rede (Facebook/Instagram, LinkedIn ou Kwai). WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma — no LinkedIn isso abre um link wa.me pré-preenchido, já que o LinkedIn não tem um botão nativo de WhatsApp como a Meta.', event)">i</button></h4>
+            <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro da própria rede (Facebook/Instagram, LinkedIn ou Kwai). Endereço do site (só Facebook/Instagram): o clique abre a página informada. WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma — no LinkedIn isso abre um link wa.me pré-preenchido, já que o LinkedIn não tem um botão nativo de WhatsApp como a Meta.', event)">i</button></h4>
             <div class="advanced-checks">
               <label>
                 <input type="radio" name="campanha_destino" id="destino_lead_ads" value="lead_ads" checked onchange="aplicarDestinoCampanha()">
                 Formulário de Leads
+              </label>
+              <label data-plat-only="facebook,instagram">
+                <input type="radio" name="campanha_destino" id="destino_site" value="site" onchange="aplicarDestinoCampanha()">
+                Endereço do site
               </label>
               <label>
                 <input type="radio" name="campanha_destino" id="destino_whatsapp" value="whatsapp" onchange="aplicarDestinoCampanha()">
@@ -17679,6 +17689,9 @@ body.tema-claro .criar-campanha-descricao {
             </div>
             <div id="destino_whatsapp_aviso" class="channel-picker-status alerta" style="display:none;">
               Conecte o WhatsApp da plataforma (aba Whatsapp Bot) antes de publicar uma campanha com esse destino.
+            </div>
+            <div id="destino_site_info" data-destino-only="site" data-plat-only="facebook,instagram" class="channel-picker-status" style="display:none;">
+              O clique será direcionado para o endereço informado abaixo.
             </div>
             <div id="destino_campanha_bloqueado_aviso" class="channel-picker-status alerta" style="display:none;">
               <div>Esta versão já foi criada na Meta. Para trocar o destino sem perder o nome, a imagem e as configurações, crie um rascunho editável.</div>
@@ -17690,6 +17703,12 @@ body.tema-claro .criar-campanha-descricao {
               >Criar rascunho editável</button>
             </div>
           </section>
+
+          <div class="advanced-full" data-plat-only="facebook,instagram" data-destino-only="site" style="display:none;">
+            <label>Endereço do site <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o link completo, começando com https://, para onde a pessoa será direcionada ao tocar no anúncio.', event)">i</button></label>
+            <input type="url" id="adv_link" placeholder="https://seusite.com.br" autocomplete="url">
+            <small style="display:block;margin-top:5px;opacity:.65;">Use uma página que funcione bem no celular.</small>
+          </div>
         </details>
 
         <!-- ═══ SEÇÃO 2: CONTEÚDO DO ANÚNCIO ═══ -->
@@ -27270,7 +27289,9 @@ let destinoCampanhaSelecionado = "lead_ads";
 // Campos de formulário/tela de obrigado só fazem sentido pra Lead Ads.
 async function aplicarDestinoCampanha() {
   const radioChecado = document.querySelector('input[name="campanha_destino"]:checked');
-  destinoCampanhaSelecionado = radioChecado?.value === "whatsapp" ? "whatsapp" : "lead_ads";
+  destinoCampanhaSelecionado = ["lead_ads", "site", "whatsapp"].includes(radioChecado?.value)
+    ? radioChecado.value
+    : "lead_ads";
 
   // Destaque visual explícito da opção atual — o ponto nativo do rádio fica
   // pouco visível quando desabilitado (campanha já publicada), então não dá
@@ -31832,8 +31853,8 @@ function coletarConfiguracoesAvancadas() {
 
   return {
     destino:
-      destinoCampanhaSelecionado === "whatsapp"
-        ? "whatsapp"
+      ["lead_ads", "site", "whatsapp"].includes(destinoCampanhaSelecionado)
+        ? destinoCampanhaSelecionado
         : "lead_ads",
     categoria_especial:
       valorCampo("adv_categoria_especial"),
@@ -31994,7 +32015,7 @@ function restaurarFormularioMeta(rede, dados) {
   dados = dados || {};
 
   const destinoRadio = document.getElementById(
-    dados.destino === "whatsapp" ? "destino_whatsapp" : "destino_lead_ads"
+    dados.destino === "whatsapp" ? "destino_whatsapp" : dados.destino === "site" ? "destino_site" : "destino_lead_ads"
   );
   if (destinoRadio) destinoRadio.checked = true;
   aplicarDestinoCampanha();
@@ -32298,7 +32319,8 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
   if (radioEscolhaMidia) radioEscolhaMidia.checked = true;
   atualizarBlocoEscolhaMidiaCarrossel();
 
-  const destinoRadio = document.getElementById(cfg.destino === "whatsapp" ? "destino_whatsapp" : "destino_lead_ads");
+  const destinoRadioId = cfg.destino === "whatsapp" ? "destino_whatsapp" : cfg.destino === "site" ? "destino_site" : "destino_lead_ads";
+  const destinoRadio = document.getElementById(destinoRadioId);
   if (destinoRadio) destinoRadio.checked = true;
   aplicarDestinoCampanha();
 
@@ -32404,7 +32426,7 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
   // real ja salvo na campanha — antes disso, o modal sempre abria mostrando
   // o valor deixado pela ultima campanha criada/editada, nao o desta.
   const cfgDestino = obterConfiguracoesCampanha(campanha) || {};
-  const destinoReal = cfgDestino.destino === "whatsapp" ? "whatsapp" : "lead_ads";
+  const destinoReal = ["lead_ads", "site", "whatsapp"].includes(cfgDestino.destino) ? cfgDestino.destino : "lead_ads";
   const radioDestino = document.querySelector(
     `input[name="campanha_destino"][value="${destinoReal}"]`
   );
@@ -33118,7 +33140,7 @@ async function criarRascunhoEditavelParaTrocarDestino() {
     );
 
     await abrirRascunhoDuplicado(novoId);
-    alert("Rascunho criado. Agora escolha WhatsApp, salve e depois clique em Publicar.");
+    alert("Rascunho criado. Agora escolha o novo destino, salve e depois clique em Publicar.");
   } catch (err) {
     console.error("CRIAR RASCUNHO EDITÁVEL:", err);
     alert(err?.message || "Erro ao criar rascunho editável.");
@@ -34277,6 +34299,19 @@ function validarPublicacaoCampanha({
     return false;
   }
 
+  if (configuracoes_avancadas.destino === "site") {
+    const url = (configuracoes_avancadas.link || "").trim();
+    try {
+      const destinoUrl = new URL(url);
+      if (!["http:", "https:"].includes(destinoUrl.protocol)) throw new Error("protocolo inválido");
+    } catch (_) {
+      return conduzirParaCampoCampanha(
+        "#adv_link",
+        "Informe um endereço completo e válido para o anúncio (começando com https://)."
+      );
+    }
+  }
+
   limparValidacaoCampanha();
   return true;
 }
@@ -34461,7 +34496,7 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
   const prefixo = isMultiRede ? `[${nomeRede}] ` : "";
 
   try {
-    const destino = destinoContexto === "whatsapp" ? "whatsapp" : "lead_ads";
+    const destino = ["lead_ads", "site", "whatsapp"].includes(destinoContexto) ? destinoContexto : "lead_ads";
     const objetivo = destino === "whatsapp" ? "OUTCOME_ENGAGEMENT" : "OUTCOME_LEADS";
     const configuracoes_avancadas = {
       ...configuracoesBase,
@@ -34557,7 +34592,7 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
 
     let form = { id: null };
 
-    if (destino !== "whatsapp") {
+    if (destino === "lead_ads") {
       setPublishProgress(55, `${prefixo}Criando formulário de leads...`);
 
       const formRes = await fetch(`${API}/meta/formulario`, {
@@ -40905,7 +40940,7 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
       ${detalheItem("Texto do anúncio", cfg.texto, "full")}
       ${detalheItem("CTA", cfg.cta)}
       ${detalheItem("Categoria especial", labelCategoriaEspecial(cfg.categoria_especial))}
-      ${detalheItem("Destino da campanha", cfg.destino === "whatsapp" ? "WhatsApp (clique para conversar)" : "Formulário de Leads")}
+      ${detalheItem("Destino da campanha", cfg.destino === "whatsapp" ? "WhatsApp (clique para conversar)" : cfg.destino === "site" ? "Endereço do site" : "Formulário de Leads")}
       ${detalheItem("Objetivo", campanha.objetivo || "Leads")}
       ${detalheItem("Título do anúncio", cfg.titulo)}
       ${detalheItem("Descrição", cfg.descricao, "full")}

@@ -20344,6 +20344,10 @@ body.tema-claro .criar-campanha-descricao {
               <input type="number" step="0.01" min="0.01" id="financeiro_novo_valor" style="width:120px;" />
             </div>
             <div style="flex:1;min-width:180px;">
+              <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Chave PIX (opcional)</label>
+              <input type="text" id="financeiro_novo_pix" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória" style="width:100%;" />
+            </div>
+            <div style="flex:1;min-width:180px;">
               <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Observação (opcional)</label>
               <input type="text" id="financeiro_novo_observacao" style="width:100%;" />
             </div>
@@ -21839,6 +21843,15 @@ async function carregarFinanceiro() {
             </div>
             <span style="font-size:12px;font-weight:600;color:${statusInfo.cor};">● ${statusInfo.texto}</span>
           </div>
+          ${(l.pix_chave && l.status !== "pago") ? `
+            <div style="margin-top:10px;padding:8px 10px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3);border-radius:8px;">
+              <div style="font-size:11px;color:#94a3b8;">Pague via PIX${l.pix_tipo_label ? ` (${escaparHtml(l.pix_tipo_label)})` : ""}</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap;">
+                <strong style="color:#4ade80;font-size:14px;word-break:break-all;">${escaparHtml(l.pix_chave)}</strong>
+                <button type="button" class="btn-video-anuncio" onclick="copiarChavePixFinanceiro('${escaparHtml(l.pix_chave).replace(/'/g, "\\'")}', this)">📋 Copiar</button>
+              </div>
+            </div>
+          ` : ""}
           ${l.observacao ? `<div style="font-size:12px;color:#94a3b8;margin-top:8px;">${escaparHtml(l.observacao)}</div>` : ""}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
             ${l.tem_comprovante
@@ -21856,6 +21869,20 @@ async function carregarFinanceiro() {
   } catch (err) {
     console.error("ERRO carregarFinanceiro:", err);
     container.innerHTML = `<div class="dashboard-empty-state">Erro ao carregar lançamentos.</div>`;
+  }
+}
+
+async function copiarChavePixFinanceiro(chave, btnEl) {
+  try {
+    await navigator.clipboard.writeText(chave);
+    if (btnEl) {
+      const textoOriginal = btnEl.textContent;
+      btnEl.textContent = "✅ Copiado!";
+      setTimeout(() => { btnEl.textContent = textoOriginal; }, 1500);
+    }
+  } catch (err) {
+    console.error("ERRO copiarChavePixFinanceiro:", err);
+    alert("Não foi possível copiar a chave PIX.");
   }
 }
 
@@ -21922,6 +21949,8 @@ async function abrirArquivoFinanceiro(lancamentoId, tipo) {
 // =============================================
 
 let _financeiroUsuarioSelecionadoId = null;
+let _historicoFinanceiroUsuarioCache = [];
+let _lancamentoFinanceiroEmEdicaoId = null;
 
 async function carregarFinanceiroUsuariosAdmin() {
   const tabela = document.getElementById("financeiro_usuarios_tabela");
@@ -21961,6 +21990,7 @@ async function carregarFinanceiroUsuariosAdmin() {
 
 async function abrirDetalheFinanceiroUsuario(usuarioId, nome) {
   _financeiroUsuarioSelecionadoId = usuarioId;
+  _lancamentoFinanceiroEmEdicaoId = null;
 
   const detalhe = document.getElementById("financeiro_usuario_detalhe");
   const nomeEl = document.getElementById("financeiro_usuario_detalhe_nome");
@@ -21972,6 +22002,7 @@ async function abrirDetalheFinanceiroUsuario(usuarioId, nome) {
   definirValorCampo("financeiro_novo_mes", dataAtual);
   definirValorCampo("financeiro_novo_valor", "");
   definirValorCampo("financeiro_novo_observacao", "");
+  definirValorCampo("financeiro_novo_pix", localStorage.getItem("financeiro_ultima_chave_pix") || "");
 
   await carregarHistoricoFinanceiroUsuario();
   detalhe?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -21999,38 +22030,162 @@ async function carregarHistoricoFinanceiroUsuario() {
       return;
     }
 
+    _historicoFinanceiroUsuarioCache = lancamentos;
+
     if (!lancamentos.length) {
       container.innerHTML = `<div class="dashboard-empty-state">Nenhum lançamento ainda.</div>`;
       return;
     }
 
-    container.innerHTML = lancamentos.map(l => {
-      const statusInfo = FINANCEIRO_STATUS_LABEL[l.status] || { texto: l.status, cor: "#94a3b8" };
-      return `
-        <div style="padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-            <div>
-              <strong>${escaparHtml(formatarMesReferencia(l.mes_referencia))}</strong>
-              <span style="margin-left:8px;color:#e2e8f0;">${formatarMoeda(l.valor)}</span>
-            </div>
-            <span style="font-size:12px;color:${statusInfo.cor};">● ${statusInfo.texto}</span>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-            ${l.tem_comprovante
-              ? `<button type="button" class="btn-video-anuncio" onclick="abrirArquivoFinanceiro(${l.id}, 'comprovante')">📎 Ver comprovante</button>`
-              : `<span style="font-size:12px;color:#64748b;">Comprovante ainda não enviado</span>`
-            }
-            ${l.tem_nf
-              ? `<button type="button" class="btn-video-anuncio" onclick="abrirArquivoFinanceiro(${l.id}, 'nf')">🧾 Ver NF</button>`
-              : `<label class="btn-video-anuncio" style="cursor:pointer;">🧾 Enviar NF<input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="display:none;" onchange="enviarNFFinanceiro(${l.id}, this)"></label>`
-            }
-          </div>
-        </div>
-      `;
-    }).join("");
+    renderizarHistoricoFinanceiroUsuario();
   } catch (err) {
     console.error("ERRO carregarHistoricoFinanceiroUsuario:", err);
     container.innerHTML = `<div class="dashboard-empty-state">Erro ao carregar histórico.</div>`;
+  }
+}
+
+function renderizarHistoricoFinanceiroUsuario() {
+  const container = document.getElementById("financeiro_usuario_historico");
+  if (!container) return;
+  container.innerHTML = _historicoFinanceiroUsuarioCache
+    .map(l => l.id === _lancamentoFinanceiroEmEdicaoId
+      ? renderFormEdicaoLancamentoFinanceiro(l)
+      : renderLancamentoFinanceiroAdmin(l))
+    .join("");
+}
+
+function renderLancamentoFinanceiroAdmin(l) {
+  const statusInfo = FINANCEIRO_STATUS_LABEL[l.status] || { texto: l.status, cor: "#94a3b8" };
+  return `
+    <div style="padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <strong>${escaparHtml(formatarMesReferencia(l.mes_referencia))}</strong>
+          <span style="margin-left:8px;color:#e2e8f0;">${formatarMoeda(l.valor)}</span>
+        </div>
+        <span style="font-size:12px;color:${statusInfo.cor};">● ${statusInfo.texto}</span>
+      </div>
+      ${l.pix_chave ? `<div style="font-size:12px;color:#94a3b8;margin-top:6px;">Chave PIX${l.pix_tipo_label ? ` (${escaparHtml(l.pix_tipo_label)})` : ""}: <strong style="color:#e2e8f0;">${escaparHtml(l.pix_chave)}</strong></div>` : ""}
+      ${l.observacao ? `<div style="font-size:12px;color:#94a3b8;margin-top:6px;">${escaparHtml(l.observacao)}</div>` : ""}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        ${l.tem_comprovante
+          ? `<button type="button" class="btn-video-anuncio" onclick="abrirArquivoFinanceiro(${l.id}, 'comprovante')">📎 Ver comprovante</button>`
+          : `<span style="font-size:12px;color:#64748b;">Comprovante ainda não enviado</span>`
+        }
+        ${l.tem_nf
+          ? `<button type="button" class="btn-video-anuncio" onclick="abrirArquivoFinanceiro(${l.id}, 'nf')">🧾 Ver NF</button>`
+          : `<label class="btn-video-anuncio" style="cursor:pointer;">🧾 Enviar NF<input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="display:none;" onchange="enviarNFFinanceiro(${l.id}, this)"></label>`
+        }
+        <button type="button" class="btn-video-anuncio" onclick="iniciarEdicaoLancamentoFinanceiro(${l.id})">✏️ Editar</button>
+        <button type="button" class="btn-video-anuncio remover" onclick="excluirLancamentoFinanceiro(${l.id})">🗑️ Excluir</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderFormEdicaoLancamentoFinanceiro(l) {
+  const dataValor = String(l.mes_referencia).slice(0, 10);
+  return `
+    <div style="padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.05);border-radius:8px;border:1px solid rgba(124,58,237,0.5);">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div>
+          <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Data de referência</label>
+          <input type="date" id="financeiro_editar_mes_${l.id}" value="${dataValor}" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Valor (R$)</label>
+          <input type="number" step="0.01" min="0.01" id="financeiro_editar_valor_${l.id}" value="${l.valor}" style="width:120px;" />
+        </div>
+        <div style="flex:1;min-width:180px;">
+          <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Chave PIX (opcional)</label>
+          <input type="text" id="financeiro_editar_pix_${l.id}" value="${escaparHtml(l.pix_chave || "")}" placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória" style="width:100%;" />
+        </div>
+        <div style="flex:1;min-width:180px;">
+          <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Observação (opcional)</label>
+          <input type="text" id="financeiro_editar_observacao_${l.id}" value="${escaparHtml(l.observacao || "")}" style="width:100%;" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn" onclick="salvarEdicaoLancamentoFinanceiro(${l.id})">Salvar</button>
+        <button type="button" class="btn-video-anuncio" onclick="cancelarEdicaoLancamentoFinanceiro()">Cancelar</button>
+      </div>
+    </div>
+  `;
+}
+
+function iniciarEdicaoLancamentoFinanceiro(id) {
+  _lancamentoFinanceiroEmEdicaoId = id;
+  renderizarHistoricoFinanceiroUsuario();
+}
+
+function cancelarEdicaoLancamentoFinanceiro() {
+  _lancamentoFinanceiroEmEdicaoId = null;
+  renderizarHistoricoFinanceiroUsuario();
+}
+
+async function salvarEdicaoLancamentoFinanceiro(id) {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  const mes = valorCampo(`financeiro_editar_mes_${id}`);
+  const valor = Number(valorCampo(`financeiro_editar_valor_${id}`));
+  const observacao = valorCampo(`financeiro_editar_observacao_${id}`);
+  const pixChave = valorCampo(`financeiro_editar_pix_${id}`);
+
+  if (!mes) {
+    alert("Escolha a data de referência.");
+    return;
+  }
+  if (!valor || valor <= 0) {
+    alert("Informe um valor válido.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/admin/financeiro/lancamentos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ mes_referencia: mes, valor, observacao, pix_chave: pixChave })
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.error) {
+      alert(data.error || "Erro ao salvar lançamento.");
+      return;
+    }
+
+    _lancamentoFinanceiroEmEdicaoId = null;
+    await carregarHistoricoFinanceiroUsuario();
+    await carregarFinanceiroUsuariosAdmin();
+  } catch (err) {
+    console.error("ERRO salvarEdicaoLancamentoFinanceiro:", err);
+    alert("Erro ao salvar lançamento.");
+  }
+}
+
+async function excluirLancamentoFinanceiro(id) {
+  if (!confirm("Excluir este lançamento? Essa ação não pode ser desfeita.")) return;
+
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API}/admin/financeiro/lancamentos/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.error) {
+      alert(data.error || "Erro ao excluir lançamento.");
+      return;
+    }
+
+    await carregarHistoricoFinanceiroUsuario();
+    await carregarFinanceiroUsuariosAdmin();
+  } catch (err) {
+    console.error("ERRO excluirLancamentoFinanceiro:", err);
+    alert("Erro ao excluir lançamento.");
   }
 }
 
@@ -22041,6 +22196,7 @@ async function lancarCobrancaFinanceiroUsuario() {
   const mes = valorCampo("financeiro_novo_mes");
   const valor = Number(valorCampo("financeiro_novo_valor"));
   const observacao = valorCampo("financeiro_novo_observacao");
+  const pixChave = valorCampo("financeiro_novo_pix");
 
   if (!mes) {
     alert("Escolha a data de referência.");
@@ -22059,7 +22215,8 @@ async function lancarCobrancaFinanceiroUsuario() {
         usuario_id: _financeiroUsuarioSelecionadoId,
         mes_referencia: mes,
         valor,
-        observacao
+        observacao,
+        pix_chave: pixChave
       })
     });
     const data = await res.json().catch(() => ({}));
@@ -22068,6 +22225,8 @@ async function lancarCobrancaFinanceiroUsuario() {
       alert(data.error || "Erro ao lançar cobrança.");
       return;
     }
+
+    if (pixChave) localStorage.setItem("financeiro_ultima_chave_pix", pixChave);
 
     alert("Cobrança lançada com sucesso!");
     await carregarHistoricoFinanceiroUsuario();

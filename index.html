@@ -12845,6 +12845,43 @@ body.tema-claro .targeting-chip {
   white-space: normal;
   box-shadow: 0 18px 44px rgba(124,58,237,0.28), 0 0 0 1px rgba(255,255,255,0.08) inset;
   cursor: pointer;
+  transition:
+    left .22s cubic-bezier(.4,0,.2,1),
+    width .22s cubic-bezier(.4,0,.2,1),
+    max-width .22s cubic-bezier(.4,0,.2,1),
+    padding .22s cubic-bezier(.4,0,.2,1),
+    border-radius .22s cubic-bezier(.4,0,.2,1),
+    transform .16s,
+    box-shadow .16s;
+}
+
+.banner-ia-fab-icone {
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.banner-ia-fab-texto {
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity .12s, width .22s;
+}
+
+/* O atalho ocupa a largura da sidebar aberta. Quando o menu recolhe, vira
+   apenas um botao quadrado e deixa de cobrir os cards de campanha. */
+#sidebar-nav.recolhida ~ #app-content-area .banner-ia-fab {
+  left: 6px;
+  width: 44px;
+  max-width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 13px;
+  gap: 0;
+}
+
+#sidebar-nav.recolhida ~ #app-content-area .banner-ia-fab-texto {
+  width: 0;
+  opacity: 0;
 }
 
 .banner-ia-fab:hover {
@@ -12856,6 +12893,11 @@ body.tema-claro .targeting-chip {
   .banner-ia-fab {
     left: 16px;
     right: auto;
+    bottom: 16px;
+  }
+
+  #sidebar-nav.recolhida ~ #app-content-area .banner-ia-fab {
+    left: 6px;
     bottom: 16px;
   }
 }
@@ -15005,6 +15047,128 @@ body.tema-claro .ia-resumo-panel {
   line-height: 1.6;
 }
 .banner-ia-info strong { color: #cbd5e1; }
+
+.banner-ia-briefing {
+  margin: 14px 0 16px;
+  padding: 14px;
+  border: 1px solid rgba(124,92,255,0.24);
+  border-radius: 12px;
+  background: rgba(124,92,255,0.06);
+}
+
+.banner-ia-briefing-titulo {
+  margin: 0 0 10px;
+  color: #ddd6fe;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.banner-ia-briefing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.banner-ia-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.banner-ia-campo.full { grid-column: 1 / -1; }
+
+.banner-ia-campo label {
+  color: #a5b4fc;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.banner-ia-campo input,
+.banner-ia-campo select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 9px 10px;
+  border: 1px solid rgba(148,163,184,0.24);
+  border-radius: 8px;
+  background: rgba(15,23,42,0.84);
+  color: #e2e8f0;
+  font-size: 12px;
+}
+
+.banner-ia-revisao-opcao {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  grid-column: 1 / -1;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: rgba(34,197,94,0.08);
+  color: #bbf7d0;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.banner-ia-revisao-opcao input { margin-top: 2px; }
+
+.banner-ia-resultado-meta {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(34,197,94,0.26);
+  border-radius: 10px;
+  background: rgba(34,197,94,0.07);
+  color: #cbd5e1;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.banner-ia-resultado-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.banner-ia-status-selo {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(34,197,94,0.14);
+  color: #86efac;
+  font-weight: 800;
+}
+
+.banner-ia-status-selo.aviso {
+  background: rgba(245,158,11,0.14);
+  color: #fcd34d;
+}
+
+.banner-ia-fontes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.banner-ia-fontes a {
+  padding: 3px 7px;
+  border: 1px solid rgba(96,165,250,0.28);
+  border-radius: 999px;
+  color: #93c5fd;
+  text-decoration: none;
+}
+
+.banner-ia-fontes a:hover { border-color: #60a5fa; color: #dbeafe; }
+
+@media (max-width: 640px) {
+  .banner-ia-briefing-grid { grid-template-columns: 1fr; }
+  .banner-ia-campo.full,
+  .banner-ia-revisao-opcao { grid-column: 1; }
+}
 
 .banner-ia-label {
   font-size: 11px;
@@ -18682,8 +18846,10 @@ body.tema-claro .criar-campanha-descricao {
       type="button"
       onclick="abrirModalGerarBanner()"
       title="Gerar/Editar Criativo"
+      aria-label="Gerar ou editar criativo"
     >
-      ✨ Gerar/Editar Criativo
+      <span class="banner-ia-fab-icone">✨</span>
+      <span class="banner-ia-fab-texto">Gerar/Editar Criativo</span>
     </button>
 
     <!-- 🔍 LIGHTBOX (visualização de imagem do chat) -->
@@ -48957,11 +49123,86 @@ async function enviarFeedback() {
       </button>
     </div>
 
+    <div class="banner-ia-briefing">
+      <div class="banner-ia-briefing-titulo">🧭 Direção estratégica do criativo</div>
+      <div class="banner-ia-briefing-grid">
+        <div class="banner-ia-campo">
+          <label for="banner_ia_nicho">Nicho</label>
+          <select id="banner_ia_nicho">
+            <option value="">Detectar pelo briefing</option>
+            <option value="imoveis">Imóveis</option>
+            <option value="saude">Saúde e planos</option>
+            <option value="suplementos">Suplementos e fitness</option>
+            <option value="saas">Plataforma / SaaS</option>
+            <option value="higienizacao">Higienização</option>
+            <option value="telecom">Telecom empresarial</option>
+            <option value="cursos_online">Cursos online</option>
+            <option value="educacao">Educação</option>
+            <option value="auto">Automotivo</option>
+            <option value="consorcio">Consórcio</option>
+          </select>
+        </div>
+        <div class="banner-ia-campo">
+          <label for="banner_ia_formato">Canal e formato</label>
+          <select id="banner_ia_formato">
+            <option value="instagram_feed">Instagram / Facebook — feed quadrado</option>
+            <option value="stories_reels">Stories / Reels — vertical</option>
+            <option value="tiktok_vertical">TikTok — vertical</option>
+            <option value="google_display">Google Display — paisagem</option>
+            <option value="linkedin_feed">LinkedIn — paisagem</option>
+            <option value="quadrado_generico">Quadrado — uso geral</option>
+          </select>
+        </div>
+        <div class="banner-ia-campo">
+          <label for="banner_ia_objetivo">Objetivo principal</label>
+          <select id="banner_ia_objetivo">
+            <option value="leads">Gerar leads</option>
+            <option value="whatsapp">Iniciar conversas no WhatsApp</option>
+            <option value="site">Levar ao site</option>
+            <option value="remarketing">Remarketing</option>
+            <option value="reconhecimento">Reconhecimento de marca</option>
+          </select>
+        </div>
+        <div class="banner-ia-campo">
+          <label for="banner_ia_estilo">Estilo criativo</label>
+          <select id="banner_ia_estilo">
+            <option value="auto">IA escolhe com base na pesquisa</option>
+            <option value="resposta_direta">Resposta direta / conversão</option>
+            <option value="premium">Premium e sofisticado</option>
+            <option value="ugc">Autêntico / UGC</option>
+            <option value="minimalista">Minimalista</option>
+            <option value="corporativo">Corporativo</option>
+            <option value="ousado">Ousado e alto contraste</option>
+          </select>
+        </div>
+        <div class="banner-ia-campo full">
+          <label for="banner_ia_publico">Público que precisa se identificar com a peça</label>
+          <input id="banner_ia_publico" type="text" maxlength="300" placeholder="Ex: donos de pequenas empresas com problemas de internet e telefonia">
+        </div>
+        <div class="banner-ia-campo full">
+          <label for="banner_ia_oferta">Oferta, diferencial e benefício principal</label>
+          <input id="banner_ia_oferta" type="text" maxlength="500" placeholder="Ex: internet empresarial estável, suporte rápido e redução de quedas">
+        </div>
+        <div class="banner-ia-campo">
+          <label for="banner_ia_texto_arte">Texto exato dentro da arte (opcional)</label>
+          <input id="banner_ia_texto_arte" type="text" maxlength="100" placeholder="Ex: Chega de quedas!">
+        </div>
+        <div class="banner-ia-campo">
+          <label for="banner_ia_marca">Marca, cores ou restrições (opcional)</label>
+          <input id="banner_ia_marca" type="text" maxlength="300" placeholder="Ex: usar azul-marinho; não usar logotipos inventados">
+        </div>
+        <label class="banner-ia-revisao-opcao">
+          <input id="banner_ia_refinar_auto" type="checkbox" checked>
+          <span><strong>Revisão automática ativada:</strong> depois de gerar, a IA avalia clareza, composição, aderência ao nicho e qualidade visual. Se ficar abaixo do padrão, faz um refinamento antes de entregar — isso pode levar mais tempo e usar uma segunda geração.</span>
+        </label>
+      </div>
+    </div>
+
     <!-- ── MODO GERAR NOVO ── -->
     <div id="banner_modo_gerar">
       <div class="banner-ia-info">
-        <strong>Como funciona:</strong> A IA cria um criativo novo do zero com base na sua descrição,
-        já considerando boas práticas visuais do seu nicho.
+        <strong>Como funciona:</strong> a IA pesquisa referências e padrões atuais do nicho na web,
+        monta uma direção criativa própria e cria a peça em alta qualidade.
         Selecione fotos do carrossel abaixo para usar como referência de estilo — quanto mais imagens, mais contexto a IA tem.
         Ou deixe sem nenhuma e descreva tudo no texto.
       </div>
@@ -48999,7 +49240,7 @@ async function enviarFeedback() {
     <div id="banner_modo_editar" style="display:none;">
       <div class="banner-ia-info">
         <strong>Como funciona:</strong> Selecione <strong>uma imagem</strong> do carrossel como base.
-        A IA aplica as modificações que você descrever diretamente nesse criativo — adicionar texto, trocar o fundo, inserir elementos, etc.
+        A IA pesquisa o contexto visual do nicho e aplica somente as modificações descritas, preservando a base sempre que possível.
       </div>
 
       <div style="margin-top:16px;">
@@ -49038,7 +49279,7 @@ async function enviarFeedback() {
 
     <div class="banner-ia-acoes">
       <button type="button" class="btn-gerar-banner-ia" id="btn_executar_gerar_banner" onclick="gerarBannerComIA()">
-        ✨ Gerar
+        ✨ Pesquisar e gerar
       </button>
       <button type="button" class="logout" onclick="fecharModalGerarBanner()" style="flex:0;width:auto;padding:8px 16px;font-size:13px;">
         Cancelar
@@ -49050,7 +49291,7 @@ async function enviarFeedback() {
       <div class="banner-ia-loading-shimmer"></div>
       <div class="banner-ia-loading-texto">
         <div class="banner-ia-spinner"></div>
-        A IA está criando seu criativo...
+        <span id="banner_ia_loading_texto">Pesquisando referências atuais do nicho...</span>
       </div>
     </div>
 
@@ -49058,6 +49299,7 @@ async function enviarFeedback() {
     <div id="banner_ia_preview_wrap" class="banner-ia-preview-wrap">
       <div class="banner-ia-label">Criativo gerado</div>
       <img id="banner_ia_preview_img" class="banner-ia-preview-img" src="" alt="Criativo gerado">
+      <div id="banner_ia_resultado_meta" class="banner-ia-resultado-meta"></div>
       <div style="display:flex;gap:8px;">
         <button type="button" class="btn-primary" onclick="adicionarBannerGeradoAoCarrossel()" style="flex:1;">
           + Adicionar ao carrossel
@@ -49452,7 +49694,15 @@ document.addEventListener("keydown", (event) => {
 // ─── MODAL GERAR BANNER COM IA ────────────────────────────────────────────────
 
 let _bannerGeradoBase64 = null;
+let _bannerGeradoMeta = null;
 let _modoBanner = "gerar";
+let _bannerLoadingIntervalo = null;
+
+function _textoBotaoGerarBanner() {
+  return _modoBanner === "editar"
+    ? "✨ Pesquisar e editar"
+    : "✨ Pesquisar e gerar";
+}
 
 function selecionarModoBanner(modo) {
   _modoBanner = modo;
@@ -49463,6 +49713,143 @@ function selecionarModoBanner(modo) {
   document.getElementById("banner_ia_feedback").style.display = "none";
   document.getElementById("banner_ia_preview_wrap").style.display = "none";
   document.getElementById("banner_ia_loading").classList.remove("ativo");
+  const btn = document.getElementById("btn_executar_gerar_banner");
+  if (btn) btn.textContent = _textoBotaoGerarBanner();
+  const meta = document.getElementById("banner_ia_resultado_meta");
+  if (meta) meta.style.display = "none";
+}
+
+function _formatoCriativoSugeridoPelaTela() {
+  const redes = typeof redesSelecionadasCampanha !== "undefined"
+    ? Array.from(redesSelecionadasCampanha)
+    : [];
+  const rede = (typeof abaAtivaCampanha !== "undefined" && abaAtivaCampanha) || redes[0] || "instagram";
+  if (rede === "tiktok") return "tiktok_vertical";
+  if (rede === "google") return "google_display";
+  if (rede === "linkedin") return "linkedin_feed";
+  return "instagram_feed";
+}
+
+function _preencherBriefingCriativoComContexto() {
+  const nicho = document.getElementById("banner_ia_nicho");
+  const nichoAtivo = window._nichoAtivo?.slug || "";
+  if (nicho && Array.from(nicho.options).some(opt => opt.value === nichoAtivo)) {
+    nicho.value = nichoAtivo;
+  }
+
+  const formato = document.getElementById("banner_ia_formato");
+  if (formato) formato.value = _formatoCriativoSugeridoPelaTela();
+
+  const oferta = document.getElementById("banner_ia_oferta");
+  const textoCampanha = document.getElementById("texto")?.value?.trim() || "";
+  if (oferta && textoCampanha && !oferta.value.trim()) {
+    oferta.value = textoCampanha.slice(0, 500);
+  }
+
+  const publico = document.getElementById("banner_ia_publico");
+  if (publico && !publico.value.trim() && typeof coletarDadosNichoAtivo === "function") {
+    const dadosNicho = coletarDadosNichoAtivo() || {};
+    const publicoNicho =
+      dadosNicho.publico_alvo ||
+      dadosNicho.porte_empresa ||
+      dadosNicho.objetivo_aluno ||
+      "";
+    if (publicoNicho) publico.value = String(publicoNicho).slice(0, 300);
+  }
+}
+
+function _coletarBriefingCriativoIA() {
+  const valor = id => (document.getElementById(id)?.value || "").trim();
+  return {
+    nicho: valor("banner_ia_nicho") || null,
+    formato: valor("banner_ia_formato") || "instagram_feed",
+    objetivo: valor("banner_ia_objetivo") || "leads",
+    estilo: valor("banner_ia_estilo") || "auto",
+    publico: valor("banner_ia_publico"),
+    oferta: valor("banner_ia_oferta"),
+    texto_arte: valor("banner_ia_texto_arte"),
+    marca: valor("banner_ia_marca"),
+    refinar_automaticamente: Boolean(document.getElementById("banner_ia_refinar_auto")?.checked)
+  };
+}
+
+function _renderizarMetaCriativoGerado(data = {}) {
+  const container = document.getElementById("banner_ia_resultado_meta");
+  if (!container) return;
+  container.replaceChildren();
+
+  const pesquisa = data.pesquisa || {};
+  const avaliacao = data.avaliacao || {};
+  const planejamento = data.planejamento || {};
+
+  const linhaStatus = document.createElement("div");
+  linhaStatus.className = "banner-ia-resultado-linha";
+
+  const seloPesquisa = document.createElement("span");
+  seloPesquisa.className = `banner-ia-status-selo${pesquisa.realizada ? "" : " aviso"}`;
+  seloPesquisa.textContent = pesquisa.realizada
+    ? "🌐 Pesquisa web concluída"
+    : "⚠️ Pesquisa web indisponível";
+  linhaStatus.appendChild(seloPesquisa);
+
+  if (Number.isFinite(Number(avaliacao.nota))) {
+    const seloNota = document.createElement("span");
+    seloNota.className = `banner-ia-status-selo${Number(avaliacao.nota) >= 8 ? "" : " aviso"}`;
+    seloNota.textContent = `Qualidade: ${Number(avaliacao.nota).toFixed(1)}/10`;
+    linhaStatus.appendChild(seloNota);
+  }
+
+  if (data.refinado_automaticamente) {
+    const seloRefino = document.createElement("span");
+    seloRefino.className = "banner-ia-status-selo";
+    seloRefino.textContent = "✨ Refinado automaticamente";
+    linhaStatus.appendChild(seloRefino);
+  }
+  if (data.aviso_refinamento) {
+    const seloAviso = document.createElement("span");
+    seloAviso.className = "banner-ia-status-selo aviso";
+    seloAviso.textContent = "⚠️ Primeiro resultado mantido";
+    linhaStatus.appendChild(seloAviso);
+  }
+  container.appendChild(linhaStatus);
+
+  const aviso = data.aviso_refinamento || pesquisa.aviso;
+  if (aviso) {
+    const textoAviso = document.createElement("div");
+    textoAviso.textContent = String(aviso);
+    container.appendChild(textoAviso);
+  }
+
+  const direcao = planejamento.direcao_recomendada || pesquisa.direcao_recomendada;
+  if (direcao) {
+    const texto = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = "Direção criativa: ";
+    texto.appendChild(strong);
+    texto.appendChild(document.createTextNode(String(direcao)));
+    container.appendChild(texto);
+  }
+
+  const fontes = Array.isArray(pesquisa.fontes) ? pesquisa.fontes.slice(0, 6) : [];
+  if (fontes.length) {
+    const bloco = document.createElement("div");
+    bloco.className = "banner-ia-fontes";
+    fontes.forEach((fonte, indice) => {
+      try {
+        const url = new URL(fonte.url);
+        if (!["http:", "https:"].includes(url.protocol)) return;
+        const link = document.createElement("a");
+        link.href = url.href;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = fonte.titulo || `Referência ${indice + 1}`;
+        bloco.appendChild(link);
+      } catch (_) {}
+    });
+    if (bloco.children.length) container.appendChild(bloco);
+  }
+
+  container.style.display = "flex";
 }
 
 // Monta um item clicável da grade (usado tanto pelas imagens já no carrossel
@@ -49608,6 +49995,7 @@ function abrirModalGerarBanner() {
   if (!modal) return;
 
   _bannerGeradoBase64 = null;
+  _bannerGeradoMeta = null;
   _modoBanner = "gerar";
 
   document.getElementById("banner_tab_gerar").classList.add("ativo");
@@ -49618,6 +50006,12 @@ function abrirModalGerarBanner() {
   document.getElementById("banner_ia_loading").classList.remove("ativo");
   const feedback = document.getElementById("banner_ia_feedback");
   if (feedback) { feedback.style.display = "none"; feedback.textContent = ""; }
+  const meta = document.getElementById("banner_ia_resultado_meta");
+  if (meta) { meta.style.display = "none"; meta.replaceChildren(); }
+  const btn = document.getElementById("btn_executar_gerar_banner");
+  if (btn) btn.textContent = _textoBotaoGerarBanner();
+
+  _preencherBriefingCriativoComContexto();
 
   _preencherGridBanner("banner_ia_grid_gerar", "banner_ia_vazio_gerar", false);
   _preencherGridBanner("banner_ia_grid_editar", "banner_ia_vazio_editar", true);
@@ -49662,6 +50056,7 @@ async function gerarBannerComIA() {
   const gridId   = isEditar ? "banner_ia_grid_editar"   : "banner_ia_grid_gerar";
 
   const prompt = (document.getElementById(promptId)?.value || "").trim();
+  const briefing = _coletarBriefingCriativoIA();
   const feedback = document.getElementById("banner_ia_feedback");
   const btn = document.getElementById("btn_executar_gerar_banner");
   const previewWrap = document.getElementById("banner_ia_preview_wrap");
@@ -49689,21 +50084,46 @@ async function gerarBannerComIA() {
 
   const imagensBase64 = await _imagensParaBase64(selecionadas);
 
-  if (btn) { btn.disabled = true; btn.textContent = "Gerando..."; }
+  if (btn) { btn.disabled = true; btn.textContent = "Pesquisando..."; }
   if (previewWrap) previewWrap.style.display = "none";
   if (loading) loading.classList.add("ativo");
+
+  const loadingTexto = document.getElementById("banner_ia_loading_texto");
+  const etapas = [
+    "Pesquisando referências atuais do nicho...",
+    "Identificando padrões visuais que chamam atenção...",
+    "Montando a direção criativa e a hierarquia da peça...",
+    "Gerando o criativo em alta qualidade...",
+    "Revisando legibilidade, composição e aderência ao briefing...",
+    "Refinando os últimos detalhes..."
+  ];
+  let etapaAtual = 0;
+  if (loadingTexto) loadingTexto.textContent = etapas[0];
+  if (_bannerLoadingIntervalo) clearInterval(_bannerLoadingIntervalo);
+  _bannerLoadingIntervalo = setInterval(() => {
+    etapaAtual = Math.min(etapaAtual + 1, etapas.length - 1);
+    if (loadingTexto) loadingTexto.textContent = etapas[etapaAtual];
+  }, 4500);
 
   try {
     // Nicho ativo (aba selecionada em Criar Campanha) — deixa a IA usar direção
     // visual apropriada ao mercado do anunciante. Se o modal foi aberto fora do
     // fluxo de Criar Campanha (ex: atalho flutuante), window._nichoAtivo pode
     // não existir — backend cai num guia genérico nesse caso.
-    const nichoAtivo = window._nichoAtivo?.slug || null;
+    const nichoAtivo = briefing.nicho || window._nichoAtivo?.slug || null;
 
     const res = await fetch(`${API}/ia/gerar-banner`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ usuario_id, prompt, imagens_base64: imagensBase64, modo: _modoBanner, nicho: nichoAtivo })
+      body: JSON.stringify({
+        usuario_id,
+        prompt,
+        imagens_base64: imagensBase64,
+        modo: _modoBanner,
+        nicho: nichoAtivo,
+        briefing,
+        refinar_automaticamente: briefing.refinar_automaticamente
+      })
     });
 
     const data = await res.json();
@@ -49720,15 +50140,21 @@ async function gerarBannerComIA() {
     }
 
     _bannerGeradoBase64 = data.imagem_base64;
+    _bannerGeradoMeta = data;
     const preview = document.getElementById("banner_ia_preview_img");
     if (preview) preview.src = `data:image/png;base64,${data.imagem_base64}`;
+    _renderizarMetaCriativoGerado(data);
     if (previewWrap) previewWrap.style.display = "flex";
 
   } catch (err) {
     console.error("GERAR BANNER:", err);
     if (feedback) { feedback.textContent = "Erro de conexão ao gerar criativo."; feedback.style.display = "block"; }
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "✨ Gerar"; }
+    if (_bannerLoadingIntervalo) {
+      clearInterval(_bannerLoadingIntervalo);
+      _bannerLoadingIntervalo = null;
+    }
+    if (btn) { btn.disabled = false; btn.textContent = _textoBotaoGerarBanner(); }
     if (loading) loading.classList.remove("ativo");
   }
 }

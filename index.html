@@ -26212,14 +26212,16 @@ let abaAtivaCampanha = null;
 // — as cores oficiais de Instagram/TikTok são dois tons de vermelho/rosa
 // muito parecidos entre si com pouca opacidade, e Facebook/Google são dois
 // azuis parecidos; por isso TikTok usa o ciano do próprio logo (em vez do
-// vermelho que colidia com Instagram). Google usa o amarelo do próprio logo
-// (não o verde) — verde é a cor complementar do vermelho/marrom que já é o
-// fundo padrão dos modais de campanha, então um fundo verde com pouca
-// opacidade "cancelava" visualmente e parecia não ter cor nenhuma.
+// vermelho que colidia com Instagram). Google tentou o verde (cancelava com o
+// fundo vermelho/marrom dos modais, cor complementar) e depois o amarelo
+// (amarelo é uma cor "clara" — com pouca opacidade sobre fundo escuro fica
+// esmaecido/acastanhado, ao contrário de azul/rosa/ciano que são mais
+// escuros e saturados e aguentam bem essa transparência) — por isso usa um
+// laranja vibrante e saturado, que não sofre nenhum dos dois problemas.
 const CORES_PLATAFORMA_ABA = {
   facebook:  "#1877F2",
   instagram: "#E1306C",
-  google:    "#FBBC05",
+  google:    "#FF9800",
   tiktok:    "#00F2EA"
 };
 

@@ -20330,8 +20330,8 @@ body.tema-claro .criar-campanha-descricao {
 
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
             <div>
-              <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Mês de referência</label>
-              <input type="month" id="financeiro_novo_mes" />
+              <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Data de referência</label>
+              <input type="date" id="financeiro_novo_mes" />
             </div>
             <div>
               <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Valor (R$)</label>
@@ -21795,10 +21795,10 @@ const FINANCEIRO_STATUS_LABEL = {
 };
 
 function formatarMesReferencia(mesReferencia) {
-  const [ano, mes] = String(mesReferencia).slice(0, 7).split("-");
+  const [ano, mes, dia] = String(mesReferencia).slice(0, 10).split("-");
   const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
   const nomeMes = nomes[Number(mes) - 1] || mes;
-  return `${nomeMes} de ${ano}`;
+  return dia ? `${Number(dia)} de ${nomeMes} de ${ano}` : `${nomeMes} de ${ano}`;
 }
 
 async function carregarFinanceiro() {
@@ -21962,8 +21962,8 @@ async function abrirDetalheFinanceiroUsuario(usuarioId, nome) {
   if (nomeEl) nomeEl.textContent = nome;
 
   const hoje = new Date();
-  const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
-  definirValorCampo("financeiro_novo_mes", mesAtual);
+  const dataAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
+  definirValorCampo("financeiro_novo_mes", dataAtual);
   definirValorCampo("financeiro_novo_valor", "");
   definirValorCampo("financeiro_novo_observacao", "");
 
@@ -22037,7 +22037,7 @@ async function lancarCobrancaFinanceiroUsuario() {
   const observacao = valorCampo("financeiro_novo_observacao");
 
   if (!mes) {
-    alert("Escolha o mês de referência.");
+    alert("Escolha a data de referência.");
     return;
   }
   if (!valor || valor <= 0) {

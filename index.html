@@ -17381,10 +17381,7 @@ body.tema-claro .criar-campanha-descricao {
               onclick="selecionarPlataformaCampanha('google')">
               <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads
             </button>
-            <button type="button" class="plat-sel-btn" data-plat="kwai"
-              onclick="selecionarPlataformaCampanha('kwai')">
-              🎬 Kwai Ads
-            </button>
+            <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
@@ -26212,14 +26209,17 @@ let abaAtivaCampanha = null;
 // Edição ao adicionar 1+ rede nova). Kwai/LinkedIn ficam de fora de propósito
 // — nunca tiveram aba própria, então também não ganham cor aqui.
 // Cores escolhidas pra ficarem bem distintas entre si (não só "fiéis à marca")
-// — as cores oficiais de Instagram/TikTok são as duas tons de vermelho/rosa
+// — as cores oficiais de Instagram/TikTok são dois tons de vermelho/rosa
 // muito parecidos entre si com pouca opacidade, e Facebook/Google são dois
-// azuis parecidos; por isso Google usa o verde e TikTok o ciano do próprio
-// logo de cada um, em vez do azul/vermelho que colidiam.
+// azuis parecidos; por isso TikTok usa o ciano do próprio logo (em vez do
+// vermelho que colidia com Instagram). Google usa o amarelo do próprio logo
+// (não o verde) — verde é a cor complementar do vermelho/marrom que já é o
+// fundo padrão dos modais de campanha, então um fundo verde com pouca
+// opacidade "cancelava" visualmente e parecia não ter cor nenhuma.
 const CORES_PLATAFORMA_ABA = {
   facebook:  "#1877F2",
   instagram: "#E1306C",
-  google:    "#34A853",
+  google:    "#FBBC05",
   tiktok:    "#00F2EA"
 };
 

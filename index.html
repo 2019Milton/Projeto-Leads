@@ -26513,11 +26513,6 @@ function aplicarRedesCampanha() {
     null;
   const corAtivaAgora = redeAtivaColorida ? CORES_PLATAFORMA_ABA[redeAtivaColorida] : null;
 
-  // <details> (seções recolhíveis) que têm pelo menos um campo colorido
-  // agora — usado logo abaixo pra também colorir o cabeçalho, já que o campo
-  // em si fica invisível (dentro da seção fechada) até o usuário abrir.
-  const detailsParaColorir = new Set();
-
   document.querySelectorAll("[data-plat-only]").forEach(el => {
     const redes = el.dataset.platOnly.split(",");
     const mostrarPorPlataforma = redes.some(r => redesSelecionadasCampanha.has(r));
@@ -26546,8 +26541,6 @@ function aplicarRedesCampanha() {
       el.style.borderLeft = `3px solid ${corPlataforma}`;
       el.style.paddingLeft = "10px";
       el.style.background = `${corPlataforma}14`;
-      const details = el.closest("details");
-      if (details) detailsParaColorir.add(details);
     } else {
       el.style.borderLeft = "";
       el.style.paddingLeft = "";
@@ -26555,13 +26548,18 @@ function aplicarRedesCampanha() {
     }
   });
 
-  // Colore também o cabeçalho (<summary>) de cada seção recolhível que
-  // contenha campo(s) da rede ativa agora — sem isso, com a seção fechada
-  // (estado padrão), a cor nos campos fica invisível até o usuário abrir
-  // cada uma pra conferir.
-  document.querySelectorAll("details > summary").forEach(summary => {
-    const details = summary.parentElement;
-    if (detailsParaColorir.has(details)) {
+  // Colore o cabeçalho (<summary>) de TODAS as seções do formulário de
+  // campanha com a cor da rede ativa agora — não só as que "por acaso" têm
+  // algum campo data-plat-only lá dentro (ex: "Configuração da campanha" e
+  // "Público e orçamento" são inteiramente compartilhadas, sem nenhum campo
+  // gated, mas ainda assim pertencem à campanha da rede ativa no momento).
+  // Sem isso a cor ficava só em algumas seções, quebrando a sensação de
+  // "zona única" que o objetivo aqui é justamente dar.
+  BLOCOS_SEGMENTACAO_EDITAVEL.forEach(blocoId => {
+    const bloco = document.getElementById(blocoId);
+    const summary = bloco?.querySelector(":scope > summary");
+    if (!summary) return;
+    if (corAtivaAgora) {
       summary.style.borderLeft = `4px solid ${corAtivaAgora}`;
       summary.style.paddingLeft = "10px";
       summary.style.background = `${corAtivaAgora}1f`;

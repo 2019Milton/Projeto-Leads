@@ -1187,11 +1187,17 @@ button {
   min-width: 0; width: 100%; box-sizing: border-box;
 }
 .plat-sel-btn.ativa {
-  border-color: #be123c;
-  background: #2563eb;
-  color: #fff;
-  box-shadow: 0 0 0 3px #be123c80, inset 0 1px 0 rgba(255,255,255,.15);
+  border-color: rgba(34,197,94,0.95);
+  background: rgba(20,83,45,0.72);
+  color: #dcfce7;
+  box-shadow:
+    inset 0 0 0 1px rgba(34,197,94,0.28),
+    0 0 22px rgba(34,197,94,0.22);
   font-weight: 700;
+}
+.plat-sel-btn.ativa:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
 }
 .plat-sel-btn:not(:disabled):not(.ativa):hover {
   border-color: #475569;

@@ -22875,10 +22875,10 @@ function abrirCampanhaDrawerPorChaves(chaves, chaveAtivaInicial) {
 let camposEdicaoGrupo = [];
 let abaEdicaoAtivaGrupo = null;
 
-// Porta de entrada pra editar um grupo inteiro (uma ou mais linhas). Com 1
-// chave so, cai no fluxo de sempre sem nenhuma mudanca de comportamento.
-// Salvar so existe de verdade pra Meta (unico backend com endpoint de
-// edicao, /meta/editar-campanha) — Google/TikTok abrem em modo leitura.
+// Porta de entrada pra editar um grupo inteiro (uma ou mais linhas). Mesmo
+// quando a rede original ainda nao oferece edicao direta (ex.: TikTok), uma
+// campanha remota pode abrir o formulario para ser publicada em outra rede;
+// nesse caso o botao de salvar a campanha original permanece escondido.
 async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
   const lista =
     (Array.isArray(chaves) ? chaves : [chaves]).filter(Boolean);
@@ -22912,7 +22912,10 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
   if (pares.length < 2) {
     esconderAbasEdicaoCampanha();
     camposEdicaoGrupo = pares;
-    if (capacidadesPlataforma(pares[0].campanha.plataforma).editar) {
+    if (
+      capacidadesPlataforma(pares[0].campanha.plataforma).editar ||
+      campanhaPodePublicarEmOutraPlataforma(pares[0].campanha)
+    ) {
       await abrirEdicaoCampanhaPorChave(pares[0].chave);
     } else {
       abrirModalEdicaoSomenteLeitura(pares[0].campanha);
@@ -22921,7 +22924,8 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
   }
 
   const parEditavel =
-    pares.find(p => capacidadesPlataforma(p.campanha.plataforma).editar);
+    pares.find(p => capacidadesPlataforma(p.campanha.plataforma).editar) ||
+    pares.find(p => campanhaPodePublicarEmOutraPlataforma(p.campanha));
 
   const chaveInicial =
     (chaveAtivaInicial && pares.some(p => p.chave === chaveAtivaInicial))
@@ -23497,6 +23501,17 @@ function campanhaUsaHistoricoLocal(campanha) {
 }
 
 function campanhaEhRascunhoLocal(campanha) {
+  if (typeof campanha?.publicada_remotamente === "boolean") {
+    return !campanha.publicada_remotamente;
+  }
+
+  // Sincronizacoes importam primeiro o objeto de campanha e podem ainda nao
+  // ter adset_id/ad_id. A presenca do campaign_id + origem da rede confirma
+  // que nao se trata de um rascunho local.
+  if (campanhaOrigemImportada(campanha) && Boolean(campanha?.campaign_id)) {
+    return false;
+  }
+
   if (campanha?.destino_editavel === true) {
     return true;
   }
@@ -23509,11 +23524,29 @@ function campanhaEhRascunhoLocal(campanha) {
 }
 
 function campanhaJaFoiPublicada(campanha) {
+  if (typeof campanha?.publicada_remotamente === "boolean") {
+    return campanha.publicada_remotamente;
+  }
+
+  if (campanhaOrigemImportada(campanha) && Boolean(campanha?.campaign_id)) {
+    return true;
+  }
+
   if (typeof campanha?.destino_editavel === "boolean") {
     return !campanha.destino_editavel;
   }
 
   return Boolean(campanha?.campaign_id) && !campanhaEhRascunhoLocal(campanha);
+}
+
+function campanhaPodePublicarEmOutraPlataforma(campanha) {
+  return (
+    campanhaJaFoiPublicada(campanha) &&
+    !campanhaEstaExcluida(campanha) &&
+    PLATAFORMAS_ADICIONAVEIS_EDICAO.some(
+      plataforma => plataforma !== plataformaCampanhaExibicao(campanha)
+    )
+  );
 }
 
 function campanhaGooglePodeSerCompletada(campanha) {
@@ -32196,7 +32229,10 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
 }
 
 function configurarEdicaoDestinoCampanha(campanha = null) {
-  const publicada = campanhaJaFoiPublicada(campanha);
+  const plataformaBase = plataformaCampanhaExibicao(campanha);
+  const campanhaMetaPublicada =
+    campanhaJaFoiPublicada(campanha) &&
+    ["meta", "facebook", "instagram"].includes(plataformaBase);
 
   // Marca o radio (Formulario de Leads / WhatsApp) de acordo com o destino
   // real ja salvo na campanha — antes disso, o modal sempre abria mostrando
@@ -32215,8 +32251,8 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
   document
     .querySelectorAll('input[name="campanha_destino"]')
     .forEach(input => {
-      input.disabled = publicada;
-      input.title = publicada
+      input.disabled = campanhaMetaPublicada;
+      input.title = campanhaMetaPublicada
         ? "Para trocar o destino, duplique a campanha."
         : "";
     });
@@ -32225,7 +32261,7 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
     document.getElementById("destino_campanha_bloqueado_aviso");
 
   if (aviso) {
-    aviso.style.display = publicada ? "block" : "none";
+    aviso.style.display = campanhaMetaPublicada ? "block" : "none";
   }
 }
 
@@ -32317,6 +32353,21 @@ function abrirEdicaoCampanha(campanhaEncoded) {
 
     if (nomeEl) {
       nomeEl.textContent = campanha.nome || "Campanha";
+    }
+
+    const plataformaEdicao = plataformaCampanhaExibicao(campanha);
+    const podeSalvarOriginal =
+      capacidadesPlataforma(plataformaEdicao).editar;
+    const btnSalvar = document.getElementById("editar_campanha_btn_salvar");
+    if (btnSalvar) {
+      btnSalvar.style.display = podeSalvarOriginal ? "" : "none";
+    }
+
+    const textoModoEdicao = document.getElementById("editar_campanha_texto_modo");
+    if (textoModoEdicao) {
+      textoModoEdicao.textContent = podeSalvarOriginal
+        ? `Ajuste os campos disponíveis para ${platNome(plataformaEdicao)} ou selecione outra plataforma para publicar uma nova campanha.`
+        : `A campanha original em ${platNome(plataformaEdicao)} permanece somente leitura. Complete os dados necessários e selecione abaixo outra plataforma para publicar uma nova campanha.`;
     }
 
     preencherConfiguracoesAvancadas(
@@ -47518,9 +47569,9 @@ async function enviarFeedback() {
     </div>
 
     <div class="pagamento-modal-text">
-      <p>
-        Ajuste segmentação, orçamento, datas e lance desta campanha. As
-        alterações são enviadas diretamente para a Meta.
+      <p id="editar_campanha_texto_modo">
+        Ajuste os campos disponíveis da campanha ou selecione outra plataforma
+        para publicar uma nova campanha.
       </p>
     </div>
 
@@ -47550,7 +47601,7 @@ async function enviarFeedback() {
       </div>
       <div id="editar_campanha_add_plataforma_abas" class="campanha-addplat-abas" style="display:none;"></div>
       <small style="display:block;margin-top:6px;color:#64748b;">
-        Marque uma rede para revelar os campos dela logo acima (2 ou mais redes novas aparecem em abas). Nome, texto, orçamento e imagem/vídeo desta campanha já vêm preenchidos — só a cópia do anúncio da nova rede precisa ser revisada, já que cada plataforma publica seu próprio criativo. Facebook e Instagram viram campanhas independentes entre si, com tudo configurado separadamente.
+        Marque uma rede para revelar os campos dela logo acima (2 ou mais redes novas aparecem em abas). Os dados disponíveis da campanha serão reaproveitados; em campanhas importadas, complete os campos que a rede original não forneceu durante a sincronização. Revise sempre o novo anúncio, pois cada plataforma publica seu próprio criativo. Facebook e Instagram viram campanhas independentes entre si, com tudo configurado separadamente.
       </small>
     </div>
 

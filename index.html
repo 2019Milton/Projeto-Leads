@@ -26211,11 +26211,16 @@ let abaAtivaCampanha = null;
 // qual plataforma se está mexendo no momento (Criação com 2+ marcadas, ou
 // Edição ao adicionar 1+ rede nova). Kwai/LinkedIn ficam de fora de propósito
 // — nunca tiveram aba própria, então também não ganham cor aqui.
+// Cores escolhidas pra ficarem bem distintas entre si (não só "fiéis à marca")
+// — as cores oficiais de Instagram/TikTok são as duas tons de vermelho/rosa
+// muito parecidos entre si com pouca opacidade, e Facebook/Google são dois
+// azuis parecidos; por isso Google usa o verde e TikTok o ciano do próprio
+// logo de cada um, em vez do azul/vermelho que colidiam.
 const CORES_PLATAFORMA_ABA = {
   facebook:  "#1877F2",
   instagram: "#E1306C",
-  google:    "#4285F4",
-  tiktok:    "#FE2C55"
+  google:    "#34A853",
+  tiktok:    "#00F2EA"
 };
 
 // Monta o estilo inline do botão de aba com a cor da própria plataforma —

@@ -26494,6 +26494,23 @@ function aplicarRedesCampanha() {
   if (emEdicao) renderizarAbasAddPlataformaEdicao();
   const platsNovasComAba = emEdicao ? plataformasNovasParaPublicarEdicao() : [];
 
+  // Rede "ativa" agora, pra fins de cor — uma só de cada vez, calculada uma
+  // única vez aqui (não por campo) e reaproveitada tanto pros campos quanto
+  // pros cabeçalhos dos <details> logo abaixo. Na Criação só quando uma aba
+  // está mesmo ativa (2+ marcadas); na Edição já vale com 1 rede nova só
+  // (nem precisa virar aba clicável pra ficar destacada).
+  const redeAtivaColorida =
+    (!emEdicao && abaAtivaCampanha) ? abaAtivaCampanha :
+    (emEdicao && platsNovasComAba.length === 1) ? platsNovasComAba[0] :
+    (emEdicao && platsNovasComAba.length >= 2 && abaAtivaAddPlataformaEdicao) ? abaAtivaAddPlataformaEdicao :
+    null;
+  const corAtivaAgora = redeAtivaColorida ? CORES_PLATAFORMA_ABA[redeAtivaColorida] : null;
+
+  // <details> (seções recolhíveis) que têm pelo menos um campo colorido
+  // agora — usado logo abaixo pra também colorir o cabeçalho, já que o campo
+  // em si fica invisível (dentro da seção fechada) até o usuário abrir.
+  const detailsParaColorir = new Set();
+
   document.querySelectorAll("[data-plat-only]").forEach(el => {
     const redes = el.dataset.platOnly.split(",");
     const mostrarPorPlataforma = redes.some(r => redesSelecionadasCampanha.has(r));
@@ -26512,28 +26529,39 @@ function aplicarRedesCampanha() {
     const mostrarPorAbaAddEdicao =
       !tocaAbaAddEdicao || !abaAtivaAddPlataformaEdicao || redes.includes(abaAtivaAddPlataformaEdicao);
 
-    el.style.display = (mostrarPorPlataforma && mostrarPorAba && mostrarPorAbaAddEdicao) ? "" : "none";
+    const visivel = mostrarPorPlataforma && mostrarPorAba && mostrarPorAbaAddEdicao;
+    el.style.display = visivel ? "" : "none";
 
     // Borda/fundo na cor da própria plataforma — deixa visualmente óbvio em
-    // qual plataforma o campo pertence no momento. Na Criação só quando uma
-    // aba está mesmo ativa (2+ marcadas); na Edição já vale com 1 rede nova
-    // só (nem precisa virar aba clicável pra ficar destacada).
-    let corPlataforma = null;
-    if (!emEdicao && abaAtivaCampanha && redes.includes(abaAtivaCampanha)) {
-      corPlataforma = CORES_PLATAFORMA_ABA[abaAtivaCampanha];
-    } else if (emEdicao && platsNovasComAba.length === 1 && redes.includes(platsNovasComAba[0])) {
-      corPlataforma = CORES_PLATAFORMA_ABA[platsNovasComAba[0]];
-    } else if (emEdicao && platsNovasComAba.length >= 2 && abaAtivaAddPlataformaEdicao && redes.includes(abaAtivaAddPlataformaEdicao)) {
-      corPlataforma = CORES_PLATAFORMA_ABA[abaAtivaAddPlataformaEdicao];
-    }
+    // qual plataforma o campo pertence no momento.
+    const corPlataforma = (visivel && corAtivaAgora && redes.includes(redeAtivaColorida)) ? corAtivaAgora : null;
     if (corPlataforma) {
       el.style.borderLeft = `3px solid ${corPlataforma}`;
       el.style.paddingLeft = "10px";
       el.style.background = `${corPlataforma}14`;
+      const details = el.closest("details");
+      if (details) detailsParaColorir.add(details);
     } else {
       el.style.borderLeft = "";
       el.style.paddingLeft = "";
       el.style.background = "";
+    }
+  });
+
+  // Colore também o cabeçalho (<summary>) de cada seção recolhível que
+  // contenha campo(s) da rede ativa agora — sem isso, com a seção fechada
+  // (estado padrão), a cor nos campos fica invisível até o usuário abrir
+  // cada uma pra conferir.
+  document.querySelectorAll("details > summary").forEach(summary => {
+    const details = summary.parentElement;
+    if (detailsParaColorir.has(details)) {
+      summary.style.borderLeft = `4px solid ${corAtivaAgora}`;
+      summary.style.paddingLeft = "10px";
+      summary.style.background = `${corAtivaAgora}1f`;
+    } else {
+      summary.style.borderLeft = "";
+      summary.style.paddingLeft = "";
+      summary.style.background = "";
     }
   });
 

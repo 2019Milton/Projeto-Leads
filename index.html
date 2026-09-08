@@ -34028,6 +34028,34 @@ const FINANCEIRO_LIMITES_ORCAMENTO_REDE = {
   tiktok:    { minimo: 250, recomendado: null, textoRecomendado: "está abaixo do mínimo exigido pelo TikTok Ads (~R$250,00/dia, equivalente a US$50 — varia com o câmbio)" }
 };
 
+// Quais redes o aviso de orçamento deve considerar agora, respeitando a aba
+// realmente em foco (Criação usa abaAtivaCampanha, Edição usa
+// abaAtivaAddPlataformaEdicao — cada fluxo com sua própria variável de aba).
+// Facebook/Instagram sempre têm orçamento próprio, trocado por aba (ver
+// snapshotFormularioMeta) — nunca devem aparecer misturados com o de outra
+// rede. Se a aba ativa agora for uma delas, o aviso é só dela; se for uma
+// aba de rede não-Meta (Google/TikTok/...), considera só as redes que
+// realmente compartilham este campo puro, sem incluir Facebook/Instagram
+// mesmo que estejam selecionados/na base. Sem nenhuma aba ativa (ex:
+// campanha Meta legada combinada, sem nada novo marcado ainda), mantém o
+// comportamento de sempre — considera tudo que está selecionado.
+function redesOrcamentoRelevantes() {
+  const emEdicaoAgora = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
+  const abaAtivaAgora = emEdicaoAgora ? abaAtivaAddPlataformaEdicao : abaAtivaCampanha;
+  const todasSelecionadas = Array.from(redesSelecionadasCampanha || []);
+  const ehMeta = rede =>
+    typeof REDES_META_COM_FORMULARIO_PROPRIO !== "undefined" &&
+    REDES_META_COM_FORMULARIO_PROPRIO.includes(rede);
+
+  if (ehMeta(abaAtivaAgora)) {
+    return [abaAtivaAgora];
+  }
+  if (abaAtivaAgora) {
+    return todasSelecionadas.filter(rede => !ehMeta(rede));
+  }
+  return todasSelecionadas;
+}
+
 function validarOrcamentoRealtime(input) {
   const val = Number(input.value);
   const aviso = document.getElementById("orcamento_aviso_rt");
@@ -34037,15 +34065,7 @@ function validarOrcamentoRealtime(input) {
     return;
   }
 
-  // Se uma aba Facebook/Instagram estiver ativa, esse campo de orçamento é só
-  // dessa rede (cada uma tem o próprio, ver snapshotFormularioMeta) — senão,
-  // vale pra todas as redes marcadas que ainda compartilham este mesmo campo
-  // (Google/TikTok/LinkedIn/Kwai).
-  const redesRelevantes =
-    typeof REDES_META_COM_FORMULARIO_PROPRIO !== "undefined" &&
-    REDES_META_COM_FORMULARIO_PROPRIO.includes(abaAtivaCampanha)
-      ? [abaAtivaCampanha]
-      : Array.from(redesSelecionadasCampanha || []);
+  const redesRelevantes = redesOrcamentoRelevantes();
 
   const valorFormatado = `R$ ${val.toFixed(2).replace(".", ",")}`;
   const mensagens = [];

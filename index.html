@@ -38171,10 +38171,11 @@ async function carregarStatusGoogle() {
 
           ${secaoAcoesRapidas([
             linkAcaoRapida("🏠", "Abrir Google Ads", "https://ads.google.com/aw/overview", "neutro"),
-            botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoGoogleConta()", "indigo"),
-            botaoAcaoRapida("📝", "Tutorial: aceitar termos do Lead Form", "abrirPassoGoogleLeadFormTermos()", "indigo"),
-            botaoAcaoRapida("💳", "Tutorial: adicionar saldo (conta com gerenciadora)", "abrirPassoGoogleAdicionarSaldoMCC()", "indigo"),
             linkAcaoRapida("❓", "Central de Ajuda do Google Ads", "https://support.google.com/google-ads", "neutro"),
+            `<div style="flex-basis:100%;font-size:11px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:.05em;margin-top:6px;">📚 Tutoriais</div>`,
+            `<div style="flex-basis:100%;">${botaoAcaoRapida("📘", "Criar conta", "abrirPassoGoogleConta()", "indigo")}</div>`,
+            `<div style="flex-basis:100%;">${botaoAcaoRapida("📝", "Aceitar termos do Lead Form", "abrirPassoGoogleLeadFormTermos()", "indigo")}</div>`,
+            `<div style="flex-basis:100%;">${botaoAcaoRapida("💳", "Adicionar saldo (conta com gerenciadora)", "abrirPassoGoogleAdicionarSaldoMCC()", "indigo")}</div>`,
           ].join(""))}
         </div>
       `;

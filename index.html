@@ -32458,6 +32458,92 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
   }
 }
 
+function chaveNichoFormulario(nicho = {}) {
+  const slug = slugNichoNormalizado(nicho);
+  const id = Number(nicho.id || nicho.nicho_id);
+
+  if (slug.includes("imove") || id === 1) return "imoveis";
+  if (slug.includes("saude") || slug.includes("convenio") || id === 2) return "saude";
+  if (slug.includes("suplement") || id === 3) return "suplementos";
+  if (slug.includes("saas") || slug.includes("plataforma") || id === 4) return "saas";
+  if (slug.includes("higien") || id === 5) return "higienizacao";
+  if (slug.includes("telecom") || id === 6) return "telecom";
+  if (slug.includes("curso") || id === 1327) return "cursos_online";
+  return slug.trim();
+}
+
+function resolverNichoCampanhaParaFormulario(campanha = {}, cfg = {}) {
+  const catalogo = Array.isArray(usuarioLogado?.nichos)
+    ? usuarioLogado.nichos
+    : [];
+  const referencia = {
+    id: campanha.nicho_id ?? cfg.nicho_id ?? null,
+    slug: campanha.nicho_slug || cfg.nicho_slug || cfg.nicho || "",
+    nome: campanha.nicho_nome || cfg.nicho_nome || "",
+    cor: campanha.nicho_cor || cfg.nicho_cor || ""
+  };
+  const id = Number(referencia.id);
+  const chave = chaveNichoFormulario(referencia);
+  const encontrado = catalogo.find(nicho =>
+    (Number.isFinite(id) && id > 0 && Number(nicho.id) === id) ||
+    (chave && chaveNichoFormulario(nicho) === chave)
+  );
+
+  if (encontrado) {
+    return {
+      ...referencia,
+      ...encontrado,
+      slug: chaveNichoFormulario(encontrado)
+    };
+  }
+
+  if (!chave) return null;
+
+  return {
+    ...referencia,
+    slug: chave,
+    nome: referencia.nome || nomeExibirNicho(referencia)
+  };
+}
+
+function selecionarNichoCampanhaNoEditor(campanha = {}, cfg = {}) {
+  const nicho = resolverNichoCampanhaParaFormulario(campanha, cfg);
+  if (!nicho) {
+    console.warn("EDIÇÃO DE CAMPANHA: nicho não identificado", campanha?.id);
+    document.getElementById("nicho_campos_extras")?.replaceChildren();
+    return null;
+  }
+
+  const chave = chaveNichoFormulario(nicho);
+  const botao = Array.from(document.querySelectorAll(".nicho-tab")).find(item =>
+    (nicho.id && Number(item.dataset.nichoId) === Number(nicho.id)) ||
+    chaveNichoFormulario({ slug: item.dataset.nichoSlug }) === chave
+  );
+
+  selecionarNichoTab(nicho, botao || null, {
+    restaurarEstado: false,
+    limparSugestoes: false
+  });
+  restaurarDadosNichoAtivo(cfg);
+  return nicho;
+}
+
+function restaurarNichoFormularioCriacao(snapshot = null) {
+  const nicho = snapshot?.nichoAtivo;
+  if (!nicho) return;
+
+  const chave = chaveNichoFormulario(nicho);
+  const botao = Array.from(document.querySelectorAll(".nicho-tab")).find(item =>
+    (nicho.id && Number(item.dataset.nichoId) === Number(nicho.id)) ||
+    chaveNichoFormulario({ slug: item.dataset.nichoSlug }) === chave
+  );
+
+  selecionarNichoTab(nicho, botao || null, {
+    salvarEstadoAtual: false,
+    limparSugestoes: false
+  });
+}
+
 function abrirEdicaoCampanha(campanhaEncoded) {
 
   let campanha;
@@ -32489,7 +32575,10 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       imagensAssinatura: "",
       videoAssinatura: assinaturaVideoCampanha(),
       videoArquivo: obterArquivoVideoCampanha(),
-      redes: Array.from(redesSelecionadasCampanha)
+      redes: Array.from(redesSelecionadasCampanha),
+      nichoAtivo: window._nichoAtivo
+        ? { ...window._nichoAtivo }
+        : null
     };
 
     redesSelecionadasCampanha.clear();
@@ -32563,6 +32652,11 @@ function abrirEdicaoCampanha(campanhaEncoded) {
         : `A campanha original em ${platNome(plataformaEdicao)} permanece somente leitura. Complete os dados necessários e selecione abaixo outra plataforma para publicar uma nova campanha.`;
     }
 
+    selecionarNichoCampanhaNoEditor(
+      campanha,
+      configuracoesCampanha
+    );
+
     preencherConfiguracoesAvancadas(
       configuracoesCampanha,
       campanha.daily_budget
@@ -32628,6 +32722,8 @@ function fecharEdicaoCampanha() {
       redesSelecionadasCampanha.clear();
       (_snapshotCriarCampanha.redes || []).forEach(plat => redesSelecionadasCampanha.add(plat));
       aplicarRedesCampanha();
+
+      restaurarNichoFormularioCriacao(_snapshotCriarCampanha);
 
       definirValorCampo("campanha_nome", _snapshotCriarCampanha.basicos?.nome || "");
       definirValorCampo("pagina_select", _snapshotCriarCampanha.basicos?.page_id || "");
@@ -45625,9 +45721,18 @@ function _restaurarEstadoFormNicho(slug) {
   }
 }
 
-function selecionarNichoTab(nicho, btnEl) {
+function selecionarNichoTab(nicho, btnEl, opcoes = {}) {
+  const {
+    salvarEstadoAtual = true,
+    restaurarEstado = true,
+    limparCamposGerais = true,
+    limparSugestoes = true
+  } = opcoes;
+
   // salva estado do nicho atual antes de trocar
-  _salvarEstadoFormNicho(window._nichoAtivo?.slug);
+  if (salvarEstadoAtual) {
+    _salvarEstadoFormNicho(window._nichoAtivo?.slug);
+  }
 
   const cor = corSolidaNicho(nicho);
 
@@ -45637,10 +45742,12 @@ function selecionarNichoTab(nicho, btnEl) {
     b.style.removeProperty("border-bottom-color");
     b.style.removeProperty("color");
   });
-  btnEl.classList.add("ativo");
-  btnEl.style.setProperty("--nicho-cor", cor);
-  btnEl.style.removeProperty("border-bottom-color");
-  btnEl.style.removeProperty("color");
+  if (btnEl) {
+    btnEl.classList.add("ativo");
+    btnEl.style.setProperty("--nicho-cor", cor);
+    btnEl.style.removeProperty("border-bottom-color");
+    btnEl.style.removeProperty("color");
+  }
 
   // atualiza a cor do bloco completo de criacao da campanha
   aplicarTemaNichoCampanha(nicho);
@@ -45660,13 +45767,17 @@ function selecionarNichoTab(nicho, btnEl) {
 
   // limpa campos gerais antes de restaurar (evita misturar conteúdo entre nichos)
   const _limpar = id => { const el = document.getElementById(id); if (el) el.value = ""; };
-  ["campanha_nome","texto","adv_titulo","adv_descricao","adv_perguntas",
-   "ia_campanha_contexto","adv_interesse_busca","orcamento"].forEach(_limpar);
+  if (limparCamposGerais) {
+    ["campanha_nome","texto","adv_titulo","adv_descricao","adv_perguntas",
+     "ia_campanha_contexto","adv_interesse_busca","orcamento"].forEach(_limpar);
+  }
 
   // limpa resultados de IA do nicho anterior para não vazar entre nichos
-  sugestoesCampanhaIAAtual = [];
-  const boxIA = document.getElementById("ia_campanha_criador_resultado");
-  if (boxIA) { boxIA.innerHTML = ""; boxIA.style.display = "none"; }
+  if (limparSugestoes) {
+    sugestoesCampanhaIAAtual = [];
+    const boxIA = document.getElementById("ia_campanha_criador_resultado");
+    if (boxIA) { boxIA.innerHTML = ""; boxIA.style.display = "none"; }
+  }
 
   // renderiza campos extras do nicho
   const container = document.getElementById("nicho_campos_extras");
@@ -45932,7 +46043,9 @@ function selecionarNichoTab(nicho, btnEl) {
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
-  _restaurarEstadoFormNicho(nicho.slug);
+  if (restaurarEstado) {
+    _restaurarEstadoFormNicho(nicho.slug);
+  }
   renderizarPerguntasRapidasFormulario(nicho.slug);
 }
 
@@ -50879,9 +50992,18 @@ function _restaurarEstadoFormNicho(slug) {
   }
 }
 
-function selecionarNichoTab(nicho, btnEl) {
+function selecionarNichoTab(nicho, btnEl, opcoes = {}) {
+  const {
+    salvarEstadoAtual = true,
+    restaurarEstado = true,
+    limparCamposGerais = true,
+    limparSugestoes = true
+  } = opcoes;
+
   // salva estado do nicho atual antes de trocar
-  _salvarEstadoFormNicho(window._nichoAtivo?.slug);
+  if (salvarEstadoAtual) {
+    _salvarEstadoFormNicho(window._nichoAtivo?.slug);
+  }
 
   const cor = corSolidaNicho(nicho);
 
@@ -50891,10 +51013,12 @@ function selecionarNichoTab(nicho, btnEl) {
     b.style.removeProperty("border-bottom-color");
     b.style.removeProperty("color");
   });
-  btnEl.classList.add("ativo");
-  btnEl.style.setProperty("--nicho-cor", cor);
-  btnEl.style.removeProperty("border-bottom-color");
-  btnEl.style.removeProperty("color");
+  if (btnEl) {
+    btnEl.classList.add("ativo");
+    btnEl.style.setProperty("--nicho-cor", cor);
+    btnEl.style.removeProperty("border-bottom-color");
+    btnEl.style.removeProperty("color");
+  }
 
   // atualiza a cor do bloco completo de criacao da campanha
   aplicarTemaNichoCampanha(nicho);
@@ -50914,13 +51038,17 @@ function selecionarNichoTab(nicho, btnEl) {
 
   // limpa campos gerais antes de restaurar (evita misturar conteúdo entre nichos)
   const _limpar = id => { const el = document.getElementById(id); if (el) el.value = ""; };
-  ["campanha_nome","texto","adv_titulo","adv_descricao","adv_perguntas",
-   "ia_campanha_contexto","adv_interesse_busca","orcamento"].forEach(_limpar);
+  if (limparCamposGerais) {
+    ["campanha_nome","texto","adv_titulo","adv_descricao","adv_perguntas",
+     "ia_campanha_contexto","adv_interesse_busca","orcamento"].forEach(_limpar);
+  }
 
   // limpa resultados de IA do nicho anterior para não vazar entre nichos
-  sugestoesCampanhaIAAtual = [];
-  const boxIA = document.getElementById("ia_campanha_criador_resultado");
-  if (boxIA) { boxIA.innerHTML = ""; boxIA.style.display = "none"; }
+  if (limparSugestoes) {
+    sugestoesCampanhaIAAtual = [];
+    const boxIA = document.getElementById("ia_campanha_criador_resultado");
+    if (boxIA) { boxIA.innerHTML = ""; boxIA.style.display = "none"; }
+  }
 
   // renderiza campos extras do nicho
   const container = document.getElementById("nicho_campos_extras");
@@ -51186,7 +51314,9 @@ function selecionarNichoTab(nicho, btnEl) {
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
-  _restaurarEstadoFormNicho(nicho.slug);
+  if (restaurarEstado) {
+    _restaurarEstadoFormNicho(nicho.slug);
+  }
   renderizarPerguntasRapidasFormulario(nicho.slug);
 }
 

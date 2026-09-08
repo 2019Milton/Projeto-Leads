@@ -18486,7 +18486,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
             <div class="advanced-full" data-plat-only="google" style="display:none;">
               <label>URL de destino (Google)</label>
-              <input type="text" id="campanha_google_url" placeholder="https://plataformadeleads.com.br" value="https://plataformadeleads.com.br">
+              <input type="text" id="campanha_google_url" placeholder="https://seusite.com.br">
               <small id="campanha_google_url_ajuda" style="display:block;margin-top:5px;opacity:.65;">Página aberta quando a pessoa clicar no anúncio.</small>
             </div>
 
@@ -26542,6 +26542,10 @@ async function gerarReativacaoLoteIA() {
 }
 
 let sugestoesCampanhaIAAtual = [];
+let plataformasSugestoesCampanhaIAAtual = [];
+let assinaturaSugestoesCampanhaIAAtual = "";
+let sequenciaGeracaoCampanhaIA = 0;
+let plataformasReaproveitadasEdicao = new Set();
 
 function campoSugestaoIA(sugestao, chave) {
   return (sugestao?.campos || [])
@@ -26550,19 +26554,269 @@ function campoSugestaoIA(sugestao, chave) {
     )?.valor || "";
 }
 
-function dadosCampanhaFormularioIA() {
+function plataformasAlvoCampanhaIA() {
+  return campanhaEmEdicao
+    ? plataformasNovasParaPublicarEdicao()
+    : Array.from(redesSelecionadasCampanha);
+}
+
+function campoTextoPreenchidoIA(id) {
+  return Boolean(document.getElementById(id)?.value?.trim());
+}
+
+function truncarCampoCampanhaIA(valor, limite) {
+  const texto = String(valor || "").trim();
+  if (!texto || texto.length <= limite) return texto;
+  const cortado = texto.slice(0, limite + 1);
+  const ultimoEspaco = cortado.lastIndexOf(" ");
+  return (ultimoEspaco > Math.floor(limite * 0.6)
+    ? cortado.slice(0, ultimoEspaco)
+    : texto.slice(0, limite)).trim();
+}
+
+function preencherCampoVazioComReaproveitamento(id, valor, limite = null) {
+  const el = document.getElementById(id);
+  if (!el || String(el.value || "").trim() || valor === null || valor === undefined) return false;
+  const texto = limite ? truncarCampoCampanhaIA(valor, limite) : String(valor).trim();
+  if (!texto) return false;
+  el.value = texto;
+  return true;
+}
+
+function primeiraUrlValidaCampanhaIA(valores = []) {
+  for (const valor of valores) {
+    const texto = String(valor || "").trim();
+    if (!texto) continue;
+    try {
+      const url = new URL(texto);
+      if (["http:", "https:"].includes(url.protocol)) return texto;
+    } catch (_) {}
+  }
+  return "";
+}
+
+// Copia primeiro tudo que pode ser transportado com segurança da campanha
+// original para os campos próprios da rede nova. A IA só trabalha sobre o que
+// continuar vazio depois desta etapa; URLs, IDs e identidades nunca são inventados.
+function reaproveitarCamposCampanhaParaNovasPlataformas(plataformas = []) {
+  if (!campanhaEmEdicao || !plataformas.length) return;
+
+  const cfg = obterConfiguracoesCampanha(campanhaEmEdicao);
+  const titulosGoogleOrigem = Array.isArray(cfg.titulos) ? cfg.titulos.filter(Boolean) : [];
+  const descricoesGoogleOrigem = Array.isArray(cfg.descricoes) ? cfg.descricoes.filter(Boolean) : [];
+  const nome = valorCampo("campanha_nome") || campanhaEmEdicao.nome || "";
+  const titulo = valorCampo("adv_titulo") || cfg.titulo || titulosGoogleOrigem[0] || nome;
+  const descricao = valorCampo("adv_descricao") || cfg.descricao || descricoesGoogleOrigem[0] || "";
+  const texto = valorCampo("texto") || cfg.texto || campanhaEmEdicao.texto ||
+    descricoesGoogleOrigem.join(" ") || descricao;
+
+  // Campanhas Google guardam a copy nos arrays titulos/descricoes, enquanto
+  // Meta e TikTok usam os campos compartilhados. Ao cruzar de Google para
+  // outra rede, converte esses dados antes de pedir qualquer complemento à IA.
+  preencherCampoVazioComReaproveitamento("adv_titulo", titulo, 255);
+  preencherCampoVazioComReaproveitamento("adv_descricao", descricao, 255);
+  preencherCampoVazioComReaproveitamento("texto", texto);
+  const urlExistente = primeiraUrlValidaCampanhaIA([
+    cfg.url_destino,
+    cfg.link,
+    document.getElementById("campanha_google_url")?.value,
+    document.getElementById("campanha_tiktok_url")?.value
+  ]);
+  const destinoBase = ["lead_ads", "site", "whatsapp"].includes(cfg.destino)
+    ? cfg.destino
+    : "lead_ads";
+
+  if (plataformas.includes("google")) {
+    const candidatosTitulo = [titulo, nome, descricao, texto]
+      .map(valor => truncarCampoCampanhaIA(valor, 30))
+      .filter((valor, indice, lista) => valor && lista.indexOf(valor) === indice);
+    preencherCampoVazioComReaproveitamento("campanha_google_titulo_1", candidatosTitulo[0], 30);
+    preencherCampoVazioComReaproveitamento("campanha_google_titulo_2", candidatosTitulo[1], 30);
+    preencherCampoVazioComReaproveitamento("campanha_google_titulo_3", candidatosTitulo[2], 30);
+    preencherCampoVazioComReaproveitamento(
+      "campanha_google_titulo_longo",
+      [titulo, descricao].filter(Boolean).join(" — ") || nome,
+      90
+    );
+    preencherCampoVazioComReaproveitamento("campanha_google_descricao_1", descricao || texto, 90);
+    preencherCampoVazioComReaproveitamento("campanha_google_descricao_2", texto || descricao, 90);
+    preencherCampoVazioComReaproveitamento("campanha_google_nome_anunciante", cfg.nome_anunciante, 25);
+    preencherCampoVazioComReaproveitamento("campanha_google_url", urlExistente);
+
+    if (!plataformasReaproveitadasEdicao.has("google")) {
+      const destinoGoogle = tipoCampanhaGoogleSelecionado === "display" && destinoBase === "whatsapp"
+        ? "site"
+        : destinoBase;
+      const radio = document.querySelector(`input[name="campanha_google_destino"][value="${destinoGoogle}"]`);
+      if (radio && !radio.disabled) radio.checked = true;
+      aplicarDestinoCampanhaGoogle();
+    }
+    if (destinoCampanhaGoogleSelecionado === "whatsapp") {
+      preencherCampoVazioComReaproveitamento(
+        "campanha_google_whatsapp_mensagem",
+        `Olá! Gostaria de saber mais sobre ${titulo || nome}.`,
+        200
+      );
+    }
+  }
+
+  if (plataformas.includes("tiktok")) {
+    preencherCampoVazioComReaproveitamento("campanha_tiktok_url", urlExistente);
+    if (!plataformasReaproveitadasEdicao.has("tiktok")) {
+      const radio = document.querySelector(`input[name="campanha_tiktok_destino"][value="${destinoBase}"]`);
+      if (radio && !radio.disabled) radio.checked = true;
+      aplicarDestinoCampanhaTikTok();
+    }
+  }
+
+  plataformas.forEach(plataforma => plataformasReaproveitadasEdicao.add(plataforma));
+}
+
+function camposFaltantesCampanhaIA(plataformas = []) {
+  const vazios = ids => ids.filter(id => !campoTextoPreenchidoIA(id));
+  const nicho = chaveNichoFormulario(window._nichoAtivo || { slug: nichoSlugCampanhaEmEdicao() });
+  const camposNicho = {
+    imoveis: ["nicho_tipo_imovel", "nicho_finalidade", "nicho_valor_min", "nicho_valor_max", "nicho_regiao"],
+    saude: ["nicho_operadora", "nicho_tipo_plano", "nicho_faixa_min", "nicho_faixa_max", "nicho_cobertura", "nicho_acomodacao"],
+    suplementos: ["nicho_produto", "nicho_objetivo", "nicho_marca", "nicho_publico_alvo"],
+    saas: ["nicho_tipo_produto", "nicho_publico_alvo_saas"],
+    higienizacao: ["nicho_tipo_servico", "nicho_frequencia", "nicho_area_atendida", "nicho_publico_alvo_higienizacao"],
+    telecom: ["nicho_tipo_servico_telecom", "nicho_porte_empresa", "nicho_situacao_atual", "nicho_area_atendida_telecom"],
+    cursos_online: ["nicho_area_curso", "nicho_objetivo_aluno", "nicho_publico_alvo_cursos_online"]
+  };
+
+  const faltantes = {
+    compartilhados: vazios([
+      "campanha_nome", "texto", "adv_titulo", "adv_descricao", "adv_perguntas",
+      "adv_obrigado_titulo", "adv_obrigado_texto", "adv_obrigado_botao"
+    ]),
+    nicho: vazios(camposNicho[nicho] || [])
+  };
+
+  if (plataformas.includes("google")) {
+    faltantes.google = vazios([
+      "campanha_google_titulo_1", "campanha_google_titulo_2", "campanha_google_titulo_3",
+      ...(tipoCampanhaGoogleSelecionado === "display" ? ["campanha_google_titulo_longo"] : []),
+      "campanha_google_descricao_1",
+      "campanha_google_descricao_2", "campanha_google_nome_anunciante",
+      "campanha_google_url",
+      ...(destinoCampanhaGoogleSelecionado === "whatsapp" ? ["campanha_google_whatsapp_mensagem"] : [])
+    ]);
+  }
+  if (plataformas.includes("tiktok")) {
+    faltantes.tiktok = destinoCampanhaTikTokSelecionado === "site"
+      ? vazios(["campanha_tiktok_url"])
+      : [];
+  }
+  if (plataformas.some(p => REDES_META_COM_FORMULARIO_PROPRIO.includes(p))) {
+    faltantes.meta = vazios([
+      "pagina_select",
+      ...(destinoCampanhaSelecionado === "site" ? ["adv_link"] : []),
+      ...(destinoCampanhaSelecionado === "lead_ads" ? ["adv_privacidade_url"] : [])
+    ]);
+  }
+
+  return faltantes;
+}
+
+function invalidarSugestoesCampanhaIA() {
+  sequenciaGeracaoCampanhaIA += 1;
+  sugestoesCampanhaIAAtual = [];
+  plataformasSugestoesCampanhaIAAtual = [];
+  assinaturaSugestoesCampanhaIAAtual = "";
+  const box = document.getElementById("ia_campanha_criador_resultado");
+  if (box) {
+    box.innerHTML = "";
+    box.style.display = "none";
+  }
+  atualizarEstadoBotaoGerarIA();
+}
+
+function assinaturaContextoCampanhaIA(plataformas = plataformasAlvoCampanhaIA()) {
+  const nicho = chaveNichoFormulario(window._nichoAtivo || { slug: nichoSlugCampanhaEmEdicao() });
+  return JSON.stringify({
+    plataformas: plataformas.slice().sort(),
+    nicho,
+    google: plataformas.includes("google")
+      ? { tipo: tipoCampanhaGoogleSelecionado, destino: destinoCampanhaGoogleSelecionado }
+      : null,
+    tiktok: plataformas.includes("tiktok")
+      ? { destino: destinoCampanhaTikTokSelecionado }
+      : null,
+    meta: plataformas.some(p => REDES_META_COM_FORMULARIO_PROPRIO.includes(p))
+      ? { destino: destinoCampanhaSelecionado }
+      : null,
+    contexto: document.getElementById("ia_campanha_contexto")?.value?.trim() || "",
+    campos_faltantes: campanhaEmEdicao ? camposFaltantesCampanhaIA(plataformas) : null
+  });
+}
+
+function dadosCampanhaFormularioIA(plataformasAlvo = plataformasAlvoCampanhaIA()) {
+  const cfg = coletarConfiguracoesAvancadas();
+  const nichoAtivo = window._nichoAtivo || {};
+  const nicho = chaveNichoFormulario(nichoAtivo) || nichoSlugCampanhaEmEdicao();
+  const imagens = Array.from(document.querySelectorAll("#imagens-container .imagem-item"));
   return {
     nome: document.getElementById("campanha_nome")?.value || "",
     texto: document.getElementById("texto")?.value || "",
     titulo: document.getElementById("adv_titulo")?.value || "",
     descricao: document.getElementById("adv_descricao")?.value || "",
-    objetivo: "OUTCOME_LEADS",
+    objetivo: campanhaEmEdicao?.objetivo || cfg.objetivo || "OUTCOME_LEADS",
     cta: document.getElementById("cta")?.value || "",
     orcamento: document.getElementById("orcamento")?.value || "",
     localidade: document.getElementById("adv_localidade_nome")?.value || "",
     perguntas: document.getElementById("adv_perguntas")?.value || "",
     categoria_especial: document.getElementById("adv_categoria_especial")?.value || "",
-    nicho: window._nichoAtivo?.slug || nichoSlugCampanhaEmEdicao()
+    nicho,
+    nicho_nome: nichoAtivo.nome || campanhaEmEdicao?.nicho_nome || nicho,
+    dados_nicho: coletarDadosNichoAtivo(),
+    plataforma_origem: campanhaEmEdicao ? plataformaCampanhaExibicao(campanhaEmEdicao) : "",
+    plataformas_alvo: plataformasAlvo,
+    configuracoes: {
+      destino: cfg.destino,
+      link: cfg.link,
+      pais: cfg.pais,
+      genero: cfg.genero,
+      idade_min: cfg.idade_min,
+      idade_max: cfg.idade_max,
+      localidades: (cfg.localidades || []).map(local => local.nome || local.key).filter(Boolean),
+      interesses: (cfg.interesses_detalhados || []).map(item => item.nome || item.id).filter(Boolean),
+      inicio: cfg.inicio,
+      fim: cfg.fim,
+      obrigado_titulo: cfg.obrigado_titulo,
+      obrigado_texto: cfg.obrigado_texto,
+      obrigado_botao: cfg.obrigado_botao,
+      privacidade_url: cfg.privacidade_url
+    },
+    google: {
+      ...coletarCamposGoogleAnuncio(),
+      tipo: tipoCampanhaGoogleSelecionado,
+      destino: destinoCampanhaGoogleSelecionado,
+      formulario_preenchido: Boolean(obterFormularioGoogleEscolhido())
+    },
+    tiktok: {
+      destino: destinoCampanhaTikTokSelecionado,
+      url_destino: document.getElementById("campanha_tiktok_url")?.value?.trim() || "",
+      identidade_selecionada: Boolean(tiktokIdentidadeSelecionada?.identity_id),
+      formulario_selecionado: Boolean(obterFormularioTikTokEscolhido()),
+      localidade: tiktokLocalidadeSelecionada?.nome || ""
+    },
+    meta: {
+      destino: destinoCampanhaSelecionado,
+      pagina_selecionada: Boolean(valorCampo("pagina_select")),
+      instagram_selecionado: Boolean(instagramActorIdSelecionado)
+    },
+    midia: {
+      total_imagens: imagens.filter(item =>
+        item.dataset.urlExistente || item.querySelector(".imagem-input")?.files?.[0]
+      ).length,
+      possui_video: Boolean(
+        obterArquivoVideoCampanha() ||
+        obterConfiguracoesCampanha(campanhaEmEdicao).video_url ||
+        obterConfiguracoesCampanha(campanhaEmEdicao).videoUrl ||
+        obterConfiguracoesCampanha(campanhaEmEdicao).video?.url
+      )
+    }
   };
 }
 
@@ -26753,6 +27007,7 @@ function selecionarPlataformaCampanha(plat) {
   }
 
   btn.classList.toggle("ativa", redesSelecionadasCampanha.has(plat));
+  invalidarSugestoesCampanhaIA();
   aplicarRedesCampanha();
 
   const redeMetaAtual = redeMetaFormularioAtual();
@@ -26845,6 +27100,11 @@ function selecionarPlataformaAdicionalEdicao(plat) {
   btn.classList.toggle("ativa", redesSelecionadasCampanha.has(plat));
 
   aplicarRedesCampanha();
+
+  if (redesSelecionadasCampanha.has(plat)) {
+    reaproveitarCamposCampanhaParaNovasPlataformas([plat]);
+  }
+  invalidarSugestoesCampanhaIA();
 
   if (plat === "tiktok" && redesSelecionadasCampanha.has("tiktok")) {
     carregarIdentidadesTikTokCampanha();
@@ -27492,33 +27752,49 @@ function inicializarEstadoCriarCampanha() {
 async function gerarCampanhaComIA() {
   const box =
     document.getElementById("ia_campanha_criador_resultado");
+  const btn = document.getElementById("btn_gerar_campanha_ia");
 
   if (!box) return;
 
-  if (redesSelecionadasCampanha.size === 0) {
+  const plataformasAlvo = plataformasAlvoCampanhaIA();
+
+  if (!plataformasAlvo.length && !campanhaEmEdicao) {
     box.style.display = "block";
     box.innerHTML = "Selecione ao menos uma plataforma de anúncio acima antes de gerar campanha com IA.";
     return;
   }
 
-  if (campanhaEmEdicao && !plataformasNovasParaPublicarEdicao().length) {
+  if (campanhaEmEdicao && !plataformasAlvo.length) {
     box.style.display = "block";
     box.innerHTML = "Marque a nova plataforma que você quer adicionar antes de gerar com IA.";
     return;
   }
 
+  if (campanhaEmEdicao) {
+    reaproveitarCamposCampanhaParaNovasPlataformas(plataformasAlvo);
+  }
+
+  const titulosAnteriores = (sugestoesCampanhaIAAtual || [])
+    .map(s => s?.titulo)
+    .filter(Boolean);
+  const assinaturaContexto = assinaturaContextoCampanhaIA(plataformasAlvo);
+  const requisicaoAtual = ++sequenciaGeracaoCampanhaIA;
+  plataformasSugestoesCampanhaIAAtual = [];
+  sugestoesCampanhaIAAtual = [];
+  assinaturaSugestoesCampanhaIAAtual = "";
+
   box.style.display = "block";
-  box.innerHTML = "Gerando 3 opcoes com IA...";
+  box.innerHTML = `Gerando 3 opções para ${escaparHtml(plataformasAlvo.map(platNome).join(", "))}...`;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Gerando 3 opções...";
+  }
 
   try {
     const token =
       localStorage.getItem("token");
     const contexto =
       document.getElementById("ia_campanha_contexto")?.value || "";
-    const titulosAnteriores =
-      (sugestoesCampanhaIAAtual || [])
-        .map(s => s?.titulo)
-        .filter(Boolean);
     const res =
       await fetch(
         `${API}/ia/campanhas/criador`,
@@ -27529,27 +27805,49 @@ async function gerarCampanhaComIA() {
             "Authorization": "Bearer " + token
           },
           body: JSON.stringify({
-            campanha: dadosCampanhaFormularioIA(),
+            campanha: dadosCampanhaFormularioIA(plataformasAlvo),
             contexto,
             titulos_anteriores: titulosAnteriores,
-            plataformas: Array.from(redesSelecionadasCampanha)
+            plataformas: plataformasAlvo,
+            campos_faltantes: camposFaltantesCampanhaIA(plataformasAlvo),
+            modo: campanhaEmEdicao ? "completar_plataformas" : "criar"
           })
         }
       );
-    const data =
-      await res.json();
+    const data = await res.json().catch(() => ({}));
+
+    if (requisicaoAtual !== sequenciaGeracaoCampanhaIA) return;
 
     if (!res.ok) {
       throw new Error(data.error || "Erro ao gerar campanha");
     }
 
-    sugestoesCampanhaIAAtual =
-      data.sugestoes || [];
+    if (assinaturaContextoCampanhaIA(plataformasAlvoCampanhaIA()) !== assinaturaContexto) {
+      throw new Error("A seleção, o destino ou os campos da campanha mudaram durante a geração. Gere novamente para usar os dados corretos.");
+    }
+
+    const sugestoes = Array.isArray(data.sugestoes) ? data.sugestoes.slice(0, 3) : [];
+    if (sugestoes.length !== 3 || sugestoes.some(item => !item || typeof item !== "object")) {
+      throw new Error("A IA não devolveu as 3 opções completas. Tente gerar novamente.");
+    }
+
+    plataformasSugestoesCampanhaIAAtual = plataformasAlvo.slice();
+    assinaturaSugestoesCampanhaIAAtual = assinaturaContexto;
+    sugestoesCampanhaIAAtual = sugestoes;
     box.innerHTML =
       renderizarOpcoesCampanhaIA(sugestoesCampanhaIAAtual);
   } catch (err) {
+    if (requisicaoAtual !== sequenciaGeracaoCampanhaIA) return;
+    plataformasSugestoesCampanhaIAAtual = [];
+    assinaturaSugestoesCampanhaIAAtual = "";
+    sugestoesCampanhaIAAtual = [];
     box.innerHTML =
       escaparHtml(err.message || "Erro ao gerar campanha com IA.");
+  } finally {
+    if (btn && requisicaoAtual === sequenciaGeracaoCampanhaIA) {
+      btn.textContent = "Gerar campanha com IA";
+      atualizarEstadoBotaoGerarIA();
+    }
   }
 }
 
@@ -27563,6 +27861,9 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
     LEARN_MORE: "Saiba mais",
     APPLY_NOW: "Solicitar agora"
   };
+  const plataformasLabel = plataformasSugestoesCampanhaIAAtual
+    .map(platNome)
+    .join(" + ");
 
   const cards = sugestoes.map((s, i) => {
     const titulo = s.titulo || "";
@@ -27572,6 +27873,9 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
     const perguntas = s.perguntas || "";
     const interesses = s.interesses || "";
     const localidade = s.localidade || "";
+    const googleResumo = plataformasSugestoesCampanhaIAAtual.includes("google")
+      ? [s.google_titulo_1, s.google_titulo_2, s.google_titulo_3].filter(Boolean).join(" • ")
+      : "";
     const publico = [
       s.idade_min && s.idade_max ? `${s.idade_min}–${s.idade_max} anos` : "",
       s.genero === "1" ? "Homens" : s.genero === "2" ? "Mulheres" : "Todos os generos"
@@ -27580,6 +27884,7 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
     return `
       <div class="ia-opcao-card" id="ia_opcao_card_${i}">
         <div class="ia-opcao-numero">Opcao ${i + 1}</div>
+        ${plataformasLabel ? `<div class="ia-opcao-campo"><strong>Plataformas:</strong> ${escaparHtml(plataformasLabel)}</div>` : ""}
         ${titulo ? `<div class="ia-opcao-titulo">${escaparHtml(titulo)}</div>` : ""}
         ${texto ? `<div class="ia-opcao-campo"><strong>Texto:</strong> ${escaparHtml(texto)}</div>` : ""}
         ${descricao ? `<div class="ia-opcao-campo"><strong>Descricao:</strong> ${escaparHtml(descricao)}</div>` : ""}
@@ -27588,6 +27893,7 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
         ${publico ? `<div class="ia-opcao-campo"><strong>Publico:</strong> ${escaparHtml(publico)}</div>` : ""}
         ${perguntas ? `<div class="ia-opcao-campo"><strong>Perguntas:</strong> ${escaparHtml(perguntas)}</div>` : ""}
         ${interesses ? `<div class="ia-opcao-campo"><strong>Interesses:</strong> ${escaparHtml(interesses)}</div>` : ""}
+        ${googleResumo ? `<div class="ia-opcao-campo"><strong>Títulos Google:</strong> ${escaparHtml(googleResumo)}</div>` : ""}
         <button
           type="button"
           class="btn-reanalisar-ia"
@@ -27653,7 +27959,63 @@ function marcarCampoIA(seletor, status, texto) {
   alvoInsercao.insertAdjacentElement("afterend", flag);
 }
 
-function marcarCamposAposAplicarIA(camposPreenchidos = []) {
+const CAMPOS_IA_POR_NICHO = {
+  imoveis: ["#nicho_tipo_imovel", "#nicho_finalidade", "#nicho_valor_min", "#nicho_valor_max", "#nicho_regiao"],
+  saude: ["#nicho_operadora", "#nicho_tipo_plano", "#nicho_faixa_min", "#nicho_faixa_max", "#nicho_cobertura", "#nicho_acomodacao"],
+  suplementos: ["#nicho_produto", "#nicho_objetivo", "#nicho_marca", "#nicho_publico_alvo"],
+  saas: ["#nicho_tipo_produto", "#nicho_publico_alvo_saas"],
+  higienizacao: ["#nicho_tipo_servico", "#nicho_frequencia", "#nicho_area_atendida", "#nicho_publico_alvo_higienizacao"],
+  telecom: ["#nicho_tipo_servico_telecom", "#nicho_porte_empresa", "#nicho_situacao_atual", "#nicho_area_atendida_telecom"],
+  cursos_online: ["#nicho_area_curso", "#nicho_objetivo_aluno", "#nicho_publico_alvo_cursos_online"]
+};
+
+function campoPertenceAoNichoAtivoIA(seletor) {
+  const todosCamposNicho = Object.values(CAMPOS_IA_POR_NICHO).flat();
+  if (!todosCamposNicho.includes(seletor)) return true;
+  const nicho = chaveNichoFormulario(window._nichoAtivo || { slug: nichoSlugCampanhaEmEdicao() });
+  return (CAMPOS_IA_POR_NICHO[nicho] || []).includes(seletor);
+}
+
+function campoRealmentePendenteIA(seletor, plataformasAlvo) {
+  const alvos = new Set(plataformasAlvo || []);
+  if (seletor.startsWith("#campanha_google_") && !alvos.has("google")) return false;
+  if (seletor === "#campanha_google_whatsapp_mensagem" && destinoCampanhaGoogleSelecionado !== "whatsapp") return false;
+  if (seletor === "#campanha_tiktok_url" && (!alvos.has("tiktok") || destinoCampanhaTikTokSelecionado !== "site")) return false;
+  if (["#campanha_tiktok_identidade_select", "#tiktok_localidade_busca", "#campanha_tiktok_formulario_select"].includes(seletor) && !alvos.has("tiktok")) return false;
+  if (seletor === "#pagina_select" && !["facebook", "instagram"].some(p => alvos.has(p))) return false;
+  if (seletor === "#adv_link" && (!["facebook", "instagram"].some(p => alvos.has(p)) || destinoCampanhaSelecionado !== "site")) return false;
+  if (seletor === "#adv_privacidade_url" && (!["facebook", "instagram"].some(p => alvos.has(p)) || destinoCampanhaSelecionado !== "lead_ads")) return false;
+  if (seletor === "#adv_platform_facebook") return false;
+  if (!campoPertenceAoNichoAtivoIA(seletor)) return false;
+
+  if (seletor === "#btn-adicionar-imagem") {
+    const precisaVisual = Array.from(alvos).some(p => ["facebook", "instagram", "tiktok"].includes(p)) ||
+      (alvos.has("google") && tipoCampanhaGoogleSelecionado === "display");
+    const possuiImagem = Array.from(document.querySelectorAll("#imagens-container .imagem-item"))
+      .some(item => item.dataset.urlExistente || item.querySelector(".imagem-input")?.files?.[0]);
+    const cfgMedia = obterConfiguracoesCampanha(campanhaEmEdicao);
+    const possuiVideo = Boolean(
+      obterArquivoVideoCampanha() || cfgMedia.video_url || cfgMedia.videoUrl || cfgMedia.video?.url
+    );
+    return precisaVisual && !possuiImagem && !possuiVideo;
+  }
+  if (seletor === "#adv_inicio_btn") return !valorCampo("adv_inicio");
+  if (seletor === "#adv_device_mobile") {
+    return !document.querySelector("#adv_device_mobile:checked, #adv_device_desktop:checked");
+  }
+  if (seletor === "#campanha_tiktok_identidade_select") return !tiktokIdentidadeSelecionada?.identity_id;
+  if (seletor === "#tiktok_localidade_busca") return !tiktokLocalidadeSelecionada?.key;
+  if (seletor === "#campanha_tiktok_formulario_select") {
+    return destinoCampanhaTikTokSelecionado === "lead_ads" && !obterFormularioTikTokEscolhido();
+  }
+  if (seletor === "#campanha_google_titulo_longo" && tipoCampanhaGoogleSelecionado !== "display") return false;
+
+  const el = document.querySelector(seletor);
+  if (!el) return false;
+  return !String(el.value || "").trim();
+}
+
+function marcarCamposAposAplicarIA(camposPreenchidos = [], plataformasAlvo = plataformasSugestoesCampanhaIAAtual) {
   limparMarcacoesCamposIA();
 
   const preenchidos = new Set(camposPreenchidos);
@@ -27698,6 +28060,8 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_area_curso", "área do curso"],
     ["#nicho_objetivo_aluno", "objetivo do aluno"],
     ["#nicho_publico_alvo_cursos_online", "público-alvo"],
+    ["#nicho_tipo_produto", "tipo de produto SaaS"],
+    ["#nicho_publico_alvo_saas", "público-alvo SaaS"],
     ["#adv_cbo", "CBO (otimização de orçamento)"],
     ["#adv_attribution_spec", "janela de atribuição"],
     ["#campanha_google_titulo_1", "título 1 (Google)"],
@@ -27706,15 +28070,20 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#campanha_google_titulo_longo", "título longo (Google)"],
     ["#campanha_google_descricao_1", "descrição 1 (Google)"],
     ["#campanha_google_descricao_2", "descrição 2 (Google)"],
-    ["#campanha_google_nome_anunciante", "nome do anunciante (Google)"]
+    ["#campanha_google_nome_anunciante", "nome do anunciante (Google)"],
+    ["#campanha_google_url", "URL de destino (Google)"],
+    ["#campanha_google_whatsapp_mensagem", "mensagem do WhatsApp (Google)"],
+    ["#campanha_tiktok_url", "URL de destino (TikTok)"]
   ].forEach(([seletor, texto]) => {
-    if (preenchidos.has(seletor)) {
+    if (preenchidos.has(seletor) && campoPertenceAoNichoAtivoIA(seletor)) {
       marcarCampoIA(seletor, "preenchido", texto);
     }
   });
 
   [
     ["#pagina_select", "Página Facebook"],
+    ["#adv_link", "endereço do site"],
+    ["#adv_privacidade_url", "URL da política de privacidade"],
     ["#btn-adicionar-imagem", "imagem do anúncio"],
     ["#orcamento", "orçamento diário"],
     ["#adv_categoria_especial", "categoria especial da Meta"],
@@ -27741,6 +28110,8 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#nicho_area_curso", "área do curso"],
     ["#nicho_objetivo_aluno", "objetivo do aluno"],
     ["#nicho_publico_alvo_cursos_online", "público-alvo"],
+    ["#nicho_tipo_produto", "tipo de produto SaaS"],
+    ["#nicho_publico_alvo_saas", "público-alvo SaaS"],
     ["#adv_platform_facebook", "Facebook/Instagram"],
     ["#adv_inicio_btn", "data de início"],
     ["#adv_device_mobile", "dispositivos"],
@@ -27753,9 +28124,12 @@ function marcarCamposAposAplicarIA(camposPreenchidos = []) {
     ["#campanha_google_titulo_longo", "título longo (Google)"],
     ["#campanha_google_descricao_1", "descrição 1 (Google)"],
     ["#campanha_google_descricao_2", "descrição 2 (Google)"],
-    ["#campanha_google_nome_anunciante", "nome do anunciante (Google)"]
+    ["#campanha_google_nome_anunciante", "nome do anunciante (Google)"],
+    ["#campanha_google_url", "URL de destino (Google)"],
+    ["#campanha_google_whatsapp_mensagem", "mensagem do WhatsApp (Google)"],
+    ["#campanha_tiktok_url", "URL de destino (TikTok)"]
   ].forEach(([seletor, texto]) => {
-    if (!preenchidos.has(seletor)) {
+    if (!preenchidos.has(seletor) && campoRealmentePendenteIA(seletor, plataformasAlvo)) {
       marcarCampoIA(seletor, "pendente", texto);
     }
   });
@@ -27765,6 +28139,13 @@ function aplicarCampanhaIA(indice) {
   const s = sugestoesCampanhaIAAtual[indice ?? 0];
   if (!s) {
     alert("Gere uma sugestao com IA primeiro.");
+    return;
+  }
+
+  const assinaturaAtual = assinaturaContextoCampanhaIA(plataformasAlvoCampanhaIA());
+  if (!assinaturaSugestoesCampanhaIAAtual || assinaturaSugestoesCampanhaIAAtual !== assinaturaAtual) {
+    alert("A seleção, o destino ou os campos da campanha mudaram. Gere novamente as 3 opções antes de preencher.");
+    invalidarSugestoesCampanhaIA();
     return;
   }
 
@@ -27778,17 +28159,22 @@ function aplicarCampanhaIA(indice) {
       return;
     }
 
-    if (apenasCamposVazios && el.value) {
+    if (apenasCamposVazios && String(el.value || "").trim()) {
       return;
     }
 
-    el.value = valor;
+    const valorTexto = String(valor);
+    el.value = el.maxLength > 0
+      ? truncarCampoCampanhaIA(valorTexto, el.maxLength)
+      : valorTexto;
 
     if (el.tagName === "SELECT" && el.value !== String(valor)) {
       return;
     }
 
     camposPreenchidosIA.push(seletor);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    el.dispatchEvent(new Event("change", { bubbles: true }));
   };
   const preencherSelectIA = (seletor, valor, aliases = {}) => {
     const raw = String(valor || "").trim();
@@ -28102,6 +28488,25 @@ function aplicarCampanhaIA(indice) {
     }
   );
   preencherCampoIA("#nicho_publico_alvo_cursos_online", s.nicho_publico_alvo || s.publico_alvo);
+  preencherSelectIA(
+    "#nicho_tipo_produto",
+    s.nicho_tipo_produto || s.tipo_produto,
+    {
+      saas: "saas",
+      plataforma: "saas",
+      "plataforma saas": "saas",
+      aplicativo: "app",
+      app: "app",
+      sistema: "sistema",
+      "sistema de gestao": "sistema",
+      "sistema de gestão": "sistema",
+      consultoria: "consultoria",
+      "consultoria digital": "consultoria",
+      curso: "curso",
+      mentoria: "curso"
+    }
+  );
+  preencherCampoIA("#nicho_publico_alvo_saas", s.nicho_publico_alvo || s.publico_alvo);
   if (s.genero !== undefined && s.genero !== null) {
     preencherCampoIA("#adv_genero", s.genero);
   }
@@ -28142,8 +28547,46 @@ function aplicarCampanhaIA(indice) {
   preencherCampoIA("#campanha_google_descricao_1", s.google_descricao_1);
   preencherCampoIA("#campanha_google_descricao_2", s.google_descricao_2);
   preencherCampoIA("#campanha_google_nome_anunciante", s.google_nome_anunciante);
+  preencherCampoIA("#campanha_google_whatsapp_mensagem", s.google_mensagem_whatsapp);
+  preencherCampoIA("#campanha_google_url", s.google_url_destino);
+  preencherCampoIA("#campanha_tiktok_url", s.tiktok_url_destino);
 
-  marcarCamposAposAplicarIA(camposPreenchidosIA);
+  // Facebook e Instagram podem ter snapshots independentes dentro da mesma
+  // edição. Propaga somente campos vazios em cada perna e mantém qualquer
+  // personalização manual feita numa das abas.
+  if (campanhaEmEdicao) {
+    const novasMeta = plataformasSugestoesCampanhaIAAtual
+      .filter(rede => REDES_META_COM_FORMULARIO_PROPRIO.includes(rede));
+    if (novasMeta.length) {
+      const fonte = snapshotFormularioMeta(novasMeta[0]);
+      const mesclarVazios = (destino, origem) => {
+        if (Array.isArray(destino)) {
+          return destino.length
+            ? destino
+            : (Array.isArray(origem) ? origem.map(item => item && typeof item === "object" ? { ...item } : item) : origem);
+        }
+        if (destino && typeof destino === "object" && origem && typeof origem === "object") {
+          const resultado = { ...destino };
+          Object.keys(origem).forEach(chave => {
+            resultado[chave] = mesclarVazios(resultado[chave], origem[chave]);
+          });
+          return resultado;
+        }
+        return destino === null || destino === undefined || String(destino).trim() === ""
+          ? origem
+          : destino;
+      };
+      novasMeta.forEach(rede => {
+        const baseRede = _dadosAddPlataformaEdicaoPorRede[rede];
+        _dadosAddPlataformaEdicaoPorRede[rede] = mesclarVazios(
+          baseRede || { avancadas: { plataformas: [rede] } },
+          { ...fonte, avancadas: { ...fonte.avancadas, plataformas: [rede] } }
+        );
+      });
+    }
+  }
+
+  marcarCamposAposAplicarIA(camposPreenchidosIA, plataformasSugestoesCampanhaIAAtual);
 }
 
 async function analisarCampanhaIA(campanha) {
@@ -32556,6 +32999,58 @@ function coletarCamposGoogleAnuncio() {
   };
 }
 
+function snapshotCamposGoogleCampanha() {
+  const selectFormulario = document.getElementById("campanha_google_formulario_select");
+  return {
+    ...coletarCamposGoogleAnuncio(),
+    tipo_campanha: tipoCampanhaGoogleSelecionado,
+    destino: destinoCampanhaGoogleSelecionado,
+    formulario_valor: selectFormulario?.value || "",
+    formulario_id: obterFormularioGoogleEscolhido(),
+    formulario_manual: document.getElementById("campanha_google_formulario_manual")?.value || ""
+  };
+}
+
+function preencherEstadoGoogleCampanha(cfg = {}) {
+  preencherCamposGoogleAnuncio(cfg);
+
+  const tipo = cfg.tipo_campanha === "display" ? "display" : "search";
+  const radioTipo = document.querySelector(`input[name="campanha_google_tipo"][value="${tipo}"]`);
+  if (radioTipo) radioTipo.checked = true;
+
+  const destinoSolicitado = ["lead_ads", "site", "whatsapp"].includes(cfg.destino)
+    ? cfg.destino
+    : "lead_ads";
+  const destino = tipo === "display" && destinoSolicitado === "whatsapp"
+    ? "site"
+    : destinoSolicitado;
+  const radioDestino = document.querySelector(`input[name="campanha_google_destino"][value="${destino}"]`);
+  if (radioDestino) radioDestino.checked = true;
+
+  const selectFormulario = document.getElementById("campanha_google_formulario_select");
+  const manualFormulario = document.getElementById("campanha_google_formulario_manual");
+  const formularioValor = String(cfg.formulario_valor || "");
+  const formularioId = String(cfg.formulario_id || "");
+  if (selectFormulario) {
+    if (formularioValor && Array.from(selectFormulario.options).some(option => option.value === formularioValor)) {
+      selectFormulario.value = formularioValor;
+    } else if (formularioId && Array.from(selectFormulario.options).some(option => option.value === formularioId)) {
+      selectFormulario.value = formularioId;
+    } else if (formularioId && Array.from(selectFormulario.options).some(option => option.value === "__manual__")) {
+      selectFormulario.value = "__manual__";
+    } else {
+      selectFormulario.value = "";
+    }
+  }
+  if (manualFormulario) {
+    manualFormulario.value = cfg.formulario_manual ||
+      (selectFormulario?.value === "__manual__" ? formularioId : "");
+  }
+
+  aplicarTipoCampanhaGoogle();
+  alternarFormularioGoogleManual();
+}
+
 function preencherCamposGoogleAnuncio(cfg) {
   cfg = cfg || {};
   const titulos = Array.isArray(cfg.titulos) ? cfg.titulos : [];
@@ -32865,6 +33360,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
   try {
 
     campanhaEmEdicao = campanha;
+    invalidarSugestoesCampanhaIA();
     const configuracoesCampanha =
       obterConfiguracoesCampanha(campanha);
 
@@ -32883,6 +33379,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       videoAssinatura: assinaturaVideoCampanha(),
       videoArquivo: obterArquivoVideoCampanha(),
       redes: Array.from(redesSelecionadasCampanha),
+      google: snapshotCamposGoogleCampanha(),
       tiktok: snapshotCamposTikTokCampanha(),
       nichoAtivo: window._nichoAtivo
         ? { ...window._nichoAtivo }
@@ -32915,6 +33412,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     aplicarRedesCampanha();
 
     plataformasOriginaisEdicao = new Set(redesSelecionadasCampanha);
+    plataformasReaproveitadasEdicao = new Set();
     _dadosAddPlataformaEdicaoPorRede = { facebook: null, instagram: null };
     const grupoIdAtualEdicao = campanha.publicacao_grupo_id || null;
     plataformasExistentesEdicaoGrupo = new Set(
@@ -32935,7 +33433,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     moverBloco("ia_criador_campanha_box", "editar_campanha_add_plataforma_bloco");
     document.getElementById("ia_criador_titulo").textContent = "IA Ouro - completar plataforma nova";
     document.getElementById("ia_criador_descricao").textContent =
-      "Gere 3 opções pra completar os campos que a rede nova ainda não tem preenchidos (ex: títulos do Google). O que a campanha já usa não é alterado.";
+      "Primeiro reaproveitamos tudo o que já existe na campanha. Depois a IA gera 3 opções para completar, de uma só vez, os campos vazios de todas as novas plataformas selecionadas, respeitando o nicho. URLs, contas, identidades e formulários nunca são inventados.";
     document.getElementById("ia_campanha_contexto").value = "";
     sugestoesCampanhaIAAtual = [];
     const boxIAEdicao = document.getElementById("ia_campanha_criador_resultado");
@@ -32978,9 +33476,15 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       configuracoesCampanha,
       campanha.daily_budget
     );
-    preencherCamposGoogleAnuncio(configuracoesCampanha);
+    preencherEstadoGoogleCampanha(
+      plataformaBaseEdicao === "google"
+        ? { ...configuracoesCampanha, formulario_id: campanha.form_id || configuracoesCampanha.form_id }
+        : {}
+    );
     if (plataformaBaseEdicao === "tiktok") {
       preencherCamposTikTokCampanha(configuracoesCampanha);
+    } else {
+      preencherCamposTikTokCampanha({}, false);
     }
     configurarEdicaoDestinoCampanha(campanha);
     preencherCamposBasicosCampanha({
@@ -33017,6 +33521,7 @@ function fecharEdicaoCampanha() {
   try {
 
     esconderAbasEdicaoCampanha();
+    invalidarSugestoesCampanhaIA();
 
     // Limpa campos de qualquer rede marcada-mas-nunca-publicada nesta sessão
     // de edição, antes que o snapshot abaixo restaure redesSelecionadasCampanha
@@ -33061,6 +33566,7 @@ function fecharEdicaoCampanha() {
       atualizarTosHint();
       preencherConfiguracoesAvancadas(_snapshotCriarCampanha.avancadas, null);
       definirValorCampo("orcamento", _snapshotCriarCampanha.orcamento);
+      preencherEstadoGoogleCampanha(_snapshotCriarCampanha.google || {});
       preencherCamposTikTokCampanha(_snapshotCriarCampanha.tiktok || {}, false);
 
       const containerImagens = document.getElementById("imagens-container");
@@ -33099,6 +33605,7 @@ function fecharEdicaoCampanha() {
     campanhaEmEdicao = null;
     plataformasOriginaisEdicao = new Set();
     plataformasExistentesEdicaoGrupo = new Set();
+    plataformasReaproveitadasEdicao = new Set();
     abaAtivaAddPlataformaEdicao = null;
     _dadosAddPlataformaEdicaoPorRede = { facebook: null, instagram: null };
     document.getElementById("editar_campanha_add_plataforma_bloco")?.style.setProperty("display", "none");
@@ -34313,14 +34820,15 @@ function inicializarVideoCampanha() {
   });
 }
 
-async function uploadVideoCampanha({ arquivo, token, usuario_id }) {
-  if (!arquivo) return null;
+async function uploadVideoCampanha({ arquivo, url, token, usuario_id }) {
+  if (!arquivo && !url) return null;
 
   const formData = new FormData();
-  formData.append("video", arquivo);
+  if (arquivo) formData.append("video", arquivo);
+  if (!arquivo && url) formData.append("video_url", url);
   formData.append("usuario_id", usuario_id);
-  formData.append("nome", arquivo.name);
-  formData.append("tipo", arquivo.type || "");
+  formData.append("nome", arquivo?.name || "video-reaproveitado.mp4");
+  formData.append("tipo", arquivo?.type || "video/mp4");
 
   const uploadRes = await fetch(
     `${API}/meta/upload-video`,
@@ -34896,7 +35404,8 @@ function validarPublicacaoCampanha({
   orcamento,
   configuracoes_avancadas,
   imagensArquivos,
-  videoArquivo
+  videoArquivo,
+  videoDisponivel = false
 }) {
   limparValidacaoCampanha();
 
@@ -34934,7 +35443,7 @@ function validarPublicacaoCampanha({
     );
   }
 
-  if (!imagensArquivos.length && !videoArquivo) {
+  if (!imagensArquivos.length && !videoArquivo && !videoDisponivel) {
     return conduzirParaCampoCampanha(
       "#btn-adicionar-imagem",
       "Adicione ao menos uma imagem ou um vídeo para o anúncio."
@@ -35005,6 +35514,7 @@ function validarCamposCompartilhadosCampanha({
   orcamento,
   imagensArquivos,
   videoArquivo,
+  videoDisponivel = false,
   redes
 }) {
   limparValidacaoCampanha();
@@ -35028,7 +35538,7 @@ function validarCamposCompartilhadosCampanha({
     ) ||
     ((redes || []).includes("google") && tipoCampanhaGoogleSelecionado === "display");
 
-  if (precisaDeCriativoVisual && !imagensArquivos.length && !videoArquivo) {
+  if (precisaDeCriativoVisual && !imagensArquivos.length && !videoArquivo && !videoDisponivel) {
     return conduzirParaCampoCampanha(
       "#btn-adicionar-imagem",
       "Adicione ao menos uma imagem ou um vídeo para o anúncio."
@@ -35153,7 +35663,7 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
-    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId,
+    configuracoesBase, imagensArquivos, videoArquivo, videoUrlFallback, publicacaoGrupoId,
     destino: destinoContexto, redeMeta
   } = contexto;
   const nomeRede = redeMeta === "instagram" ? "Instagram" : "Facebook";
@@ -35207,10 +35717,10 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
 
     let videoUpload = null;
 
-    if (videoArquivo) {
+    if (videoArquivo || videoUrlFallback) {
       setPublishProgress(28, `${prefixo}Enviando vídeo...`);
       try {
-        videoUpload = await uploadVideoCampanha({ arquivo: videoArquivo, token, usuario_id });
+        videoUpload = await uploadVideoCampanha({ arquivo: videoArquivo, url: videoUrlFallback, token, usuario_id });
       } catch (err) {
         return { ok: false, mensagem: err?.message || "Erro ao enviar vídeo" };
       }
@@ -35354,7 +35864,7 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, texto, cta, orcamento,
-    configuracoesBase, imagensArquivos, videoArquivo, publicacaoGrupoId
+    configuracoesBase, imagensArquivos, videoArquivo, videoUrlFallback, publicacaoGrupoId
   } = contexto;
   const prefixo = isMultiRede ? "[TikTok] " : "";
   const destinoTikTok = ["lead_ads", "site", "whatsapp"].includes(destinoCampanhaTikTokSelecionado)
@@ -35399,10 +35909,11 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     }
 
     let videoId = null;
-    if (videoArquivo) {
+    if (videoArquivo || videoUrlFallback) {
       setPublishProgress(28, `${prefixo}Enviando vídeo...`);
       const formData = new FormData();
-      formData.append("video", videoArquivo);
+      if (videoArquivo) formData.append("video", videoArquivo);
+      if (!videoArquivo && videoUrlFallback) formData.append("video_url", videoUrlFallback);
       formData.append("usuario_id", usuario_id);
 
       const uploadRes = await fetch(`${API}/tiktok/upload-video`, {
@@ -36301,7 +36812,9 @@ function montarContextoPublicacaoMeta(contextoComum, rede, dados) {
   return {
     ...contextoComum,
     redeMeta: rede,
-    destino: dados?.destino === "whatsapp" ? "whatsapp" : "lead_ads",
+    destino: ["lead_ads", "site", "whatsapp"].includes(dados?.destino)
+      ? dados.destino
+      : contextoComum.destino,
     campanha_nome: basicos.nome ?? contextoComum.campanha_nome,
     page_id,
     texto,
@@ -36521,19 +37034,27 @@ async function publicarPlataformasAdicionaisCampanha() {
     .map(input => input.files[0])
     .filter(Boolean);
 
+  const videoArquivo = obterArquivoVideoCampanha();
+  const cfgCampanhaOriginal = obterConfiguracoesCampanha(campanhaEmEdicao);
+  const videoUrlFallback = videoArquivo
+    ? ""
+    : primeiraUrlValidaCampanhaIA([
+        cfgCampanhaOriginal.video_url,
+        cfgCampanhaOriginal.videoUrl,
+        cfgCampanhaOriginal.video?.url
+      ]);
+
   // Nenhuma imagem nova selecionada: reaproveita as imagens que a campanha já
   // tem (mostradas no carrossel como referência, sem arquivo anexado) como
   // fallback pra rede nova — é isso que faz o "auto-preenchimento" de
   // imagem funcionar de verdade, não só aparecer visualmente. Tudo-ou-nada:
   // se o usuário selecionou QUALQUER imagem nova, usa só as novas (sem
   // misturar slot novo com slot reaproveitado).
-  const imagensUrlsFallback = imagensArquivos.length ? [] :
+  const imagensUrlsFallback = (imagensArquivos.length || videoUrlFallback) ? [] :
     Array.from(document.querySelectorAll("#imagens-container .imagem-item"))
       .map(item => item.dataset.urlExistente)
       .filter(Boolean);
   const imagensParaValidar = imagensArquivos.length ? imagensArquivos : imagensUrlsFallback;
-
-  const videoArquivo = obterArquivoVideoCampanha();
 
   const feedback = document.getElementById("editar_campanha_add_plataforma_feedback");
   const btn = document.getElementById("editar_campanha_btn_publicar_adicionais");
@@ -36543,7 +37064,8 @@ async function publicarPlataformasAdicionaisCampanha() {
   }
 
   if (!validarCamposCompartilhadosCampanha({
-    campanha_nome, texto, orcamento, imagensArquivos: imagensParaValidar, videoArquivo, redes: novasRedes
+    campanha_nome, texto, orcamento, imagensArquivos: imagensParaValidar,
+    videoArquivo, videoDisponivel: Boolean(videoUrlFallback), redes: novasRedes
   })) {
     return;
   }
@@ -36565,7 +37087,7 @@ async function publicarPlataformasAdicionaisCampanha() {
   const contextoBaseMeta = {
     token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
     destino: destinoCampanhaSelecionado,
-    configuracoesBase, imagensArquivos, imagensUrlsFallback, videoArquivo
+    configuracoesBase, imagensArquivos, imagensUrlsFallback, videoArquivo, videoUrlFallback
   };
 
   if (novasRedesMeta.length === 1) {
@@ -36581,7 +37103,8 @@ async function publicarPlataformasAdicionaisCampanha() {
     if (!validarPublicacaoCampanha({
       campanha_nome, page_id, texto, orcamento,
       configuracoes_avancadas: configuracoesRede,
-      imagensArquivos: imagensParaValidar, videoArquivo
+      imagensArquivos: imagensParaValidar, videoArquivo,
+      videoDisponivel: Boolean(videoUrlFallback)
     })) {
       return;
     }
@@ -36599,6 +37122,7 @@ async function publicarPlataformasAdicionaisCampanha() {
         orcamento: contextoMeta.orcamento,
         imagensArquivos: imagensMetaParaValidar,
         videoArquivo: contextoMeta.videoArquivo,
+        videoDisponivel: Boolean(contextoMeta.videoUrlFallback),
         redes: [rede]
       })) {
         return;
@@ -36610,7 +37134,8 @@ async function publicarPlataformasAdicionaisCampanha() {
         orcamento: contextoMeta.orcamento,
         configuracoes_avancadas: contextoMeta.configuracoesBase,
         imagensArquivos: imagensMetaParaValidar,
-        videoArquivo: contextoMeta.videoArquivo
+        videoArquivo: contextoMeta.videoArquivo,
+        videoDisponivel: Boolean(contextoMeta.videoUrlFallback)
       })) {
         return;
       }

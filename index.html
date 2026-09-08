@@ -23078,20 +23078,13 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
     return;
   }
 
-  // Um grupo novo pode conter duas linhas Meta independentes (Facebook e
-  // Instagram). Cada uma deve abrir a própria edição; a aba ativa no drawer
-  // informa qual delas o usuário escolheu. Campanhas legadas combinadas têm
-  // apenas uma linha Meta e continuam no fluxo antigo abaixo.
-  const paresMeta = pares.filter(p => (p.campanha.plataforma || "meta") === "meta");
-  if (paresMeta.length > 1) {
-    const parEscolhido =
-      paresMeta.find(p => p.chave === chaveAtivaInicial) || paresMeta[0];
-    camposEdicaoGrupo = [parEscolhido];
-    esconderAbasEdicaoCampanha();
-    await abrirEdicaoCampanhaPorChave(parEscolhido.chave);
-    return;
-  }
-
+  // Um grupo pode conter duas linhas Meta independentes (Facebook e
+  // Instagram) — ambas gravadas com plataforma='meta' cru no banco, mas
+  // plataformaCampanhaExibicao() já resolve cada uma pra sua rede real, e o
+  // sistema de abas abaixo (renderizarAbasEdicaoCampanha/ativarAbaEdicaoCampanha)
+  // já é genérico o bastante pra tratar as duas como abas normais, iguais a
+  // qualquer outro par de redes do grupo — sem precisar de nenhum caso
+  // especial aqui.
   camposEdicaoGrupo = pares;
 
   if (pares.length < 2) {
@@ -26742,11 +26735,31 @@ function plataformasNovasParaPublicarEdicao() {
   );
 }
 
-// Abas locais, só para as redes recém-marcadas em "Publicar também em" — não
+// Identidade de aba da rede ORIGINAL da campanha em edição — null só no caso
+// raro de campanha Meta legada combinada (facebook+instagram numa linha só,
+// sem como separar em aba própria; mantém o comportamento antigo pra esse
+// caso específico, igual sempre foi).
+function baseTabEdicaoCampanha() {
+  if (!campanhaEmEdicao) return null;
+  const base = plataformaCampanhaExibicao(campanhaEmEdicao);
+  return PLATAFORMAS_COM_ABA_CAMPANHA.includes(base) ? base : null;
+}
+
+// Todas as abas da edição agora — rede base (quando tem identidade própria)
+// seguida das redes novas sendo adicionadas. plataformasNovasParaPublicarEdicao()
+// continua sendo, à parte, a única lista realmente publicada como perna nova;
+// a aba da base é salva pelo "💾 Salvar alterações" de sempre.
+function todasAbasEdicaoCampanha() {
+  const base = baseTabEdicaoCampanha();
+  const novas = plataformasNovasParaPublicarEdicao();
+  return base ? [base, ...novas] : novas;
+}
+
+// Abas locais da edição — agora cobrindo a rede base da campanha junto das
+// recém-marcadas em "Publicar também em" (ver todasAbasEdicaoCampanha). Não
 // reaproveita o sistema de abas da Criação (#campanha_plat_abas vive fora do
 // modal de edição, por isso a edição sempre força platsComAbaMarcadas = []
-// em aplicarRedesCampanha). Mecanismo paralelo e independente, sem tocar na
-// campanha base.
+// em aplicarRedesCampanha). Mecanismo paralelo e independente.
 let abaAtivaAddPlataformaEdicao = null;
 
 // Snapshot dedicado pra troca de dados entre Facebook/Instagram quando as
@@ -26760,22 +26773,22 @@ function renderizarAbasAddPlataformaEdicao() {
   const container = document.getElementById("editar_campanha_add_plataforma_abas");
   if (!container) return;
 
-  const novas = plataformasNovasParaPublicarEdicao();
+  const todas = todasAbasEdicaoCampanha();
 
-  if (novas.length < 2) {
+  if (todas.length < 1) {
     container.style.display = "none";
     container.innerHTML = "";
-    if (!novas.includes(abaAtivaAddPlataformaEdicao)) abaAtivaAddPlataformaEdicao = null;
+    if (!todas.includes(abaAtivaAddPlataformaEdicao)) abaAtivaAddPlataformaEdicao = null;
     return;
   }
 
   const abaAnterior = abaAtivaAddPlataformaEdicao;
-  if (!abaAtivaAddPlataformaEdicao || !novas.includes(abaAtivaAddPlataformaEdicao)) {
-    abaAtivaAddPlataformaEdicao = novas[0];
+  if (!abaAtivaAddPlataformaEdicao || !todas.includes(abaAtivaAddPlataformaEdicao)) {
+    abaAtivaAddPlataformaEdicao = todas[0];
   }
 
   container.style.display = "";
-  container.innerHTML = novas.map(p => `
+  container.innerHTML = todas.map(p => `
     <button
       type="button"
       class="campanha-drawer-aba${p === abaAtivaAddPlataformaEdicao ? " ativa" : ""}"
@@ -26785,11 +26798,11 @@ function renderizarAbasAddPlataformaEdicao() {
   `).join("");
 
   // A aba pode nascer "ativa" aqui (não por um clique em
-  // selecionarAbaAddPlataformaEdicao) na primeira vez que 2 redes novas
-  // ficam marcadas ao mesmo tempo — ex: usuário marca Facebook, depois
-  // Instagram, e só na 2ª marcação as abas passam a existir. Sem isso, se a
-  // aba recém-nascida for uma perna Meta, ela nunca passaria pelo
-  // restore/checkbox-flip que normalmente acontece ao entrar numa aba.
+  // selecionarAbaAddPlataformaEdicao) na primeira vez que a lista de abas
+  // muda — ex: modal acabou de abrir e a base já é uma aba, ou o usuário
+  // acabou de marcar a 1ª rede nova. Sem isso, se a aba recém-ativa for uma
+  // perna Meta, ela nunca passaria pelo restore/checkbox-flip que
+  // normalmente acontece ao entrar numa aba.
   if (abaAtivaAddPlataformaEdicao !== abaAnterior) {
     aplicarEntradaAbaAddPlataformaEdicao(abaAtivaAddPlataformaEdicao);
   }
@@ -26871,7 +26884,7 @@ function aplicarRedesCampanha() {
       ? []
       : PLATAFORMAS_COM_ABA_CAMPANHA.filter(p => redesSelecionadasCampanha.has(p));
 
-  if (platsComAbaMarcadas.length < 2) {
+  if (platsComAbaMarcadas.length < 1) {
     abaAtivaCampanha = null;
   } else if (!abaAtivaCampanha || !platsComAbaMarcadas.includes(abaAtivaCampanha)) {
     abaAtivaCampanha = platsComAbaMarcadas[0];
@@ -26879,20 +26892,18 @@ function aplicarRedesCampanha() {
 
   renderizarAbasCampanha(platsComAbaMarcadas);
 
-  // Abas locais de "adicionar plataforma" na edição — mecanismo à parte do
-  // de cima, só entre as redes recém-marcadas (nunca a rede base).
+  // Abas locais de "adicionar plataforma" na edição — agora inclui a própria
+  // rede base da campanha (ver todasAbasEdicaoCampanha), não só as redes
+  // recém-marcadas — cada rede com aba sempre aparece separada, mesmo sozinha.
   if (emEdicao) renderizarAbasAddPlataformaEdicao();
-  const platsNovasComAba = emEdicao ? plataformasNovasParaPublicarEdicao() : [];
+  const todasAbasEdicao = emEdicao ? todasAbasEdicaoCampanha() : [];
 
   // Rede "ativa" agora, pra fins de cor — uma só de cada vez, calculada uma
   // única vez aqui (não por campo) e reaproveitada tanto pros campos quanto
-  // pros cabeçalhos dos <details> logo abaixo. Na Criação só quando uma aba
-  // está mesmo ativa (2+ marcadas); na Edição já vale com 1 rede nova só
-  // (nem precisa virar aba clicável pra ficar destacada).
+  // pros cabeçalhos dos <details> logo abaixo.
   const redeAtivaColorida =
     (!emEdicao && abaAtivaCampanha) ? abaAtivaCampanha :
-    (emEdicao && platsNovasComAba.length === 1) ? platsNovasComAba[0] :
-    (emEdicao && platsNovasComAba.length >= 2 && abaAtivaAddPlataformaEdicao) ? abaAtivaAddPlataformaEdicao :
+    (emEdicao && todasAbasEdicao.length >= 1 && abaAtivaAddPlataformaEdicao) ? abaAtivaAddPlataformaEdicao :
     null;
   const corAtivaAgora = redeAtivaColorida ? CORES_PLATAFORMA_ABA[redeAtivaColorida] : null;
 
@@ -26906,11 +26917,11 @@ function aplicarRedesCampanha() {
     const mostrarPorAba =
       !abaAtivaCampanha || !tocaAbaGerenciada || redes.includes(abaAtivaCampanha);
 
-    // Mesma ideia, mas pro conjunto de redes novas sendo adicionadas na edição
-    // (só entra em jogo com 2+ redes novas — com 0 ou 1, sempre true, igual
-    // era antes desta aba existir; a rede base nunca está em platsNovasComAba,
-    // então seus próprios campos nunca somem por causa disso).
-    const tocaAbaAddEdicao = platsNovasComAba.length >= 2 && redes.some(r => platsNovasComAba.includes(r));
+    // Mesma ideia, mas pro conjunto de abas da edição (rede base + redes novas
+    // sendo adicionadas) — agora entra em jogo com 1 aba só também, inclusive
+    // a própria rede base: campo exclusivo dela (ex: "Onde anunciar" numa
+    // base Instagram) some quando uma aba diferente estiver ativa.
+    const tocaAbaAddEdicao = todasAbasEdicao.length >= 1 && redes.some(r => todasAbasEdicao.includes(r));
     const mostrarPorAbaAddEdicao =
       !tocaAbaAddEdicao || !abaAtivaAddPlataformaEdicao || redes.includes(abaAtivaAddPlataformaEdicao);
 
@@ -27196,14 +27207,15 @@ async function aplicarDestinoCampanhaTikTok() {
   }
 }
 
-// Faixa de abas (Meta/Google/TikTok) do formulario de Criar Campanha — só
-// aparece quando 2+ dessas plataformas estao marcadas juntas. Reaproveita
+// Faixa de abas (Meta/Google/TikTok) do formulario de Criar Campanha — aparece
+// sempre que pelo menos 1 dessas plataformas estiver marcada, mesmo sozinha,
+// pra deixar claro a qual rede os campos abaixo pertencem. Reaproveita
 // platBadge() pro mesmo icone/nome/cor usados no resto do app.
 function renderizarAbasCampanha(platsComAba) {
   const container = document.getElementById("campanha_plat_abas");
   if (!container) return;
 
-  if (!platsComAba || platsComAba.length < 2) {
+  if (!platsComAba || platsComAba.length < 1) {
     container.style.display = "none";
     container.innerHTML = "";
     return;
@@ -27223,24 +27235,17 @@ function renderizarAbasCampanha(platsComAba) {
 const REDES_META_COM_FORMULARIO_PROPRIO = ["facebook", "instagram"];
 
 function redeMetaFormularioAtual() {
-  // Na edição, só existe "rede Meta atual" de verdade quando as DUAS —
-  // Facebook e Instagram — estão sendo adicionadas como pernas novas ao
-  // mesmo tempo (única situação em que faz sentido trocar dados entre elas
-  // aqui). Uma campanha base já é sozinha uma rede só, então nunca pode
-  // ter as duas como "novas" simultaneamente — ver o comentário de
-  // plataformaBaseEdicao em abrirEdicaoCampanha(). Com 0 ou 1 perna Meta
-  // nova, retorna null (mesmo padrão do Google/TikTok: só visibilidade,
-  // sem troca de dados) — isso também protege a identidade Meta já
-  // publicada da campanha base de ser mexida por engano.
+  // Na edição, a aba de "adicionar plataforma" agora cobre a rede base junto
+  // das novas (ver todasAbasEdicaoCampanha) — basta perguntar se a aba
+  // REALMENTE ativa agora é Facebook/Instagram, seja ela a base ou uma perna
+  // nova. Isso já protege sozinho a identidade Meta da base: se nenhuma aba
+  // Meta estiver em foco (ex: base é Instagram mas a aba Google está ativa),
+  // abaAtivaAddPlataformaEdicao não é facebook/instagram e cai no null abaixo.
   const emEdicao = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
   if (emEdicao) {
-    const novasMeta = REDES_META_COM_FORMULARIO_PROPRIO.filter(r =>
-      plataformasNovasParaPublicarEdicao().includes(r)
-    );
-    if (novasMeta.length < 2) return null;
     return REDES_META_COM_FORMULARIO_PROPRIO.includes(abaAtivaAddPlataformaEdicao)
       ? abaAtivaAddPlataformaEdicao
-      : novasMeta[0];
+      : null;
   }
   if (REDES_META_COM_FORMULARIO_PROPRIO.includes(abaAtivaCampanha)) {
     return abaAtivaCampanha;
@@ -32688,6 +32693,16 @@ async function salvarEdicaoCampanha() {
 
   if (!campanhaEmEdicao) {
     return;
+  }
+
+  // Os campos compartilhados (nome, orçamento, texto, imagem...) refletem a
+  // aba visivelmente ativa agora — se o usuário estiver com a aba de uma
+  // plataforma NOVA em foco (ainda não publicada) e clicar em Salvar, esses
+  // dados iriam por engano por cima da campanha base. Força a volta pra aba
+  // da base antes de ler qualquer campo.
+  const baseAtualSalvar = baseTabEdicaoCampanha();
+  if (baseAtualSalvar && abaAtivaAddPlataformaEdicao && abaAtivaAddPlataformaEdicao !== baseAtualSalvar) {
+    selecionarAbaAddPlataformaEdicao(baseAtualSalvar);
   }
 
   const token = localStorage.getItem("token");

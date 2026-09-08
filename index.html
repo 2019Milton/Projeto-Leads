@@ -17670,8 +17670,8 @@ body.tema-claro .criar-campanha-descricao {
           id="ia_criador_campanha_box"
           class="ia-ouro-destaque"
         >
-          <h4>IA Ouro - Criador de anuncio</h4>
-          <p>
+          <h4 id="ia_criador_titulo">IA Ouro - Criador de anuncio</h4>
+          <p id="ia_criador_descricao">
             Gere 3 opcoes de titulo, texto, descricao, perguntas e interesses com IA. Clique em gerar novamente para criar novas variacoes.
           </p>
           <textarea
@@ -26552,8 +26552,16 @@ function dadosCampanhaFormularioIA() {
     localidade: document.getElementById("adv_localidade_nome")?.value || "",
     perguntas: document.getElementById("adv_perguntas")?.value || "",
     categoria_especial: document.getElementById("adv_categoria_especial")?.value || "",
-    nicho: window._nichoAtivo?.slug || ""
+    nicho: window._nichoAtivo?.slug || nichoSlugCampanhaEmEdicao()
   };
+}
+
+function nichoSlugCampanhaEmEdicao() {
+  if (!campanhaEmEdicao) return "";
+  if (campanhaEmEdicao.nicho_slug) return campanhaEmEdicao.nicho_slug;
+  const porId = (usuarioLogado?.nichos || [])
+    .find(n => Number(n.id) === Number(campanhaEmEdicao.nicho_id));
+  return porId?.slug || "";
 }
 
 function aplicarEstadoCriarCampanha(recolhido) {
@@ -26787,6 +26795,7 @@ function renderizarSeletorPlataformasAdicionaisEdicao() {
     bloco.style.display = "none";
     atualizarBotaoPublicarPlataformasAdicionais();
     renderizarAbasAddPlataformaEdicao();
+    atualizarVisibilidadeIACampanhaEdicao();
     return;
   }
 
@@ -26800,6 +26809,13 @@ function renderizarSeletorPlataformasAdicionaisEdicao() {
 
   atualizarBotaoPublicarPlataformasAdicionais();
   renderizarAbasAddPlataformaEdicao();
+  atualizarVisibilidadeIACampanhaEdicao();
+}
+
+function atualizarVisibilidadeIACampanhaEdicao() {
+  const iaBox = document.getElementById("ia_criador_campanha_box");
+  if (!iaBox || !campanhaEmEdicao) return;
+  iaBox.style.display = plataformasNovasParaPublicarEdicao().length ? "" : "none";
 }
 
 function selecionarPlataformaAdicionalEdicao(plat) {
@@ -26829,6 +26845,7 @@ function selecionarPlataformaAdicionalEdicao(plat) {
   }
 
   atualizarBotaoPublicarPlataformasAdicionais();
+  atualizarVisibilidadeIACampanhaEdicao();
 }
 
 function atualizarBotaoPublicarPlataformasAdicionais() {
@@ -27474,6 +27491,12 @@ async function gerarCampanhaComIA() {
     return;
   }
 
+  if (campanhaEmEdicao && !plataformasNovasParaPublicarEdicao().length) {
+    box.style.display = "block";
+    box.innerHTML = "Marque a nova plataforma que você quer adicionar antes de gerar com IA.";
+    return;
+  }
+
   box.style.display = "block";
   box.innerHTML = "Gerando 3 opcoes com IA...";
 
@@ -27562,7 +27585,7 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
           onclick="aplicarCampanhaIA(${i})"
           style="margin-top:10px;width:100%;"
         >
-          Usar esta opcao
+          ${campanhaEmEdicao ? "Preencher campos vazios com esta opcao" : "Usar esta opcao"}
         </button>
       </div>
     `;
@@ -27735,11 +27758,17 @@ function aplicarCampanhaIA(indice) {
     return;
   }
 
+  const apenasCamposVazios = Boolean(campanhaEmEdicao);
+
   const camposPreenchidosIA = [];
   const preencherCampoIA = (seletor, valor) => {
     const el = document.querySelector(seletor);
 
     if (!el || valor === undefined || valor === null || valor === "") {
+      return;
+    }
+
+    if (apenasCamposVazios && el.value) {
       return;
     }
 
@@ -27769,7 +27798,9 @@ function aplicarCampanhaIA(indice) {
     const btn = document.getElementById(`ia_opcao_btn_${idx}`);
     if (card) card.classList.toggle("ia-opcao-selecionada", idx === indice);
     if (btn) {
-      btn.textContent = idx === indice ? "Opcao selecionada" : "Usar esta opcao";
+      btn.textContent = idx === indice
+        ? "Opcao selecionada"
+        : (campanhaEmEdicao ? "Preencher campos vazios com esta opcao" : "Usar esta opcao");
       btn.classList.toggle("ia-btn-selecionado", idx === indice);
     }
   });
@@ -28082,13 +28113,14 @@ function aplicarCampanhaIA(indice) {
     preencherCampoIA("#adv_obrigado_texto", s.obrigado_texto);
   }
 
-  // CBO e Attribution Window sugeridos pela IA
+  // CBO e Attribution Window sugeridos pela IA — só na criação, checkbox/select
+  // não tem "estado vazio" pra usar como sinal de "ainda não preenchido".
   const cboEl = document.getElementById("adv_cbo");
-  if (cboEl && s.cbo !== undefined && s.cbo !== null) {
+  if (!apenasCamposVazios && cboEl && s.cbo !== undefined && s.cbo !== null) {
     cboEl.checked = Boolean(s.cbo);
     camposPreenchidosIA.push("#adv_cbo");
   }
-  if (s.attribution_spec) {
+  if (!apenasCamposVazios && s.attribution_spec) {
     preencherSelectIA("#adv_attribution_spec", s.attribution_spec);
     atualizarDescricaoAtribuicao();
   }
@@ -32732,6 +32764,15 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       if (bloco) bloco.open = false;
     });
 
+    moverBloco("ia_criador_campanha_box", "editar_campanha_add_plataforma_bloco");
+    document.getElementById("ia_criador_titulo").textContent = "IA Ouro - completar plataforma nova";
+    document.getElementById("ia_criador_descricao").textContent =
+      "Gere 3 opções pra completar os campos que a rede nova ainda não tem preenchidos (ex: títulos do Google). O que a campanha já usa não é alterado.";
+    document.getElementById("ia_campanha_contexto").value = "";
+    sugestoesCampanhaIAAtual = [];
+    const boxIAEdicao = document.getElementById("ia_campanha_criador_resultado");
+    if (boxIAEdicao) { boxIAEdicao.innerHTML = ""; boxIAEdicao.style.display = "none"; }
+
     const instagramFeedback =
       document.getElementById("instagram_pagina_feedback");
 
@@ -32818,6 +32859,15 @@ function fecharEdicaoCampanha() {
       const bloco = document.getElementById(blocoId);
       if (bloco) bloco.open = BLOCOS_SEGMENTACAO_ABERTO_PADRAO[blocoId] ?? false;
     });
+
+    restaurarBloco("ia_criador_campanha_box");
+    document.getElementById("ia_criador_titulo").textContent = "IA Ouro - Criador de anuncio";
+    document.getElementById("ia_criador_descricao").textContent =
+      "Gere 3 opcoes de titulo, texto, descricao, perguntas e interesses com IA. Clique em gerar novamente para criar novas variacoes.";
+    document.getElementById("ia_campanha_contexto").value = "";
+    sugestoesCampanhaIAAtual = [];
+    const boxIAEdicao = document.getElementById("ia_campanha_criador_resultado");
+    if (boxIAEdicao) { boxIAEdicao.innerHTML = ""; boxIAEdicao.style.display = "none"; }
 
     const instagramFeedback =
       document.getElementById("instagram_pagina_feedback");

@@ -1741,6 +1741,106 @@ body.tema-claro .card h3 { color: #0f172a; }
   }
 }
 
+#modal_passo_google_saldo_mcc .passo-meta-body {
+  gap: 14px;
+  padding: 20px 28px 28px;
+}
+
+#modal_passo_google_saldo_mcc .passo-meta-step {
+  padding: 16px 18px;
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-path {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-path span {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: #e0ecff;
+  border: 1px solid #a8c7fa;
+  color: #174ea6 !important;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-path b {
+  color: #64748b !important;
+  font-size: 12px;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-list {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  color: #1f2937;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-list li + li {
+  margin-top: 4px;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-warning,
+#modal_passo_google_saldo_mcc .google-saldo-success,
+#modal_passo_google_saldo_mcc .google-saldo-tip {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-warning {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-warning,
+#modal_passo_google_saldo_mcc .google-saldo-warning * {
+  color: #9a3412 !important;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-tip {
+  background: #eff6ff;
+  border: 1px solid #93c5fd;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-tip,
+#modal_passo_google_saldo_mcc .google-saldo-tip * {
+  color: #1e40af !important;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-success {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+#modal_passo_google_saldo_mcc .google-saldo-success,
+#modal_passo_google_saldo_mcc .google-saldo-success * {
+  color: #166534 !important;
+}
+
+@media (max-width: 720px) {
+  #modal_passo_google_saldo_mcc .passo-meta-body {
+    padding: 14px;
+  }
+
+  #modal_passo_google_saldo_mcc .passo-meta-step {
+    padding: 14px;
+  }
+}
+
 .passo-meta-step img {
   display: block;
   width: 100%;
@@ -38073,6 +38173,7 @@ async function carregarStatusGoogle() {
             linkAcaoRapida("🏠", "Abrir Google Ads", "https://ads.google.com/aw/overview", "neutro"),
             botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoGoogleConta()", "indigo"),
             botaoAcaoRapida("📝", "Tutorial: aceitar termos do Lead Form", "abrirPassoGoogleLeadFormTermos()", "indigo"),
+            botaoAcaoRapida("💳", "Tutorial: adicionar saldo (conta com gerenciadora)", "abrirPassoGoogleAdicionarSaldoMCC()", "indigo"),
             linkAcaoRapida("❓", "Central de Ajuda do Google Ads", "https://support.google.com/google-ads", "neutro"),
           ].join(""))}
         </div>
@@ -49266,6 +49367,141 @@ async function enviarFeedback() {
   </div>
 </div>
 
+<!-- PASSO A PASSO: adicionar saldo quando a conta tem uma gerenciadora (MCC) -->
+<div
+  id="modal_passo_google_saldo_mcc"
+  class="passo-meta-modal"
+  aria-hidden="true"
+>
+  <div
+    class="passo-meta-overlay"
+    onclick="fecharPassoGoogleAdicionarSaldoMCC()"
+  ></div>
+
+  <div
+    class="passo-meta-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="passo_google_saldo_mcc_titulo"
+  >
+    <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+      <div>
+        <h2 id="passo_google_saldo_mcc_titulo" style="color:#111827!important;margin:0;font-size:20px;">
+          Adicionar saldo quando a conta tem uma gerenciadora (MCC)
+        </h2>
+        <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
+          Algumas contas do Google Ads são administradas por uma conta gerenciadora (MCC). Nesses casos, o
+          botão "Adicionar saldo / gerenciar pagamento" pode abrir a tela de configurações da gerenciadora em
+          vez da tela de pagamento da sua conta. Siga os passos abaixo para chegar no lugar certo.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="passo-meta-close"
+        onclick="fecharPassoGoogleAdicionarSaldoMCC()"
+        aria-label="Fechar passo a passo"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="passo-meta-body">
+      <div class="google-saldo-warning">
+        ⚠️ Isso só se aplica se a sua conta do Google Ads foi criada/conectada através de uma agência ou
+        gerenciadora. Se você mesmo criou a conta do zero, o botão "Adicionar saldo" já deve abrir direto na
+        tela certa — pode ignorar este passo a passo.
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>1. Abra o Google Ads</h3>
+          <p>Entre com a mesma Conta Google conectada à Plataforma de Leads.</p>
+          <p style="margin:10px 0 0;">
+            <a href="https://ads.google.com/aw/overview" target="_blank" rel="noopener noreferrer"
+              style="display:inline-flex;align-items:center;padding:7px 14px;background:#2563eb;color:#fff!important;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;"
+            >Abrir Google Ads →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>2. Confira em qual conta você está agora</h3>
+          <p>
+            Olhe o canto superior esquerdo da tela. Se o nome mostrado ali for de uma conta
+            <strong>gerenciadora/administradora</strong> (geralmente aparece com um ícone de prédio, e reúne
+            várias contas dentro dela), você está no lugar errado para adicionar saldo — a gerenciadora não
+            recebe saldo diretamente, quem recebe é a sua conta de anúncios específica.
+          </p>
+          <div class="google-saldo-warning">
+            Sinal de que você está na gerenciadora: ao clicar em Faturamento, aparece "Configurações de
+            faturação" com a mensagem "Não tem nenhuma configuração de faturação" — e nenhum botão de
+            adicionar fundos.
+          </div>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>3. Troque para a sua conta de anúncios</h3>
+          <p>Clique no nome da conta (ou na setinha ao lado), no canto superior esquerdo, e siga este caminho:</p>
+          <div class="google-saldo-path" aria-label="Caminho para trocar de conta">
+            <span>Seletor de conta</span><b>→</b><span>lista de contas</span><b>→</b>
+            <span>sua conta de anúncios</span>
+          </div>
+          <ul class="google-saldo-list">
+            <li>Na lista que abre, procure o nome da <strong>sua</strong> conta especificamente — não o nome da agência/gerenciadora.</li>
+            <li>Se tiver dúvida de qual é qual, o ID da sua conta de anúncios (formato <strong>123-456-7890</strong>) é o mesmo que aparece em "Status Google Ads" aqui na plataforma.</li>
+            <li>Clique nela para entrar.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>4. Vá em Faturamento</h3>
+          <p>Já dentro da sua conta (não mais na gerenciadora), use o menu lateral:</p>
+          <div class="google-saldo-path" aria-label="Caminho para o resumo de faturamento">
+            <span>Faturamento</span><b>→</b><span>Resumo</span>
+          </div>
+          <div class="google-saldo-tip">
+            💡 Se o menu lateral estiver mostrando só ícones, clique no ícone de "Faturamento" mesmo assim —
+            ele abre a página normalmente.
+          </div>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>5. Clique em "Adicionar fundos"</h3>
+          <p>
+            Na página Resumo, procure o quadro <strong>"Fundos disponíveis"</strong> e clique no botão azul
+            <strong>"Adicionar fundos"</strong> logo abaixo do valor. O Google vai pedir a forma de pagamento
+            e o valor a adicionar.
+          </p>
+          <div class="google-saldo-success">
+            ✅ Você está no lugar certo se a tela mostrar "Fundos disponíveis" com um valor em R$ e o botão
+            "Adicionar fundos" — bem diferente da tela "Configurações de faturação" do passo 2.
+          </div>
+        </div>
+      </div>
+
+      <div class="passo-meta-step">
+        <div class="passo-meta-step-text">
+          <h3>Atalho: se aparecer o aviso de saldo esgotado</h3>
+          <p>
+            Se a página inicial (Vista geral) da sua conta mostrar um aviso vermelho de que os anúncios não
+            estão sendo apresentados, abra o card <strong>"Diagnósticos da conta"</strong> e clique no botão
+            <strong>"Corrigir"</strong> ao lado de "O saldo da conta está esgotado" — ele já leva direto para
+            a tela do passo 5, sem precisar navegar pelo menu.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ✨ MODAL GERAR BANNER COM IA -->
 <div id="modal_banner_ia">
   <div class="modal-banner-ia-overlay" onclick="fecharModalGerarBanner()"></div>
@@ -49774,6 +50010,41 @@ function fecharPassoGoogleLeadFormTermos() {
   document.body.style.overflow = "";
 }
 
+function abrirPassoGoogleAdicionarSaldoMCC() {
+  const modal = document.getElementById("modal_passo_google_saldo_mcc");
+  if (!modal) return;
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  modal.querySelectorAll(".passo-meta-step-text h3").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+    el.style.setProperty("font-weight", "700", "important");
+  });
+  modal.querySelectorAll(".passo-meta-step-text p").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header h2").forEach(el => {
+    el.style.setProperty("color", "#111827", "important");
+  });
+  modal.querySelectorAll(".passo-meta-header p").forEach(el => {
+    el.style.setProperty("color", "#374151", "important");
+  });
+  modal.querySelectorAll(".passo-meta-body").forEach(el => {
+    el.style.setProperty("background", "#ffffff", "important");
+  });
+}
+
+function fecharPassoGoogleAdicionarSaldoMCC() {
+  const modal = document.getElementById("modal_passo_google_saldo_mcc");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
 async function revalidarInstagramMeta(botao) {
   if (!botao) return;
 
@@ -49851,6 +50122,7 @@ document.addEventListener("keydown", (event) => {
     fecharPassoMetaInstagram();
     fecharIntegDetalhesModal();
     fecharCriarCampanhaModal();
+    fecharPassoGoogleAdicionarSaldoMCC();
   }
 });
 

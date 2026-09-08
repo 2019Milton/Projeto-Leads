@@ -23297,7 +23297,7 @@ function renderizarResumoEdicaoSomenteLeitura(campanha) {
     <div class="detalhes-grid">
       ${detalheItem("Status", campanha.status)}
       ${detalheItem("ID da campanha", campanha.campaign_id)}
-      ${campanha.daily_budget ? detalheItem("Orçamento/dia", "R$ " + Number(campanha.daily_budget / 100).toFixed(2)) : ""}
+      ${campanha.daily_budget ? detalheItem("Orçamento/dia", "R$ " + orcamentoDiarioEmReais(campanha).toFixed(2)) : ""}
       ${detalheItem("Título do anúncio", cfg.titulo)}
       ${detalheItem("Texto do anúncio", cfg.texto, "full")}
       ${detalheItem("Descrição", cfg.descricao, "full")}
@@ -25633,6 +25633,14 @@ function textoDetalhe(valor, fallback = "-") {
   }
 
   return valor;
+}
+
+// Google grava daily_budget em reais crus na campanha; Meta/TikTok gravam em
+// centavos (mesma distinção documentada em salvarEdicaoCampanhaGoogle) — sem
+// isso, o orçamento do Google aparecia 100x menor nos cards/detalhes.
+function orcamentoDiarioEmReais(campanha) {
+  const valor = Number(campanha?.daily_budget || 0);
+  return campanha?.plataforma === "google" ? valor : valor / 100;
 }
 
 function formatarMoeda(valor) {
@@ -40534,7 +40542,7 @@ async function carregarCampanhas() {
         <div class="metrica" title="Orçamento diário definido para esta campanha.">
           🗓️
           <span>
-            R$ ${Number(c.daily_budget / 100).toFixed(2)}
+            R$ ${orcamentoDiarioEmReais(c).toFixed(2)}
           </span>
           <small>Orçamento/dia</small>
         </div>
@@ -41169,7 +41177,7 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
       ${detalheItem("ID do anúncio", campanha.ad_id || cfg.ad_id)}
       ${detalheItem("ID do formulário", campanha.form_id || cfg.form_id)}
       ${detalheItem("Página Facebook", campanha.page_id || cfg.page_id)}
-      ${campanha.daily_budget ? detalheItem("Orçamento/dia", "R$ " + Number(campanha.daily_budget / 100).toFixed(2)) : ""}
+      ${campanha.daily_budget ? detalheItem("Orçamento/dia", "R$ " + orcamentoDiarioEmReais(campanha).toFixed(2)) : ""}
       ${detalheItem("Texto do anúncio", cfg.texto, "full")}
       ${detalheItem("CTA", cfg.cta)}
       ${detalheItem("Categoria especial", labelCategoriaEspecial(cfg.categoria_especial))}

@@ -17670,8 +17670,8 @@ body.tema-claro .criar-campanha-descricao {
           id="ia_criador_campanha_box"
           class="ia-ouro-destaque"
         >
-          <h4>IA Ouro - Criador de anuncio</h4>
-          <p>
+          <h4 id="ia_criador_titulo">IA Ouro - Criador de anuncio</h4>
+          <p id="ia_criador_descricao">
             Gere 3 opcoes de titulo, texto, descricao, perguntas e interesses com IA. Clique em gerar novamente para criar novas variacoes.
           </p>
           <textarea
@@ -18354,6 +18354,9 @@ body.tema-claro .criar-campanha-descricao {
               </div>
               <div id="destino_tiktok_whatsapp_info" class="channel-picker-status alerta" style="display:none;">
                 Verificando o WhatsApp conectado à plataforma...
+              </div>
+              <div id="destino_tiktok_bloqueado_aviso" class="channel-picker-status alerta" style="display:none;">
+                O tipo de destino não pode ser trocado depois que a campanha é publicada. Para usar outro destino, publique uma nova campanha.
               </div>
               <p style="font-size:11px;opacity:.65;margin:8px 0 0;">
                 No WhatsApp, o TikTok usa o número Business API conectado e abre a conversa com a mensagem inicial padrão do próprio TikTok.
@@ -23368,6 +23371,10 @@ async function abrirEdicaoCampanhaPorChave(chave) {
     campanhaJaFoiPublicada(campanha) &&
     String(campanha.plataforma || "meta").toLowerCase() === "meta" &&
     campanha.id;
+  const publicadaTikTok =
+    campanhaJaFoiPublicada(campanha) &&
+    plataformaCampanhaExibicao(campanha) === "tiktok" &&
+    campanha.id;
 
   const botoesEdicao = Array.from(
     document.querySelectorAll('[data-campanha-action="editar"]')
@@ -23384,10 +23391,13 @@ async function abrirEdicaoCampanhaPorChave(chave) {
   }
 
   try {
-    if (publicadaMeta) {
+    if (publicadaMeta || publicadaTikTok) {
       const token = localStorage.getItem("token");
+      const endpointConfiguracao = publicadaTikTok
+        ? `${API}/tiktok/campanhas/${campanha.id}/configuracao-edicao`
+        : `${API}/meta/campanhas/${campanha.id}/configuracao-edicao`;
       const res = await fetch(
-        `${API}/meta/campanhas/${campanha.id}/configuracao-edicao`,
+        endpointConfiguracao,
         {
           headers: {
             "Authorization": `Bearer ${token}`
@@ -26552,8 +26562,20 @@ function dadosCampanhaFormularioIA() {
     localidade: document.getElementById("adv_localidade_nome")?.value || "",
     perguntas: document.getElementById("adv_perguntas")?.value || "",
     categoria_especial: document.getElementById("adv_categoria_especial")?.value || "",
-    nicho: window._nichoAtivo?.slug || ""
+    nicho: window._nichoAtivo?.slug || nichoSlugCampanhaEmEdicao()
   };
+}
+
+// Em edição não existe _nichoAtivo (isso é só da aba de nicho da Criação) —
+// deriva o nicho a partir da própria campanha sendo editada, mesma lógica de
+// fallback usada pra exibir o badge de nicho na lista (nicho_slug direto, ou
+// por nicho_id contra o catálogo do usuário quando o slug não veio).
+function nichoSlugCampanhaEmEdicao() {
+  if (!campanhaEmEdicao) return "";
+  if (campanhaEmEdicao.nicho_slug) return campanhaEmEdicao.nicho_slug;
+  const porId = (usuarioLogado?.nichos || [])
+    .find(n => Number(n.id) === Number(campanhaEmEdicao.nicho_id));
+  return porId?.slug || "";
 }
 
 function aplicarEstadoCriarCampanha(recolhido) {
@@ -26829,6 +26851,7 @@ function selecionarPlataformaAdicionalEdicao(plat) {
   }
 
   atualizarBotaoPublicarPlataformasAdicionais();
+  atualizarVisibilidadeIACampanhaEdicao();
 }
 
 function atualizarBotaoPublicarPlataformasAdicionais() {
@@ -27474,6 +27497,12 @@ async function gerarCampanhaComIA() {
     return;
   }
 
+  if (campanhaEmEdicao && !plataformasNovasParaPublicarEdicao().length) {
+    box.style.display = "block";
+    box.innerHTML = "Marque a nova plataforma que você quer adicionar antes de gerar com IA.";
+    return;
+  }
+
   box.style.display = "block";
   box.innerHTML = "Gerando 3 opcoes com IA...";
 
@@ -27562,7 +27591,7 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
           onclick="aplicarCampanhaIA(${i})"
           style="margin-top:10px;width:100%;"
         >
-          Usar esta opcao
+          ${campanhaEmEdicao ? "Preencher campos vazios com esta opcao" : "Usar esta opcao"}
         </button>
       </div>
     `;
@@ -27735,11 +27764,22 @@ function aplicarCampanhaIA(indice) {
     return;
   }
 
+  // Em edição (ex: adicionando Google a uma campanha existente), os campos
+  // compartilhados (texto, título, cta...) já vêm preenchidos com o que a
+  // campanha original usa de verdade — só os campos exclusivos da rede nova
+  // (ex: google_titulo_1) começam vazios. Nesse contexto a IA só deve
+  // completar o que está vazio, nunca sobrescrever o que já é real.
+  const apenasCamposVazios = Boolean(campanhaEmEdicao);
+
   const camposPreenchidosIA = [];
   const preencherCampoIA = (seletor, valor) => {
     const el = document.querySelector(seletor);
 
     if (!el || valor === undefined || valor === null || valor === "") {
+      return;
+    }
+
+    if (apenasCamposVazios && el.value) {
       return;
     }
 
@@ -27769,7 +27809,9 @@ function aplicarCampanhaIA(indice) {
     const btn = document.getElementById(`ia_opcao_btn_${idx}`);
     if (card) card.classList.toggle("ia-opcao-selecionada", idx === indice);
     if (btn) {
-      btn.textContent = idx === indice ? "Opcao selecionada" : "Usar esta opcao";
+      btn.textContent = idx === indice
+        ? "Opcao selecionada"
+        : (campanhaEmEdicao ? "Preencher campos vazios com esta opcao" : "Usar esta opcao");
       btn.classList.toggle("ia-btn-selecionado", idx === indice);
     }
   });
@@ -28082,13 +28124,17 @@ function aplicarCampanhaIA(indice) {
     preencherCampoIA("#adv_obrigado_texto", s.obrigado_texto);
   }
 
-  // CBO e Attribution Window sugeridos pela IA
+  // CBO e Attribution Window sugeridos pela IA — só na criação. Em edição
+  // (apenasCamposVazios) esses dois já vêm com o valor real da campanha
+  // existente, e um checkbox/select não tem um "estado vazio" pra usar como
+  // sinal de "ainda não preenchido", então o mais seguro é nunca mexer neles
+  // ao só completar campos de uma rede nova sendo adicionada.
   const cboEl = document.getElementById("adv_cbo");
-  if (cboEl && s.cbo !== undefined && s.cbo !== null) {
+  if (!apenasCamposVazios && cboEl && s.cbo !== undefined && s.cbo !== null) {
     cboEl.checked = Boolean(s.cbo);
     camposPreenchidosIA.push("#adv_cbo");
   }
-  if (s.attribution_spec) {
+  if (!apenasCamposVazios && s.attribution_spec) {
     preencherSelectIA("#adv_attribution_spec", s.attribution_spec);
     atualizarDescricaoAtribuicao();
   }
@@ -30368,10 +30414,35 @@ async function carregarIdentidadesTikTokCampanha() {
       return;
     }
 
+    const identidadePreferidaId =
+      select.dataset.preferredIdentityId ||
+      tiktokIdentidadeSelecionada?.identity_id ||
+      "";
+    const identidadePreferidaTipo =
+      select.dataset.preferredIdentityType ||
+      tiktokIdentidadeSelecionada?.identity_type ||
+      "";
+    const valorPreferido = identidadePreferidaId && identidadePreferidaTipo
+      ? `${identidadePreferidaId}|${identidadePreferidaTipo}`
+      : "";
+
     const identidades = data.identidades || [];
     if (!identidades.length) {
-      select.innerHTML = `<option value="">Nenhuma identidade encontrada</option>`;
-      if (feedback) { feedback.style.display = ""; feedback.textContent = "Nenhuma identidade encontrada para essa conta TikTok."; }
+      if (valorPreferido) {
+        select.innerHTML = `<option value="${escaparHtml(valorPreferido)}">Identidade salva (${escaparHtml(identidadePreferidaId)})</option>`;
+        select.value = valorPreferido;
+        tiktokIdentidadeSelecionada = {
+          identity_id: identidadePreferidaId,
+          identity_type: identidadePreferidaTipo
+        };
+        if (feedback) {
+          feedback.style.display = "";
+          feedback.textContent = "A identidade salva será mantida, mas não foi possível confirmá-la na lista atual do TikTok.";
+        }
+      } else {
+        select.innerHTML = `<option value="">Nenhuma identidade encontrada</option>`;
+        if (feedback) { feedback.style.display = ""; feedback.textContent = "Nenhuma identidade encontrada para essa conta TikTok."; }
+      }
       return;
     }
 
@@ -30380,8 +30451,27 @@ async function carregarIdentidadesTikTokCampanha() {
         ${escaparHtml(id.display_name || String(id.identity_id))}
       </option>`).join("");
 
-    // Auto-seleciona a primeira e já persiste, mesmo padrão do auto-select de conta de anúncios
-    if (identidades.length) {
+    const opcaoPreferidaExiste = valorPreferido && Array.from(select.options)
+      .some(option => option.value === valorPreferido);
+
+    if (valorPreferido && !opcaoPreferidaExiste) {
+      const option = document.createElement("option");
+      option.value = valorPreferido;
+      option.textContent = `Identidade salva (${identidadePreferidaId})`;
+      option.dataset.campanhaSalva = "1";
+      select.appendChild(option);
+    }
+
+    if (valorPreferido) {
+      select.value = valorPreferido;
+      tiktokIdentidadeSelecionada = {
+        identity_id: identidadePreferidaId,
+        identity_type: identidadePreferidaTipo
+      };
+    } else if (identidades.length) {
+      // Na criação, mantém o comportamento anterior: seleciona e persiste a
+      // primeira identidade disponível. Ao editar, a identidade já salva tem
+      // prioridade e abrir o modal não muda a seleção global da conta.
       select.value = `${identidades[0].identity_id}|${identidades[0].identity_type}`;
       selecionarIdentidadeTikTokCampanha(select.value);
     }
@@ -30425,22 +30515,23 @@ async function carregarFormulariosTikTokCampanha() {
     const formularios = data.formularios || [];
 
     if (!formularios.length) {
-      select.innerHTML = `<option value="">-- Nenhum formulário encontrado --</option>`;
+      select.innerHTML = `<option value="">-- Nenhum formulário encontrado --</option><option value="__manual__">Digitar ID manualmente...</option>`;
       if (feedback) {
         feedback.style.display = "";
         feedback.textContent = data.aviso || "Nenhum formulário encontrado. Informe o ID manualmente abaixo.";
       }
-      ativarFormularioTikTokManual(true);
+      selecionarFormularioTikTokSalvo(select.dataset.preferredFormId || "");
       return;
     }
 
     select.innerHTML = formularios.map(f => `
       <option value="${escaparHtml(String(f.page_id || f.id))}">${escaparHtml(f.page_name || f.name || String(f.page_id || f.id))}</option>`
     ).join("") + `<option value="__manual__">Digitar ID manualmente...</option>`;
+    selecionarFormularioTikTokSalvo(select.dataset.preferredFormId || "");
   } catch (_) {
     select.innerHTML = `<option value="">-- Erro ao carregar --</option><option value="__manual__">Digitar ID manualmente...</option>`;
     if (feedback) { feedback.style.display = ""; feedback.textContent = "Não foi possível listar formulários. Informe o ID manualmente."; }
-    ativarFormularioTikTokManual(true);
+    selecionarFormularioTikTokSalvo(select.dataset.preferredFormId || "");
   }
 }
 
@@ -30460,6 +30551,104 @@ function obterFormularioTikTokEscolhido() {
     return document.getElementById("campanha_tiktok_formulario_manual")?.value?.trim() || "";
   }
   return select?.value?.trim() || "";
+}
+
+function selecionarFormularioTikTokSalvo(formId) {
+  const select = document.getElementById("campanha_tiktok_formulario_select");
+  const manual = document.getElementById("campanha_tiktok_formulario_manual");
+  const valor = String(formId || "").trim();
+  if (!select) return;
+
+  select.dataset.preferredFormId = valor;
+  if (!valor) {
+    const primeiraOpcaoValida = Array.from(select.options)
+      .find(option => option.value && option.value !== "__manual__");
+    if (primeiraOpcaoValida) {
+      select.value = primeiraOpcaoValida.value;
+      if (manual) manual.value = "";
+      ativarFormularioTikTokManual(false);
+    } else if (Array.from(select.options).some(option => option.value === "__manual__")) {
+      select.value = "__manual__";
+      if (manual) manual.value = "";
+      ativarFormularioTikTokManual(true);
+    } else {
+      ativarFormularioTikTokManual(false);
+    }
+    return;
+  }
+
+  if (valor && Array.from(select.options).some(option => option.value === valor)) {
+    select.value = valor;
+    if (manual) manual.value = "";
+    ativarFormularioTikTokManual(false);
+    return;
+  }
+
+  if (Array.from(select.options).some(option => option.value === "__manual__")) {
+    select.value = "__manual__";
+    if (manual) manual.value = valor;
+    ativarFormularioTikTokManual(true);
+  }
+}
+
+function renderizarLocalidadeTikTokSelecionada() {
+  const chip = document.getElementById("tiktok_localidade_selecionada_chip");
+  if (!chip) return;
+  const local = tiktokLocalidadeSelecionada;
+  chip.innerHTML = local?.key
+    ? `<span class="targeting-chip">${escaparHtml(local.nome || local.key)} <button type="button" onclick="removerLocalidadeTikTok()">×</button></span>`
+    : "";
+}
+
+function snapshotCamposTikTokCampanha() {
+  return {
+    destino: destinoCampanhaTikTokSelecionado,
+    url_destino: document.getElementById("campanha_tiktok_url")?.value?.trim() || "",
+    form_id: obterFormularioTikTokEscolhido(),
+    identity_id: tiktokIdentidadeSelecionada?.identity_id || "",
+    identity_type: tiktokIdentidadeSelecionada?.identity_type || "",
+    localidade: tiktokLocalidadeSelecionada ? { ...tiktokLocalidadeSelecionada } : null
+  };
+}
+
+function preencherCamposTikTokCampanha(cfg = {}, carregarListas = true) {
+  const destino = ["lead_ads", "site", "whatsapp"].includes(cfg.destino)
+    ? cfg.destino
+    : "lead_ads";
+  const radio = document.querySelector(`input[name="campanha_tiktok_destino"][value="${destino}"]`);
+  if (radio) radio.checked = true;
+  destinoCampanhaTikTokSelecionado = destino;
+  definirValorCampo("campanha_tiktok_url", cfg.url_destino || "");
+
+  const identityId = String(cfg.identity_id || "").trim();
+  const identityType = String(cfg.identity_type || "").trim();
+  const selectIdentidade = document.getElementById("campanha_tiktok_identidade_select");
+  if (selectIdentidade) {
+    selectIdentidade.dataset.preferredIdentityId = identityId;
+    selectIdentidade.dataset.preferredIdentityType = identityType;
+    const valorIdentidade = identityId && identityType ? `${identityId}|${identityType}` : "";
+    if (valorIdentidade && Array.from(selectIdentidade.options).some(option => option.value === valorIdentidade)) {
+      selectIdentidade.value = valorIdentidade;
+    }
+  }
+  tiktokIdentidadeSelecionada = identityId && identityType
+    ? { identity_id: identityId, identity_type: identityType }
+    : null;
+
+  const formId = String(cfg.form_id || "").trim();
+  const selectFormulario = document.getElementById("campanha_tiktok_formulario_select");
+  if (selectFormulario) selectFormulario.dataset.preferredFormId = formId;
+  selecionarFormularioTikTokSalvo(formId);
+
+  const localidade = cfg.localidade || (Array.isArray(cfg.localidades) ? cfg.localidades[0] : null);
+  tiktokLocalidadeSelecionada = localidade?.key ? { ...localidade } : null;
+  renderizarLocalidadeTikTokSelecionada();
+  aplicarDestinoCampanhaTikTok();
+
+  if (carregarListas && redesSelecionadasCampanha.has("tiktok")) {
+    carregarIdentidadesTikTokCampanha();
+    carregarFormulariosTikTokCampanha();
+  }
 }
 
 // Mesmo padrão do bloco de formulário TikTok acima — o Kwai também não cria Lead
@@ -30712,11 +30901,7 @@ function selecionarLocalidadeTikTokPorIndice(indice) {
   if (!item) return;
 
   tiktokLocalidadeSelecionada = item;
-
-  const chip = document.getElementById("tiktok_localidade_selecionada_chip");
-  if (chip) {
-    chip.innerHTML = `<span class="targeting-chip">${escaparHtml(item.nome)} <button type="button" onclick="removerLocalidadeTikTok()">×</button></span>`;
-  }
+  renderizarLocalidadeTikTokSelecionada();
 
   const resultadosEl = document.getElementById("tiktok_localidade_resultados");
   if (resultadosEl) resultadosEl.innerHTML = "";
@@ -30727,8 +30912,7 @@ function selecionarLocalidadeTikTokPorIndice(indice) {
 
 function removerLocalidadeTikTok() {
   tiktokLocalidadeSelecionada = null;
-  const chip = document.getElementById("tiktok_localidade_selecionada_chip");
-  if (chip) chip.innerHTML = "";
+  renderizarLocalidadeTikTokSelecionada();
 }
 
 function validarPublicacaoCampanhaTikTok() {
@@ -32534,6 +32718,9 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
   const campanhaMetaPublicada =
     campanhaJaFoiPublicada(campanha) &&
     ["meta", "facebook", "instagram"].includes(plataformaBase);
+  const campanhaTikTokPublicada =
+    campanhaJaFoiPublicada(campanha) &&
+    plataformaBase === "tiktok";
 
   // Marca o radio (Formulario de Leads / WhatsApp) de acordo com o destino
   // real ja salvo na campanha — antes disso, o modal sempre abria mostrando
@@ -32563,6 +32750,22 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
 
   if (aviso) {
     aviso.style.display = campanhaMetaPublicada ? "block" : "none";
+  }
+
+  document
+    .querySelectorAll('input[name="campanha_tiktok_destino"]')
+    .forEach(input => {
+      input.disabled = campanhaTikTokPublicada;
+      input.title = campanhaTikTokPublicada
+        ? "Para trocar o destino, publique uma nova campanha."
+        : "";
+    });
+
+  const avisoTikTok =
+    document.getElementById("destino_tiktok_bloqueado_aviso");
+
+  if (avisoTikTok) {
+    avisoTikTok.style.display = campanhaTikTokPublicada ? "block" : "none";
   }
 }
 
@@ -32684,6 +32887,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       videoAssinatura: assinaturaVideoCampanha(),
       videoArquivo: obterArquivoVideoCampanha(),
       redes: Array.from(redesSelecionadasCampanha),
+      tiktok: snapshotCamposTikTokCampanha(),
       nichoAtivo: window._nichoAtivo
         ? { ...window._nichoAtivo }
         : null
@@ -32732,6 +32936,18 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       if (bloco) bloco.open = false;
     });
 
+    // Caixa de IA fica dentro do bloco de "adicionar plataforma" — só faz
+    // sentido em edição pra completar os campos exclusivos de uma rede nova
+    // (ex: títulos do Google), nunca pra reescrever o que já existe.
+    moverBloco("ia_criador_campanha_box", "editar_campanha_add_plataforma_bloco");
+    document.getElementById("ia_criador_titulo").textContent = "IA Ouro - completar plataforma nova";
+    document.getElementById("ia_criador_descricao").textContent =
+      "Gere 3 opções pra completar os campos que a rede nova ainda não tem preenchidos (ex: títulos do Google). O que a campanha já usa não é alterado.";
+    document.getElementById("ia_campanha_contexto").value = "";
+    sugestoesCampanhaIAAtual = [];
+    const boxIAEdicao = document.getElementById("ia_campanha_criador_resultado");
+    if (boxIAEdicao) { boxIAEdicao.innerHTML = ""; boxIAEdicao.style.display = "none"; }
+
     const instagramFeedback =
       document.getElementById("instagram_pagina_feedback");
 
@@ -32770,6 +32986,9 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       campanha.daily_budget
     );
     preencherCamposGoogleAnuncio(configuracoesCampanha);
+    if (plataformaBaseEdicao === "tiktok") {
+      preencherCamposTikTokCampanha(configuracoesCampanha);
+    }
     configurarEdicaoDestinoCampanha(campanha);
     preencherCamposBasicosCampanha({
       ...campanha,
@@ -32819,6 +33038,15 @@ function fecharEdicaoCampanha() {
       if (bloco) bloco.open = BLOCOS_SEGMENTACAO_ABERTO_PADRAO[blocoId] ?? false;
     });
 
+    restaurarBloco("ia_criador_campanha_box");
+    document.getElementById("ia_criador_titulo").textContent = "IA Ouro - Criador de anuncio";
+    document.getElementById("ia_criador_descricao").textContent =
+      "Gere 3 opcoes de titulo, texto, descricao, perguntas e interesses com IA. Clique em gerar novamente para criar novas variacoes.";
+    document.getElementById("ia_campanha_contexto").value = "";
+    sugestoesCampanhaIAAtual = [];
+    const boxIAEdicao = document.getElementById("ia_campanha_criador_resultado");
+    if (boxIAEdicao) { boxIAEdicao.innerHTML = ""; boxIAEdicao.style.display = "none"; }
+
     const instagramFeedback =
       document.getElementById("instagram_pagina_feedback");
 
@@ -32840,6 +33068,7 @@ function fecharEdicaoCampanha() {
       atualizarTosHint();
       preencherConfiguracoesAvancadas(_snapshotCriarCampanha.avancadas, null);
       definirValorCampo("orcamento", _snapshotCriarCampanha.orcamento);
+      preencherCamposTikTokCampanha(_snapshotCriarCampanha.tiktok || {}, false);
 
       const containerImagens = document.getElementById("imagens-container");
       if (containerImagens) {
@@ -32922,8 +33151,16 @@ async function salvarEdicaoCampanha() {
 
   if (plataforma === "google") {
     await salvarEdicaoCampanhaGoogle(token, usuario_id);
-  } else {
+  } else if (plataforma === "tiktok") {
+    await salvarEdicaoCampanhaTikTok(token, usuario_id);
+  } else if (["meta", "facebook", "instagram"].includes(plataforma)) {
     await salvarEdicaoCampanhaMeta(token, usuario_id);
+  } else {
+    const feedback = document.getElementById("editar_campanha_feedback");
+    if (feedback) {
+      feedback.textContent = `A edição direta ainda não está disponível para ${platNome(plataforma)}.`;
+      feedback.style.display = "block";
+    }
   }
 }
 
@@ -33020,6 +33257,201 @@ async function salvarEdicaoCampanhaGoogle(token, usuario_id) {
   } catch (err) {
     console.error("EDITAR CAMPANHA GOOGLE:", err);
     mostrarErroGoogle(err?.message || "Erro ao salvar alterações");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "💾 Salvar alterações";
+    }
+  }
+}
+
+// Edição direta do TikTok: atualiza a campanha, o grupo de anúncios e o
+// criativo existentes, preservando os IDs e o histórico de desempenho. O tipo
+// de destino permanece bloqueado depois da publicação; formulário/URL, texto,
+// mídia, identidade, público, datas e orçamento podem ser ajustados dentro do
+// mesmo destino.
+async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
+  const feedback = document.getElementById("editar_campanha_feedback");
+  const btn = document.getElementById("editar_campanha_btn_salvar");
+  const mostrarErro = mensagem => {
+    if (feedback) {
+      feedback.textContent = mensagem;
+      feedback.style.display = "block";
+    } else {
+      alert(mensagem);
+    }
+  };
+
+  if (feedback) {
+    feedback.style.display = "none";
+    feedback.textContent = "";
+  }
+
+  const camposBasicos = coletarCamposBasicosCampanha();
+  const orcamento = Number(valorCampo("orcamento"));
+  const cfgBanco = obterConfiguracoesCampanha(campanhaEmEdicao);
+  const destinoOriginal = ["lead_ads", "site", "whatsapp"].includes(cfgBanco.destino)
+    ? cfgBanco.destino
+    : "lead_ads";
+  const destinoAtual = ["lead_ads", "site", "whatsapp"].includes(destinoCampanhaTikTokSelecionado)
+    ? destinoCampanhaTikTokSelecionado
+    : destinoOriginal;
+
+  if (!camposBasicos.nome?.trim()) {
+    return mostrarErro("Informe o nome da campanha.");
+  }
+  if (!Number.isFinite(orcamento) || orcamento <= 0) {
+    return mostrarErro("Informe um orçamento diário válido.");
+  }
+  if (!camposBasicos.texto?.trim()) {
+    return mostrarErro("Informe o texto do anúncio TikTok.");
+  }
+  if (destinoAtual !== destinoOriginal && campanhaJaFoiPublicada(campanhaEmEdicao)) {
+    return mostrarErro("O destino de uma campanha já publicada não pode ser alterado. Publique uma nova campanha para usar outro destino.");
+  }
+
+  const erroTikTok = validarPublicacaoCampanhaTikTok();
+  if (erroTikTok) return mostrarErro(erroTikTok);
+
+  const videoArquivo = obterArquivoVideoCampanha();
+  if (videoArquivo && !validarArquivoVideoCampanha(videoArquivo)) return;
+
+  const imagensArquivos = Array.from(
+    document.querySelectorAll("#imagens-container .imagem-input")
+  ).map(input => input.files?.[0]).filter(Boolean);
+
+  const imageIdsExistentes = Array.isArray(cfgBanco.image_ids)
+    ? cfgBanco.image_ids.map(String).filter(Boolean)
+    : Array.isArray(cfgBanco.criativo?.image_ids)
+    ? cfgBanco.criativo.image_ids.map(String).filter(Boolean)
+    : [];
+  const videoIdExistente = String(
+    cfgBanco.video_id || cfgBanco.videoId || cfgBanco.criativo?.video_id || ""
+  ).trim();
+
+  if (!videoArquivo && !imagensArquivos.length && !videoIdExistente && !imageIdsExistentes.length) {
+    return mostrarErro("O criativo publicado não foi localizado. Adicione uma imagem ou um vídeo antes de salvar.");
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Salvando...";
+  }
+
+  try {
+    let imageIds = imageIdsExistentes;
+    let imageUrls = Array.isArray(cfgBanco.image_urls) ? cfgBanco.image_urls.filter(Boolean) : [];
+    let videoId = videoIdExistente || null;
+    let midiaAlterada = false;
+    let videoUpload = null;
+
+    if (videoArquivo) {
+      const formData = new FormData();
+      formData.append("video", videoArquivo);
+      formData.append("usuario_id", usuario_id);
+      const uploadRes = await fetch(`${API}/tiktok/upload-video`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData
+      });
+      videoUpload = await uploadRes.json().catch(() => ({}));
+      if (!uploadRes.ok || videoUpload.error || !videoUpload.video_id) {
+        throw new Error(videoUpload.error || "Erro ao enviar o novo vídeo para o TikTok");
+      }
+      videoId = String(videoUpload.video_id);
+      imageIds = [];
+      imageUrls = [];
+      midiaAlterada = true;
+    } else if (imagensArquivos.length) {
+      imageIds = [];
+      imageUrls = [];
+      for (const arquivo of imagensArquivos) {
+        const formData = new FormData();
+        formData.append("imagem", arquivo);
+        formData.append("usuario_id", usuario_id);
+        const uploadRes = await fetch(`${API}/tiktok/upload-imagem`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}` },
+          body: formData
+        });
+        const upload = await uploadRes.json().catch(() => ({}));
+        if (!uploadRes.ok || upload.error || !upload.image_id) {
+          throw new Error(upload.error || "Erro ao enviar a nova imagem para o TikTok");
+        }
+        imageIds.push(String(upload.image_id));
+        if (upload.url) imageUrls.push(upload.url);
+      }
+      videoId = null;
+      midiaAlterada = true;
+    }
+
+    const formId = destinoAtual === "lead_ads" ? obterFormularioTikTokEscolhido() : null;
+    const configuracoes_avancadas = normalizarConfiguracoesAvancadasParaEnvio({
+      ...cfgBanco,
+      ...coletarConfiguracoesAvancadas(),
+      ...coletarDadosNichoAtivo(),
+      destino: destinoAtual,
+      url_destino: destinoAtual === "site"
+        ? document.getElementById("campanha_tiktok_url")?.value?.trim() || ""
+        : null,
+      form_id: formId,
+      identity_id: tiktokIdentidadeSelecionada?.identity_id || cfgBanco.identity_id || null,
+      identity_type: tiktokIdentidadeSelecionada?.identity_type || cfgBanco.identity_type || null,
+      localidades: tiktokLocalidadeSelecionada ? [{ ...tiktokLocalidadeSelecionada }] : [],
+      texto: camposBasicos.texto,
+      cta: camposBasicos.cta,
+      image_ids: imageIds,
+      image_urls: imageUrls,
+      video_id: videoId
+    });
+
+    if (videoUpload) {
+      configuracoes_avancadas.video_nome = videoUpload.video_nome || videoArquivo.name;
+      configuracoes_avancadas.video_tipo = videoUpload.video_tipo || videoArquivo.type;
+      configuracoes_avancadas.video_tamanho = videoUpload.video_tamanho || videoArquivo.size;
+    }
+
+    const res = await fetch(`${API}/tiktok/editar-campanha`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        usuario_id,
+        campanha_local_id: campanhaEmEdicao.id ?? null,
+        campaign_id: campanhaEmEdicao.campaign_id,
+        nome: camposBasicos.nome,
+        texto: camposBasicos.texto,
+        cta: camposBasicos.cta,
+        daily_budget: Math.round(orcamento * 100),
+        nicho_id: window._nichoAtivo?.id || campanhaEmEdicao.nicho_id || null,
+        destino: destinoAtual,
+        form_id: formId,
+        url_destino: configuracoes_avancadas.url_destino,
+        identity_id: configuracoes_avancadas.identity_id,
+        identity_type: configuracoes_avancadas.identity_type,
+        image_ids: imageIds,
+        video_id: videoId,
+        midia_alterada: midiaAlterada,
+        configuracoes_avancadas
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.error) {
+      mostrarErro(data.error || "Erro ao salvar alterações no TikTok");
+      return;
+    }
+
+    fecharEdicaoCampanha();
+    await sincronizarCampanhas("tiktok");
+    alert(data.aviso
+      ? `Campanha atualizada no TikTok.\n\n⚠️ ${data.aviso}`
+      : "Campanha atualizada no TikTok com sucesso");
+  } catch (err) {
+    console.error("EDITAR CAMPANHA TIKTOK:", err);
+    mostrarErro(err?.message || "Erro ao salvar alterações no TikTok");
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -33514,7 +33946,7 @@ function criarItemImagem(arquivoInicial) {
   }
   item.aplicarArquivo = aplicarArquivo;
 
-  // Mostra uma imagem já salva na campanha (Meta), sem exigir um File local —
+  // Mostra uma imagem já salva na plataforma de anúncios, sem exigir um File local —
   // usada ao abrir a edição, para o carrossel refletir o que já está publicado.
   function aplicarImagemExistente(hash, url) {
     fileInput.value = "";
@@ -33821,7 +34253,7 @@ function preencherVideoCampanhaSalvo(cfg = {}) {
   }
 
   if (nome) nome.textContent = videoNome || "Vídeo salvo na campanha";
-  if (status) status.textContent = videoId ? `Vídeo Meta: ${videoId}` : "Vídeo salvo nos dados da campanha.";
+  if (status) status.textContent = videoId ? `Vídeo da campanha: ${videoId}` : "Vídeo salvo nos dados da campanha.";
   if (remover) remover.style.display = "";
   if (card) card.classList.add("preenchido");
   atualizarBlocoEscolhaMidiaCarrossel();
@@ -33829,7 +34261,7 @@ function preencherVideoCampanhaSalvo(cfg = {}) {
 
 // Repopula o carrossel de imagens com o que já está salvo/publicado na campanha
 // (usado ao abrir a edição — sem isso o carrossel sempre aparecia vazio, mesmo
-// com imagens já ativas no anúncio no Meta).
+// com imagens já ativas na plataforma de anúncios).
 function preencherImagensCampanhaSalva(cfg = {}, campanha = {}) {
   const container = document.getElementById("imagens-container");
   if (!container) return;
@@ -36934,7 +37366,7 @@ const CAPACIDADES_PLATAFORMA = {
   facebook:  { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
   instagram: { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
   google:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
-  tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: false },
+  tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
   linkedin:  { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: false },
   kwai:      { previewReal: false, restaurar: false, alterarStatus: false, publicarRascunho: false, sincronizar: false, excluir: false, duplicar: false, encaminhar: false, editar: false },
 };
@@ -40887,13 +41319,16 @@ function coletarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
     ...(Array.isArray(cfg.imageHashes) ? cfg.imageHashes : []),
     ...(Array.isArray(cfg.image_hashes) ? cfg.image_hashes : []),
     ...(Array.isArray(cfg.criativo?.image_hashes) ? cfg.criativo.image_hashes : []),
+    ...(Array.isArray(cfg.image_ids) ? cfg.image_ids : []),
+    ...(Array.isArray(cfg.criativo?.image_ids) ? cfg.criativo.image_ids : []),
+    ...(Array.isArray(campanha.image_ids) ? campanha.image_ids : []),
     cfg.imageHash,
     cfg.image_hash,
     cfg.criativo?.image_hash
   ].filter(Boolean).map(String)));
 
-  // Um hash representa uma imagem real na Meta. URLs de tamanho completo,
-  // thumbnail e links temporários renovados não devem virar novos cards.
+  // Um hash/ID representa uma imagem real na plataforma. URLs de tamanho
+  // completo, thumbnail e links temporários renovados não devem virar cards extras.
   const urlsPorImagem = hashes.length
     ? urls.slice(0, hashes.length)
     : urls;
@@ -40961,7 +41396,7 @@ function renderizarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
       ` : ""}
       ${video.videoId ? `
         <div class="detalhe-imagem-placeholder">
-          Vídeo vinculado na Meta:
+          Vídeo vinculado à campanha:
           <code>${escaparHtml(video.videoId)}</code>
           ${video.videoNome ? `<br>${escaparHtml(video.videoNome)}` : ""}
         </div>
@@ -40971,7 +41406,7 @@ function renderizarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
       `).join("")}
       ${imagens.hashes.length ? `
         <div class="detalhe-imagem-placeholder">
-          Imagens vinculadas na Meta:
+          Imagens vinculadas à campanha:
           ${imagens.hashes.map(hash => `<code>${escaparHtml(hash)}</code>`).join("")}
         </div>
       ` : ""}

@@ -39861,6 +39861,46 @@ function renderPagamentoGoogle(dataStatus) {
     </p>`;
 }
 
+function renderPagamentoMeta(conta) {
+  if (!conta) {
+    return hubResumoAlerta("Não foi possível consultar o faturamento desta conta no momento.", "warn");
+  }
+
+  const modalidadeTexto = conta.tipo_pagamento === "manual_pre_pago" ? "Manual / pré-pago (PIX, boleto ou saldo)"
+    : conta.tipo_pagamento === "metodo_detectado" ? "Cobrança automática (cartão)"
+    : "Não identificada";
+
+  const itens = [
+    hubResumoItem("Conta de anúncios", conta.nome || conta.id || "—"),
+    hubResumoItem("Modalidade", modalidadeTexto),
+    hubResumoItem("Status da conta", conta.ativa ? "Ativa" : (conta.motivo_desativacao || "Inativa"), conta.ativa ? "sucesso" : "erro"),
+    hubResumoItem("Moeda", conta.moeda || "—"),
+    hubResumoItem(
+      rotuloSaldoMeta(conta),
+      formatarSaldoMeta(conta),
+      metaContaTemDebito(conta) ? "erro" : conta.saldo_zerado ? "alerta" : "sucesso"
+    ),
+  ];
+
+  if (conta.business_nome) {
+    itens.push(hubResumoItem("Business Manager", conta.business_nome));
+  }
+  if (conta.limite_gastos !== null && conta.limite_gastos !== undefined) {
+    itens.push(hubResumoItem("Gasto acumulado", formatarMoeda(conta.gasto_periodo_atual || 0)));
+    itens.push(hubResumoItem("Limite de gastos", formatarMoeda(conta.limite_gastos)));
+  }
+  if (conta.gasto_cartao_estimado !== null && conta.gasto_cartao_estimado !== undefined) {
+    itens.push(hubResumoItem("Gasto estimado no cartão", formatarMoeda(conta.gasto_cartao_estimado), "alerta"));
+  }
+
+  return `
+    <div class="integ-resumo-grid" style="margin-bottom:9px;">${itens.join("")}</div>
+    ${conta.erro_pagamento
+      ? hubResumoAlerta(conta.erro_pagamento, "warn")
+      : hubResumoAlerta("Dados de pagamento atualizados diretamente pela Meta.", "ok")}
+  `;
+}
+
 async function carregarStatusGoogle() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -41259,6 +41299,8 @@ async function carregarStatusMeta() {
                 <button type="button" onclick="(function(btn){var b=btn.closest('.meta-conta-selector').querySelector('.meta-sec-body');b.style.display=b.style.display==='none'?'':'none';btn.textContent=b.style.display==='none'?'▶ Expandir':'▼ Recolher';})(this)" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#94a3b8;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;">▼ Recolher</button>
               </div>
               <div class="meta-sec-body">
+
+              ${renderPagamentoMeta(data.conta_anuncios)}
 
               <div class="pagamento-modos">
                 <div

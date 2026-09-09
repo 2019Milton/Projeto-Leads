@@ -18446,6 +18446,12 @@ body.tema-claro .criar-campanha-descricao {
               </small>
             </div>
 
+            <div class="advanced-full" data-plat-only="facebook,instagram,google" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
+              <label>URL da política de privacidade <button type="button" class="info-icone" onclick="mostrarInfoCampo('Endereço público da política de privacidade da sua empresa. É obrigatório ao criar um formulário novo na Meta ou no Google e precisa ser uma página real do seu site.', event)">i</button></label>
+              <input type="url" id="adv_privacidade_url" placeholder="https://seusite.com.br/politica-de-privacidade" autocomplete="url">
+              <small style="display:block;margin-top:5px;opacity:.65;">Obrigatória ao criar um formulário novo. Não use a página do Google nem um endereço inventado.</small>
+            </div>
+
             <div class="advanced-full" data-plat-only="facebook,instagram" data-destino-only="lead_ads">
               <label>Filtro de qualidade do formulário <button type="button" class="info-icone" onclick="mostrarInfoCampo('Esse ajuste é diferente do Público Advantage+. Aqui a Meta tenta priorizar pessoas com maior chance de preencher o formulário corretamente. Pode gerar menos leads, mas tende a melhorar a qualidade dos contatos.', event)">i</button></label>
               <div class="advanced-checks">
@@ -18456,12 +18462,12 @@ body.tema-claro .criar-campanha-descricao {
               </div>
             </div>
 
-            <div class="advanced-subsection" data-plat-only="facebook,instagram,linkedin" data-destino-only="lead_ads">
+            <div class="advanced-subsection" data-plat-only="facebook,instagram,linkedin,google" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
               <h5>Tela de obrigado</h5>
               <p>Mensagem exibida depois que o lead envia o formulário.</p>
             </div>
 
-            <div data-plat-only="facebook,instagram,linkedin" data-destino-only="lead_ads">
+            <div data-plat-only="facebook,instagram,linkedin,google" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
               <label>Título do obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Mensagem principal que aparece para o cliente depois que ele preenche e envia o formulário. Ex: \"Obrigado! Em breve entraremos em contato.\"', event)">i</button></label>
               <input
                 type="text"
@@ -18479,7 +18485,7 @@ body.tema-claro .criar-campanha-descricao {
               >
             </div>
 
-            <div class="advanced-full" data-plat-only="facebook,instagram,linkedin" data-destino-only="lead_ads">
+            <div class="advanced-full" data-plat-only="facebook,instagram,linkedin,google" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
               <label>Mensagem de obrigado <button type="button" class="info-icone" onclick="mostrarInfoCampo('Texto completo que aparece na tela de confirmação. Aproveite para tranquilizar o cliente e dar um próximo passo, como \"Em breve nossa equipe vai entrar em contato\".', event)">i</button></label>
               <input
                 type="text"
@@ -18562,7 +18568,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <section class="campaign-setup-section" id="bloco_tipo_campanha_google" data-plat-only="google" style="display:none;">
-              <h4>Tipo de campanha (Google Ads) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Pesquisa: anúncio de texto nas buscas do Google e permite escolher Formulário de Leads, endereço do site ou WhatsApp. Display: anúncio com imagem em sites e apps parceiros e permite Formulário de Leads ou endereço do site.', event)">i</button></h4>
+              <h4>Tipo de campanha (Google Ads) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Pesquisa: anúncio de texto nas buscas do Google e permite site, formulário de leads ou WhatsApp. Display: anúncio com imagem em sites e apps parceiros e permite site ou formulário de leads, sujeito à elegibilidade da conta.', event)">i</button></h4>
               <div class="advanced-checks">
                 <label>
                   <input type="radio" name="campanha_google_tipo" id="google_tipo_search" value="search" checked onchange="aplicarTipoCampanhaGoogle()">
@@ -18576,9 +18582,9 @@ body.tema-claro .criar-campanha-descricao {
             </section>
 
             <section class="campaign-setup-section" id="bloco_destino_google" data-plat-only="google" style="display:none;">
-              <h4>Para onde o anúncio deve levar? <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads abre um formulário dentro do Google. Endereço do site leva para a página informada. WhatsApp adiciona ao anúncio de Pesquisa um botão nativo para iniciar uma conversa no mesmo número conectado ao bot da plataforma.', event)">i</button></h4>
+              <h4>Objetivo principal do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('Endereço do site envia o clique para sua página. Formulário de Leads adiciona um formulário hospedado pelo Google. WhatsApp adiciona ao anúncio de Pesquisa um botão nativo de conversa. Nos três casos, a URL do site é obrigatória porque o título do anúncio continua abrindo a página.', event)">i</button></h4>
               <div class="advanced-checks google-destino-opcoes">
-                <label>
+                <label id="google_destino_lead_ads_label">
                   <input type="radio" name="campanha_google_destino" id="google_destino_lead_ads" value="lead_ads" checked onchange="aplicarDestinoCampanhaGoogle()">
                   Formulário de Leads
                 </label>
@@ -18597,11 +18603,14 @@ body.tema-claro .criar-campanha-descricao {
               <div id="destino_google_leadform_aviso" class="channel-picker-status alerta" style="display:none;">
                 O Google exige que a conta esteja qualificada e que os Termos de Serviço de Lead Form já tenham sido aceitos.
               </div>
+              <div id="destino_google_display_info" class="channel-picker-status alerta" style="display:none;">
+                Em Display, use endereço do site ou formulário de leads. O formulário depende dos requisitos de gasto, reputação e verificação da conta Google Ads. Para WhatsApp, selecione Pesquisa.
+              </div>
               <div id="destino_google_whatsapp_info" class="channel-picker-status alerta" style="display:none;">
-                Verificando o WhatsApp conectado à plataforma...
+                Verificando o WhatsApp e a liberação da conta no Google Ads...
               </div>
               <p style="font-size:11px;opacity:.65;margin:8px 0 0;">
-                O botão de WhatsApp é um recurso nativo do Google e está disponível em campanhas de <strong>Pesquisa</strong>. O título do anúncio também continua abrindo a URL de destino.
+                O formulário pode acompanhar anúncios de Pesquisa e Display quando a conta for elegível. O WhatsApp é um recurso Beta exclusivo de <strong>Pesquisa</strong>; o título continua abrindo a URL do site.
               </p>
             </section>
 
@@ -18643,8 +18652,8 @@ body.tema-claro .criar-campanha-descricao {
               <input type="text" id="campanha_google_nome_anunciante" maxlength="25" placeholder="Até 25 caracteres">
             </div>
             <div class="advanced-full" data-plat-only="google" style="display:none;">
-              <label>URL de destino (Google)</label>
-              <input type="text" id="campanha_google_url" placeholder="https://seusite.com.br">
+              <label>URL de destino (Google) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Obrigatória em todos os destinos do Google. O título do anúncio abre esta página, inclusive quando há formulário ou botão de WhatsApp.', event)">i</button></label>
+              <input type="url" id="campanha_google_url" placeholder="https://seusite.com.br" autocomplete="url">
               <small id="campanha_google_url_ajuda" style="display:block;margin-top:5px;opacity:.65;">Página aberta quando a pessoa clicar no anúncio.</small>
             </div>
 
@@ -26873,7 +26882,8 @@ function camposFaltantesCampanhaIA(plataformas = []) {
       "campanha_google_descricao_1",
       "campanha_google_descricao_2", "campanha_google_nome_anunciante",
       "campanha_google_url",
-      ...(destinoCampanhaGoogleSelecionado === "whatsapp" ? ["campanha_google_whatsapp_mensagem"] : [])
+      ...(destinoCampanhaGoogleSelecionado === "whatsapp" ? ["campanha_google_whatsapp_mensagem"] : []),
+      ...(destinoCampanhaGoogleSelecionado === "lead_ads" && !obterFormularioGoogleEscolhido() ? ["adv_privacidade_url"] : [])
     ]);
   }
   if (plataformas.includes("tiktok")) {
@@ -27605,6 +27615,7 @@ function aplicarTipoCampanhaGoogle() {
 
 let destinoCampanhaGoogleSelecionado = "lead_ads";
 let verificacaoWhatsappGoogleAtual = 0;
+let elegibilidadeWhatsappGoogleAtual = { elegivel: null, mensagem: "" };
 
 // O Google tem sua própria escolha de destino porque pode ser publicado junto
 // com Meta/TikTok, cujos destinos e formulários são independentes nesta tela.
@@ -27651,14 +27662,16 @@ async function aplicarDestinoCampanhaGoogle() {
 
   const infoSite = document.getElementById("destino_google_site_info");
   const avisoLeadForm = document.getElementById("destino_google_leadform_aviso");
+  const infoDisplay = document.getElementById("destino_google_display_info");
   const infoWhatsapp = document.getElementById("destino_google_whatsapp_info");
   const ajudaUrl = document.getElementById("campanha_google_url_ajuda");
   if (infoSite) infoSite.style.display = googleEmFoco && destinoCampanhaGoogleSelecionado === "site" ? "" : "none";
   if (avisoLeadForm) avisoLeadForm.style.display = googleEmFoco && destinoCampanhaGoogleSelecionado === "lead_ads" ? "" : "none";
+  if (infoDisplay) infoDisplay.style.display = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" ? "" : "none";
   if (ajudaUrl) {
     ajudaUrl.textContent = destinoCampanhaGoogleSelecionado === "whatsapp"
       ? "O título do anúncio abre esta página; o botão de mensagem abre o WhatsApp."
-      : "Página aberta quando a pessoa clicar no anúncio.";
+      : "Obrigatória: página aberta quando a pessoa clicar no título do anúncio.";
   }
 
   if (!infoWhatsapp) return;
@@ -27669,31 +27682,39 @@ async function aplicarDestinoCampanhaGoogle() {
 
   infoWhatsapp.style.display = "";
   infoWhatsapp.classList.add("alerta");
-  infoWhatsapp.textContent = "Verificando o WhatsApp conectado à plataforma...";
+  elegibilidadeWhatsappGoogleAtual = { elegivel: null, mensagem: "" };
+  infoWhatsapp.textContent = "Verificando o WhatsApp e a liberação da conta no Google Ads...";
   const verificacaoId = ++verificacaoWhatsappGoogleAtual;
 
   try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${API}/whatsapp/diagnostico`, {
+    const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+    const queryUsuario = usuario_id ? `?usuario_id=${encodeURIComponent(usuario_id)}` : "";
+    const res = await fetch(`${API}/google/whatsapp-elegibilidade${queryUsuario}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    const data = res.ok ? await res.json() : null;
+    const data = await res.json().catch(() => ({}));
     if (verificacaoId !== verificacaoWhatsappGoogleAtual) return;
 
-    if (data?.conectado && data?.pronto_para_mensagens !== false) {
+    if (res.ok && data?.elegivel === true) {
+      elegibilidadeWhatsappGoogleAtual = { elegivel: true, mensagem: data.mensagem || "" };
       infoWhatsapp.classList.remove("alerta");
-      infoWhatsapp.textContent = "WhatsApp conectado. O Google usará o mesmo número atendido pelo bot da plataforma.";
-    } else if (data?.conectado) {
-      infoWhatsapp.classList.add("alerta");
-      infoWhatsapp.textContent = "O WhatsApp está conectado, mas ainda não está pronto para mensagens. Revise a aba WhatsApp Bot antes de publicar.";
+      infoWhatsapp.textContent = data.numero_mascarado
+        ? `WhatsApp ${data.numero_mascarado} conectado e conta Google elegível para o botão de mensagem.`
+        : "WhatsApp conectado e conta Google elegível para o botão de mensagem.";
     } else {
+      const mensagem = data?.error || data?.mensagem || "Esta conta Google Ads ainda não está liberada para anúncios com WhatsApp.";
+      elegibilidadeWhatsappGoogleAtual = { elegivel: false, mensagem };
       infoWhatsapp.classList.add("alerta");
-      infoWhatsapp.textContent = "Conecte o WhatsApp na aba WhatsApp Bot antes de publicar com este destino.";
+      infoWhatsapp.textContent = mensagem;
     }
   } catch (e) {
     if (verificacaoId !== verificacaoWhatsappGoogleAtual) return;
+    elegibilidadeWhatsappGoogleAtual = {
+      elegivel: null,
+      mensagem: "Não foi possível confirmar a elegibilidade agora. A publicação fará uma nova verificação antes de criar a campanha."
+    };
     infoWhatsapp.classList.add("alerta");
-    infoWhatsapp.textContent = "Não foi possível confirmar o WhatsApp agora. Verifique a conexão na aba WhatsApp Bot.";
+    infoWhatsapp.textContent = elegibilidadeWhatsappGoogleAtual.mensagem;
   }
 }
 
@@ -28157,7 +28178,14 @@ function campoRealmentePendenteIA(seletor, plataformasAlvo) {
   if (["#campanha_tiktok_identidade_select", "#tiktok_localidade_busca", "#campanha_tiktok_formulario_select"].includes(seletor) && !alvos.has("tiktok")) return false;
   if (seletor === "#pagina_select" && !["facebook", "instagram"].some(p => alvos.has(p))) return false;
   if (seletor === "#adv_link" && (!["facebook", "instagram"].some(p => alvos.has(p)) || destinoCampanhaSelecionado !== "site")) return false;
-  if (seletor === "#adv_privacidade_url" && (!["facebook", "instagram"].some(p => alvos.has(p)) || destinoCampanhaSelecionado !== "lead_ads")) return false;
+  if (seletor === "#adv_privacidade_url") {
+    const precisaMeta = ["facebook", "instagram"].some(p => alvos.has(p)) &&
+      destinoCampanhaSelecionado === "lead_ads";
+    const precisaGoogle = alvos.has("google") &&
+      destinoCampanhaGoogleSelecionado === "lead_ads" &&
+      !obterFormularioGoogleEscolhido();
+    if (!precisaMeta && !precisaGoogle) return false;
+  }
   if (seletor === "#adv_platform_facebook") return false;
   if (!campoPertenceAoNichoAtivoIA(seletor)) return false;
 
@@ -31379,12 +31407,34 @@ function validarPublicacaoCampanhaGoogle(imagensArquivos) {
   // e exatamente 1 imagem -- mesmas regras fixas aplicadas no backend em /google/anuncio.
   const emDisplay = tipoCampanhaGoogleSelecionado === "display";
 
-  if (destinoCampanhaGoogleSelecionado === "whatsapp") {
-    if (emDisplay) {
-      return "O destino WhatsApp está disponível somente em campanhas de Pesquisa do Google Ads.";
+  if (emDisplay && destinoCampanhaGoogleSelecionado === "whatsapp") {
+    return "O botão de WhatsApp está disponível somente em campanhas de Pesquisa. Em Display, escolha endereço do site ou formulário de leads.";
+  }
+
+  const urlDestino = document.getElementById("campanha_google_url")?.value?.trim() || "";
+  try {
+    const url = new URL(urlDestino);
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("protocolo inválido");
+  } catch (_) {
+    return "Informe uma URL de destino válida e completa para o Google Ads, começando com http:// ou https://.";
+  }
+
+  if (destinoCampanhaGoogleSelecionado === "lead_ads" && !obterFormularioGoogleEscolhido()) {
+    const privacidadeUrl = document.getElementById("adv_privacidade_url")?.value?.trim() || "";
+    try {
+      const url = new URL(privacidadeUrl);
+      if (!["http:", "https:"].includes(url.protocol)) throw new Error("protocolo inválido");
+    } catch (_) {
+      return "Informe a URL válida da política de privacidade para criar o formulário de leads do Google.";
     }
+  }
+
+  if (destinoCampanhaGoogleSelecionado === "whatsapp") {
     if (!document.getElementById("campanha_google_whatsapp_mensagem")?.value?.trim()) {
       return "Informe a mensagem inicial do WhatsApp para o anúncio do Google Ads.";
+    }
+    if (elegibilidadeWhatsappGoogleAtual.elegivel === false) {
+      return elegibilidadeWhatsappGoogleAtual.mensagem || "Esta conta Google Ads ainda não está liberada para anúncios com WhatsApp.";
     }
   }
 
@@ -31393,6 +31443,9 @@ function validarPublicacaoCampanhaGoogle(imagensArquivos) {
     document.getElementById("campanha_google_titulo_2")?.value?.trim(),
     document.getElementById("campanha_google_titulo_3")?.value?.trim()
   ].filter(Boolean);
+  if (destinoCampanhaGoogleSelecionado === "whatsapp" && titulos.some(titulo => /whats[\s-]*app/i.test(titulo))) {
+    return "Retire a palavra WhatsApp dos títulos do Google. O título abre o site e somente o botão de mensagem abre a conversa.";
+  }
   if (!emDisplay && titulos.length < 3) {
     return "Informe os 3 títulos do anúncio do Google Ads.";
   }
@@ -31445,7 +31498,8 @@ async function criarFormularioGoogleAutomatico(usuario_id, token, campanhaNome) 
         perguntas,
         obrigado_titulo: document.getElementById("adv_obrigado_titulo")?.value?.trim(),
         obrigado_texto: document.getElementById("adv_obrigado_texto")?.value?.trim(),
-        url_destino: document.getElementById("campanha_google_url")?.value?.trim()
+        url_destino: document.getElementById("campanha_google_url")?.value?.trim(),
+        privacidade_url: document.getElementById("adv_privacidade_url")?.value?.trim()
       })
     });
     return await res.json();
@@ -36210,8 +36264,24 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
   const destinoGoogle = ["lead_ads", "site", "whatsapp"].includes(destinoCampanhaGoogleSelecionado)
     ? destinoCampanhaGoogleSelecionado
     : "lead_ads";
+  const camposAnuncioGoogle = coletarCamposGoogleAnuncio();
 
   try {
+    // Prepara o formulário antes da campanha. Assim, termos não aceitos ou dados
+    // inválidos não deixam uma campanha incompleta criada na conta do Google.
+    let formularioId = "";
+    if (destinoGoogle === "lead_ads") {
+      setPublishProgress(12, `${prefixo}Preparando formulário de lead...`);
+      formularioId = obterFormularioGoogleEscolhido();
+      if (!formularioId) {
+        const formularioAuto = await criarFormularioGoogleAutomatico(usuario_id, token, campanha_nome);
+        if (formularioAuto.error) {
+          return { ok: false, mensagem: formularioAuto.error };
+        }
+        formularioId = formularioAuto.resource_name;
+      }
+    }
+
     setPublishProgress(20, `${prefixo}Criando campanha no Google Ads...`);
 
     const campanhaRes = await fetch(`${API}/google/campanha`, {
@@ -36222,7 +36292,13 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         nome: campanha_nome,
         orcamento: Number(orcamento),
         publicacao_grupo_id: publicacaoGrupoId,
-        tipo_campanha: tipoCampanha
+        tipo_campanha: tipoCampanha,
+        destino: destinoGoogle,
+        titulos: camposAnuncioGoogle.titulos,
+        mensagem_whatsapp: camposAnuncioGoogle.mensagem_whatsapp || null,
+        url_destino: camposAnuncioGoogle.url_destino,
+        privacidade_url: document.getElementById("adv_privacidade_url")?.value?.trim() || null,
+        form_id: formularioId || null
       })
     });
     const campanha = await campanhaRes.json();
@@ -36283,25 +36359,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
       }
     }
 
-    // ── Lead Form: só é preparado quando foi escolhido como destino. ──
-    let formularioId = "";
-    if (destinoGoogle === "lead_ads") {
-      setPublishProgress(75, `${prefixo}Preparando formulário de lead...`);
-      formularioId = obterFormularioGoogleEscolhido();
-      if (!formularioId) {
-        const formularioAuto = await criarFormularioGoogleAutomatico(usuario_id, token, campanha_nome);
-        if (formularioAuto.error) {
-          await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
-          return { ok: false, mensagem: formularioAuto.error };
-        } else {
-          formularioId = formularioAuto.resource_name;
-        }
-      }
-    }
-
     setPublishProgress(88, `${prefixo}Publicando anúncio...`);
-
-    const camposAnuncioGoogle = coletarCamposGoogleAnuncio();
 
     const anuncioRes = await fetch(`${API}/google/anuncio`, {
       method: "POST",

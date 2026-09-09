@@ -11659,8 +11659,8 @@ body.tema-claro .btn-recolher-card:hover {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  min-height: 58px;
-  padding-right: 126px;
+  min-height: 42px;
+  padding-right: 62px;
 }
 .integ-card-icone { font-size: 24px; flex-shrink: 0; }
 .integ-card-titulo { flex: 1; display: flex; flex-direction: column; gap: 3px; }
@@ -11681,28 +11681,54 @@ body.tema-claro .btn-recolher-card:hover {
 }
 .integ-ranking-slot {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 116px;
+  top: 10px;
+  right: 10px;
+  width: 52px;
+  height: 52px;
   z-index: 2;
 }
 .integ-ranking-selo {
   position: relative;
-  width: 100%;
-  min-height: 54px;
-  padding: 7px 8px 6px;
+  display: grid;
+  place-items: center;
+  width: 52px !important;
+  height: 52px;
+  min-width: 52px !important;
+  min-height: 52px;
+  margin: 0 !important;
+  padding: 0 !important;
   overflow: hidden;
-  border: 1px solid rgba(254, 240, 138, .92);
-  border-radius: 10px;
+  border: 0;
+  border-radius: 50%;
+  clip-path: polygon(50% 0%,61% 8%,75% 7%,82% 19%,96% 24%,95% 39%,100% 50%,92% 61%,93% 75%,80% 82%,75% 96%,61% 92%,50% 100%,39% 92%,25% 96%,20% 82%,7% 75%,8% 61%,0% 50%,5% 39%,4% 24%,18% 19%,25% 7%,39% 8%);
   background:
-    radial-gradient(circle at 18% 10%, rgba(255,255,255,.9), transparent 24%),
-    linear-gradient(145deg, #fef3c7 0%, #fbbf24 42%, #d97706 76%, #92400e 100%);
+    radial-gradient(circle at 34% 26%, rgba(255,255,255,.9), transparent 17%),
+    radial-gradient(circle at center, #fde68a 0 36%, #fbbf24 38% 55%, #d97706 58% 70%, #78350f 73% 100%);
   color: #422006;
   text-align: center;
+  cursor: pointer;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.72),
     inset 0 -1px 0 rgba(120,53,15,.32),
     0 5px 15px rgba(245,158,11,.23);
+  transition: transform .16s ease, filter .16s ease;
+}
+.integ-ranking-selo:hover {
+  transform: translateY(-1px) scale(1.06);
+  filter: brightness(1.08);
+}
+.integ-ranking-selo:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 5px #fef08a) brightness(1.08);
+}
+.integ-ranking-selo::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid rgba(120,53,15,.72);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.26);
+  pointer-events: none;
 }
 .integ-ranking-selo::after {
   content: "";
@@ -11718,28 +11744,16 @@ body.tema-claro .btn-recolher-card:hover {
   82% { transform: translateX(115%); }
 }
 .integ-ranking-posicao {
+  position: relative;
+  z-index: 1;
   display: block;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: .02em;
+  line-height: 1;
+  letter-spacing: -.03em;
   text-shadow: 0 1px 0 rgba(255,255,255,.45);
 }
-.integ-ranking-fonte {
-  display: block;
-  margin-top: 4px;
-  overflow: hidden;
-  color: #713f12;
-  font-size: 8px;
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: .055em;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
 .integ-ranking-selo.dados-conta {
-  border-color: #fde68a;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.78),
     inset 0 -1px 0 rgba(120,53,15,.38),
@@ -11747,17 +11761,74 @@ body.tema-claro .btn-recolher-card:hover {
     0 6px 18px rgba(245,158,11,.32);
 }
 .integ-ranking-selo.referencia {
-  filter: saturate(.76);
-  opacity: .9;
+  filter: saturate(.82);
 }
 body.tema-claro .integ-ranking-selo {
   color: #3f2105;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 5px 14px rgba(146,64,14,.22);
 }
+.integ-ranking-detalhes { color: #cbd5e1; }
+.integ-ranking-detalhes-topo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.integ-ranking-medalha-grande {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  flex: 0 0 66px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #fff7c2 0 12%, transparent 14%), linear-gradient(145deg,#fde68a,#f59e0b 55%,#92400e);
+  color: #422006;
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: inset 0 0 0 5px rgba(120,53,15,.28), inset 0 0 0 7px rgba(254,240,138,.72), 0 8px 20px rgba(245,158,11,.2);
+}
+.integ-ranking-detalhes-topo h3 { margin: 0 0 5px; color: #f8fafc; font-size: 17px; }
+.integ-ranking-detalhes-topo p { margin: 0; color: #94a3b8; font-size: 12px; line-height: 1.45; }
+.integ-ranking-detalhes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.integ-ranking-detalhe-item {
+  padding: 10px 11px;
+  border: 1px solid rgba(148,163,184,.16);
+  border-radius: 9px;
+  background: rgba(15,23,42,.72);
+}
+.integ-ranking-detalhe-item span { display: block; color: #64748b; font-size: 10px; }
+.integ-ranking-detalhe-item strong { display: block; margin-top: 4px; color: #e2e8f0; font-size: 13px; line-height: 1.35; }
+.integ-ranking-composicao,
+.integ-ranking-explicacao {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid rgba(245,158,11,.24);
+  border-radius: 10px;
+  background: rgba(120,53,15,.10);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.integ-ranking-composicao strong,
+.integ-ranking-explicacao strong { color: #fde68a; }
+.integ-ranking-barra {
+  display: flex;
+  height: 7px;
+  margin: 9px 0 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #1e293b;
+}
+.integ-ranking-barra-conta { background: linear-gradient(90deg,#22c55e,#86efac); }
+.integ-ranking-barra-nicho { background: linear-gradient(90deg,#fbbf24,#d97706); }
+.integ-ranking-legenda { color: #94a3b8; font-size: 10px; }
 @media (max-width: 440px) {
-  .integ-card-topo { padding-right: 108px; }
-  .integ-ranking-slot { width: 100px; }
-  .integ-ranking-posicao { font-size: 12px; }
+  .integ-ranking-detalhes-topo { align-items: flex-start; }
+  .integ-ranking-medalha-grande { width: 58px; height: 58px; flex-basis: 58px; font-size: 19px; }
 }
 .integ-card-desc { font-size: 11px; color: #475569; margin-top: 4px; line-height: 1.4; }
 .integ-card-conta { font-size: 11px; color: #94a3b8; padding: 7px 8px; background: #0f172a; border-radius: 6px; display: flex; flex-direction: column; gap: 5px; }
@@ -38078,9 +38149,11 @@ const HUB_PLATAFORMAS = [
 // Ranking híbrido dos cards: o histórico real da conta ganha peso conforme a
 // amostra cresce; enquanto ainda há poucos leads, uma referência conservadora de
 // adequação ao nicho evita declarar um vencedor com base em um único resultado.
-// Referências editoriais da revisão de mercado: Kantar Media Reactions, Digital
-// AdSpend IAB Brasil/IBOPE, DataReportal Brasil e benchmarks agregados da Varos.
-// Elas orientam somente o ponto de partida e nunca substituem os dados do cliente.
+// Kantar Media Reactions, Digital AdSpend IAB Brasil/IBOPE e DataReportal Brasil
+// ajudam a contextualizar alcance, investimento e receptividade. Como esses estudos
+// não publicam um ranking universal de conversão por nicho, as notas abaixo são
+// estimativas internas de adequação estratégica — nunca benchmarks medidos nem
+// substitutos do histórico real do cliente.
 const HUB_RANKING_CONFIG = {
   periodoDias: 30,
   cacheMs: 5 * 60 * 1000,
@@ -38156,11 +38229,13 @@ function resumirPerformanceRanking(data) {
   };
 }
 
-function nivelConfiancaRanking(leads) {
+function nivelConfiancaRanking(leads, gasto = 0, cliques = 0, impressoes = 0) {
   if (leads >= 20) return { peso: .85, texto: "Alta" };
   if (leads >= 8) return { peso: .65, texto: "Média" };
   if (leads >= 3) return { peso: .40, texto: "Baixa" };
   if (leads > 0) return { peso: .15, texto: "Inicial" };
+  if (gasto > 0 && (cliques >= 100 || impressoes >= 5000)) return { peso: .25, texto: "Baixa" };
+  if (gasto > 0 || cliques > 0 || impressoes > 0) return { peso: .12, texto: "Inicial" };
   return { peso: 0, texto: "Referência" };
 }
 
@@ -38202,7 +38277,7 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
     const cliques = Number(perf?.cliques || 0);
     const impressoes = Number(perf?.impressoes || 0);
     const cpl = gasto > 0 && leads > 0 ? gasto / leads : null;
-    const confianca = nivelConfiancaRanking(leads);
+    const confianca = nivelConfiancaRanking(leads, gasto, cliques, impressoes);
     const mercado = Number(referencia[p.id] || HUB_RANKING_MERCADO.geral[p.id] || 50);
 
     const custoScore = cpl && menorCpl
@@ -38232,12 +38307,9 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
     );
 
     const possuiSinaisConta = leads > 0 || Boolean(perf && (gasto > 0 || cliques > 0 || impressoes > 0));
-    const possuiDadosCompletos = Boolean(perf) && gasto > 0 && leads > 0;
-    const fonte = confianca.peso >= .65 && possuiDadosCompletos
-      ? "Dados da sua conta"
-      : possuiSinaisConta
-      ? "Conta + mercado"
-      : "Referência de mercado";
+    const fonte = possuiSinaisConta
+      ? "Conta + adequação estimada ao nicho"
+      : "Adequação estimada ao nicho";
 
     return {
       id: p.id,
@@ -38253,6 +38325,7 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
       impressoes,
       fonte,
       confianca: confianca.texto,
+      pesoConta: confianca.peso,
       usaDadosConta: possuiSinaisConta,
       motivoMercado: HUB_RANKING_MOTIVOS_MERCADO[p.id] || "Canal ainda em avaliação para este nicho."
     };
@@ -38285,10 +38358,16 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
 
 function textoDetalheRanking(p, ranking) {
   if (!ranking) return `Calculando a posição de ${p.nome}...`;
+  const nichoNome = hubRankingEstado.nicho?.nome || "Todos os nichos";
+  const percentualConta = Math.round(Number(ranking.pesoConta || 0) * 100);
+  const percentualNicho = 100 - percentualConta;
   const linhas = [
-    `${ranking.posicao}º lugar para ${hubRankingEstado.nicho?.nome || "o perfil da conta"}.`,
+    `${ranking.posicao}º lugar no nicho ${nichoNome}.`,
     `Fonte: ${ranking.fonte}. Janela: ${HUB_RANKING_CONFIG.periodoDias} dias.`,
-    `Confiança: ${ranking.confianca}.`
+    `Confiança dos dados da conta: ${ranking.confianca}.`,
+    percentualConta > 0
+      ? `Composição: ${percentualConta}% histórico da conta neste nicho + ${percentualNicho}% adequação estratégica estimada para o nicho.`
+      : "Composição: 100% adequação estratégica estimada para o nicho; ainda não há histórico suficiente da conta."
   ];
   if (ranking.usaDadosConta) {
     linhas.push(`Gasto: ${formatarMoedaRanking(ranking.gasto)}; leads: ${ranking.leads}; qualificados: ${ranking.qualificados}; fechados: ${ranking.fechados}.`);
@@ -38297,6 +38376,7 @@ function textoDetalheRanking(p, ranking) {
     linhas.push(ranking.motivoMercado);
     linhas.push("Estimativa estratégica, não garantia de resultado.");
   }
+  linhas.push(`Referência estratégica revisada em ${HUB_RANKING_CONFIG.revisaoMercado.slice(5, 7)}/${HUB_RANKING_CONFIG.revisaoMercado.slice(0, 4)}.`);
   if (hubRankingEstado.atualizadoEm) {
     linhas.push(`Atualizado em ${new Date(hubRankingEstado.atualizadoEm).toLocaleString("pt-BR")}.`);
   }
@@ -38306,21 +38386,86 @@ function textoDetalheRanking(p, ranking) {
 function renderSeloRankingHub(p) {
   const ranking = hubRankingEstado.porPlataforma[p.id] || null;
   const posicao = ranking?.posicao || "…";
-  const icone = posicao === 1 ? "🥇" : posicao === 2 ? "🥈" : posicao === 3 ? "🥉" : "★";
-  const fonteCurta = ranking?.fonte === "Dados da sua conta"
-    ? "Dados próprios"
-    : ranking?.fonte === "Conta + mercado"
-    ? "Conta + mercado"
-    : "Referência mercado";
-  const classeFonte = ranking?.fonte === "Dados da sua conta" ? "dados-conta" : "referencia";
+  const classeFonte = ranking?.usaDadosConta ? "dados-conta" : "referencia";
   const detalhe = textoDetalheRanking(p, ranking);
   return `
     <div class="integ-ranking-slot" id="integ-ranking-${p.id}">
-      <div class="integ-ranking-selo ${classeFonte}" title="${escaparHtml(detalhe)}" aria-label="${escaparHtml(detalhe)}">
-        <span class="integ-ranking-posicao">${icone} ${posicao}${posicao === "…" ? "" : "º"} para anunciar</span>
-        <span class="integ-ranking-fonte">${fonteCurta}</span>
-      </div>
+      <button type="button" class="integ-ranking-selo ${classeFonte}"
+        onclick="event.stopPropagation(); abrirDetalhesRankingHub('${p.id}')"
+        title="Clique para entender esta posição"
+        aria-label="${escaparHtml(detalhe)} Clique para ver os detalhes.">
+        <span class="integ-ranking-posicao">${posicao}${posicao === "…" ? "" : "º"}</span>
+      </button>
     </div>`;
+}
+
+function abrirDetalhesRankingHub(plataformaId) {
+  const p = HUB_PLATAFORMAS.find(item => item.id === plataformaId);
+  const ranking = hubRankingEstado.porPlataforma[plataformaId];
+  if (!p || !ranking) return;
+
+  let conteudo = document.getElementById("integ-ranking-detalhes-temporario");
+  if (conteudo) conteudo.remove();
+  conteudo = document.createElement("div");
+  conteudo.id = "integ-ranking-detalhes-temporario";
+  conteudo.className = "integ-ranking-detalhes";
+  conteudo.style.display = "none";
+  document.body.appendChild(conteudo);
+
+  const nichoNome = hubRankingEstado.nicho?.nome || "Todos os nichos";
+  const percentualConta = Math.round(Number(ranking.pesoConta || 0) * 100);
+  const percentualNicho = 100 - percentualConta;
+  const atualizado = hubRankingEstado.atualizadoEm
+    ? new Date(hubRankingEstado.atualizadoEm).toLocaleString("pt-BR")
+    : "Agora";
+  const cpl = ranking.cpl === null ? "Sem CPL" : formatarMoedaRanking(ranking.cpl);
+  const origemNicho = hubRankingEstado.nicho?.origem === "historico_recente"
+    ? "Nicho predominante no histórico recente da conta"
+    : hubRankingEstado.nicho?.origem === "nicho_habilitado"
+    ? "Único nicho habilitado na conta"
+    : "Referência geral, pois ainda não há um nicho predominante";
+
+  const metricasConta = ranking.usaDadosConta
+    ? `
+      <div class="integ-ranking-detalhes-grid">
+        <div class="integ-ranking-detalhe-item"><span>Gasto no nicho</span><strong>${escaparHtml(formatarMoedaRanking(ranking.gasto))}</strong></div>
+        <div class="integ-ranking-detalhe-item"><span>Leads reais</span><strong>${Number(ranking.leads || 0)}</strong></div>
+        <div class="integ-ranking-detalhe-item"><span>Leads qualificados</span><strong>${Number(ranking.qualificados || 0)}</strong></div>
+        <div class="integ-ranking-detalhe-item"><span>Negócios fechados</span><strong>${Number(ranking.fechados || 0)}</strong></div>
+        <div class="integ-ranking-detalhe-item"><span>CPL observado</span><strong>${escaparHtml(cpl)}</strong></div>
+        <div class="integ-ranking-detalhe-item"><span>Entrega</span><strong>${Number(ranking.cliques || 0)} cliques · ${Number(ranking.impressoes || 0)} impressões</strong></div>
+      </div>`
+    : `<div class="integ-ranking-explicacao"><strong>Ainda sem histórico suficiente nesta plataforma.</strong><br>${escaparHtml(ranking.motivoMercado)} A posição é uma estimativa estratégica, não uma garantia de resultado.</div>`;
+
+  conteudo.innerHTML = `
+    <div class="integ-ranking-detalhes-topo">
+      <div class="integ-ranking-medalha-grande">${ranking.posicao}º</div>
+      <div>
+        <h3>${escaparHtml(p.nome)} no nicho ${escaparHtml(nichoNome)}</h3>
+        <p>${escaparHtml(origemNicho)}. Atualizado em ${escaparHtml(atualizado)}.</p>
+      </div>
+    </div>
+    <div class="integ-ranking-detalhes-grid">
+      <div class="integ-ranking-detalhe-item"><span>Posição atual</span><strong>${ranking.posicao}º de ${HUB_PLATAFORMAS.length} plataformas</strong></div>
+      <div class="integ-ranking-detalhe-item"><span>Janela analisada</span><strong>${HUB_RANKING_CONFIG.periodoDias} dias</strong></div>
+      <div class="integ-ranking-detalhe-item"><span>Confiança do histórico</span><strong>${escaparHtml(ranking.confianca)}</strong></div>
+      <div class="integ-ranking-detalhe-item"><span>Índice comparativo</span><strong>${Number(ranking.score || 0).toFixed(1)} / 100</strong></div>
+    </div>
+    ${metricasConta}
+    <div class="integ-ranking-composicao">
+      <strong>Como os dados foram combinados</strong>
+      <div class="integ-ranking-barra" aria-label="${percentualConta}% histórico da conta e ${percentualNicho}% adequação estimada ao nicho">
+        <span class="integ-ranking-barra-conta" style="width:${percentualConta}%"></span>
+        <span class="integ-ranking-barra-nicho" style="width:${percentualNicho}%"></span>
+      </div>
+      <div class="integ-ranking-legenda">${percentualConta}% histórico real desta conta e deste nicho · ${percentualNicho}% adequação estratégica estimada para o nicho</div>
+    </div>
+    <div class="integ-ranking-explicacao">
+      <strong>Por que está nesta posição?</strong><br>
+      A plataforma compara CPL, qualidade dos leads, negócios fechados, volume e engajamento. O gasto e os leads de cada rede são filtrados para o mesmo nicho e para a mesma janela antes da comparação. A adequação estratégica funciona como ponto de partida e perde peso conforme o histórico real aumenta.
+    </div>`;
+
+  abrirIntegDetalhesModal(`Ranking — ${p.nome}`, conteudo);
 }
 
 function aplicarSelosRankingHub() {
@@ -38360,17 +38505,30 @@ async function carregarRankingHub(mapaConexoes = {}, opcoes = {}) {
   hubRankingPromise = (async () => {
     const plataformasComPerformance = ["meta", "google", "tiktok"]
       .filter(id => mapaConexoes[id]?.status === "conectado");
-    const requisicoes = [
-      buscarJsonRanking(`${API}/plataformas/ranking-base?periodo_dias=${HUB_RANKING_CONFIG.periodoDias}`, token),
-      ...plataformasComPerformance.map(id =>
-        buscarJsonRanking(`${API}/${id}/performance-diaria?periodo=mensal`, token)
+    let baseLocal = {};
+    try {
+      baseLocal = await buscarJsonRanking(
+        `${API}/plataformas/ranking-base?periodo_dias=${HUB_RANKING_CONFIG.periodoDias}`,
+        token
+      );
+    } catch (err) {
+      console.warn("BASE LOCAL DO RANKING:", err);
+    }
+
+    // Primeiro identificamos o nicho predominante; só então buscamos gasto,
+    // cliques e impressões das campanhas pertencentes a esse mesmo nicho.
+    // Sem essa sequência, o CPL poderia misturar investimento de um nicho com
+    // leads de outro e alterar indevidamente a posição das plataformas.
+    const nichoId = Number(baseLocal?.nicho_referencia?.id || 0) || null;
+    const filtroNicho = nichoId ? `&nicho_id=${encodeURIComponent(nichoId)}` : "";
+    const resultados = await Promise.allSettled(
+      plataformasComPerformance.map(id =>
+        buscarJsonRanking(`${API}/${id}/performance-diaria?periodo=mensal${filtroNicho}`, token)
       )
-    ];
-    const resultados = await Promise.allSettled(requisicoes);
-    const baseLocal = resultados[0]?.status === "fulfilled" ? resultados[0].value : {};
+    );
     const performance = {};
     plataformasComPerformance.forEach((id, indice) => {
-      const resultado = resultados[indice + 1];
+      const resultado = resultados[indice];
       if (resultado?.status === "fulfilled") {
         const resumo = resumirPerformanceRanking(resultado.value);
         if (resumo) performance[id] = resumo;

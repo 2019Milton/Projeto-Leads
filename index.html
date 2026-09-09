@@ -39151,18 +39151,106 @@ async function carregarDetalhesMetaHub() {
   }
 }
 
+function formatarValorPagamentoTikTok(valor, moeda = "BRL") {
+  if (valor === null || valor === undefined || valor === "") return "—";
+  const numero = Number(valor);
+  if (!Number.isFinite(numero)) return "—";
+  try {
+    return numero.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: moeda || "BRL"
+    });
+  } catch (_) {
+    return `${numero.toFixed(2)} ${moeda || ""}`.trim();
+  }
+}
+
+function rotuloStatusContaTikTok(status) {
+  const mapa = {
+    STATUS_ENABLE: "Ativa",
+    STATUS_DISABLE: "Desativada",
+    STATUS_PENDING_CONFIRM: "Aguardando confirmação",
+    STATUS_CONFIRM_FAIL: "Confirmação recusada",
+    STATUS_LIMIT: "Com restrição",
+    STATUS_PENDING_VERIFIED: "Em verificação",
+  };
+  return mapa[String(status || "").toUpperCase()] || status || "Não identificado";
+}
+
+function rotuloOrcamentoTikTok(modo) {
+  const mapa = {
+    UNLIMITED: "Sem limite da conta",
+    MONTHLY_BUDGET: "Limite mensal",
+    DAILY_BUDGET: "Limite diário",
+    CUSTOM_BUDGET: "Limite personalizado",
+  };
+  return mapa[String(modo || "").toUpperCase()] || modo || "";
+}
+
+function renderPagamentoTikTok(pagamento) {
+  if (!pagamento?.disponivel) {
+    return `
+      ${hubResumoAlerta(
+        pagamento?.aviso || "Não foi possível consultar os dados financeiros desta conta no TikTok.",
+        "warn"
+      )}
+      <p style="margin:8px 0 0;font-size:11px;color:#64748b;line-height:1.45;">
+        A conexão continua funcionando para campanhas e leads. Consulte o faturamento diretamente no TikTok Ads Manager.
+      </p>`;
+  }
+
+  const moeda = pagamento.moeda || "BRL";
+  const contaAtiva = String(pagamento.status_conta || "").toUpperCase() === "STATUS_ENABLE";
+  const itens = [
+    hubResumoItem("Saldo total", formatarValorPagamentoTikTok(pagamento.saldo_total, moeda)),
+    hubResumoItem("Moeda", moeda),
+    hubResumoItem("Status da conta", rotuloStatusContaTikTok(pagamento.status_conta), contaAtiva ? "sucesso" : ""),
+  ];
+
+  if (pagamento.saldo_disponivel !== null && pagamento.saldo_disponivel !== undefined) {
+    itens.splice(1, 0, hubResumoItem("Saldo disponível", formatarValorPagamentoTikTok(pagamento.saldo_disponivel, moeda), "sucesso"));
+  }
+  if (pagamento.saldo_dinheiro !== null && pagamento.saldo_dinheiro !== undefined) {
+    itens.push(hubResumoItem("Dinheiro disponível", formatarValorPagamentoTikTok(pagamento.saldo_dinheiro, moeda)));
+  }
+  if (pagamento.saldo_bonus !== null && pagamento.saldo_bonus !== undefined) {
+    itens.push(hubResumoItem("Bônus disponível", formatarValorPagamentoTikTok(pagamento.saldo_bonus, moeda)));
+  }
+  if (pagamento.saldo_credito !== null && pagamento.saldo_credito !== undefined) {
+    itens.push(hubResumoItem("Crédito disponível", formatarValorPagamentoTikTok(pagamento.saldo_credito, moeda)));
+  }
+  if (pagamento.saldo_congelado !== null && pagamento.saldo_congelado !== undefined) {
+    itens.push(hubResumoItem("Valor reservado", formatarValorPagamentoTikTok(pagamento.saldo_congelado, moeda)));
+  }
+  if (pagamento.orcamento_modo) {
+    itens.push(hubResumoItem("Limite da conta", rotuloOrcamentoTikTok(pagamento.orcamento_modo)));
+  }
+  if (pagamento.orcamento_restante !== null && pagamento.orcamento_restante !== undefined) {
+    itens.push(hubResumoItem("Limite restante", formatarValorPagamentoTikTok(pagamento.orcamento_restante, moeda)));
+  }
+
+  return `
+    <div class="integ-resumo-grid" style="margin-bottom:9px;">${itens.join("")}</div>
+    ${pagamento.aviso ? hubResumoAlerta(pagamento.aviso, "warn") : hubResumoAlerta("Dados financeiros atualizados diretamente pelo TikTok.", "ok")}
+    <p style="margin:8px 0 0;font-size:11px;color:#64748b;line-height:1.45;">
+      Saldo zerado não significa, sozinho, que a cobrança automática esteja desativada. Por segurança, a API não mostra os dados do cartão ou de outra forma de pagamento. Use o gerenciador para adicionar saldo, trocar a cobrança ou consultar faturas.
+    </p>`;
+}
+
 async function carregarDetalhesTikTokHub(elAlvo = null) {
   const el = elAlvo || document.getElementById("integ-detalhes-tiktok");
   if (!el) return;
   const token = localStorage.getItem("token");
   el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas de anúncios...</span>`;
   try {
-    const [resAnunciantes, resConexoes] = await Promise.all([
+    const [resAnunciantes, resConexoes, resStatus] = await Promise.all([
       fetch(`${API}/tiktok/anunciantes`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/tiktok/status-completo`, { headers: { Authorization: `Bearer ${token}` } })
     ]);
     const dataAnunciantes = await resAnunciantes.json();
     const dataConexoes = await resConexoes.json();
+    const dataStatus = resStatus.ok ? await resStatus.json() : null;
     const conn = (dataConexoes?.conexoes || []).find(c => c.plataforma === "tiktok");
     const advertiserIdAtual = conn?.conta?.advertiser_id || "";
 
@@ -39215,10 +39303,10 @@ async function carregarDetalhesTikTokHub(elAlvo = null) {
       `, { margemTopo: "0" })}
 
       ${secaoColapsavel("💳 Status de Pagamento TikTok", `
-        <p style="margin:0 0 10px;font-size:12px;color:#94a3b8;line-height:1.5;">
-          O saldo da conta ainda não é sincronizado automaticamente aqui — confira e adicione saldo direto no TikTok Ads Manager (Tools → Billing).
-        </p>
-        ${linkAcaoRapida("💳", "Abrir pagamento no TikTok Ads Manager", advertiserIdAtual ? `https://ads.tiktok.com/i18n/account/payment?aadvid=${encodeURIComponent(advertiserIdAtual)}` : "https://ads.tiktok.com/help/article/tiktok-billing-options", "alerta")}
+        ${renderPagamentoTikTok(dataStatus?.pagamento)}
+        <div style="margin-top:10px;">
+          ${linkAcaoRapida("💳", "Abrir pagamento no TikTok Ads Manager", advertiserIdAtual ? `https://ads.tiktok.com/i18n/account/payment?aadvid=${encodeURIComponent(advertiserIdAtual)}` : "https://ads.tiktok.com/help/article/tiktok-billing-options", "alerta")}
+        </div>
       `)}
 
       ${secaoAcoesRapidas([

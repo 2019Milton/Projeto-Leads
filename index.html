@@ -39151,17 +39151,6 @@ async function carregarDetalhesMetaHub() {
   }
 }
 
-// carregarHub() recria o card inteiro (o painel de detalhes volta a nascer fechado);
-// isso reabre o painel logo após o refresh para não fechar na cara do usuário.
-async function recarregarHubMantendoDetalhesTikTokAbertos() {
-  fecharIntegDetalhesModal();
-  await carregarHub();
-  const el = document.querySelector("#hub_conexoes_grid #integ-detalhes-tiktok");
-  if (!el) return;
-  abrirIntegDetalhesModal(NOMES_INTEG_MODAL.tiktok, el);
-  await carregarDetalhesTikTokHub(el);
-}
-
 async function carregarDetalhesTikTokHub(elAlvo = null) {
   const el = elAlvo || document.getElementById("integ-detalhes-tiktok");
   if (!el) return;
@@ -39190,8 +39179,15 @@ async function carregarDetalhesTikTokHub(elAlvo = null) {
 
     // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta)
     if (!advertiserIdAtual && anunciantes.length === 1) {
-      await selecionarAnuncianteTikTok(String(anunciantes[0].advertiser_id), { silencioso: true });
-      await recarregarHubMantendoDetalhesTikTokAbertos();
+      const selecionou = await selecionarAnuncianteTikTok(
+        String(anunciantes[0].advertiser_id),
+        { silencioso: true }
+      );
+      if (!selecionou) {
+        el.innerHTML = `<span style="color:#f87171;">Não foi possível selecionar automaticamente esta conta.</span>`;
+        return;
+      }
+      await carregarDetalhesTikTokHub(el);
       return;
     }
 
@@ -39238,7 +39234,9 @@ async function carregarDetalhesTikTokHub(elAlvo = null) {
 
 async function selecionarAnuncianteTikTok(advertiserId, opts = {}, btnEl) {
   const token = localStorage.getItem("token");
-  if (!token || !advertiserId) return;
+  if (!token || !advertiserId) return false;
+  const painelAtual = btnEl?.closest("#integ-detalhes-tiktok")
+    || document.getElementById("integ-detalhes-tiktok");
 
   const estadoOriginal = btnEl
     ? { html: btnEl.innerHTML, disabled: btnEl.disabled }
@@ -39265,14 +39263,20 @@ async function selecionarAnuncianteTikTok(advertiserId, opts = {}, btnEl) {
     if (!res.ok) {
       if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
       restaurarBotao();
-      return;
+      return false;
     }
-    if (!opts.silencioso) {
-      await recarregarHubMantendoDetalhesTikTokAbertos();
+    if (!opts.silencioso && painelAtual) {
+      // Atualiza apenas o conteúdo que já está dentro do modal. Recriar todo o
+      // hub aqui fazia a janela desaparecer e reaparecer depois de cada ação.
+      await carregarDetalhesTikTokHub(painelAtual);
+      const statusAtual = painelAtual.querySelector("#tiktok_sync_status");
+      if (statusAtual) statusAtual.textContent = "Conta selecionada. Pronto para sincronizar.";
     }
+    return true;
   } catch (_) {
     if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
     restaurarBotao();
+    return false;
   }
 }
 
@@ -39280,8 +39284,12 @@ async function sincronizarTikTok() {
   const token = localStorage.getItem("token");
   if (!token) return;
   const btn = document.getElementById("btn_tiktok_sync");
-  const status = document.getElementById("tiktok_sync_status");
+  const painelAtual = btn?.closest("#integ-detalhes-tiktok")
+    || document.getElementById("integ-detalhes-tiktok");
+  const status = painelAtual?.querySelector("#tiktok_sync_status")
+    || document.getElementById("tiktok_sync_status");
   if (btn) { btn.disabled = true; btn.textContent = "🔄 Sincronizando..."; }
+  if (status) status.textContent = "Sincronizando campanhas e leads...";
   try {
     const res = await fetch(`${API}/tiktok/sincronizar-campanhas`, {
       method: "POST",
@@ -39292,10 +39300,9 @@ async function sincronizarTikTok() {
       if (status) status.textContent = data?.error || "Erro ao sincronizar.";
       return;
     }
-    // carregarHub() recria o card (e o painel de detalhes some) — reabre e só então
-    // grava a mensagem de resultado no elemento novo, não no nó antigo já desconectado do DOM.
-    await recarregarHubMantendoDetalhesTikTokAbertos();
-    const statusNovo = document.getElementById("tiktok_sync_status");
+    if (painelAtual) await carregarDetalhesTikTokHub(painelAtual);
+    const statusNovo = painelAtual?.querySelector("#tiktok_sync_status")
+      || document.getElementById("tiktok_sync_status");
     if (statusNovo) statusNovo.textContent = `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
     return;
   } catch (_) {

@@ -39080,6 +39080,7 @@ function abrirIntegDetalhesModal(titulo, elConteudo) {
 
 function fecharIntegDetalhesModal() {
   const modal = document.getElementById("integ_detalhes_modal");
+  const corpo = document.getElementById("integ_modal_corpo");
   if (modal) modal.style.display = "none";
   document.body.style.overflow = "";
 
@@ -39090,10 +39091,18 @@ function fecharIntegDetalhesModal() {
     // descartado em vez de devolvido a um elemento que não existe mais.
     if (integModalOrigemAtual && document.body.contains(integModalOrigemAtual)) {
       integModalOrigemAtual.appendChild(integModalConteudoAtual);
+    } else {
+      // O grid pode ter sido recriado enquanto o painel estava no modal. Nesse
+      // caso o nó antigo não tem mais um card de origem e precisa ser removido;
+      // mantê-lo aqui criaria IDs duplicados e faria a próxima carga preencher
+      // o painel invisível, deixando o modal novo em branco.
+      integModalConteudoAtual.remove();
     }
   }
   integModalConteudoAtual = null;
   integModalOrigemAtual = null;
+  // Proteção adicional contra qualquer nó órfão de atualizações anteriores.
+  if (corpo) corpo.replaceChildren();
 }
 
 function toggleIntegDetalhes(plataforma) {
@@ -39145,14 +39154,16 @@ async function carregarDetalhesMetaHub() {
 // carregarHub() recria o card inteiro (o painel de detalhes volta a nascer fechado);
 // isso reabre o painel logo após o refresh para não fechar na cara do usuário.
 async function recarregarHubMantendoDetalhesTikTokAbertos() {
+  fecharIntegDetalhesModal();
   await carregarHub();
-  const el = document.getElementById("integ-detalhes-tiktok");
-  if (el) abrirIntegDetalhesModal(NOMES_INTEG_MODAL.tiktok, el);
-  await carregarDetalhesTikTokHub();
+  const el = document.querySelector("#hub_conexoes_grid #integ-detalhes-tiktok");
+  if (!el) return;
+  abrirIntegDetalhesModal(NOMES_INTEG_MODAL.tiktok, el);
+  await carregarDetalhesTikTokHub(el);
 }
 
-async function carregarDetalhesTikTokHub() {
-  const el = document.getElementById("integ-detalhes-tiktok");
+async function carregarDetalhesTikTokHub(elAlvo = null) {
+  const el = elAlvo || document.getElementById("integ-detalhes-tiktok");
   if (!el) return;
   const token = localStorage.getItem("token");
   el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas de anúncios...</span>`;
@@ -39299,14 +39310,16 @@ async function sincronizarTikTok() {
 // contas de anúncio já na resposta do OAuth (diferente do TikTok), então a
 // listagem é buscada aqui via /linkedin/contas em vez de vir de "conexoes".
 async function recarregarHubMantendoDetalhesLinkedInAbertos() {
+  fecharIntegDetalhesModal();
   await carregarHub();
-  const el = document.getElementById("integ-detalhes-linkedin");
-  if (el) abrirIntegDetalhesModal(NOMES_INTEG_MODAL.linkedin, el);
-  await carregarDetalhesLinkedInHub();
+  const el = document.querySelector("#hub_conexoes_grid #integ-detalhes-linkedin");
+  if (!el) return;
+  abrirIntegDetalhesModal(NOMES_INTEG_MODAL.linkedin, el);
+  await carregarDetalhesLinkedInHub(el);
 }
 
-async function carregarDetalhesLinkedInHub() {
-  const el = document.getElementById("integ-detalhes-linkedin");
+async function carregarDetalhesLinkedInHub(elAlvo = null) {
+  const el = elAlvo || document.getElementById("integ-detalhes-linkedin");
   if (!el) return;
   const token = localStorage.getItem("token");
   el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas de anúncios...</span>`;
@@ -39443,14 +39456,16 @@ async function sincronizarLinkedIn() {
 // stub de Fase 1 no backend (aguardando aprovação de API da Kuaishou), então o erro
 // amigável que ela devolver aparece aqui igual a qualquer outro erro de carregamento.
 async function recarregarHubMantendoDetalhesKwaiAbertos() {
+  fecharIntegDetalhesModal();
   await carregarHub();
-  const el = document.getElementById("integ-detalhes-kwai");
-  if (el) abrirIntegDetalhesModal(NOMES_INTEG_MODAL.kwai, el);
-  await carregarDetalhesKwaiHub();
+  const el = document.querySelector("#hub_conexoes_grid #integ-detalhes-kwai");
+  if (!el) return;
+  abrirIntegDetalhesModal(NOMES_INTEG_MODAL.kwai, el);
+  await carregarDetalhesKwaiHub(el);
 }
 
-async function carregarDetalhesKwaiHub() {
-  const el = document.getElementById("integ-detalhes-kwai");
+async function carregarDetalhesKwaiHub(elAlvo = null) {
+  const el = elAlvo || document.getElementById("integ-detalhes-kwai");
   if (!el) return;
   const token = localStorage.getItem("token");
   el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas de anúncios...</span>`;

@@ -39769,6 +39769,98 @@ async function usarContaGoogleManual(btnEl) {
   await usarContaGoogle(customerId, btnEl);
 }
 
+function formatarValorPagamentoGoogle(valor, moeda = "BRL") {
+  if (valor === null || valor === undefined || valor === "") return "—";
+  const numero = Number(valor);
+  if (!Number.isFinite(numero)) return "—";
+  try {
+    return numero.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: moeda || "BRL"
+    });
+  } catch (_) {
+    return `${numero.toFixed(2)} ${moeda || ""}`.trim();
+  }
+}
+
+function rotuloStatusOrcamentoGoogle(status) {
+  const mapa = {
+    APPROVED: "Aprovado",
+    PENDING: "Pendente",
+    CANCELLED: "Cancelado",
+  };
+  return mapa[String(status || "").toUpperCase()] || status || "Não identificado";
+}
+
+function renderPagamentoGoogle(dataStatus) {
+  const pagamento = dataStatus?.pagamento;
+  const conta = dataStatus?.conta;
+  const moeda = conta?.moeda || "BRL";
+
+  if (!pagamento) {
+    return hubResumoAlerta("Não foi possível consultar o faturamento desta conta no momento.", "warn");
+  }
+
+  const itens = [
+    hubResumoItem("Modalidade", pagamento.modalidade_texto || "Não identificada"),
+  ];
+
+  if (pagamento.status || pagamento.texto) {
+    itens.push(hubResumoItem(
+      "Status do faturamento",
+      pagamento.texto || "Não identificado",
+      pagamento.status === "APPROVED" ? "sucesso" : ""
+    ));
+  }
+  if (typeof dataStatus?.gasto_hoje === "number") {
+    itens.push(hubResumoItem("Gasto hoje", formatarValorPagamentoGoogle(dataStatus.gasto_hoje, moeda)));
+  }
+  if (pagamento.conta_pagamentos_nome) {
+    itens.push(hubResumoItem("Conta de pagamentos", pagamento.conta_pagamentos_nome));
+  }
+  if (pagamento.perfil_pagamentos_nome) {
+    itens.push(hubResumoItem("Perfil de pagamentos", pagamento.perfil_pagamentos_nome));
+  }
+
+  const orcamento = pagamento.orcamento_conta;
+  if (orcamento) {
+    itens.push(hubResumoItem("Orçamento da conta", orcamento.nome || "Orçamento ativo"));
+    itens.push(hubResumoItem("Status do orçamento", rotuloStatusOrcamentoGoogle(orcamento.status)));
+    itens.push(hubResumoItem(
+      "Limite de faturamento",
+      orcamento.infinito ? "Sem limite" : formatarValorPagamentoGoogle(orcamento.limite, moeda)
+    ));
+    if (orcamento.gasto !== null && orcamento.gasto !== undefined) {
+      itens.push(hubResumoItem("Consumido no orçamento", formatarValorPagamentoGoogle(orcamento.gasto, moeda)));
+    }
+    if (orcamento.restante !== null && orcamento.restante !== undefined) {
+      itens.push(hubResumoItem("Restante no orçamento", formatarValorPagamentoGoogle(orcamento.restante, moeda), "sucesso"));
+    }
+    if (orcamento.ajustes !== null && orcamento.ajustes !== undefined && Number(orcamento.ajustes) !== 0) {
+      itens.push(hubResumoItem("Créditos e ajustes", formatarValorPagamentoGoogle(orcamento.ajustes, moeda)));
+    }
+    if (orcamento.inicio) {
+      itens.push(hubResumoItem("Início do orçamento", orcamento.inicio));
+    }
+    itens.push(hubResumoItem("Término do orçamento", orcamento.fim || "Sem data final"));
+  }
+
+  const explicacao = pagamento.modalidade === "faturamento_mensal"
+    ? "Os valores acima pertencem ao orçamento do faturamento mensal. Eles não representam dinheiro pré-pago disponível."
+    : pagamento.modalidade === "gerenciadora"
+    ? "Selecione uma conta anunciante para consultar as informações financeiras dela."
+    : "Em contas pré-pagas ou com cobrança automática, o Google não disponibiliza saldo, cartão, limite de cobrança ou próxima cobrança pela API.";
+
+  return `
+    <div class="integ-resumo-grid" style="margin-bottom:9px;">${itens.join("")}</div>
+    ${pagamento.aviso
+      ? hubResumoAlerta(pagamento.aviso, "warn")
+      : hubResumoAlerta("Dados de faturamento atualizados diretamente pelo Google Ads.", "ok")}
+    <p style="margin:8px 0 0;font-size:11px;color:#64748b;line-height:1.45;">
+      ${escaparHtml(explicacao)} Por segurança, os dados da forma de pagamento e das faturas continuam disponíveis somente no Google Ads.
+    </p>`;
+}
+
 async function carregarStatusGoogle() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -39796,7 +39888,6 @@ async function carregarStatusGoogle() {
     const avisosContas = dataContas.avisos || [];
     const customerIdAtual = dataStatus.customer_id || "";
     const contaInfo = dataStatus.conta || null;
-    const pagamento = dataStatus.pagamento || null;
 
     // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta/TikTok)
     if (!customerIdAtual && contas.length === 1) {
@@ -39845,11 +39936,10 @@ async function carregarStatusGoogle() {
           `, { margemTopo: "0" })}
 
           ${secaoColapsavel("💳 Status de Pagamento Google Ads", `
-              <div class="meta-status-tile" style="margin-bottom:10px;">
-                <span>${pagamento?.status === "APPROVED" ? "🟢" : pagamento?.status ? "🟡" : "⚪"} Status de pagamento</span>
-                <small>${escaparHtml(pagamento?.texto || "Não identificado")}</small>
+              ${renderPagamentoGoogle(dataStatus)}
+              <div style="margin-top:10px;">
+                ${linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso")}
               </div>
-              ${linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso")}
           `)}
 
           ${secaoAcoesRapidas([

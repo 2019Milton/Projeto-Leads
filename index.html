@@ -27549,6 +27549,18 @@ function aplicarRedesCampanha() {
     }
   });
 
+  // O painel de localização do LinkedIn só é salvo em /linkedin/adgroup, na
+  // criação — /linkedin/editar-campanha (edição) nunca lê nem grava geo_urn,
+  // nem pra campanha já publicada nem pra rascunho local (ver comentário lá).
+  // Sem essa checagem, o painel continuava aparecendo funcional na edição de
+  // uma campanha LinkedIn e qualquer alteração feita ali era descartada em
+  // silêncio ao salvar (bug encontrado em auditoria) — escondido aqui em vez
+  // de deixar um controle que parece funcionar mas não persiste nada.
+  const linkedinGeoPanel = document.getElementById("linkedin_localidade_busca")?.closest(".detailed-targeting-panel");
+  if (linkedinGeoPanel && emEdicao) {
+    linkedinGeoPanel.style.display = "none";
+  }
+
   // Colore o cabeçalho (<summary>) de TODAS as seções do formulário de
   // campanha com a cor da rede ativa agora — não só as que "por acaso" têm
   // algum campo data-plat-only lá dentro (ex: "Configuração da campanha" e

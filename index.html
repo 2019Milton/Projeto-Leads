@@ -18171,6 +18171,29 @@ body.tema-claro .criar-campanha-descricao {
                 Busque e selecione uma localização (obrigatório para o TikTok).
               </div>
             </div>
+
+            <div class="detailed-targeting-panel admin-only-targeting" data-plat-only="linkedin" style="display:none;">
+              <strong>Localização (LinkedIn) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Busque e escolha uma cidade, estado ou país para definir onde o anúncio será veiculado no LinkedIn. Sem uma localização selecionada, o anúncio usa o Brasil inteiro como padrão.', event)">i</button></strong>
+              <p>
+                Busque e selecione a localização que vai receber os anúncios no LinkedIn. Opcional — sem seleção, usa o Brasil inteiro.
+              </p>
+
+              <div class="detailed-targeting-search">
+                <input
+                  type="search"
+                  id="linkedin_localidade_busca"
+                  placeholder="Ex: São Paulo, Brasil"
+                  oninput="agendarBuscaLocalidadeLinkedIn()"
+                >
+                <button type="button" onclick="buscarLocalidadeLinkedIn()">Procurar</button>
+              </div>
+
+              <div id="linkedin_localidade_selecionada_chip" class="targeting-selected"></div>
+              <div id="linkedin_localidade_resultados" class="targeting-results"></div>
+              <div id="linkedin_localidade_feedback" class="targeting-empty">
+                Busque e selecione uma localização (opcional — padrão é Brasil inteiro).
+              </div>
+            </div>
           </section>
         </details>
 
@@ -31056,6 +31079,11 @@ let tiktokLocalidadeSelecionada = null;
 let buscaLocalidadeTikTokTimer = null;
 let buscaLocalidadeTikTokSequencia = 0;
 
+// ─── Campanha multi-plataforma: estado específico do LinkedIn ────────────────
+let linkedinLocalidadeSelecionada = null;
+let buscaLocalidadeLinkedInTimer = null;
+let buscaLocalidadeLinkedInSequencia = 0;
+
 function obterTokenEUsuarioIdCampanha() {
   const token = localStorage.getItem("token");
   if (!token) return { token: null, usuario_id: null };
@@ -31610,6 +31638,91 @@ function selecionarLocalidadeTikTokPorIndice(indice) {
 function removerLocalidadeTikTok() {
   tiktokLocalidadeSelecionada = null;
   renderizarLocalidadeTikTokSelecionada();
+}
+
+// Busca/seleção de localização do LinkedIn — mesmo padrão de
+// agendarBuscaLocalidadeTikTok/buscarLocalidadeTikTok acima, chamando
+// /linkedin/direcionamento/localizacao. Opcional: sem seleção, o backend usa
+// LINKEDIN_GEO_URN_BRASIL como padrão (ver /linkedin/adgroup).
+function agendarBuscaLocalidadeLinkedIn() {
+  clearTimeout(buscaLocalidadeLinkedInTimer);
+  buscaLocalidadeLinkedInTimer = setTimeout(buscarLocalidadeLinkedIn, 450);
+}
+
+async function buscarLocalidadeLinkedIn() {
+  const termo = document.getElementById("linkedin_localidade_busca")?.value?.trim() || "";
+  const resultadosEl = document.getElementById("linkedin_localidade_resultados");
+  const feedback = document.getElementById("linkedin_localidade_feedback");
+  if (!resultadosEl) return;
+
+  if (termo.length < 2) {
+    resultadosEl.innerHTML = "";
+    return;
+  }
+
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+  if (!token) return;
+
+  const sequenciaAtual = ++buscaLocalidadeLinkedInSequencia;
+
+  try {
+    const res = await fetch(`${API}/linkedin/direcionamento/localizacao`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ usuario_id, busca: termo })
+    });
+    const data = await res.json();
+
+    if (sequenciaAtual !== buscaLocalidadeLinkedInSequencia) return;
+
+    const itens = Array.isArray(data.data) ? data.data : [];
+    if (!itens.length) {
+      resultadosEl.innerHTML = "";
+      if (feedback) feedback.textContent = "Nenhuma localização encontrada. Tente outro termo.";
+      return;
+    }
+
+    resultadosEl.innerHTML = itens.map((item, i) => `
+      <div class="geo-sugestao-item" onclick="selecionarLocalidadeLinkedInPorIndice(${i})">
+        ${escaparHtml(item.nome)}
+      </div>`
+    ).join("");
+
+    window._linkedinLocalidadeResultadosAtuais = itens;
+    if (feedback) feedback.textContent = "Selecione uma sugestão.";
+  } catch (_) {
+    if (sequenciaAtual !== buscaLocalidadeLinkedInSequencia) return;
+    resultadosEl.innerHTML = "";
+    if (feedback) feedback.textContent = "Erro ao buscar localização.";
+  }
+}
+
+function selecionarLocalidadeLinkedInPorIndice(indice) {
+  const item = (window._linkedinLocalidadeResultadosAtuais || [])[indice];
+  if (!item) return;
+
+  linkedinLocalidadeSelecionada = item;
+  renderizarLocalidadeLinkedInSelecionada();
+
+  const resultadosEl = document.getElementById("linkedin_localidade_resultados");
+  if (resultadosEl) resultadosEl.innerHTML = "";
+
+  const input = document.getElementById("linkedin_localidade_busca");
+  if (input) input.value = "";
+}
+
+function removerLocalidadeLinkedIn() {
+  linkedinLocalidadeSelecionada = null;
+  renderizarLocalidadeLinkedInSelecionada();
+}
+
+function renderizarLocalidadeLinkedInSelecionada() {
+  const chip = document.getElementById("linkedin_localidade_selecionada_chip");
+  if (!chip) return;
+  const local = linkedinLocalidadeSelecionada;
+  chip.innerHTML = local?.key
+    ? `<span class="targeting-chip">${escaparHtml(local.nome || local.key)} <button type="button" onclick="removerLocalidadeLinkedIn()">×</button></span>`
+    : "";
 }
 
 function validarPublicacaoCampanhaTikTok() {
@@ -36832,7 +36945,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, texto, cta, orcamento,
-    imagensArquivos, publicacaoGrupoId
+    imagensArquivos, videoArquivo, publicacaoGrupoId
   } = contexto;
   const prefixo = isMultiRede ? "[LinkedIn Ads] " : "";
   const destino = destinoCampanhaSelecionado === "whatsapp" ? "whatsapp" : "lead_ads";
@@ -36864,7 +36977,10 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
         usuario_id,
         campaign_id: campanhaCriadaId,
         daily_budget: Number(orcamento),
-        destino
+        destino,
+        configuracoes_avancadas: {
+          geo_urn: linkedinLocalidadeSelecionada?.key || ""
+        }
       })
     });
     const adgroup = await adgroupRes.json();
@@ -36874,25 +36990,44 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
     }
 
     let imageUrn = null;
-    const fonteImagemLinkedIn = destino !== "whatsapp"
-      ? montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback)[0]
-      : null;
-    if (fonteImagemLinkedIn) {
-      setPublishProgress(65, `${prefixo}Enviando imagem...`);
-      const formImagem = new FormData();
-      anexarImagemFormData(formImagem, fonteImagemLinkedIn);
-      formImagem.append("usuario_id", usuario_id);
-      const uploadRes = await fetch(`${API}/linkedin/upload-imagem`, {
+    let videoUrn = null;
+    if (destino !== "whatsapp" && videoArquivo) {
+      setPublishProgress(65, `${prefixo}Enviando vídeo...`);
+      const formVideo = new FormData();
+      formVideo.append("video", videoArquivo);
+      formVideo.append("usuario_id", usuario_id);
+      const uploadRes = await fetch(`${API}/linkedin/upload-video`, {
         method: "POST",
         headers: { Authorization: "Bearer " + token },
-        body: formImagem
+        body: formVideo
       });
       const upload = await uploadRes.json();
       if (upload.error) {
         await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
         return { ok: false, mensagem: upload.error };
       }
-      imageUrn = upload.image_urn;
+      videoUrn = upload.video_urn;
+    } else {
+      const fonteImagemLinkedIn = destino !== "whatsapp"
+        ? montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback)[0]
+        : null;
+      if (fonteImagemLinkedIn) {
+        setPublishProgress(65, `${prefixo}Enviando imagem...`);
+        const formImagem = new FormData();
+        anexarImagemFormData(formImagem, fonteImagemLinkedIn);
+        formImagem.append("usuario_id", usuario_id);
+        const uploadRes = await fetch(`${API}/linkedin/upload-imagem`, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token },
+          body: formImagem
+        });
+        const upload = await uploadRes.json();
+        if (upload.error) {
+          await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
+          return { ok: false, mensagem: upload.error };
+        }
+        imageUrn = upload.image_urn;
+      }
     }
 
     let formId = null;
@@ -36940,6 +37075,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
         cta,
         titulo: document.getElementById("adv_titulo")?.value?.trim(),
         image_urn: imageUrn,
+        video_urn: videoUrn,
         daily_budget: Number(orcamento),
         destino
       })

@@ -18537,7 +18537,7 @@ body.tema-claro .criar-campanha-descricao {
                 O formulário será aberto dentro do TikTok, sem tirar a pessoa do aplicativo.
               </div>
               <div id="destino_tiktok_site_info" class="channel-picker-status" style="display:none;">
-                O clique será direcionado para o endereço informado abaixo.
+                O clique será direcionado para o endereço informado abaixo. Para medir envios do formulário do site, instale o Pixel/evento do TikTok nessa página.
               </div>
               <div id="destino_tiktok_whatsapp_info" class="channel-picker-status alerta" style="display:none;">
                 Verificando o WhatsApp conectado à plataforma...
@@ -18546,7 +18546,7 @@ body.tema-claro .criar-campanha-descricao {
                 O tipo de destino não pode ser trocado depois que a campanha é publicada. Para usar outro destino, publique uma nova campanha.
               </div>
               <p style="font-size:11px;opacity:.65;margin:8px 0 0;">
-                No WhatsApp, o TikTok usa o número Business API conectado e abre a conversa com a mensagem inicial padrão do próprio TikTok.
+                No WhatsApp, o TikTok usa o número Business API conectado e abre a conversa com a mensagem inicial padrão. A integração de Mensagens do TikTok é opcional no modo de cliques, mas recomendada para medir e otimizar conversas.
               </p>
             </section>
 
@@ -27822,7 +27822,7 @@ async function aplicarDestinoCampanhaTikTok() {
 
     if (data?.conectado && data?.pronto_para_mensagens !== false) {
       infoWhatsapp.classList.remove("alerta");
-      infoWhatsapp.textContent = "WhatsApp conectado. O TikTok usará o mesmo número Business API atendido pelo bot da plataforma.";
+      infoWhatsapp.textContent = "WhatsApp conectado à plataforma. O anúncio por cliques pode abrir a conversa normalmente. Para medir e otimizar conversas, configure também a integração de Mensagens no TikTok.";
     } else if (data?.conectado) {
       infoWhatsapp.classList.add("alerta");
       infoWhatsapp.textContent = "O WhatsApp está conectado, mas ainda não está pronto para mensagens. Revise a aba WhatsApp Bot antes de publicar.";
@@ -31212,14 +31212,14 @@ async function carregarFormulariosTikTokCampanha() {
   const select = document.getElementById("campanha_tiktok_formulario_select");
   const feedback = document.getElementById("campanha_tiktok_formulario_feedback");
   if (!select) return;
-  const { token } = obterTokenEUsuarioIdCampanha();
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
   if (!token) return;
 
   select.innerHTML = `<option value="">Carregando formulários...</option>`;
   if (feedback) feedback.style.display = "none";
 
   try {
-    const res = await fetch(`${API}/tiktok/formularios`, {
+    const res = await fetch(`${API}/tiktok/formularios?usuario_id=${encodeURIComponent(usuario_id || "")}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
@@ -31236,7 +31236,7 @@ async function carregarFormulariosTikTokCampanha() {
     }
 
     select.innerHTML = formularios.map(f => `
-      <option value="${escaparHtml(String(f.page_id || f.id))}">${escaparHtml(f.page_name || f.name || String(f.page_id || f.id))}</option>`
+      <option value="${escaparHtml(String(f.page_id || f.form_id || f.id))}">${escaparHtml(f.page_name || f.title || f.name || String(f.page_id || f.form_id || f.id))}</option>`
     ).join("") + `<option value="__manual__">Digitar ID manualmente...</option>`;
     selecionarFormularioTikTokSalvo(select.dataset.preferredFormId || "");
   } catch (_) {
@@ -36327,15 +36327,41 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     ? destinoCampanhaTikTokSelecionado
     : "lead_ads";
   const urlDestinoTikTok = document.getElementById("campanha_tiktok_url")?.value?.trim() || "";
+  const formularioId = destinoTikTok === "lead_ads" ? obterFormularioTikTokEscolhido() : null;
+  const identidadeId = tiktokIdentidadeSelecionada?.identity_id || null;
+  const identidadeTipo = tiktokIdentidadeSelecionada?.identity_type || null;
 
   try {
     const configuracoes_avancadas = {
       ...configuracoesBase,
       destino: destinoTikTok,
-      url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null
+      url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null,
+      form_id: destinoTikTok === "lead_ads" ? formularioId : null,
+      identity_id: identidadeId,
+      identity_type: identidadeTipo
     };
     if (publicacaoGrupoId) configuracoes_avancadas.publicacao_grupo_id = publicacaoGrupoId;
     if (tiktokLocalidadeSelecionada) configuracoes_avancadas.localidades = [tiktokLocalidadeSelecionada];
+
+    setPublishProgress(3, `${prefixo}Validando conta, identidade e destino no TikTok...`);
+    const preflightRes = await fetch(`${API}/tiktok/preflight-publicacao`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        destino: destinoTikTok,
+        form_id: formularioId,
+        url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null,
+        identity_id: identidadeId,
+        identity_type: identidadeTipo,
+        daily_budget: Number(orcamento) * 100,
+        configuracoes_avancadas
+      })
+    });
+    const preflight = await preflightRes.json();
+    if (!preflightRes.ok || preflight.error || preflight.ok === false) {
+      return { ok: false, mensagem: preflight.error || "O TikTok não aprovou a configuração desta publicação." };
+    }
 
     const imageIds = [];
     const fontesImagem = montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback);
@@ -36397,7 +36423,11 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
         nicho_id: window._nichoAtivo?.id || null,
         daily_budget: Number(orcamento) * 100,
         publicacao_grupo_id: publicacaoGrupoId,
-        destino: destinoTikTok
+        destino: destinoTikTok,
+        form_id: formularioId,
+        url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null,
+        identity_id: identidadeId,
+        identity_type: identidadeTipo
       })
     });
     const campanha = await campanhaRes.json();
@@ -36429,8 +36459,6 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
 
     setPublishProgress(88, `${prefixo}Publicando anúncio...`);
 
-    const formularioId = destinoTikTok === "lead_ads" ? obterFormularioTikTokEscolhido() : null;
-
     const anuncioRes = await fetch(`${API}/tiktok/anuncio`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
@@ -36439,6 +36467,8 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
         campaign_id: campanhaCriadaId,
         adgroup_id: adgroup.adgroup_id,
         form_id: formularioId,
+        identity_id: identidadeId,
+        identity_type: identidadeTipo,
         destino: destinoTikTok,
         url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null,
         texto,
@@ -39637,6 +39667,103 @@ async function carregarDetalhesTikTokHub(elAlvo = null) {
   }
 }
 
+const TIKTOK_EVENTOS_MENSAGENS_URL = "https://ads.tiktok.com/i18n/events_manager";
+const TIKTOK_GUIA_MENSAGENS_URL = "https://ads.tiktok.com/resources/help/article/how-to-create-message-events-on-tiktok-events-manager?lang=pt";
+
+function fecharAvisoIntegracaoTikTokWhatsapp() {
+  const modal = document.getElementById("modal_aviso_tiktok_whatsapp");
+  if (modal) modal.remove();
+}
+
+function abrirAvisoIntegracaoTikTokWhatsapp(origem, contaTikTok = {}) {
+  fecharAvisoIntegracaoTikTokWhatsapp();
+
+  const advertiserId = String(contaTikTok?.advertiser_id || "").trim();
+  const nomeConta = String(contaTikTok?.advertiser_name || contaTikTok?.nome || "").trim();
+  const identificacaoConta = nomeConta
+    ? `${escaparHtml(nomeConta)}${advertiserId ? ` (${escaparHtml(advertiserId)})` : ""}`
+    : (advertiserId ? escaparHtml(advertiserId) : "a conta conectada");
+  const origemTexto = origem === "whatsapp"
+    ? "O WhatsApp foi conectado e já existe uma conta TikTok Ads selecionada."
+    : "A conta TikTok Ads foi selecionada e o WhatsApp já está conectado.";
+
+  const modal = document.createElement("div");
+  modal.id = "modal_aviso_tiktok_whatsapp";
+  modal.className = "passo-meta-modal active";
+  modal.setAttribute("aria-hidden", "false");
+  modal.innerHTML = `
+    <div class="passo-meta-overlay" onclick="fecharAvisoIntegracaoTikTokWhatsapp()"></div>
+    <div class="passo-meta-dialog" role="dialog" aria-modal="true" aria-labelledby="aviso_tiktok_whatsapp_titulo" style="width:min(680px,96vw);">
+      <div class="passo-meta-header">
+        <div>
+          <h2 id="aviso_tiktok_whatsapp_titulo">TikTok Ads + WhatsApp conectados</h2>
+          <p>${origemTexto}</p>
+        </div>
+        <button type="button" class="passo-meta-close" onclick="fecharAvisoIntegracaoTikTokWhatsapp()" aria-label="Fechar aviso">✕</button>
+      </div>
+      <div class="passo-meta-body" style="padding:22px;">
+        <div style="padding:15px 16px;border:1px solid #f59e0b;border-radius:12px;background:#fffbeb;">
+          <strong style="display:block;margin-bottom:6px;color:#92400e!important;">Recomendado para acompanhar conversas</strong>
+          <p style="margin:0;line-height:1.55;color:#78350f!important;">
+            Campanhas otimizadas para cliques já podem abrir o WhatsApp sem esse vínculo. Para medir conversas e permitir otimizações mais avançadas no TikTok, conecte uma fonte de dados de Mensagens por meio de um parceiro de mensagens (MMT) para ${identificacaoConta}.
+          </p>
+        </div>
+        <div style="margin-top:16px;padding:14px 16px;border:1px solid #dbeafe;border-radius:12px;background:#eff6ff;">
+          <strong style="display:block;margin-bottom:7px;color:#1e3a8a!important;">Onde configurar</strong>
+          <ol style="margin:0;padding-left:20px;line-height:1.65;color:#1f2937;">
+            <li>Abra o Gerenciador de Eventos do TikTok.</li>
+            <li>Confirme a mesma conta de anúncios usada na Plataforma de Leads.</li>
+            <li>Clique em <b>Conectar fonte de dados</b> e escolha <b>Mensagens</b>.</li>
+            <li>Selecione um parceiro de mensagens compatível (MMT) e conclua o vínculo do WhatsApp.</li>
+          </ol>
+        </div>
+        <div style="display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px;">
+          <a href="${TIKTOK_GUIA_MENSAGENS_URL}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155!important;text-decoration:none;font-weight:700;">Ver guia oficial ↗</a>
+          <button type="button" onclick="fecharAvisoIntegracaoTikTokWhatsapp()" style="padding:10px 14px;border:1px solid #cbd5e1;border-radius:9px;background:#f8fafc;color:#334155;cursor:pointer;font-weight:700;">Agora não</button>
+          <a href="${TIKTOK_EVENTOS_MENSAGENS_URL}" target="_blank" rel="noopener noreferrer" onclick="fecharAvisoIntegracaoTikTokWhatsapp()" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:0;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff!important;text-decoration:none;font-weight:800;">Abrir Eventos do TikTok ↗</a>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+
+async function avisarIntegracaoTikTokWhatsappSeNecessario(origem) {
+  const token = localStorage.getItem("token");
+  if (!token) return false;
+
+  try {
+    const res = await fetch(`${API}/conexoes`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return false;
+
+    const conexoes = Array.isArray(data?.conexoes) ? data.conexoes : [];
+    const tiktok = conexoes.find(item => item?.plataforma === "tiktok");
+    const whatsapp = conexoes.find(item => item?.plataforma === "whatsapp");
+    const contaTikTok = tiktok?.conta || {};
+    const contaWhatsapp = whatsapp?.conta || {};
+    const advertiserId = String(contaTikTok?.advertiser_id || "").trim();
+    const whatsappId = String(contaWhatsapp?.phone_number_id || contaWhatsapp?.waba_id || contaWhatsapp?.numero || "").trim();
+    const ambosConectados = String(tiktok?.status || "").toLowerCase() === "conectado"
+      && String(whatsapp?.status || "").toLowerCase() === "conectado"
+      && advertiserId
+      && whatsappId;
+
+    if (!ambosConectados) return false;
+
+    const chaveAviso = `aviso_tiktok_whatsapp:${advertiserId}:${whatsappId}`;
+    if (sessionStorage.getItem(chaveAviso) === "1") return false;
+
+    abrirAvisoIntegracaoTikTokWhatsapp(origem, contaTikTok);
+    sessionStorage.setItem(chaveAviso, "1");
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 async function selecionarAnuncianteTikTok(advertiserId, opts = {}, btnEl) {
   const token = localStorage.getItem("token");
   if (!token || !advertiserId) return false;
@@ -39677,6 +39804,7 @@ async function selecionarAnuncianteTikTok(advertiserId, opts = {}, btnEl) {
       const statusAtual = painelAtual.querySelector("#tiktok_sync_status");
       if (statusAtual) statusAtual.textContent = "Conta selecionada. Pronto para sincronizar.";
     }
+    await avisarIntegracaoTikTokWhatsappSeNecessario("tiktok");
     return true;
   } catch (_) {
     if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
@@ -40612,6 +40740,9 @@ function conectarPlataforma(plataforma, btnEl) {
   const concluir = observarConexaoPopup(plataforma, popup, async () => {
     window.removeEventListener("message", msgHandler);
     await carregarHub();
+    if (plataforma === "tiktok") {
+      await avisarIntegracaoTikTokWhatsappSeNecessario("tiktok");
+    }
   });
 
   function msgHandler(event) {
@@ -40889,6 +41020,7 @@ async function finalizarConexaoWhatsapp(wabaId, phoneNumberId, codigo, restaurar
     await carregarWhatsappBot();
     await carregarHub();
     if (data?.aviso) alert(data.aviso);
+    await avisarIntegracaoTikTokWhatsappSeNecessario("whatsapp");
   } catch (e) {
     alert(e?.message || "Erro ao concluir a conexão do WhatsApp.");
     restaurarBotao();

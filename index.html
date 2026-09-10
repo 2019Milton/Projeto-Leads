@@ -27904,9 +27904,34 @@ async function aplicarDestinoCampanha() {
     label.style.background = ehAtual ? "rgba(34,197,94,0.12)" : "";
   });
 
+  const emEdicao = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
+  const todasAbasEdicao = emEdicao ? todasAbasEdicaoCampanha() : [];
+
+  // Destino é apenas uma das camadas de visibilidade. Um campo de Lead Form,
+  // por exemplo, não pode reaparecer só porque outra plataforma também escolheu
+  // "lead_ads": ele ainda precisa pertencer à plataforma e à aba em foco.
   document.querySelectorAll("[data-destino-only]").forEach(el => {
     const destinos = el.dataset.destinoOnly.split(",");
-    el.style.display = destinos.includes(destinoCampanhaSelecionado) ? "" : "none";
+    const redes = (el.dataset.platOnly || "")
+      .split(",")
+      .map(rede => rede.trim())
+      .filter(Boolean);
+    const mostrarPorPlataforma =
+      !redes.length || redes.some(rede => redesSelecionadasCampanha.has(rede));
+    const tocaAbaGerenciada =
+      redes.some(rede => PLATAFORMAS_COM_ABA_CAMPANHA.includes(rede));
+    const mostrarPorAba =
+      !abaAtivaCampanha || !tocaAbaGerenciada || redes.includes(abaAtivaCampanha);
+    const tocaAbaAddEdicao =
+      todasAbasEdicao.length >= 1 && redes.some(rede => todasAbasEdicao.includes(rede));
+    const mostrarPorAbaAddEdicao =
+      !tocaAbaAddEdicao || !abaAtivaAddPlataformaEdicao || redes.includes(abaAtivaAddPlataformaEdicao);
+    const mostrarPorDestino = destinos.includes(destinoCampanhaSelecionado);
+
+    el.style.display =
+      mostrarPorPlataforma && mostrarPorAba && mostrarPorAbaAddEdicao && mostrarPorDestino
+        ? ""
+        : "none";
   });
 
   // Os campos compartilhados acima também podem pertencer à aba Google. Reaplica

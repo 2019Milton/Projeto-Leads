@@ -17529,7 +17529,7 @@ body.tema-claro .criar-campanha-descricao {
             <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta"><span style="color:#0081FB;font-weight:900;">∞</span> Meta Ads</button>
             <button class="desemp-tab" onclick="selecionarTabDesempenho('google')" data-plat="google"><svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads</button>
             <button class="desemp-tab" onclick="selecionarTabDesempenho('tiktok')" data-plat="tiktok">🎵 TikTok Ads</button>
-            <button class="desemp-tab" disabled title="Em breve">💼 LinkedIn Ads</button>
+            <button class="desemp-tab" onclick="selecionarTabDesempenho('linkedin')" data-plat="linkedin">💼 LinkedIn Ads</button>
             <button class="desemp-tab" disabled title="Em breve">🎬 Kwai Ads</button>
             <button class="desemp-tab" disabled title="Em breve">📌 Pinterest Ads</button>
             <button class="desemp-tab" disabled title="Em breve">👻 Snapchat Ads</button>
@@ -18428,12 +18428,12 @@ body.tema-claro .criar-campanha-descricao {
               >
             </div>
 
-            <div class="advanced-subsection" data-plat-only="facebook,instagram,google" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
+            <div class="advanced-subsection" data-plat-only="facebook,instagram,google,linkedin" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
               <h5>Formulário de leads</h5>
               <p>Perguntas e filtro de qualidade aplicados antes do envio do contato.</p>
             </div>
 
-            <div class="advanced-full" data-plat-only="facebook,instagram,google" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
+            <div class="advanced-full" data-plat-only="facebook,instagram,google,linkedin" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
               <label>Perguntas qualificadoras <button type="button" class="info-icone" onclick="mostrarInfoCampo('Perguntas que o cliente responde antes de enviar os dados de contato. Ajudam a filtrar quem está mais interessado. Coloque uma pergunta por linha.', event)">i</button></label>
               <textarea
                 id="adv_perguntas"
@@ -18446,7 +18446,7 @@ body.tema-claro .criar-campanha-descricao {
               </small>
             </div>
 
-            <div class="advanced-full" data-plat-only="facebook,instagram,google" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
+            <div class="advanced-full" data-plat-only="facebook,instagram,google,linkedin" data-destino-only="lead_ads" data-google-destino-only="lead_ads">
               <label>URL da política de privacidade <button type="button" class="info-icone" onclick="mostrarInfoCampo('Endereço público da política de privacidade da sua empresa. É obrigatório ao criar um formulário novo na Meta ou no Google e precisa ser uma página real do seu site.', event)">i</button></label>
               <input type="url" id="adv_privacidade_url" placeholder="https://seusite.com.br/politica-de-privacidade" autocomplete="url">
               <small style="display:block;margin-top:5px;opacity:.65;">Obrigatória ao criar um formulário novo. Não use a página do Google nem um endereço inventado.</small>
@@ -22742,9 +22742,9 @@ async function enviarNFFinanceiro(lancamentoId, inputEl) {
 }
 
 // Plataformas que já têm /<plataforma>/performance-diaria no backend. As demais
-// (linkedin, kwai, pinterest, snapchat, microsoft) continuam com o botão desabilitado
+// (kwai, pinterest, snapchat, microsoft) continuam com o botão desabilitado
 // no HTML (title="Em breve") — nem chegam a cair aqui.
-const PLATAFORMAS_PERFORMANCE_DISPONIVEIS = ["meta", "google", "tiktok"];
+const PLATAFORMAS_PERFORMANCE_DISPONIVEIS = ["meta", "google", "tiktok", "linkedin"];
 let performanceAtivaPlataforma = "meta";
 
 function selecionarTabDesempenho(plataformaId) {
@@ -24403,10 +24403,16 @@ async function carregarEstatisticasMetaConversao(token) {
         campoTotal: "total_leads_kwai", campoQualificados: "qualificados_enviados_kwai",
         campoFechados: "fechados_enviados_kwai", campoTaxaQualificacao: "taxa_qualificacao_kwai",
         campoTaxaFechamento: "taxa_fechamento_kwai"
+      },
+      {
+        chave: "linkedin", nome: "LinkedIn", icone: PLATAFORMA_META.linkedin.icone,
+        campoTotal: "total_leads_linkedin", campoQualificados: "qualificados_enviados_linkedin",
+        campoFechados: "fechados_enviados_linkedin", campoTaxaQualificacao: "taxa_qualificacao_linkedin",
+        campoTaxaFechamento: "taxa_fechamento_linkedin"
       }
     ];
 
-    const nomePlataforma = { meta: "Meta", google: "Google Ads", tiktok: "TikTok", kwai: "Kwai" };
+    const nomePlataforma = { meta: "Meta", google: "Google Ads", tiktok: "TikTok", kwai: "Kwai", linkedin: "LinkedIn" };
 
     // Reaproveitada tanto dentro de cada caixa de plataforma (só os eventos
     // daquela plataforma) quanto no "Total" combinado lá embaixo.
@@ -33882,6 +33888,8 @@ async function salvarEdicaoCampanha() {
     await salvarEdicaoCampanhaTikTok(token, usuario_id);
   } else if (["meta", "facebook", "instagram"].includes(plataforma)) {
     await salvarEdicaoCampanhaMeta(token, usuario_id);
+  } else if (plataforma === "linkedin") {
+    await salvarEdicaoCampanhaLinkedIn(token, usuario_id);
   } else {
     const feedback = document.getElementById("editar_campanha_feedback");
     if (feedback) {
@@ -33984,6 +33992,77 @@ async function salvarEdicaoCampanhaGoogle(token, usuario_id) {
   } catch (err) {
     console.error("EDITAR CAMPANHA GOOGLE:", err);
     mostrarErroGoogle(err?.message || "Erro ao salvar alterações");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "💾 Salvar alterações";
+    }
+  }
+}
+
+// Edição direta do LinkedIn: só nome + orçamento diário (ver
+// /linkedin/editar-campanha no backend) — texto/criativo/targeting da
+// campanha publicada não são editáveis nesta primeira versão, mesma
+// limitação já assumida na criação (destino também fica travado).
+async function salvarEdicaoCampanhaLinkedIn(token, usuario_id) {
+  const feedback = document.getElementById("editar_campanha_feedback");
+  const btn = document.getElementById("editar_campanha_btn_salvar");
+  const mostrarErro = mensagem => {
+    if (feedback) {
+      feedback.textContent = mensagem;
+      feedback.style.display = "block";
+    } else {
+      alert(mensagem);
+    }
+  };
+
+  if (feedback) {
+    feedback.style.display = "none";
+    feedback.textContent = "";
+  }
+
+  const camposBasicos = coletarCamposBasicosCampanha();
+  const orcamento = Number(valorCampo("orcamento"));
+
+  if (!camposBasicos.nome?.trim()) {
+    return mostrarErro("Informe o nome da campanha.");
+  }
+  if (!Number.isFinite(orcamento) || orcamento <= 0) {
+    return mostrarErro("Informe um orçamento diário válido.");
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Salvando...";
+  }
+
+  try {
+    const res = await fetch(`${API}/linkedin/editar-campanha`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+      body: JSON.stringify({
+        usuario_id,
+        campanha_local_id: campanhaEmEdicao.id ?? null,
+        campaign_id: campanhaEhRascunhoLocal(campanhaEmEdicao) ? null : campanhaEmEdicao.campaign_id,
+        nome: camposBasicos.nome,
+        daily_budget: orcamento,
+        nicho_id: window._nichoAtivo?.id || campanhaEmEdicao.nicho_id || null,
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.error) {
+      mostrarErro(data.error || "Erro ao salvar alterações");
+      return;
+    }
+
+    fecharEdicaoCampanha();
+    await sincronizarCampanhas("linkedin");
+    alert("Campanha atualizada com sucesso");
+
+  } catch (err) {
+    console.error("EDITAR CAMPANHA LINKEDIN:", err);
+    mostrarErro(err?.message || "Erro ao salvar alterações");
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -36795,6 +36874,11 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
     if (destino !== "whatsapp") {
       setPublishProgress(80, `${prefixo}Criando formulário de lead...`);
 
+      const perguntasLinkedIn = (document.getElementById("adv_perguntas")?.value || "")
+        .split("\n")
+        .map(p => p.trim())
+        .filter(Boolean);
+
       const formularioRes = await fetch(`${API}/linkedin/formulario`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
@@ -36803,8 +36887,10 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
           nome_negocio: campanha_nome,
           headline: document.getElementById("adv_titulo")?.value?.trim() || campanha_nome,
           descricao: document.getElementById("adv_descricao")?.value?.trim(),
+          perguntas: perguntasLinkedIn,
           obrigado_titulo: document.getElementById("adv_obrigado_titulo")?.value?.trim(),
-          obrigado_texto: document.getElementById("adv_obrigado_texto")?.value?.trim()
+          obrigado_texto: document.getElementById("adv_obrigado_texto")?.value?.trim(),
+          privacidade_url: document.getElementById("adv_privacidade_url")?.value?.trim()
         })
       });
       const formulario = await formularioRes.json();
@@ -38116,7 +38202,7 @@ const CAPACIDADES_PLATAFORMA = {
   instagram: { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
   google:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
   tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
-  linkedin:  { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: false },
+  linkedin:  { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
   kwai:      { previewReal: false, restaurar: false, alterarStatus: false, publicarRascunho: false, sincronizar: false, excluir: false, duplicar: false, encaminhar: false, editar: false },
 };
 function capacidadesPlataforma(plataforma) {
@@ -39509,6 +39595,9 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
         ${escaparHtml(conta.nome || String(conta.id))}
       </option>`).join("");
 
+    const conversionQualificadoAtual = conn?.conta?.conversion_rule_qualified_urn || "";
+    const conversionFechadoAtual = conn?.conta?.conversion_rule_closed_urn || "";
+
     el.innerHTML = `
       <div class="integ-detalhe-linha">
         <span class="integ-detalhe-label">Conta de anúncios</span>
@@ -39523,6 +39612,18 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
       </div>
       <div style="margin-top:8px;">
         <button type="button" id="btn_linkedin_sync" onclick="sincronizarLinkedIn()" ${adAccountIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
+      </div>
+
+      <div class="integ-detalhe-linha" style="margin-top:14px;">
+        <span class="integ-detalhe-label">Conversion Rules (Campaign Manager)</span>
+      </div>
+      <div style="font-size:11.5px;color:#64748b;margin:2px 0 8px;">
+        O LinkedIn exige que cada Conversion Rule já exista no Campaign Manager antes — crie lá e cole o URN aqui pra ativar o envio de qualificação/fechamento.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+        <input type="text" id="linkedin_conversion_qualificado" placeholder="URN da Conversion Rule — Lead qualificado" value="${escaparHtml(conversionQualificadoAtual)}" ${adAccountIdAtual ? "" : "disabled"} style="width:100%;">
+        <input type="text" id="linkedin_conversion_fechado" placeholder="URN da Conversion Rule — Negócio fechado" value="${escaparHtml(conversionFechadoAtual)}" ${adAccountIdAtual ? "" : "disabled"} style="width:100%;">
+        <button type="button" onclick="salvarConversionRulesLinkedIn(this)" ${adAccountIdAtual ? "" : "disabled"}>Salvar Conversion Rules</button>
       </div>
 
       ${secaoAcoesRapidas([
@@ -39573,6 +39674,53 @@ async function selecionarContaLinkedIn(adAccountId, orgUrn, moeda, opts = {}, bt
   } catch (_) {
     if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
     restaurarBotao();
+  }
+}
+
+// Salva só as Conversion Rules do LinkedIn (URNs criadas manualmente no
+// Campaign Manager — ver enviarEventoLinkedInConversionLeads no backend, que
+// não consegue enviar qualificação/fechamento sem elas). Reusa
+// /linkedin/selecionar-conta mandando junto a conta já selecionada, pra não
+// sobrescrever ad_account_id/org_urn/moeda com valores vazios.
+async function salvarConversionRulesLinkedIn(btnEl) {
+  const token = localStorage.getItem("token");
+  const sel = document.getElementById("linkedin_conta_select");
+  const adAccountId = sel?.value;
+  if (!token || !adAccountId) return;
+
+  const orgUrn = sel.selectedOptions[0]?.dataset.org || "";
+  const moeda = sel.selectedOptions[0]?.dataset.moeda || "";
+  const conversionQualificado = document.getElementById("linkedin_conversion_qualificado")?.value.trim() || "";
+  const conversionFechado = document.getElementById("linkedin_conversion_fechado")?.value.trim() || "";
+
+  const estadoOriginal = btnEl ? { html: btnEl.innerHTML, disabled: btnEl.disabled } : null;
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner-toggle"></span> Salvando...';
+  }
+
+  try {
+    const res = await fetch(`${API}/linkedin/selecionar-conta`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        ad_account_id: adAccountId,
+        org_urn: orgUrn,
+        moeda,
+        conversion_rule_qualified_urn: conversionQualificado,
+        conversion_rule_closed_urn: conversionFechado
+      })
+    });
+    if (!res.ok) {
+      alert("Erro ao salvar as Conversion Rules.");
+    }
+  } catch (_) {
+    alert("Erro ao salvar as Conversion Rules.");
+  } finally {
+    if (btnEl && estadoOriginal && document.body.contains(btnEl)) {
+      btnEl.disabled = estadoOriginal.disabled;
+      btnEl.innerHTML = estadoOriginal.html;
+    }
   }
 }
 

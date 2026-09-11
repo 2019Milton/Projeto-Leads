@@ -18646,8 +18646,16 @@ body.tema-claro .criar-campanha-descricao {
               <div id="destino_google_site_info" class="channel-picker-status" style="display:none;">
                 O clique principal será direcionado para a URL de destino preenchida abaixo.
               </div>
-              <div id="destino_google_leadform_aviso" class="channel-picker-status alerta" style="display:none;">
-                O Google exige que a conta esteja qualificada e que os Termos de Serviço de Lead Form já tenham sido aceitos.
+              <div id="destino_google_leadform_aviso" class="channel-picker-status alerta" style="display:none;" role="status" aria-live="polite">
+                <div id="destino_google_leadform_status">Verificando a conta e os Termos de Serviço de Lead Form...</div>
+                <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;">
+                  <button type="button" id="btn_verificar_google_leadform" onclick="verificarElegibilidadeLeadFormGoogle(true)" style="padding:6px 10px;border:1px solid currentColor;border-radius:7px;background:transparent;color:inherit;cursor:pointer;font-weight:700;">
+                    Verificar novamente
+                  </button>
+                  <button type="button" onclick="abrirPassoGoogleLeadFormTermos()" style="padding:6px 10px;border:1px solid currentColor;border-radius:7px;background:transparent;color:inherit;cursor:pointer;font-weight:700;">
+                    Onde aceitar os termos
+                  </button>
+                </div>
               </div>
               <div id="destino_google_display_info" class="channel-picker-status alerta" style="display:none;">
                 Em Display, use endereço do site ou formulário de leads. O formulário depende dos requisitos de gasto, reputação e verificação da conta Google Ads. Para WhatsApp, selecione Pesquisa.
@@ -27794,6 +27802,86 @@ function aplicarTipoCampanhaGoogle() {
 let destinoCampanhaGoogleSelecionado = "lead_ads";
 let verificacaoWhatsappGoogleAtual = 0;
 let elegibilidadeWhatsappGoogleAtual = { elegivel: null, mensagem: "" };
+let verificacaoLeadFormGoogleAtual = 0;
+let verificacaoLeadFormGoogleEmAndamento = false;
+let cacheElegibilidadeLeadFormGoogle = { chave: "", verificadoEm: 0, data: null };
+
+function renderizarElegibilidadeLeadFormGoogle(data = {}) {
+  const painel = document.getElementById("destino_google_leadform_aviso");
+  const status = document.getElementById("destino_google_leadform_status");
+  if (!painel || !status) return;
+
+  const aprovado = data.status === "aprovado" && data.pode_criar === true;
+  const prefixo = aprovado
+    ? "✅ "
+    : data.status === "termos_pendentes"
+    ? "⚠️ "
+    : data.status === "nao_elegivel"
+    ? "❌ "
+    : "ℹ️ ";
+
+  painel.classList.toggle("alerta", !aprovado);
+  status.textContent = `${prefixo}${data.mensagem || "Não foi possível confirmar a elegibilidade desta conta."}${data.observacao ? ` ${data.observacao}` : ""}`;
+}
+
+async function verificarElegibilidadeLeadFormGoogle(forcar = false) {
+  const painel = document.getElementById("destino_google_leadform_aviso");
+  const status = document.getElementById("destino_google_leadform_status");
+  const botao = document.getElementById("btn_verificar_google_leadform");
+  if (!painel || !status) return;
+
+  const googleEmFoco = redesSelecionadasCampanha.has("google") && plataformaMidiaCampanhaEmFoco() === "google";
+  if (!googleEmFoco || destinoCampanhaGoogleSelecionado !== "lead_ads") return;
+
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+  const chave = String(usuario_id || "usuario-atual");
+  const cacheValido =
+    cacheElegibilidadeLeadFormGoogle.chave === chave &&
+    cacheElegibilidadeLeadFormGoogle.data &&
+    Date.now() - cacheElegibilidadeLeadFormGoogle.verificadoEm < 2 * 60 * 1000;
+
+  if (!forcar && cacheValido) {
+    renderizarElegibilidadeLeadFormGoogle(cacheElegibilidadeLeadFormGoogle.data);
+    return;
+  }
+  if (!forcar && verificacaoLeadFormGoogleEmAndamento) return;
+
+  painel.classList.add("alerta");
+  status.textContent = "⏳ Verificando a conta e os Termos de Serviço de Lead Form, sem criar nenhum recurso...";
+  if (botao) botao.disabled = true;
+  verificacaoLeadFormGoogleEmAndamento = true;
+  const verificacaoId = ++verificacaoLeadFormGoogleAtual;
+
+  try {
+    if (!token) throw new Error("Sessão expirada. Entre novamente para verificar a conta Google Ads.");
+    const queryUsuario = usuario_id ? `?usuario_id=${encodeURIComponent(usuario_id)}` : "";
+    const res = await fetch(`${API}/google/lead-form-elegibilidade${queryUsuario}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (verificacaoId !== verificacaoLeadFormGoogleAtual) return;
+
+    const resultado = res.ok
+      ? data
+      : {
+          status: "erro",
+          pode_criar: false,
+          mensagem: data?.mensagem || data?.error || "Não foi possível verificar a conta Google Ads."
+        };
+    cacheElegibilidadeLeadFormGoogle = { chave, verificadoEm: Date.now(), data: resultado };
+    renderizarElegibilidadeLeadFormGoogle(resultado);
+  } catch (err) {
+    if (verificacaoId !== verificacaoLeadFormGoogleAtual) return;
+    renderizarElegibilidadeLeadFormGoogle({
+      status: "erro",
+      pode_criar: false,
+      mensagem: err?.message || "Não foi possível confirmar a elegibilidade agora. Tente novamente."
+    });
+  } finally {
+    verificacaoLeadFormGoogleEmAndamento = false;
+    if (botao) botao.disabled = false;
+  }
+}
 
 // O Google tem sua própria escolha de destino porque pode ser publicado junto
 // com Meta/TikTok, cujos destinos e formulários são independentes nesta tela.
@@ -27845,7 +27933,13 @@ async function aplicarDestinoCampanhaGoogle() {
   const infoWhatsapp = document.getElementById("destino_google_whatsapp_info");
   const ajudaUrl = document.getElementById("campanha_google_url_ajuda");
   if (infoSite) infoSite.style.display = googleEmFoco && destinoCampanhaGoogleSelecionado === "site" ? "" : "none";
-  if (avisoLeadForm) avisoLeadForm.style.display = googleEmFoco && destinoCampanhaGoogleSelecionado === "lead_ads" ? "" : "none";
+  const mostrarAvisoLeadForm = googleEmFoco && destinoCampanhaGoogleSelecionado === "lead_ads";
+  if (avisoLeadForm) avisoLeadForm.style.display = mostrarAvisoLeadForm ? "" : "none";
+  if (mostrarAvisoLeadForm) {
+    void verificarElegibilidadeLeadFormGoogle();
+  } else {
+    ++verificacaoLeadFormGoogleAtual;
+  }
   if (infoDisplay) infoDisplay.style.display = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" ? "" : "none";
   if (ajudaUrl) {
     ajudaUrl.textContent = destinoCampanhaGoogleSelecionado === "whatsapp"

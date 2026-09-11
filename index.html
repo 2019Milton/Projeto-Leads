@@ -17975,7 +17975,7 @@ body.tema-claro .criar-campanha-descricao {
 
           <div class="advanced-grid">
             <div class="advanced-full">
-              <label>Imagens do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(máx. 10)</span></label>
+              <label>Imagens do anúncio <span id="limite_imagens_anuncio" style="font-weight:400;font-size:12px;opacity:.7">(máx. 10)</span></label>
               <div id="imagens-container" class="imagens-lista"></div>
               <input type="file" id="input-multiplas-imagens" accept="image/*" multiple style="display:none">
               <button
@@ -17990,15 +17990,17 @@ body.tema-claro .criar-campanha-descricao {
               >✨ Gerar/Editar Criativo</button>
               <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione várias imagens de uma vez e use ▲ ▼ para definir a ordem. Nos formatos que aceitam carrossel, a imagem <strong>1</strong> aparece primeiro.</p>
               <p data-plat-only="google" data-google-tipo-only="search" style="font-size:11px;opacity:.55;margin:6px 0 0">
-                ℹ️ No Google Ads (Pesquisa), o anúncio é composto por títulos e descrições — as
-                imagens acima não são utilizadas nesse formato.
+                ℹ️ No Google Ads (Pesquisa), títulos e descrições formam o anúncio. As imagens são
+                opcionais e entram como recursos visuais complementares quando a conta for elegível;
+                o Google decide quando exibi-las.
               </p>
               <p data-plat-only="google" data-google-tipo-only="display" style="font-size:11px;opacity:.55;margin:6px 0 0;display:none;">
-                ℹ️ No Google Ads (Display), selecione <strong>exatamente 1 imagem</strong> acima —
-                ela é recortada automaticamente nos dois formatos exigidos pelo Google (paisagem e quadrada).
+                ℹ️ No Google Ads (Display), selecione de <strong>1 a 7 imagens</strong>. Cada imagem é
+                recortada automaticamente nos formatos paisagem e quadrado. Você também pode adicionar
+                um vídeo; o Google alternará imagens e vídeo conforme a oportunidade de exibição.
               </p>
 
-              <label style="margin-top:14px;">Vídeo do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(opcional)</span></label>
+              <label id="video_anuncio_label" style="margin-top:14px;">Vídeo do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(opcional)</span></label>
               <div class="video-anuncio-card" id="video_anuncio_card">
                 <div class="video-anuncio-preview">
                   <span id="video_anuncio_placeholder">🎬</span>
@@ -18019,6 +18021,11 @@ body.tema-claro .criar-campanha-descricao {
                 <label style="font-size:12px;">Posição do vídeo no carrossel</label>
                 <select id="video_posicao_carrossel_select" style="width:100%;"></select>
               </div>
+
+              <p id="google_video_display_info" style="display:none;font-size:11px;color:#93c5fd;margin:7px 0 0;">
+                🎬 O arquivo será enviado como vídeo não listado (fora das buscas públicas) para um canal
+                gerenciado pelo Google e vinculado ao anúncio de Display. A imagem continua obrigatória nesse formato.
+              </p>
 
               <div id="instagram_escolha_midia_bloco" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:8px;">
                 <label style="font-size:12px;font-weight:600;">📌 No Instagram, use:</label>
@@ -18591,7 +18598,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <section class="campaign-setup-section" id="bloco_tipo_campanha_google" data-plat-only="google" style="display:none;">
-              <h4>Tipo de campanha (Google Ads) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Pesquisa: anúncio de texto nas buscas do Google e permite site, formulário de leads ou WhatsApp. Display: anúncio com imagem em sites e apps parceiros e permite site ou formulário de leads, sujeito à elegibilidade da conta.', event)">i</button></h4>
+              <h4>Tipo de campanha (Google Ads) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Pesquisa: anúncio de texto nas buscas, com imagens complementares opcionais quando a conta for elegível. Display: anúncio responsivo com imagens obrigatórias e vídeo opcional em sites, apps, YouTube e Gmail.', event)">i</button></h4>
               <div class="advanced-checks">
                 <label>
                   <input type="radio" name="campanha_google_tipo" id="google_tipo_search" value="search" checked onchange="aplicarTipoCampanhaGoogle()">
@@ -18599,7 +18606,7 @@ body.tema-claro .criar-campanha-descricao {
                 </label>
                 <label>
                   <input type="radio" name="campanha_google_tipo" id="google_tipo_display" value="display" onchange="aplicarTipoCampanhaGoogle()">
-                  Display (imagem)
+                  Display (imagens + vídeo opcional)
                 </label>
               </div>
             </section>
@@ -27622,9 +27629,49 @@ function aplicarRedesCampanha() {
 
 let tipoCampanhaGoogleSelecionado = "search";
 
+function plataformaMidiaCampanhaEmFoco() {
+  const emEdicao = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
+  if (emEdicao && abaAtivaAddPlataformaEdicao) return abaAtivaAddPlataformaEdicao;
+  if (!emEdicao && abaAtivaCampanha) return abaAtivaCampanha;
+  const selecionadas = Array.from(redesSelecionadasCampanha || []);
+  return selecionadas.length === 1 ? selecionadas[0] : null;
+}
+
+function atualizarDisponibilidadeVideoCampanha() {
+  const redeEmFoco = plataformaMidiaCampanhaEmFoco();
+  const googleEmFoco = redeEmFoco === "google";
+  const editandoGoogleExistente = Boolean(
+    googleEmFoco && typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao &&
+    plataformaCampanhaExibicao(campanhaEmEdicao) === "google"
+  );
+  const videoDisponivel = !googleEmFoco || (
+    tipoCampanhaGoogleSelecionado === "display" && !editandoGoogleExistente
+  );
+  const label = document.getElementById("video_anuncio_label");
+  const card = document.getElementById("video_anuncio_card");
+  const infoGoogle = document.getElementById("google_video_display_info");
+  const limiteImagens = document.getElementById("limite_imagens_anuncio");
+  if (label) label.style.display = videoDisponivel ? "" : "none";
+  if (card) card.style.display = videoDisponivel ? "" : "none";
+  if (infoGoogle) {
+    infoGoogle.style.display = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" && !editandoGoogleExistente ? "" : "none";
+  }
+  if (limiteImagens) {
+    limiteImagens.textContent = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" ? "(máx. 7)" : "(máx. 10)";
+  }
+  if (!videoDisponivel) {
+    const posicao = document.getElementById("video_posicao_carrossel_bloco");
+    const escolhaInstagram = document.getElementById("instagram_escolha_midia_bloco");
+    if (posicao) posicao.style.display = "none";
+    if (escolhaInstagram) escolhaInstagram.style.display = "none";
+  } else if (typeof atualizarBlocoEscolhaMidiaCarrossel === "function") {
+    atualizarBlocoEscolhaMidiaCarrossel();
+  }
+}
+
 function aplicarTipoCampanhaGoogle() {
   const googleSelecionado = redesSelecionadasCampanha.has("google");
-  const googleEmFoco = googleSelecionado && (!abaAtivaCampanha || abaAtivaCampanha === "google");
+  const googleEmFoco = googleSelecionado && plataformaMidiaCampanhaEmFoco() === "google";
   const radioChecado = document.querySelector('input[name="campanha_google_tipo"]:checked');
   tipoCampanhaGoogleSelecionado = radioChecado?.value === "display" ? "display" : "search";
 
@@ -27651,6 +27698,7 @@ function aplicarTipoCampanhaGoogle() {
     el.style.display = tipos.includes(tipoCampanhaGoogleSelecionado) ? "" : "none";
   });
 
+  atualizarDisponibilidadeVideoCampanha();
   aplicarDestinoCampanhaGoogle();
 }
 
@@ -27668,7 +27716,8 @@ async function aplicarDestinoCampanhaGoogle() {
     : "lead_ads";
 
   const googleSelecionado = redesSelecionadasCampanha.has("google");
-  const googleEmFoco = googleSelecionado && (!abaAtivaCampanha || abaAtivaCampanha === "google");
+  const redeEmFoco = plataformaMidiaCampanhaEmFoco();
+  const googleEmFoco = googleSelecionado && redeEmFoco === "google";
 
   document.querySelectorAll('input[name="campanha_google_destino"]').forEach(input => {
     const label = input.closest("label");
@@ -27691,7 +27740,7 @@ async function aplicarDestinoCampanhaGoogle() {
       const redes = (el.dataset.platOnly || "").split(",");
       const mostrarPorPlataforma = redes.some(r => redesSelecionadasCampanha.has(r));
       const tocaAbaGerenciada = redes.some(r => PLATAFORMAS_COM_ABA_CAMPANHA.includes(r));
-      const mostrarPorAba = !abaAtivaCampanha || !tocaAbaGerenciada || redes.includes(abaAtivaCampanha);
+      const mostrarPorAba = !redeEmFoco || !tocaAbaGerenciada || redes.includes(redeEmFoco);
       const destinos = el.dataset.destinoOnly.split(",");
       el.style.display = mostrarPorPlataforma && mostrarPorAba && destinos.includes(destinoCampanhaSelecionado)
         ? ""
@@ -31474,8 +31523,9 @@ function obterFormularioGoogleEscolhido() {
 
 function validarPublicacaoCampanhaGoogle(imagensArquivos) {
   // Pesquisa (Responsive Search Ad, texto) exige no minimo 3 titulos e 2 descricoes;
-  // Display (Responsive Display Ad, imagem) exige 1 titulo, titulo longo, 1 descricao
-  // e exatamente 1 imagem -- mesmas regras fixas aplicadas no backend em /google/anuncio.
+  // Display (Responsive Display Ad) exige 1 titulo, titulo longo, 1 descricao e
+  // imagens nos dois recortes. Cada original vira paisagem+quadrada; por isso o
+  // limite local de 7 preserva o máximo combinado de 15 assets do Google.
   const emDisplay = tipoCampanhaGoogleSelecionado === "display";
 
   if (emDisplay && destinoCampanhaGoogleSelecionado === "whatsapp") {
@@ -31540,8 +31590,11 @@ function validarPublicacaoCampanhaGoogle(imagensArquivos) {
     if (!document.getElementById("campanha_google_titulo_longo")?.value?.trim()) {
       return "Informe o título longo do anúncio de Display do Google Ads.";
     }
-    if (!imagensArquivos || imagensArquivos.length !== 1) {
-      return "Selecione exatamente 1 imagem para o anúncio de Display do Google Ads.";
+    if (!imagensArquivos || imagensArquivos.length < 1) {
+      return "Selecione ao menos 1 imagem para o anúncio de Display do Google Ads. O vídeo é opcional, mas não substitui as imagens obrigatórias desse formato.";
+    }
+    if (imagensArquivos.length > 7) {
+      return "Selecione no máximo 7 imagens para o anúncio de Display do Google Ads.";
     }
   }
   return null;
@@ -34803,6 +34856,14 @@ function atualizarPosicoes() {
 // montarConteudoCriativoMeta no backend). Chamada sempre que imagens, vídeo ou
 // os checkboxes de rede mudam, pra nunca ficar com o bloco errado visível.
 function atualizarBlocoEscolhaMidiaCarrossel() {
+  if (plataformaMidiaCampanhaEmFoco() === "google") {
+    const blocoInstagram = document.getElementById("instagram_escolha_midia_bloco");
+    const blocoPosicao = document.getElementById("video_posicao_carrossel_bloco");
+    if (blocoInstagram) blocoInstagram.style.display = "none";
+    if (blocoPosicao) blocoPosicao.style.display = "none";
+    return;
+  }
+
   const temVideo =
     document.getElementById("video_anuncio_card")?.classList.contains("preenchido") || false;
 
@@ -35982,12 +36043,10 @@ function validarCamposCompartilhadosCampanha({
     );
   }
 
-  // Imagem/vídeo só é exigido quando Meta, TikTok ou Kwai estão selecionados — o
-  // anúncio de Pesquisa do Google (Responsive Search Ad) é só texto e não usa nenhum
-  // dos três. Kwai entra na mesma regra do TikTok: é um app de vídeo curto, o anúncio
-  // sempre precisa de um criativo visual. Google em Display também exige imagem
-  // (Responsive Display Ad) — a checagem de "exatamente 1 imagem" é mais específica
-  // e roda depois, em validarPublicacaoCampanhaGoogle.
+  // Imagem/vídeo só é exigido quando Meta, TikTok ou Kwai estão selecionados. Em
+  // Pesquisa, o Google usa texto e aceita imagens apenas como recurso opcional;
+  // vídeo não pertence a esse formato. Em Display a imagem continua obrigatória e
+  // o vídeo é complementar — a validação específica roda logo depois.
   const precisaDeCriativoVisual =
     (redes || []).some(r =>
       r === "meta" || r === "facebook" || r === "instagram" || r === "tiktok" || r === "kwai"
@@ -36093,7 +36152,7 @@ function mostrarResumoPublicacaoMultiRede(resultados) {
   }
 
   if (resultados.length === 1 && resultados[0].ok) {
-    if (resultados[0].semFormaPagamento || resultados[0].formularioNaoAnexado) {
+    if (resultados[0].semFormaPagamento || resultados[0].formularioNaoAnexado || resultados[0].comAviso) {
       mostrarToastAvisoCampanha(resultados[0].mensagem);
     } else {
       mostrarToastSucessoCampanha();
@@ -36103,7 +36162,7 @@ function mostrarResumoPublicacaoMultiRede(resultados) {
 
   const linhas = resultados.map(r =>
     r.ok
-      ? (r.semFormaPagamento || r.formularioNaoAnexado)
+      ? (r.semFormaPagamento || r.formularioNaoAnexado || r.comAviso)
         ? `⚠️ ${r.rede}: publicada com sucesso — ${r.mensagem}`
         : `✅ ${r.rede}: publicada com sucesso`
       : `❌ ${r.rede}: ${r.mensagem || "erro ao publicar"}`
@@ -36510,13 +36569,43 @@ async function descartarCampanhaGoogleCriadaPorFalha(campaign_id, token) {
   }
 }
 
+async function enviarVideoCampanhaGoogle({ arquivo, url, token, usuario_id, titulo }) {
+  const formData = new FormData();
+  if (arquivo) formData.append("video", arquivo);
+  else if (url) formData.append("video_url", url);
+  formData.append("usuario_id", usuario_id);
+  formData.append("titulo", String(titulo || "Vídeo do anúncio").slice(0, 100));
+  const uploadRes = await fetch(`${API}/google/upload-video`, {
+    method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData
+  });
+  const upload = await uploadRes.json().catch(() => ({}));
+  if (!uploadRes.ok || upload.error || !upload.upload_resource_name) {
+    throw new Error(upload.error || "O Google não conseguiu receber o vídeo do anúncio.");
+  }
+  for (let tentativa = 0; tentativa < 60; tentativa += 1) {
+    if (tentativa > 0) await new Promise(resolve => setTimeout(resolve, 3000));
+    const statusRes = await fetch(`${API}/google/video-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ usuario_id, upload_resource_name: upload.upload_resource_name })
+    });
+    const status = await statusRes.json().catch(() => ({}));
+    if (!statusRes.ok || status.error) {
+      throw new Error(status.error || "Não foi possível verificar o processamento do vídeo no Google.");
+    }
+    if (status.pronto && status.resource_name) return status;
+  }
+  throw new Error("O Google recebeu o vídeo, mas ainda não terminou o processamento. Aguarde alguns minutos e tente publicar novamente.");
+}
+
 // Mesma orquestração do Meta/TikTok. O destino é independente no Google: Lead Form,
 // endereço do site ou botão nativo de WhatsApp (este último somente em Pesquisa).
 async function publicarCampanhaGoogle(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, orcamento,
-    publicacaoGrupoId, imagensArquivos
+    publicacaoGrupoId, imagensArquivos, imagensUrlsFallback,
+    videoArquivo, videoUrlFallback
   } = contexto;
   const prefixo = isMultiRede ? "[Google Ads] " : "";
   const tipoCampanha = tipoCampanhaGoogleSelecionado === "display" ? "display" : "search";
@@ -36586,35 +36675,47 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
       return { ok: false, mensagem: adgroup.error };
     }
 
-    // ── Imagens (só Display) — chama /google/upload-imagem 2x com o mesmo arquivo,
-    // uma vez por "tipo", pra gerar os dois recortes (paisagem+quadrada) exigidos
-    // pelo Responsive Display Ad a partir de uma imagem só enviada pelo usuário. ──
-    let imagemPaisagemAsset = null;
-    let imagemQuadradaAsset = null;
-    if (tipoCampanha === "display") {
-      setPublishProgress(58, `${prefixo}Enviando imagem do anúncio...`);
-      const fonteImagemGoogle = montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback)[0];
-      if (!fonteImagemGoogle) {
-        await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
-        return { ok: false, mensagem: "Selecione uma imagem para o anúncio de Display do Google Ads." };
-      }
-      for (const tipo of ["paisagem", "quadrada"]) {
-        const formImagem = new FormData();
-        anexarImagemFormData(formImagem, fonteImagemGoogle);
-        formImagem.append("usuario_id", usuario_id);
-        formImagem.append("tipo", tipo);
-        const uploadRes = await fetch(`${API}/google/upload-imagem`, {
-          method: "POST",
-          headers: { Authorization: "Bearer " + token },
-          body: formImagem
-        });
-        const upload = await uploadRes.json();
-        if (upload.error) {
-          await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
-          return { ok: false, mensagem: upload.error };
+    // Display recebe de 1 a 7 imagens; Pesquisa aceita até 10 imagens opcionais.
+    const fontesImagemGoogle = montarFontesImagem(imagensArquivos, imagensUrlsFallback)
+      .slice(0, tipoCampanha === "display" ? 7 : 10);
+    const imagensPaisagemAssets = [];
+    const imagensQuadradasAssets = [];
+    if (tipoCampanha === "display" && !fontesImagemGoogle.length) {
+      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+      return { ok: false, mensagem: "Selecione ao menos uma imagem para o anúncio de Display do Google Ads." };
+    }
+    if (fontesImagemGoogle.length) {
+      setPublishProgress(58, `${prefixo}Enviando imagens do anúncio...`);
+      for (let indice = 0; indice < fontesImagemGoogle.length; indice += 1) {
+        const fonteImagemGoogle = fontesImagemGoogle[indice];
+        for (const tipo of ["paisagem", "quadrada"]) {
+          const formImagem = new FormData();
+          anexarImagemFormData(formImagem, fonteImagemGoogle);
+          formImagem.append("usuario_id", usuario_id);
+          formImagem.append("tipo", tipo);
+          const uploadRes = await fetch(`${API}/google/upload-imagem`, {
+            method: "POST", headers: { Authorization: "Bearer " + token }, body: formImagem
+          });
+          const upload = await uploadRes.json().catch(() => ({}));
+          if (!uploadRes.ok || upload.error || !upload.resource_name) {
+            await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+            return { ok: false, mensagem: upload.error || `Erro ao enviar a imagem ${indice + 1} para o Google Ads.` };
+          }
+          if (tipo === "paisagem") imagensPaisagemAssets.push(upload.resource_name);
+          else imagensQuadradasAssets.push(upload.resource_name);
         }
-        if (tipo === "paisagem") imagemPaisagemAsset = upload.resource_name;
-        else imagemQuadradaAsset = upload.resource_name;
+      }
+    }
+    let videoGoogle = null;
+    if (tipoCampanha === "display" && (videoArquivo || videoUrlFallback)) {
+      setPublishProgress(70, `${prefixo}Enviando e processando vídeo no Google...`);
+      try {
+        videoGoogle = await enviarVideoCampanhaGoogle({
+          arquivo: videoArquivo, url: videoUrlFallback, token, usuario_id, titulo: campanha_nome
+        });
+      } catch (err) {
+        await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+        return { ok: false, mensagem: err?.message || "Erro ao processar vídeo no Google Ads." };
       }
     }
 
@@ -36637,8 +36738,13 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         nome_anunciante: camposAnuncioGoogle.nome_anunciante,
         url_destino: camposAnuncioGoogle.url_destino,
         daily_budget: Number(orcamento),
-        imagem_paisagem_asset: imagemPaisagemAsset,
-        imagem_quadrada_asset: imagemQuadradaAsset,
+        imagem_paisagem_asset: imagensPaisagemAssets[0] || null,
+        imagem_quadrada_asset: imagensQuadradasAssets[0] || null,
+        imagens_paisagem_assets: imagensPaisagemAssets,
+        imagens_quadradas_assets: imagensQuadradasAssets,
+        youtube_video_asset: videoGoogle?.resource_name || null,
+        youtube_video_id: videoGoogle?.video_id || null,
+        youtube_upload_resource_name: videoGoogle?.upload_resource_name || null,
         configuracoes_avancadas: {
           ...(contexto.configuracoesBase || {}),
           destino: destinoGoogle
@@ -36655,7 +36761,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
     setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
 
     if (anuncio.aviso) {
-      return { ok: true, formularioNaoAnexado: true, mensagem: anuncio.aviso };
+      return { ok: true, comAviso: true, mensagem: anuncio.aviso };
     }
     return { ok: true };
   } catch (err) {
@@ -37570,7 +37676,8 @@ async function publicarPlataformasAdicionaisCampanha() {
   // imagem funcionar de verdade, não só aparecer visualmente. Tudo-ou-nada:
   // se o usuário selecionou QUALQUER imagem nova, usa só as novas (sem
   // misturar slot novo com slot reaproveitado).
-  const imagensUrlsFallback = (imagensArquivos.length || videoUrlFallback) ? [] :
+  // O Google Display exige imagens mesmo quando há vídeo.
+  const imagensUrlsFallback = imagensArquivos.length ? [] :
     Array.from(document.querySelectorAll("#imagens-container .imagem-item"))
       .map(item => item.dataset.urlExistente)
       .filter(Boolean);

@@ -29712,6 +29712,19 @@ function configurarCliquesDinamicos() {
         }
 
         const chaves = chavesAcaoCampanha(acaoCampanha);
+
+        // Detalhes é uma consulta, não uma alteração. Em um card agrupado,
+        // abre todas as linhas do grupo de uma vez para o drawer montar uma
+        // aba por plataforma. As ações exibidas dentro de cada aba continuam
+        // passando pelo seletor abaixo antes de modificar qualquer rede.
+        if (action === "detalhes" && typeof abrirCampanhaDrawerPorChaves === "function") {
+          abrirCampanhaDrawerPorChaves(
+            chaves,
+            acaoCampanha.dataset.campanhaKey
+          );
+          return;
+        }
+
         const parEscolhido = await escolherCampanhaParaAcao(
           chaves,
           action,
@@ -29736,8 +29749,6 @@ function configurarCliquesDinamicos() {
           } else if (typeof toggleCampanha === "function") {
             await toggleCampanha(campanha.campaign_id, campanha.status, acaoCampanha, plataforma);
           }
-        } else if (action === "detalhes" && typeof abrirCampanhaDrawerPorChaves === "function") {
-          abrirCampanhaDrawerPorChaves([parEscolhido.chave], parEscolhido.chave);
         } else if (action === "editar" && typeof abrirEdicaoCampanhaPorChaves === "function") {
           await abrirEdicaoCampanhaPorChaves([parEscolhido.chave], parEscolhido.chave);
         } else if (action === "duplicar" && typeof duplicarCampanhaPorChave === "function") {

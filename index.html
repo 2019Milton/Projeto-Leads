@@ -18569,7 +18569,7 @@ body.tema-claro .criar-campanha-descricao {
                 O tipo de destino não pode ser trocado depois que a campanha é publicada. Para usar outro destino, publique uma nova campanha.
               </div>
               <p style="font-size:11px;opacity:.65;margin:8px 0 0;">
-                No WhatsApp, o TikTok usa o número Business API conectado e abre a conversa com a mensagem inicial padrão. A integração de Mensagens do TikTok é opcional no modo de cliques, mas recomendada para medir e otimizar conversas.
+                No WhatsApp, o TikTok usa o número Business API conectado e abre a conversa com a mensagem inicial padrão. A campanha funciona por cliques, sem exigir uma integração adicional de Mensagens.
               </p>
             </section>
 
@@ -27482,6 +27482,26 @@ const CAMPOS_EXCLUSIVOS_PLATAFORMA_EDICAO = {
   // campanha base já usava antes dessas duas virarem opção de adicionar.
 };
 
+function ordenarBlocosFormularioCampanha(redeEmFoco) {
+  const imagensTexto = document.getElementById("bloco_imagens_texto");
+  const segmentacaoAdicional = document.getElementById("bloco_segmentacao_adicional");
+  const tituloFormulario = document.getElementById("bloco_titulo_formulario");
+
+  if (!imagensTexto || !segmentacaoAdicional || !tituloFormulario) return;
+
+  // No Google, a escolha Pesquisa/Display define quais campos de mídia aparecem.
+  // Por isso ela precisa vir antes do bloco onde imagens e vídeo são preenchidos.
+  if (redeEmFoco === "google" && tituloFormulario.parentNode === imagensTexto.parentNode) {
+    imagensTexto.parentNode.insertBefore(tituloFormulario, imagensTexto);
+    return;
+  }
+
+  // Nas demais redes, restaura a sequência original do formulário.
+  if (tituloFormulario.parentNode === segmentacaoAdicional.parentNode) {
+    segmentacaoAdicional.parentNode.insertBefore(tituloFormulario, segmentacaoAdicional.nextSibling);
+  }
+}
+
 function limparCamposPlataformaAdicionalEdicao(plat) {
   (CAMPOS_EXCLUSIVOS_PLATAFORMA_EDICAO[plat] || []).forEach(id => {
     const el = document.getElementById(id);
@@ -27536,6 +27556,8 @@ function aplicarRedesCampanha() {
     (emEdicao && todasAbasEdicao.length >= 1 && abaAtivaAddPlataformaEdicao) ? abaAtivaAddPlataformaEdicao :
     null;
   const corAtivaAgora = redeAtivaColorida ? CORES_PLATAFORMA_ABA[redeAtivaColorida] : null;
+
+  ordenarBlocosFormularioCampanha(redeAtivaColorida);
 
   document.querySelectorAll("[data-plat-only]").forEach(el => {
     const redes = el.dataset.platOnly.split(",");
@@ -27924,7 +27946,7 @@ async function aplicarDestinoCampanhaTikTok() {
 
     if (data?.conectado && data?.pronto_para_mensagens !== false) {
       infoWhatsapp.classList.remove("alerta");
-      infoWhatsapp.textContent = "WhatsApp conectado à plataforma. O anúncio por cliques pode abrir a conversa normalmente. Para medir e otimizar conversas, configure também a integração de Mensagens no TikTok.";
+      infoWhatsapp.textContent = "WhatsApp conectado à plataforma. O anúncio por cliques pode abrir a conversa normalmente, sem exigir uma configuração adicional de Mensagens no TikTok.";
     } else if (data?.conectado) {
       infoWhatsapp.classList.add("alerta");
       infoWhatsapp.textContent = "O WhatsApp está conectado, mas ainda não está pronto para mensagens. Revise a aba WhatsApp Bot antes de publicar.";

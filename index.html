@@ -26786,6 +26786,7 @@ async function gerarReativacaoLoteIA() {
 let sugestoesCampanhaIAAtual = [];
 let plataformasSugestoesCampanhaIAAtual = [];
 let assinaturaSugestoesCampanhaIAAtual = "";
+let camposFaltantesSugestoesCampanhaIAAtual = new Set();
 let sequenciaGeracaoCampanhaIA = 0;
 let plataformasReaproveitadasEdicao = new Set();
 
@@ -26846,6 +26847,7 @@ function reaproveitarCamposCampanhaParaNovasPlataformas(plataformas = []) {
   const cfg = obterConfiguracoesCampanha(campanhaEmEdicao);
   const titulosGoogleOrigem = Array.isArray(cfg.titulos) ? cfg.titulos.filter(Boolean) : [];
   const descricoesGoogleOrigem = Array.isArray(cfg.descricoes) ? cfg.descricoes.filter(Boolean) : [];
+  preencherCampoVazioComReaproveitamento("campanha_nome", campanhaEmEdicao.nome || "");
   const nome = valorCampo("campanha_nome") || campanhaEmEdicao.nome || "";
   const titulo = valorCampo("adv_titulo") || cfg.titulo || titulosGoogleOrigem[0] || nome;
   const descricao = valorCampo("adv_descricao") || cfg.descricao || descricoesGoogleOrigem[0] || "";
@@ -26918,20 +26920,33 @@ function camposFaltantesCampanhaIA(plataformas = []) {
   const vazios = ids => ids.filter(id => !campoTextoPreenchidoIA(id));
   const nicho = chaveNichoFormulario(window._nichoAtivo || { slug: nichoSlugCampanhaEmEdicao() });
   const camposNicho = {
-    imoveis: ["nicho_tipo_imovel", "nicho_finalidade", "nicho_valor_min", "nicho_valor_max", "nicho_regiao"],
+    imoveis: ["nicho_tipo_imovel", "nicho_finalidade", "nicho_valor_min", "nicho_valor_max"],
     saude: ["nicho_operadora", "nicho_tipo_plano", "nicho_faixa_min", "nicho_faixa_max", "nicho_cobertura", "nicho_acomodacao"],
     suplementos: ["nicho_produto", "nicho_objetivo", "nicho_marca", "nicho_publico_alvo"],
     saas: ["nicho_tipo_produto", "nicho_publico_alvo_saas"],
-    higienizacao: ["nicho_tipo_servico", "nicho_frequencia", "nicho_area_atendida", "nicho_publico_alvo_higienizacao"],
-    telecom: ["nicho_tipo_servico_telecom", "nicho_porte_empresa", "nicho_situacao_atual", "nicho_area_atendida_telecom"],
+    higienizacao: ["nicho_tipo_servico", "nicho_frequencia", "nicho_publico_alvo_higienizacao"],
+    telecom: ["nicho_tipo_servico_telecom", "nicho_porte_empresa", "nicho_situacao_atual"],
     cursos_online: ["nicho_area_curso", "nicho_objetivo_aluno", "nicho_publico_alvo_cursos_online"]
   };
 
+  const incluiMeta = plataformas.some(p => REDES_META_COM_FORMULARIO_PROPRIO.includes(p));
+  const incluiGoogle = plataformas.includes("google");
+  const incluiTikTok = plataformas.includes("tiktok");
+  const precisaFormularioGerado =
+    (incluiMeta && destinoCampanhaSelecionado === "lead_ads") ||
+    (incluiGoogle && destinoCampanhaGoogleSelecionado === "lead_ads" && !obterFormularioGoogleEscolhido());
+  const camposCompartilhados = [
+    ...((incluiMeta || incluiTikTok) ? ["texto"] : []),
+    ...(incluiMeta ? ["adv_titulo", "adv_descricao"] : []),
+    ...(precisaFormularioGerado
+      ? ["adv_titulo", "adv_descricao", "adv_perguntas", "adv_obrigado_titulo", "adv_obrigado_texto", "adv_obrigado_botao"]
+      : [])
+  ];
+
   const faltantes = {
-    compartilhados: vazios([
-      "campanha_nome", "texto", "adv_titulo", "adv_descricao", "adv_perguntas",
-      "adv_obrigado_titulo", "adv_obrigado_texto", "adv_obrigado_botao"
-    ]),
+    // O nome identifica a mesma campanha nas novas redes e nunca deve ser
+    // recriado pela IA. URLs, contas, perfis e formularios tambem sao manuais.
+    compartilhados: vazios(Array.from(new Set(camposCompartilhados))),
     nicho: vazios(camposNicho[nicho] || [])
   };
 
@@ -26941,22 +26956,14 @@ function camposFaltantesCampanhaIA(plataformas = []) {
       ...(tipoCampanhaGoogleSelecionado === "display" ? ["campanha_google_titulo_longo"] : []),
       "campanha_google_descricao_1",
       "campanha_google_descricao_2", "campanha_google_nome_anunciante",
-      "campanha_google_url",
-      ...(destinoCampanhaGoogleSelecionado === "whatsapp" ? ["campanha_google_whatsapp_mensagem"] : []),
-      ...(destinoCampanhaGoogleSelecionado === "lead_ads" && !obterFormularioGoogleEscolhido() ? ["adv_privacidade_url"] : [])
+      ...(destinoCampanhaGoogleSelecionado === "whatsapp" ? ["campanha_google_whatsapp_mensagem"] : [])
     ]);
   }
   if (plataformas.includes("tiktok")) {
-    faltantes.tiktok = destinoCampanhaTikTokSelecionado === "site"
-      ? vazios(["campanha_tiktok_url"])
-      : [];
+    faltantes.tiktok = [];
   }
-  if (plataformas.some(p => REDES_META_COM_FORMULARIO_PROPRIO.includes(p))) {
-    faltantes.meta = vazios([
-      "pagina_select",
-      ...(destinoCampanhaSelecionado === "site" ? ["adv_link"] : []),
-      ...(destinoCampanhaSelecionado === "lead_ads" ? ["adv_privacidade_url"] : [])
-    ]);
+  if (incluiMeta) {
+    faltantes.meta = [];
   }
 
   return faltantes;
@@ -26967,6 +26974,7 @@ function invalidarSugestoesCampanhaIA() {
   sugestoesCampanhaIAAtual = [];
   plataformasSugestoesCampanhaIAAtual = [];
   assinaturaSugestoesCampanhaIAAtual = "";
+  camposFaltantesSugestoesCampanhaIAAtual = new Set();
   const box = document.getElementById("ia_campanha_criador_resultado");
   if (box) {
     box.innerHTML = "";
@@ -28238,6 +28246,8 @@ function inicializarEstadoCriarCampanha() {
   aplicarEstadoCriarCampanha(false);
   aplicarRedesCampanha();
   aplicarDestinoCampanha();
+  const btnGerarCampanha = document.getElementById("btn_gerar_campanha_ia");
+  if (btnGerarCampanha) btnGerarCampanha.textContent = "Gerar campanha com IA";
   atualizarEstadoBotaoGerarIA();
 }
 
@@ -28266,6 +28276,17 @@ async function gerarCampanhaComIA() {
     reaproveitarCamposCampanhaParaNovasPlataformas(plataformasAlvo);
   }
 
+  const camposFaltantes = camposFaltantesCampanhaIA(plataformasAlvo);
+  const idsCamposFaltantes = Object.values(camposFaltantes)
+    .flat()
+    .filter(Boolean);
+  if (campanhaEmEdicao && !idsCamposFaltantes.length) {
+    box.style.display = "block";
+    box.innerHTML = "Todos os campos que a IA pode completar já foram reaproveitados da campanha original. Preencha apenas os campos manuais indicados, como conta, perfil, formulário ou URL, se houver.";
+    atualizarEstadoBotaoGerarIA();
+    return;
+  }
+
   const titulosAnteriores = (sugestoesCampanhaIAAtual || [])
     .map(s => s?.titulo)
     .filter(Boolean);
@@ -28274,6 +28295,7 @@ async function gerarCampanhaComIA() {
   plataformasSugestoesCampanhaIAAtual = [];
   sugestoesCampanhaIAAtual = [];
   assinaturaSugestoesCampanhaIAAtual = "";
+  camposFaltantesSugestoesCampanhaIAAtual = new Set();
 
   box.style.display = "block";
   box.innerHTML = `Gerando 3 opções para ${escaparHtml(plataformasAlvo.map(platNome).join(", "))}...`;
@@ -28301,7 +28323,7 @@ async function gerarCampanhaComIA() {
             contexto,
             titulos_anteriores: titulosAnteriores,
             plataformas: plataformasAlvo,
-            campos_faltantes: camposFaltantesCampanhaIA(plataformasAlvo),
+            campos_faltantes: camposFaltantes,
             modo: campanhaEmEdicao ? "completar_plataformas" : "criar"
           })
         }
@@ -28325,6 +28347,7 @@ async function gerarCampanhaComIA() {
 
     plataformasSugestoesCampanhaIAAtual = plataformasAlvo.slice();
     assinaturaSugestoesCampanhaIAAtual = assinaturaContexto;
+    camposFaltantesSugestoesCampanhaIAAtual = new Set(idsCamposFaltantes);
     sugestoesCampanhaIAAtual = sugestoes;
     box.innerHTML =
       renderizarOpcoesCampanhaIA(sugestoesCampanhaIAAtual);
@@ -28332,12 +28355,13 @@ async function gerarCampanhaComIA() {
     if (requisicaoAtual !== sequenciaGeracaoCampanhaIA) return;
     plataformasSugestoesCampanhaIAAtual = [];
     assinaturaSugestoesCampanhaIAAtual = "";
+    camposFaltantesSugestoesCampanhaIAAtual = new Set();
     sugestoesCampanhaIAAtual = [];
     box.innerHTML =
       escaparHtml(err.message || "Erro ao gerar campanha com IA.");
   } finally {
     if (btn && requisicaoAtual === sequenciaGeracaoCampanhaIA) {
-      btn.textContent = "Gerar campanha com IA";
+      btn.textContent = campanhaEmEdicao ? "Gerar complementos com IA" : "Gerar campanha com IA";
       atualizarEstadoBotaoGerarIA();
     }
   }
@@ -28368,10 +28392,46 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
     const googleResumo = plataformasSugestoesCampanhaIAAtual.includes("google")
       ? [s.google_titulo_1, s.google_titulo_2, s.google_titulo_3].filter(Boolean).join(" • ")
       : "";
+    const generoLabel = s.genero === "1"
+      ? "Homens"
+      : (s.genero === "2" ? "Mulheres" : (s.genero === "0" ? "Todos os generos" : ""));
     const publico = [
       s.idade_min && s.idade_max ? `${s.idade_min}–${s.idade_max} anos` : "",
-      s.genero === "1" ? "Homens" : s.genero === "2" ? "Mulheres" : "Todos os generos"
+      generoLabel
     ].filter(Boolean).join(", ");
+    const labelsExtras = {
+      obrigado_titulo: "Título de confirmação",
+      obrigado_texto: "Mensagem de confirmação",
+      obrigado_botao: "Botão de confirmação",
+      nicho_tipo_imovel: "Tipo de imóvel",
+      nicho_finalidade: "Finalidade",
+      nicho_valor_min: "Valor mínimo",
+      nicho_valor_max: "Valor máximo",
+      nicho_operadora: "Operadora",
+      nicho_tipo_plano: "Tipo de plano",
+      nicho_cobertura: "Cobertura",
+      nicho_acomodacao: "Acomodação",
+      nicho_produto: "Produto",
+      nicho_objetivo: "Objetivo",
+      nicho_marca: "Marca",
+      nicho_publico_alvo: "Público-alvo",
+      nicho_tipo_servico: "Tipo de serviço",
+      nicho_frequencia: "Frequência",
+      nicho_porte_empresa: "Porte da empresa",
+      nicho_situacao_atual: "Situação atual",
+      nicho_area_curso: "Área do curso",
+      nicho_objetivo_aluno: "Objetivo do aluno",
+      nicho_tipo_produto: "Tipo de produto",
+      google_titulo_longo: "Título longo Google",
+      google_descricao_1: "Descrição 1 Google",
+      google_descricao_2: "Descrição 2 Google",
+      google_nome_anunciante: "Anunciante Google",
+      google_mensagem_whatsapp: "Mensagem WhatsApp Google"
+    };
+    const extrasResumo = Object.entries(labelsExtras)
+      .filter(([chave]) => s[chave] !== undefined && s[chave] !== null && String(s[chave]).trim())
+      .map(([chave, label]) => `<div class="ia-opcao-campo"><strong>${escaparHtml(label)}:</strong> ${escaparHtml(String(s[chave]))}</div>`)
+      .join("");
 
     return `
       <div class="ia-opcao-card" id="ia_opcao_card_${i}">
@@ -28386,6 +28446,7 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
         ${perguntas ? `<div class="ia-opcao-campo"><strong>Perguntas:</strong> ${escaparHtml(perguntas)}</div>` : ""}
         ${interesses ? `<div class="ia-opcao-campo"><strong>Interesses:</strong> ${escaparHtml(interesses)}</div>` : ""}
         ${googleResumo ? `<div class="ia-opcao-campo"><strong>Títulos Google:</strong> ${escaparHtml(googleResumo)}</div>` : ""}
+        ${extrasResumo}
         <button
           type="button"
           class="btn-reanalisar-ia"
@@ -28653,8 +28714,13 @@ function aplicarCampanhaIA(indice) {
   const camposPreenchidosIA = [];
   const preencherCampoIA = (seletor, valor) => {
     const el = document.querySelector(seletor);
+    const idCampo = seletor.startsWith("#") ? seletor.slice(1) : seletor;
 
     if (!el || valor === undefined || valor === null || valor === "") {
+      return;
+    }
+
+    if (apenasCamposVazios && !camposFaltantesSugestoesCampanhaIAAtual.has(idCampo)) {
       return;
     }
 
@@ -28700,11 +28766,11 @@ function aplicarCampanhaIA(indice) {
     }
   });
 
-  const nomeCampanhaIA =
-    s.titulo || s.nome_campanha || "";
-
-  if (nomeCampanhaIA) {
-    preencherCampoIA("#campanha_nome", nomeCampanhaIA);
+  if (campanhaEmEdicao) {
+    preencherCampoVazioComReaproveitamento("campanha_nome", campanhaEmEdicao.nome || "");
+  } else {
+    const nomeCampanhaIA = s.titulo || s.nome_campanha || "";
+    if (nomeCampanhaIA) preencherCampoIA("#campanha_nome", nomeCampanhaIA);
   }
   if (s.titulo) {
     preencherCampoIA("#adv_titulo", s.titulo);
@@ -34081,7 +34147,12 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     document.getElementById("ia_criador_descricao").textContent =
       "Primeiro reaproveitamos tudo o que já existe na campanha. Depois a IA gera 3 opções para completar, de uma só vez, os campos vazios de todas as novas plataformas selecionadas, respeitando o nicho. URLs, contas, identidades e formulários nunca são inventados.";
     document.getElementById("ia_campanha_contexto").value = "";
+    const btnGerarComplementos = document.getElementById("btn_gerar_campanha_ia");
+    if (btnGerarComplementos) btnGerarComplementos.textContent = "Gerar complementos com IA";
     sugestoesCampanhaIAAtual = [];
+    plataformasSugestoesCampanhaIAAtual = [];
+    assinaturaSugestoesCampanhaIAAtual = "";
+    camposFaltantesSugestoesCampanhaIAAtual = new Set();
     const boxIAEdicao = document.getElementById("ia_campanha_criador_resultado");
     if (boxIAEdicao) { boxIAEdicao.innerHTML = ""; boxIAEdicao.style.display = "none"; }
 

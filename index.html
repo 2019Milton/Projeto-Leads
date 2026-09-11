@@ -17975,7 +17975,22 @@ body.tema-claro .criar-campanha-descricao {
 
           <div class="advanced-grid">
             <div class="advanced-full">
-              <label>Imagens do anúncio <span id="limite_imagens_anuncio" style="font-weight:400;font-size:12px;opacity:.7">(máx. 10)</span></label>
+              <div id="tiktok_formato_criativo_bloco" data-plat-only="tiktok" style="display:none;margin-bottom:14px;padding:12px;border:1px solid rgba(34,197,94,.35);border-radius:10px;background:rgba(34,197,94,.07);">
+                <label style="font-weight:700;">Formato do criativo no TikTok <button type="button" class="info-icone" onclick="mostrarInfoCampo('O TikTok publica um formato por anúncio. Escolha vídeo único ou imagem única. Imagem e vídeo não são misturados no mesmo anúncio.', event)">i</button></label>
+                <div class="advanced-checks" style="margin-top:8px;">
+                  <label id="tiktok_formato_video_label">
+                    <input type="radio" name="campanha_tiktok_formato" value="video" checked onchange="aplicarFormatoCriativoTikTok()">
+                    🎬 Vídeo único
+                  </label>
+                  <label id="tiktok_formato_imagem_label">
+                    <input type="radio" name="campanha_tiktok_formato" value="imagem" onchange="aplicarFormatoCriativoTikTok()">
+                    🖼️ Imagem única
+                  </label>
+                </div>
+                <p style="font-size:11px;opacity:.72;margin:7px 0 0;">O carrossel do TikTok exige de 2 a 35 imagens e música obrigatória. Para evitar uma publicação incompleta, esta tela oferece somente os formatos que consegue montar e validar por inteiro. Se houver várias imagens reaproveitadas de outra plataforma, a imagem 1 será usada.</p>
+              </div>
+
+              <label id="imagens_anuncio_label">Imagens do anúncio <span id="limite_imagens_anuncio" style="font-weight:400;font-size:12px;opacity:.7">(máx. 10)</span></label>
               <div id="imagens-container" class="imagens-lista"></div>
               <input type="file" id="input-multiplas-imagens" accept="image/*" multiple style="display:none">
               <button
@@ -17985,10 +18000,11 @@ body.tema-claro .criar-campanha-descricao {
               >+ Adicionar imagens</button>
               <button
                 type="button"
+                id="btn-gerar-banner-campanha"
                 class="btn-gerar-banner-ia"
                 onclick="abrirModalGerarBanner()"
               >✨ Gerar/Editar Criativo</button>
-              <p style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione várias imagens de uma vez e use ▲ ▼ para definir a ordem. Nos formatos que aceitam carrossel, a imagem <strong>1</strong> aparece primeiro.</p>
+              <p id="imagens_anuncio_ordem_info" style="font-size:11px;opacity:.55;margin:4px 0 0">Selecione várias imagens de uma vez e use ▲ ▼ para definir a ordem. Nos formatos que aceitam carrossel, a imagem <strong>1</strong> aparece primeiro.</p>
               <p data-plat-only="google" data-google-tipo-only="search" style="font-size:11px;opacity:.55;margin:6px 0 0">
                 ℹ️ No Google Ads (Pesquisa), títulos e descrições formam o anúncio. As imagens são
                 opcionais e entram como recursos visuais complementares quando a conta for elegível;
@@ -27625,9 +27641,28 @@ function aplicarRedesCampanha() {
   // data-destino-only já tinha antes desta função existir).
   aplicarTipoCampanhaGoogle();
   aplicarDestinoCampanhaTikTok();
+  aplicarFormatoCriativoTikTok();
 }
 
 let tipoCampanhaGoogleSelecionado = "search";
+let formatoCriativoTikTokSelecionado = "video";
+
+function obterFormatoCriativoTikTok() {
+  const radio = document.querySelector('input[name="campanha_tiktok_formato"]:checked');
+  return radio?.value === "imagem" ? "imagem" : "video";
+}
+
+function aplicarFormatoCriativoTikTok() {
+  formatoCriativoTikTokSelecionado = obterFormatoCriativoTikTok();
+  document.querySelectorAll('input[name="campanha_tiktok_formato"]').forEach(input => {
+    const label = input.closest("label");
+    if (!label) return;
+    const selecionado = input.value === formatoCriativoTikTokSelecionado;
+    label.style.borderColor = selecionado ? "#22c55e" : "";
+    label.style.background = selecionado ? "rgba(34,197,94,.14)" : "";
+  });
+  atualizarDisponibilidadeVideoCampanha();
+}
 
 function plataformaMidiaCampanhaEmFoco() {
   const emEdicao = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
@@ -27640,26 +27675,44 @@ function plataformaMidiaCampanhaEmFoco() {
 function atualizarDisponibilidadeVideoCampanha() {
   const redeEmFoco = plataformaMidiaCampanhaEmFoco();
   const googleEmFoco = redeEmFoco === "google";
+  const tiktokEmFoco = redeEmFoco === "tiktok";
+  const formatoTikTok = obterFormatoCriativoTikTok();
   const editandoGoogleExistente = Boolean(
     googleEmFoco && typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao &&
     plataformaCampanhaExibicao(campanhaEmEdicao) === "google"
   );
-  const videoDisponivel = !googleEmFoco || (
+  const videoPermitidoPelaRede = !googleEmFoco || (
     tipoCampanhaGoogleSelecionado === "display" && !editandoGoogleExistente
   );
+  const videoDisponivel = videoPermitidoPelaRede && (!tiktokEmFoco || formatoTikTok === "video");
+  const imagensDisponiveis = !tiktokEmFoco || formatoTikTok === "imagem";
   const label = document.getElementById("video_anuncio_label");
   const card = document.getElementById("video_anuncio_card");
   const infoGoogle = document.getElementById("google_video_display_info");
   const limiteImagens = document.getElementById("limite_imagens_anuncio");
   if (label) label.style.display = videoDisponivel ? "" : "none";
   if (card) card.style.display = videoDisponivel ? "" : "none";
+  [
+    "imagens_anuncio_label",
+    "imagens-container",
+    "btn-adicionar-imagem",
+    "btn-gerar-banner-campanha",
+    "imagens_anuncio_ordem_info"
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = imagensDisponiveis ? "" : "none";
+  });
   if (infoGoogle) {
     infoGoogle.style.display = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" && !editandoGoogleExistente ? "" : "none";
   }
   if (limiteImagens) {
-    limiteImagens.textContent = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" ? "(máx. 7)" : "(máx. 10)";
+    limiteImagens.textContent = tiktokEmFoco
+      ? "(1 imagem)"
+      : googleEmFoco && tipoCampanhaGoogleSelecionado === "display"
+      ? "(máx. 7)"
+      : "(máx. 10)";
   }
-  if (!videoDisponivel) {
+  if (!videoDisponivel || tiktokEmFoco) {
     const posicao = document.getElementById("video_posicao_carrossel_bloco");
     const escolhaInstagram = document.getElementById("instagram_escolha_midia_bloco");
     if (posicao) posicao.style.display = "none";
@@ -31363,6 +31416,7 @@ function renderizarLocalidadeTikTokSelecionada() {
 function snapshotCamposTikTokCampanha() {
   return {
     destino: destinoCampanhaTikTokSelecionado,
+    formato_criativo: obterFormatoCriativoTikTok(),
     url_destino: document.getElementById("campanha_tiktok_url")?.value?.trim() || "",
     form_id: obterFormularioTikTokEscolhido(),
     identity_id: tiktokIdentidadeSelecionada?.identity_id || "",
@@ -31378,6 +31432,13 @@ function preencherCamposTikTokCampanha(cfg = {}, carregarListas = true) {
   const radio = document.querySelector(`input[name="campanha_tiktok_destino"][value="${destino}"]`);
   if (radio) radio.checked = true;
   destinoCampanhaTikTokSelecionado = destino;
+  const formatoSalvo = ["video", "imagem"].includes(cfg.formato_criativo)
+    ? cfg.formato_criativo
+    : (cfg.video_id || cfg.videoId || cfg.criativo?.video_id ? "video" : "imagem");
+  const formatoPadrao = Object.keys(cfg || {}).length ? formatoSalvo : "video";
+  const radioFormato = document.querySelector(`input[name="campanha_tiktok_formato"][value="${formatoPadrao}"]`);
+  if (radioFormato) radioFormato.checked = true;
+  formatoCriativoTikTokSelecionado = formatoPadrao;
   definirValorCampo("campanha_tiktok_url", cfg.url_destino || "");
 
   const identityId = String(cfg.identity_id || "").trim();
@@ -31404,6 +31465,7 @@ function preencherCamposTikTokCampanha(cfg = {}, carregarListas = true) {
   tiktokLocalidadeSelecionada = localidade?.key ? { ...localidade } : null;
   renderizarLocalidadeTikTokSelecionada();
   aplicarDestinoCampanhaTikTok();
+  aplicarFormatoCriativoTikTok();
 
   if (carregarListas && redesSelecionadasCampanha.has("tiktok")) {
     carregarIdentidadesTikTokCampanha();
@@ -31790,7 +31852,7 @@ function renderizarLocalidadeLinkedInSelecionada() {
     : "";
 }
 
-function validarPublicacaoCampanhaTikTok() {
+function validarPublicacaoCampanhaTikTok({ imagens = [], temVideo = false } = {}) {
   // Mínimo documentado oficialmente pelo TikTok Ads (ads.tiktok.com/help/article/budget)
   // é USD 50/dia no nível da campanha — sem essa checagem, a publicação só
   // descobria isso quando a própria API do TikTok já tivesse rejeitado.
@@ -31804,6 +31866,13 @@ function validarPublicacaoCampanhaTikTok() {
   }
   if (!tiktokLocalidadeSelecionada) {
     return "Busque e selecione ao menos uma localização para o TikTok antes de publicar.";
+  }
+  const formato = obterFormatoCriativoTikTok();
+  if (formato === "video" && !temVideo) {
+    return "Adicione um vídeo para o formato Vídeo único do TikTok.";
+  }
+  if (formato === "imagem" && !imagens.length) {
+    return "Adicione uma imagem para o formato Imagem única do TikTok.";
   }
   if (destinoCampanhaTikTokSelecionado === "lead_ads" && !obterFormularioTikTokEscolhido()) {
     return "Escolha ou informe o ID de um formulário instantâneo do TikTok antes de publicar.";
@@ -34319,9 +34388,6 @@ async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
     return mostrarErro("O destino de uma campanha já publicada não pode ser alterado. Publique uma nova campanha para usar outro destino.");
   }
 
-  const erroTikTok = validarPublicacaoCampanhaTikTok();
-  if (erroTikTok) return mostrarErro(erroTikTok);
-
   const videoArquivo = obterArquivoVideoCampanha();
   if (videoArquivo && !validarArquivoVideoCampanha(videoArquivo)) return;
 
@@ -34338,6 +34404,13 @@ async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
     cfgBanco.video_id || cfgBanco.videoId || cfgBanco.criativo?.video_id || ""
   ).trim();
 
+  const imagensTikTokParaValidar = imagensArquivos.length ? imagensArquivos : imageIdsExistentes.slice(0, 1);
+  const erroTikTok = validarPublicacaoCampanhaTikTok({
+    imagens: imagensTikTokParaValidar,
+    temVideo: Boolean(videoArquivo || videoIdExistente)
+  });
+  if (erroTikTok) return mostrarErro(erroTikTok);
+
   if (!videoArquivo && !imagensArquivos.length && !videoIdExistente && !imageIdsExistentes.length) {
     return mostrarErro("O criativo publicado não foi localizado. Adicione uma imagem ou um vídeo antes de salvar.");
   }
@@ -34350,11 +34423,17 @@ async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
   try {
     let imageIds = imageIdsExistentes;
     let imageUrls = Array.isArray(cfgBanco.image_urls) ? cfgBanco.image_urls.filter(Boolean) : [];
-    let videoId = videoIdExistente || null;
-    let midiaAlterada = false;
+    const formatoCriativo = obterFormatoCriativoTikTok();
+    const formatoAnterior = videoIdExistente ? "video" : "imagem";
+    let videoId = formatoCriativo === "video" ? (videoIdExistente || null) : null;
+    if (formatoCriativo === "video") {
+      imageIds = [];
+      imageUrls = [];
+    }
+    let midiaAlterada = formatoCriativo !== formatoAnterior;
     let videoUpload = null;
 
-    if (videoArquivo) {
+    if (formatoCriativo === "video" && videoArquivo) {
       const formData = new FormData();
       formData.append("video", videoArquivo);
       formData.append("usuario_id", usuario_id);
@@ -34371,7 +34450,7 @@ async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
       imageIds = [];
       imageUrls = [];
       midiaAlterada = true;
-    } else if (imagensArquivos.length) {
+    } else if (formatoCriativo === "imagem" && imagensArquivos.length) {
       imageIds = [];
       imageUrls = [];
       for (const arquivo of imagensArquivos) {
@@ -34400,6 +34479,7 @@ async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
       ...coletarConfiguracoesAvancadas(),
       ...coletarDadosNichoAtivo(),
       destino: destinoAtual,
+      formato_criativo: formatoCriativo,
       url_destino: destinoAtual === "site"
         ? document.getElementById("campanha_tiktok_url")?.value?.trim() || ""
         : null,
@@ -34440,6 +34520,7 @@ async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
         url_destino: configuracoes_avancadas.url_destino,
         identity_id: configuracoes_avancadas.identity_id,
         identity_type: configuracoes_avancadas.identity_type,
+        formato_criativo: formatoCriativo,
         image_ids: imageIds,
         video_id: videoId,
         midia_alterada: midiaAlterada,
@@ -34856,7 +34937,7 @@ function atualizarPosicoes() {
 // montarConteudoCriativoMeta no backend). Chamada sempre que imagens, vídeo ou
 // os checkboxes de rede mudam, pra nunca ficar com o bloco errado visível.
 function atualizarBlocoEscolhaMidiaCarrossel() {
-  if (plataformaMidiaCampanhaEmFoco() === "google") {
+  if (["google", "tiktok"].includes(plataformaMidiaCampanhaEmFoco())) {
     const blocoInstagram = document.getElementById("instagram_escolha_midia_bloco");
     const blocoPosicao = document.getElementById("video_posicao_carrossel_bloco");
     if (blocoInstagram) blocoInstagram.style.display = "none";
@@ -35064,6 +35145,13 @@ function criarItemImagem(arquivoInicial) {
   return item;
 }
 
+function limiteMaximoImagensCampanha() {
+  const redeEmFoco = plataformaMidiaCampanhaEmFoco();
+  if (redeEmFoco === "tiktok" && obterFormatoCriativoTikTok() === "imagem") return 1;
+  if (redeEmFoco === "google" && tipoCampanhaGoogleSelecionado === "display") return 7;
+  return 10;
+}
+
 function inicializarCarrosselImagens() {
   const container = document.getElementById("imagens-container");
   if (!container || container.dataset.iniciado) return;
@@ -35075,8 +35163,12 @@ function inicializarCarrosselImagens() {
   const inputMultiplo = document.getElementById("input-multiplas-imagens");
 
   document.getElementById("btn-adicionar-imagem").addEventListener("click", () => {
-    if (container.children.length >= 10) {
-      alert("Máximo de 10 imagens permitidas.");
+    const limite = limiteMaximoImagensCampanha();
+    const preenchidas = Array.from(container.children).filter(item =>
+      item.querySelector(".imagem-input")?.files?.[0] || item.dataset.hashExistente || item.dataset.urlExistente
+    ).length;
+    if (preenchidas >= limite) {
+      alert(limite === 1 ? "O formato Imagem única do TikTok aceita somente uma imagem." : "Máximo de " + limite + " imagens permitidas.");
       return;
     }
     inputMultiplo.click();
@@ -35088,25 +35180,33 @@ function inicializarCarrosselImagens() {
     if (!arquivos.length) return;
 
     let recusados = 0;
+    const limite = limiteMaximoImagensCampanha();
 
     for (const arquivo of arquivos) {
-      const itemVazio = Array.from(container.children).find(
-        item => !item.querySelector(".imagem-input").files.length
+      const preenchidasAgora = Array.from(container.children).filter(item =>
+        item.querySelector(".imagem-input")?.files?.[0] || item.dataset.hashExistente || item.dataset.urlExistente
+      ).length;
+      if (preenchidasAgora >= limite) {
+        recusados++;
+        continue;
+      }
+
+      const itemVazio = Array.from(container.children).find(item =>
+        !item.querySelector(".imagem-input")?.files?.length &&
+        !item.dataset.hashExistente &&
+        !item.dataset.urlExistente
       );
 
-      if (itemVazio) {
-        itemVazio.aplicarArquivo(arquivo);
-      } else if (container.children.length < 10) {
-        container.appendChild(criarItemImagem(arquivo));
-      } else {
-        recusados++;
-      }
+      if (itemVazio) itemVazio.aplicarArquivo(arquivo);
+      else container.appendChild(criarItemImagem(arquivo));
     }
 
     atualizarPosicoes();
 
     if (recusados > 0) {
-      alert(`Máximo de 10 imagens permitidas. ${recusados} imagem(ns) não foram adicionadas.`);
+      alert(limite === 1
+        ? "O formato Imagem única do TikTok aceita somente uma imagem."
+        : `Máximo de ${limite} imagens permitidas. ${recusados} imagem(ns) não foram adicionadas.`);
     }
   });
 }
@@ -36391,9 +36491,11 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
   const identidadeTipo = tiktokIdentidadeSelecionada?.identity_type || null;
 
   try {
+    const formatoCriativo = obterFormatoCriativoTikTok();
     const configuracoes_avancadas = {
       ...configuracoesBase,
       destino: destinoTikTok,
+      formato_criativo: formatoCriativo,
       url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null,
       form_id: destinoTikTok === "lead_ads" ? formularioId : null,
       identity_id: identidadeId,
@@ -36423,7 +36525,8 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     }
 
     const imageIds = [];
-    const fontesImagem = montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback);
+    const fontesImagemDisponiveis = montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback);
+    const fontesImagem = formatoCriativo === "imagem" ? fontesImagemDisponiveis.slice(0, 1) : [];
     const totalImagens = fontesImagem.length;
 
     for (let i = 0; i < fontesImagem.length; i++) {
@@ -36450,7 +36553,7 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     }
 
     let videoId = null;
-    if (videoArquivo || videoUrlFallback) {
+    if (formatoCriativo === "video" && (videoArquivo || videoUrlFallback)) {
       setPublishProgress(28, `${prefixo}Enviando vídeo...`);
       const formData = new FormData();
       if (videoArquivo) formData.append("video", videoArquivo);
@@ -36528,6 +36631,7 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
         form_id: formularioId,
         identity_id: identidadeId,
         identity_type: identidadeTipo,
+        formato_criativo: formatoCriativo,
         destino: destinoTikTok,
         url_destino: destinoTikTok === "site" ? urlDestinoTikTok : null,
         texto,
@@ -37560,7 +37664,10 @@ async function criarCampanhaCompleta() {
   }
 
   if (redes.includes("tiktok")) {
-    const erroTikTok = validarPublicacaoCampanhaTikTok();
+    const erroTikTok = validarPublicacaoCampanhaTikTok({
+      imagens: imagensArquivos,
+      temVideo: Boolean(videoArquivo)
+    });
     if (erroTikTok) {
       mostrarErroPublicacao(erroTikTok);
       return;
@@ -37702,7 +37809,10 @@ async function publicarPlataformasAdicionaisCampanha() {
     if (erroGoogle) { mostrarErroPublicacao(erroGoogle); return; }
   }
   if (novasRedes.includes("tiktok")) {
-    const erroTikTok = validarPublicacaoCampanhaTikTok();
+    const erroTikTok = validarPublicacaoCampanhaTikTok({
+      imagens: imagensParaValidar,
+      temVideo: Boolean(videoArquivo || videoUrlFallback)
+    });
     if (erroTikTok) { mostrarErroPublicacao(erroTikTok); return; }
   }
 

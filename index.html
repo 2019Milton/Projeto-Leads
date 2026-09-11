@@ -27492,6 +27492,20 @@ function ordenarBlocosFormularioCampanha(redeEmFoco) {
   // No Google, a escolha Pesquisa/Display define quais campos de mídia aparecem.
   // Por isso ela precisa vir antes do bloco onde imagens e vídeo são preenchidos.
   if (redeEmFoco === "google" && tituloFormulario.parentNode === imagensTexto.parentNode) {
+    const grade = tituloFormulario.querySelector(":scope > .advanced-grid");
+    const tipoGoogle = document.getElementById("bloco_tipo_campanha_google");
+    const destinoGoogle = document.getElementById("bloco_destino_google");
+    const formularioGoogle = tituloFormulario.querySelector(
+      '.advanced-subsection[data-google-destino-only="lead_ads"]'
+    );
+
+    // Tipo e objetivo vêm primeiro; os campos exclusivos de formulário só
+    // aparecem abaixo quando "Formulário de Leads" estiver selecionado.
+    if (grade && tipoGoogle && destinoGoogle && formularioGoogle) {
+      grade.insertBefore(tipoGoogle, formularioGoogle);
+      grade.insertBefore(destinoGoogle, formularioGoogle);
+    }
+
     imagensTexto.parentNode.insertBefore(tituloFormulario, imagensTexto);
     return;
   }

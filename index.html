@@ -18152,7 +18152,7 @@ body.tema-claro .criar-campanha-descricao {
           <summary>👥 Público e orçamento</summary>
 
           <div id="bloco_orcamento" style="margin-top:12px;">
-            <label>Orçamento diário (R$) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quanto você quer investir por dia nesta campanha. A plataforma de anúncios selecionada usará esse orçamento para veicular o anúncio conforme o objetivo e as configurações definidos.', event)">i</button></label>
+            <label>Orçamento diário (R$) <span id="orcamento_plataforma_label"></span> <button type="button" class="info-icone" onclick="mostrarInfoCampo('Quanto você quer investir por dia nesta campanha. A plataforma de anúncios selecionada usará esse orçamento para veicular o anúncio conforme o objetivo e as configurações definidos.', event)">i</button></label>
             <input
               type="number"
               id="orcamento"
@@ -27333,6 +27333,7 @@ function fecharCriarCampanhaModal() {
   }
   criarCampanhaModalOrigem = null;
   _dadosCampanhaPorRede = { facebook: null, instagram: null };
+  _orcamentoCampanhaPorRede = {};
 }
 
 const redesSelecionadasCampanha = new Set();
@@ -27370,6 +27371,42 @@ const CORES_PLATAFORMA_ABA = {
   tiktok:    "#00F2EA"
 };
 
+// O campo de orçamento é visualmente compartilhado, mas cada campanha criada
+// em uma plataforma recebe orçamento próprio. Estes stores preservam o valor
+// de cada aba tanto na Criação quanto ao adicionar redes durante a Edição.
+let _orcamentoCampanhaPorRede = {};
+let _orcamentoEdicaoPorRede = {};
+
+function salvarOrcamentoRede(store, rede) {
+  if (!rede || !store) return;
+  store[rede] = valorCampo("orcamento");
+}
+
+function restaurarOrcamentoRede(store, rede) {
+  if (!rede || !store) return;
+  const temValorSalvo = Object.prototype.hasOwnProperty.call(store, rede);
+  let valor = temValorSalvo ? store[rede] : valorCampo("orcamento");
+
+  // TikTok exige aproximadamente US$ 50/dia. Na primeira entrada da aba,
+  // sugere o mínimo configurado sem alterar o orçamento já salvo nas demais.
+  const minimoRede = FINANCEIRO_LIMITES_ORCAMENTO_REDE?.[rede]?.minimo;
+  if (!temValorSalvo && minimoRede && Number(valor || 0) < minimoRede) {
+    valor = String(minimoRede);
+  }
+
+  store[rede] = valor;
+  definirValorCampo("orcamento", valor);
+  const input = document.getElementById("orcamento");
+  if (input) validarOrcamentoRealtime(input);
+}
+
+function orcamentoSalvoRede(store, rede, fallback = "") {
+  const valor = store && Object.prototype.hasOwnProperty.call(store, rede)
+    ? store[rede]
+    : fallback;
+  return String(valor ?? "");
+}
+
 // Monta o estilo inline do botão de aba com a cor da própria plataforma —
 // compartilhado entre renderizarAbasCampanha (Criação) e
 // renderizarAbasAddPlataformaEdicao (Edição), pra não duplicar a lógica de cor.
@@ -27383,6 +27420,9 @@ function estiloAbaPlataforma(plat, ativa) {
 function selecionarPlataformaCampanha(plat) {
   const btn = document.querySelector(`.plat-sel-btn[data-plat="${plat}"]`);
   if (!btn) return;
+
+  const abaAnterior = abaAtivaCampanha;
+  salvarOrcamentoRede(_orcamentoCampanhaPorRede, abaAnterior);
 
   const redeMetaAnterior = redeMetaFormularioAtual();
   if (redeMetaAnterior) {
@@ -27406,6 +27446,9 @@ function selecionarPlataformaCampanha(plat) {
       (redeMetaAnterior ? _dadosCampanhaPorRede[redeMetaAnterior] : null);
     if (dados) restaurarFormularioMeta(redeMetaAtual, dados);
     else aplicarRedeMetaAoFormulario(redeMetaAtual);
+  }
+  if (abaAtivaCampanha && abaAtivaCampanha !== abaAnterior) {
+    restaurarOrcamentoRede(_orcamentoCampanhaPorRede, abaAtivaCampanha);
   }
   atualizarEstadoBotaoGerarIA();
 
@@ -27577,6 +27620,7 @@ function renderizarAbasAddPlataformaEdicao() {
 
   const abaAnterior = abaAtivaAddPlataformaEdicao;
   if (!abaAtivaAddPlataformaEdicao || !todas.includes(abaAtivaAddPlataformaEdicao)) {
+    salvarOrcamentoRede(_orcamentoEdicaoPorRede, abaAtivaAddPlataformaEdicao);
     abaAtivaAddPlataformaEdicao = todas[0];
   }
 
@@ -27598,6 +27642,7 @@ function renderizarAbasAddPlataformaEdicao() {
   // normalmente acontece ao entrar numa aba.
   if (abaAtivaAddPlataformaEdicao !== abaAnterior) {
     aplicarEntradaAbaAddPlataformaEdicao(abaAtivaAddPlataformaEdicao);
+    restaurarOrcamentoRede(_orcamentoEdicaoPorRede, abaAtivaAddPlataformaEdicao);
   }
 }
 
@@ -27614,6 +27659,7 @@ function aplicarEntradaAbaAddPlataformaEdicao(plat) {
 }
 
 function selecionarAbaAddPlataformaEdicao(plat) {
+  salvarOrcamentoRede(_orcamentoEdicaoPorRede, abaAtivaAddPlataformaEdicao);
   const redeMetaAnterior = redeMetaFormularioAtual();
   if (redeMetaAnterior) {
     _dadosAddPlataformaEdicaoPorRede[redeMetaAnterior] = snapshotFormularioMeta(redeMetaAnterior);
@@ -27621,6 +27667,7 @@ function selecionarAbaAddPlataformaEdicao(plat) {
   abaAtivaAddPlataformaEdicao = plat;
   aplicarRedesCampanha();
   aplicarEntradaAbaAddPlataformaEdicao(plat);
+  restaurarOrcamentoRede(_orcamentoEdicaoPorRede, plat);
 }
 
 // Campos exclusivos de cada rede adicionável, pra limpar se o usuário marcar
@@ -27733,6 +27780,11 @@ function aplicarRedesCampanha() {
     (emEdicao && todasAbasEdicao.length >= 1 && abaAtivaAddPlataformaEdicao) ? abaAtivaAddPlataformaEdicao :
     null;
   const corAtivaAgora = redeAtivaColorida ? CORES_PLATAFORMA_ABA[redeAtivaColorida] : null;
+  const labelOrcamento = document.getElementById("orcamento_plataforma_label");
+  if (labelOrcamento) {
+    labelOrcamento.textContent = redeAtivaColorida ? `— ${platNome(redeAtivaColorida)}` : "";
+    labelOrcamento.style.color = corAtivaAgora || "";
+  }
 
   ordenarBlocosFormularioCampanha(redeAtivaColorida);
 
@@ -32272,12 +32324,12 @@ function renderizarLocalidadeLinkedInSelecionada() {
     : "";
 }
 
-function validarPublicacaoCampanhaTikTok({ imagens = [], temVideo = false } = {}) {
+function validarPublicacaoCampanhaTikTok({ imagens = [], temVideo = false, orcamento = null } = {}) {
   // Mínimo documentado oficialmente pelo TikTok Ads (ads.tiktok.com/help/article/budget)
   // é USD 50/dia no nível da campanha — sem essa checagem, a publicação só
   // descobria isso quando a própria API do TikTok já tivesse rejeitado.
   const limiteTikTok = FINANCEIRO_LIMITES_ORCAMENTO_REDE?.tiktok;
-  const orcamentoAtual = Number(valorCampo("orcamento"));
+  const orcamentoAtual = Number(orcamento ?? valorCampo("orcamento"));
   if (limiteTikTok?.minimo && orcamentoAtual > 0 && orcamentoAtual < limiteTikTok.minimo) {
     return `O orçamento está abaixo do mínimo exigido pelo TikTok Ads (~R$${limiteTikTok.minimo.toFixed(2).replace(".", ",")}/dia, equivalente a US$50 — varia com o câmbio).`;
   }
@@ -34344,6 +34396,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     plataformasOriginaisEdicao = new Set(redesSelecionadasCampanha);
     plataformasReaproveitadasEdicao = new Set();
     _dadosAddPlataformaEdicaoPorRede = { facebook: null, instagram: null };
+    _orcamentoEdicaoPorRede = {};
     const grupoIdAtualEdicao = campanha.publicacao_grupo_id || null;
     plataformasExistentesEdicaoGrupo = new Set(
       grupoIdAtualEdicao
@@ -34431,6 +34484,10 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       ...campanha,
       configuracoes_avancadas: configuracoesCampanha
     });
+    const abaBaseOrcamento = baseTabEdicaoCampanha();
+    if (abaBaseOrcamento) {
+      _orcamentoEdicaoPorRede[abaBaseOrcamento] = valorCampo("orcamento");
+    }
     preencherImagensCampanhaSalva(
       configuracoesCampanha,
       campanha
@@ -34549,6 +34606,7 @@ function fecharEdicaoCampanha() {
     plataformasReaproveitadasEdicao = new Set();
     abaAtivaAddPlataformaEdicao = null;
     _dadosAddPlataformaEdicaoPorRede = { facebook: null, instagram: null };
+    _orcamentoEdicaoPorRede = {};
     document.getElementById("editar_campanha_add_plataforma_bloco")?.style.setProperty("display", "none");
     document.getElementById("editar_campanha_add_plataforma_abas")?.style.setProperty("display", "none");
     aplicarRedesCampanha();
@@ -36159,28 +36217,16 @@ const FINANCEIRO_LIMITES_ORCAMENTO_REDE = {
 // Quais redes o aviso de orçamento deve considerar agora, respeitando a aba
 // realmente em foco (Criação usa abaAtivaCampanha, Edição usa
 // abaAtivaAddPlataformaEdicao — cada fluxo com sua própria variável de aba).
-// Facebook/Instagram sempre têm orçamento próprio, trocado por aba (ver
-// snapshotFormularioMeta) — nunca devem aparecer misturados com o de outra
-// rede. Se a aba ativa agora for uma delas, o aviso é só dela; se for uma
-// aba de rede não-Meta (Google/TikTok/...), considera só as redes que
-// realmente compartilham este campo puro, sem incluir Facebook/Instagram
-// mesmo que estejam selecionados/na base. Sem nenhuma aba ativa (ex:
+// Cada aba tem orçamento próprio, inclusive Google e TikTok. Quando há uma
+// aba ativa, o aviso e o mínimo pertencem exclusivamente àquela plataforma.
+// Sem nenhuma aba ativa (ex:
 // campanha Meta legada combinada, sem nada novo marcado ainda), mantém o
 // comportamento de sempre — considera tudo que está selecionado.
 function redesOrcamentoRelevantes() {
   const emEdicaoAgora = typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao;
   const abaAtivaAgora = emEdicaoAgora ? abaAtivaAddPlataformaEdicao : abaAtivaCampanha;
   const todasSelecionadas = Array.from(redesSelecionadasCampanha || []);
-  const ehMeta = rede =>
-    typeof REDES_META_COM_FORMULARIO_PROPRIO !== "undefined" &&
-    REDES_META_COM_FORMULARIO_PROPRIO.includes(rede);
-
-  if (ehMeta(abaAtivaAgora)) {
-    return [abaAtivaAgora];
-  }
-  if (abaAtivaAgora) {
-    return todasSelecionadas.filter(rede => !ehMeta(rede));
-  }
+  if (abaAtivaAgora) return [abaAtivaAgora];
   return todasSelecionadas;
 }
 
@@ -36457,6 +36503,12 @@ function traduzirErroMeta(mensagem, mensagemTecnica = "") {
   }
   if (m.includes("24 hora") || m.includes("24 hours") || (m.includes("veiculad") && m.includes("programa")) || (m.includes("scheduled") && m.includes("least 24")))
     return "A Meta exige pelo menos 24 horas entre a 'Data de início' e a 'Data de término' — e, na prática, exatamente 24h costuma ser recusado. Aumente a 'Data de término' em alguns minutos a mais, ou deixe o campo em branco para a campanha rodar continuamente.";
+  const erroDeclaradamenteDeOutraPlataforma =
+    m.includes("tiktok") ||
+    m.includes("google ads") ||
+    m.includes("linkedin") ||
+    m.includes("kwai");
+  if (erroDeclaradamenteDeOutraPlataforma) return mensagemOriginal;
   const erroLimiteGastosConta =
     m.includes("spend cap") ||
     m.includes("spending limit") ||
@@ -38195,6 +38247,9 @@ async function criarCampanhaCompleta() {
   const texto = document.getElementById("texto").value;
   const cta = document.getElementById("cta").value;
   const orcamento = document.getElementById("orcamento").value;
+  salvarOrcamentoRede(_orcamentoCampanhaPorRede, abaAtivaCampanha);
+  const orcamentoPorRede = rede =>
+    orcamentoSalvoRede(_orcamentoCampanhaPorRede, rede, orcamento);
 
   const configuracoesBase = normalizarConfiguracoesAvancadasParaEnvio({
     ...coletarConfiguracoesAvancadas(),
@@ -38224,9 +38279,14 @@ async function criarCampanhaCompleta() {
   });
 
   const redesNaoMeta = redes.filter(rede => !REDES_META_COM_FORMULARIO_PROPRIO.includes(rede));
-  if (redesNaoMeta.length) {
+  for (const rede of redesNaoMeta) {
     if (!validarCamposCompartilhadosCampanha({
-      campanha_nome, texto, orcamento, imagensArquivos, videoArquivo, redes: redesNaoMeta
+      campanha_nome,
+      texto,
+      orcamento: orcamentoPorRede(rede),
+      imagensArquivos,
+      videoArquivo,
+      redes: [rede]
     })) {
       return;
     }
@@ -38289,7 +38349,8 @@ async function criarCampanhaCompleta() {
   if (redes.includes("tiktok")) {
     const erroTikTok = validarPublicacaoCampanhaTikTok({
       imagens: imagensArquivos,
-      temVideo: Boolean(videoArquivo)
+      temVideo: Boolean(videoArquivo),
+      orcamento: orcamentoPorRede("tiktok")
     });
     if (erroTikTok) {
       mostrarErroPublicacao(erroTikTok);
@@ -38321,12 +38382,18 @@ async function criarCampanhaCompleta() {
   }
 
   if (redes.includes("tiktok")) {
-    const r = await publicarCampanhaTikTok(contexto, redes.length > 1);
+    const r = await publicarCampanhaTikTok(
+      { ...contexto, orcamento: orcamentoPorRede("tiktok") },
+      redes.length > 1
+    );
     resultados.push({ rede: "TikTok", ...r });
   }
 
   if (redes.includes("google")) {
-    const r = await publicarCampanhaGoogle(contexto, redes.length > 1);
+    const r = await publicarCampanhaGoogle(
+      { ...contexto, orcamento: orcamentoPorRede("google") },
+      redes.length > 1
+    );
     resultados.push({ rede: "Google Ads", ...r });
   }
 
@@ -38377,6 +38444,9 @@ async function publicarPlataformasAdicionaisCampanha(opcoes = {}) {
   const texto = document.getElementById("texto").value;
   const cta = document.getElementById("cta").value;
   const orcamento = document.getElementById("orcamento").value;
+  salvarOrcamentoRede(_orcamentoEdicaoPorRede, abaAtivaAddPlataformaEdicao);
+  const orcamentoPorRede = rede =>
+    orcamentoSalvoRede(_orcamentoEdicaoPorRede, rede, orcamento);
 
   const configuracoesBase = normalizarConfiguracoesAvancadasParaEnvio({
     ...coletarConfiguracoesAvancadas(),
@@ -38420,11 +38490,18 @@ async function publicarPlataformasAdicionaisCampanha(opcoes = {}) {
     feedback.textContent = "";
   }
 
-  if (!validarCamposCompartilhadosCampanha({
-    campanha_nome, texto, orcamento, imagensArquivos: imagensParaValidar,
-    videoArquivo, videoDisponivel: Boolean(videoUrlFallback), redes: novasRedes
-  })) {
-    return;
+  for (const rede of novasRedes) {
+    if (!validarCamposCompartilhadosCampanha({
+      campanha_nome,
+      texto,
+      orcamento: orcamentoPorRede(rede),
+      imagensArquivos: imagensParaValidar,
+      videoArquivo,
+      videoDisponivel: Boolean(videoUrlFallback),
+      redes: [rede]
+    })) {
+      return;
+    }
   }
 
   if (novasRedes.includes("google")) {
@@ -38434,7 +38511,8 @@ async function publicarPlataformasAdicionaisCampanha(opcoes = {}) {
   if (novasRedes.includes("tiktok")) {
     const erroTikTok = validarPublicacaoCampanhaTikTok({
       imagens: imagensParaValidar,
-      temVideo: Boolean(videoArquivo || videoUrlFallback)
+      temVideo: Boolean(videoArquivo || videoUrlFallback),
+      orcamento: orcamentoPorRede("tiktok")
     });
     if (erroTikTok) { mostrarErroPublicacao(erroTikTok); return; }
   }
@@ -38461,7 +38539,7 @@ async function publicarPlataformasAdicionaisCampanha(opcoes = {}) {
       instagram_actor_id: rede === "instagram" ? instagramActorIdSelecionado : null
     });
     if (!validarPublicacaoCampanha({
-      campanha_nome, page_id, texto, orcamento,
+      campanha_nome, page_id, texto, orcamento: orcamentoPorRede(rede),
       configuracoes_avancadas: configuracoesRede,
       imagensArquivos: imagensParaValidar, videoArquivo,
       videoDisponivel: Boolean(videoUrlFallback)
@@ -38536,10 +38614,22 @@ async function publicarPlataformasAdicionaisCampanha(opcoes = {}) {
 
     const resultados = [];
     if (novasRedes.includes("tiktok")) {
-      resultados.push({ rede: "TikTok", ...(await publicarCampanhaTikTok(contexto, true)) });
+      resultados.push({
+        rede: "TikTok",
+        ...(await publicarCampanhaTikTok(
+          { ...contexto, orcamento: orcamentoPorRede("tiktok") },
+          true
+        ))
+      });
     }
     if (novasRedes.includes("google")) {
-      resultados.push({ rede: "Google Ads", ...(await publicarCampanhaGoogle(contexto, true)) });
+      resultados.push({
+        rede: "Google Ads",
+        ...(await publicarCampanhaGoogle(
+          { ...contexto, orcamento: orcamentoPorRede("google") },
+          true
+        ))
+      });
     }
     if (novasRedesMeta.length === 1) {
       const rede = novasRedesMeta[0];
@@ -38549,7 +38639,12 @@ async function publicarPlataformasAdicionaisCampanha(opcoes = {}) {
         instagram_actor_id: rede === "instagram" ? instagramActorIdSelecionado : null
       });
       const r = await publicarCampanhaMeta(
-        { ...contexto, redeMeta: rede, configuracoesBase: configuracoesRede },
+        {
+          ...contexto,
+          redeMeta: rede,
+          orcamento: orcamentoPorRede(rede),
+          configuracoesBase: configuracoesRede
+        },
         novasRedes.length > 1
       );
       resultados.push({ rede: rede === "instagram" ? "Instagram Ads" : "Facebook Ads", ...r });

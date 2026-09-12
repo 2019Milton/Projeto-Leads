@@ -3157,7 +3157,8 @@ body.tema-claro .passo-meta-step-text p {
   font-size: 22px;
 }
 
-.video-anuncio-preview video {
+.video-anuncio-preview video,
+.video-anuncio-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -18055,6 +18056,7 @@ body.tema-claro .criar-campanha-descricao {
               <div class="video-anuncio-card" id="video_anuncio_card">
                 <div class="video-anuncio-preview">
                   <span id="video_anuncio_placeholder">🎬</span>
+                  <img id="video_anuncio_thumbnail" alt="Capa do vídeo vinculado à campanha">
                   <video id="video_anuncio_preview" muted playsinline controls></video>
                 </div>
                 <div class="video-anuncio-info">
@@ -18063,7 +18065,7 @@ body.tema-claro .criar-campanha-descricao {
                 </div>
                 <div class="video-anuncio-acoes">
                   <input type="file" id="video_anuncio_input" accept="video/mp4,video/quicktime,video/webm" style="display:none">
-                  <button type="button" class="btn-video-anuncio" id="btn-adicionar-video" onclick="document.getElementById('video_anuncio_input').click()">+ Adicionar vídeo</button>
+                  <button type="button" class="btn-video-anuncio" id="btn-adicionar-video">+ Adicionar vídeo</button>
                   <button type="button" class="btn-video-anuncio remover" id="btn-remover-video" style="display:none">Remover</button>
                 </div>
               </div>
@@ -34357,6 +34359,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       campanha
     );
     _snapshotCriarCampanha.imagensAssinatura = assinaturaImagensCampanha();
+    _snapshotCriarCampanha.videoAssinatura = assinaturaVideoCampanha();
 
     const feedback = document.getElementById("editar_campanha_feedback");
 
@@ -34958,6 +34961,10 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
     assinaturaVideoCampanha() !==
     (_snapshotCriarCampanha?.videoAssinatura || "");
 
+  const videoFoiRemovido =
+    videoFoiAlterado &&
+    videoCampanhaFoiRemovido();
+
   const videoArquivo =
     videoFoiAlterado
       ? obterArquivoVideoCampanha()
@@ -35070,6 +35077,19 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
       configuracoes_avancadas.video_nome = uploadVideo.video_nome;
       configuracoes_avancadas.video_tipo = uploadVideo.video_tipo;
       configuracoes_avancadas.video_tamanho = uploadVideo.video_tamanho;
+      configuracoes_avancadas.video_removido = false;
+    } else if (videoFoiRemovido) {
+      configuracoes_avancadas.video_id = null;
+      configuracoes_avancadas.videoId = null;
+      configuracoes_avancadas.video_url = null;
+      configuracoes_avancadas.videoUrl = null;
+      configuracoes_avancadas.video_nome = null;
+      configuracoes_avancadas.video_tipo = null;
+      configuracoes_avancadas.video_tamanho = null;
+      configuracoes_avancadas.video_thumbnail_url = null;
+      configuracoes_avancadas.videoThumbnailUrl = null;
+      configuracoes_avancadas.video_removido = true;
+      configuracoes_avancadas.criativo_tipo = imageHashes.length > 1 ? "carrossel" : "imagem";
     }
 
     const payloadEdicao = {
@@ -35097,6 +35117,10 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
       payloadEdicao.videoId = configuracoes_avancadas.video_id;
       payloadEdicao.video_url = configuracoes_avancadas.video_url;
       payloadEdicao.videoUrl = configuracoes_avancadas.video_url;
+    }
+
+    if (videoFoiRemovido) {
+      payloadEdicao.video_removido = true;
     }
 
     const res = await fetch(
@@ -35646,14 +35670,26 @@ function validarArquivoVideoCampanha(arquivo, mostrarErro = true) {
   return true;
 }
 
-function limparVideoCampanha() {
+function videoCampanhaFoiRemovido() {
+  return document.getElementById("video_anuncio_card")?.dataset.videoRemovido === "1";
+}
+
+function limparVideoCampanha({ marcarRemovido = false } = {}) {
   const card = document.getElementById("video_anuncio_card");
   const input = document.getElementById("video_anuncio_input");
   const preview = document.getElementById("video_anuncio_preview");
+  const thumbnail = document.getElementById("video_anuncio_thumbnail");
   const placeholder = document.getElementById("video_anuncio_placeholder");
   const nome = document.getElementById("video_anuncio_nome");
   const status = document.getElementById("video_anuncio_status");
+  const adicionar = document.getElementById("btn-adicionar-video");
   const remover = document.getElementById("btn-remover-video");
+  const tinhaVideo = Boolean(
+    input?.files?.[0] ||
+    card?.dataset.videoIdExistente ||
+    card?.dataset.videoUrlExistente ||
+    card?.dataset.videoNomeExistente
+  );
 
   if (input) input.value = "";
 
@@ -35663,15 +35699,32 @@ function limparVideoCampanha() {
       delete preview.dataset.objectUrl;
     }
     preview.removeAttribute("src");
+    preview.removeAttribute("poster");
     preview.style.display = "none";
+    preview.onerror = null;
     preview.load();
+  }
+
+  if (thumbnail) {
+    thumbnail.removeAttribute("src");
+    thumbnail.style.display = "none";
   }
 
   if (placeholder) placeholder.style.display = "";
   if (nome) nome.textContent = "Nenhum vídeo selecionado";
   if (status) status.textContent = "Use MP4, MOV ou WebM. Se adicionar vídeo, ele será enviado como criativo da campanha.";
+  if (adicionar) adicionar.textContent = "+ Adicionar vídeo";
   if (remover) remover.style.display = "none";
-  if (card) card.classList.remove("preenchido");
+  if (card) {
+    card.classList.remove("preenchido");
+    card.dataset.videoRemovido = marcarRemovido && tinhaVideo ? "1" : "0";
+    if (!marcarRemovido) {
+      delete card.dataset.videoIdExistente;
+      delete card.dataset.videoUrlExistente;
+      delete card.dataset.videoNomeExistente;
+      delete card.dataset.videoThumbnailExistente;
+    }
+  }
   atualizarBlocoEscolhaMidiaCarrossel();
 }
 
@@ -35683,9 +35736,11 @@ function aplicarVideoCampanha(arquivo) {
 
   const card = document.getElementById("video_anuncio_card");
   const preview = document.getElementById("video_anuncio_preview");
+  const thumbnail = document.getElementById("video_anuncio_thumbnail");
   const placeholder = document.getElementById("video_anuncio_placeholder");
   const nome = document.getElementById("video_anuncio_nome");
   const status = document.getElementById("video_anuncio_status");
+  const adicionar = document.getElementById("btn-adicionar-video");
   const remover = document.getElementById("btn-remover-video");
 
   if (preview) {
@@ -35699,11 +35754,19 @@ function aplicarVideoCampanha(arquivo) {
     preview.load();
   }
 
+  if (thumbnail) {
+    thumbnail.removeAttribute("src");
+    thumbnail.style.display = "none";
+  }
   if (placeholder) placeholder.style.display = "none";
   if (nome) nome.textContent = arquivo.name;
   if (status) status.textContent = `${arquivo.type || "video"} · ${formatarTamanhoArquivo(arquivo.size)}`;
+  if (adicionar) adicionar.textContent = "Substituir vídeo";
   if (remover) remover.style.display = "";
-  if (card) card.classList.add("preenchido");
+  if (card) {
+    card.classList.add("preenchido");
+    card.dataset.videoRemovido = "0";
+  }
   atualizarBlocoEscolhaMidiaCarrossel();
 }
 
@@ -35727,30 +35790,62 @@ function preencherVideoCampanhaSalvo(cfg = {}) {
     cfg.video?.url ||
     "";
 
+  const videoThumbnail =
+    cfg.video_thumbnail_url ||
+    cfg.videoThumbnailUrl ||
+    cfg.video?.thumbnail_url ||
+    cfg.video?.thumbnailUrl ||
+    "";
+
   limparVideoCampanha();
 
-  if (!videoNome && !videoId && !videoUrl) {
+  if (!videoNome && !videoId && !videoUrl && !videoThumbnail) {
     return;
   }
 
   const card = document.getElementById("video_anuncio_card");
   const preview = document.getElementById("video_anuncio_preview");
+  const thumbnail = document.getElementById("video_anuncio_thumbnail");
   const placeholder = document.getElementById("video_anuncio_placeholder");
   const nome = document.getElementById("video_anuncio_nome");
   const status = document.getElementById("video_anuncio_status");
+  const adicionar = document.getElementById("btn-adicionar-video");
   const remover = document.getElementById("btn-remover-video");
 
   if (videoUrl && preview) {
     preview.src = videoUrl;
+    if (videoThumbnail) preview.poster = videoThumbnail;
     preview.style.display = "block";
+    preview.onerror = () => {
+      preview.style.display = "none";
+      if (thumbnail && videoThumbnail) {
+        thumbnail.src = videoThumbnail;
+        thumbnail.style.display = "block";
+        if (placeholder) placeholder.style.display = "none";
+      } else if (placeholder) {
+        placeholder.style.display = "";
+      }
+    };
     preview.load();
+    if (placeholder) placeholder.style.display = "none";
+  } else if (videoThumbnail && thumbnail) {
+    thumbnail.src = videoThumbnail;
+    thumbnail.style.display = "block";
     if (placeholder) placeholder.style.display = "none";
   }
 
   if (nome) nome.textContent = videoNome || "Vídeo salvo na campanha";
-  if (status) status.textContent = videoId ? `Vídeo da campanha: ${videoId}` : "Vídeo salvo nos dados da campanha.";
+  if (status) status.textContent = videoId ? `Vídeo atual vinculado à campanha: ${videoId}` : "Vídeo atual vinculado à campanha.";
+  if (adicionar) adicionar.textContent = "Substituir vídeo";
   if (remover) remover.style.display = "";
-  if (card) card.classList.add("preenchido");
+  if (card) {
+    card.classList.add("preenchido");
+    card.dataset.videoRemovido = "0";
+    card.dataset.videoIdExistente = String(videoId || "");
+    card.dataset.videoUrlExistente = String(videoUrl || "");
+    card.dataset.videoNomeExistente = String(videoNome || "");
+    card.dataset.videoThumbnailExistente = String(videoThumbnail || "");
+  }
   atualizarBlocoEscolhaMidiaCarrossel();
 }
 
@@ -35794,8 +35889,20 @@ function preencherImagensCampanhaSalva(cfg = {}, campanha = {}) {
 function assinaturaVideoCampanha() {
   const file = obterArquivoVideoCampanha();
 
-  return file
-    ? `${file.name}:${file.size}:${file.lastModified}`
+  if (file) {
+    return `arquivo:${file.name}:${file.size}:${file.lastModified}`;
+  }
+
+  const card = document.getElementById("video_anuncio_card");
+  if (card?.dataset.videoRemovido === "1") {
+    return "removido";
+  }
+
+  const videoId = card?.dataset.videoIdExistente || "";
+  const videoUrl = card?.dataset.videoUrlExistente || "";
+  const videoNome = card?.dataset.videoNomeExistente || "";
+  return videoId || videoUrl || videoNome
+    ? `existente:${videoId}:${videoUrl}:${videoNome}`
     : "";
 }
 
@@ -35808,7 +35915,7 @@ function inicializarVideoCampanha() {
   input.dataset.iniciado = "1";
 
   adicionar?.addEventListener("click", () => input.click());
-  remover?.addEventListener("click", limparVideoCampanha);
+  remover?.addEventListener("click", () => limparVideoCampanha({ marcarRemovido: true }));
 
   input.addEventListener("change", () => {
     aplicarVideoCampanha(input.files?.[0]);
@@ -43869,7 +43976,18 @@ function coletarVideoCampanhaDetalhe(campanha = {}, cfg = {}) {
     campanha.video?.name ||
     "";
 
-  return { videoUrl, videoId, videoNome };
+  const videoThumbnailUrl =
+    cfg.video_thumbnail_url ||
+    cfg.videoThumbnailUrl ||
+    cfg.video?.thumbnail_url ||
+    cfg.video?.thumbnailUrl ||
+    campanha.video_thumbnail_url ||
+    campanha.videoThumbnailUrl ||
+    campanha.video?.thumbnail_url ||
+    campanha.video?.thumbnailUrl ||
+    "";
+
+  return { videoUrl, videoId, videoNome, videoThumbnailUrl };
 }
 
 function renderizarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
@@ -43880,7 +43998,8 @@ function renderizarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
     !imagens.urls.length &&
     !imagens.hashes.length &&
     !video.videoUrl &&
-    !video.videoId
+    !video.videoId &&
+    !video.videoThumbnailUrl
   ) {
     return `
       <div class="detalhe-imagem-placeholder">
@@ -43892,7 +44011,9 @@ function renderizarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
   return `
     <div class="detalhe-imagens-grid">
       ${video.videoUrl ? `
-        <video class="detalhe-video" controls src="${escaparHtml(video.videoUrl)}"></video>
+        <video class="detalhe-video" controls ${video.videoThumbnailUrl ? `poster="${escaparHtml(video.videoThumbnailUrl)}"` : ""} src="${escaparHtml(video.videoUrl)}"></video>
+      ` : video.videoThumbnailUrl ? `
+        <img src="${escaparHtml(video.videoThumbnailUrl)}" class="detalhe-imagem" alt="Capa do vídeo da campanha">
       ` : ""}
       ${video.videoId ? `
         <div class="detalhe-imagem-placeholder">

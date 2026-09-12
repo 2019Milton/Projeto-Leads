@@ -8484,6 +8484,41 @@ body.tema-claro .cal-nav span { color: #111827; }
 .campanha-origem-fita.nativa { background: linear-gradient(135deg, #0891b2, #0e7490); }
 .campanha-origem-fita.importada { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
 
+.campanha-plataforma-seletor {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.campanha-plataforma-btn {
+  appearance: none;
+  border: 1px solid rgba(148,163,184,.28);
+  border-radius: 8px;
+  background: rgba(15,23,42,.68);
+  padding: 2px;
+  cursor: pointer;
+  opacity: .68;
+  transition: border-color .16s, box-shadow .16s, opacity .16s, transform .16s;
+}
+
+.campanha-plataforma-btn:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+  border-color: rgba(74,222,128,.65);
+}
+
+.campanha-plataforma-btn.ativa {
+  opacity: 1;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34,197,94,.18);
+  background: rgba(20,83,45,.3);
+}
+
+.campanha-plataforma-btn .plat-badge,
+.campanha-plataforma-btn .plat-sub-badge {
+  pointer-events: none;
+}
 
 /* STATUS VISUAL */
 
@@ -18172,7 +18207,7 @@ body.tema-claro .criar-campanha-descricao {
               </div>
             </div>
 
-            <div class="detailed-targeting-panel admin-only-targeting" data-plat-only="tiktok" style="display:none;">
+            <div class="detailed-targeting-panel" data-plat-only="tiktok" style="display:none;">
               <strong>Localização (TikTok) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Selecione pelo menos uma localização disponível no TikTok. Busque e escolha uma cidade, região ou país para definir onde o anúncio será veiculado.', event)">i</button></strong>
               <p>
                 Busque e selecione a localização que vai receber os anúncios no TikTok.
@@ -18227,7 +18262,7 @@ body.tema-claro .criar-campanha-descricao {
 
           <div class="advanced-grid">
             <p class="simple-advanced-note">
-              Use apenas quando quiser programar início/fim ou controlar custo. A localização técnica fica automática.
+              Use este campo apenas para programar início/fim ou controlar custo. Os dados obrigatórios de público, inclusive a localização quando exigida pela plataforma, ficam em “Público e orçamento”.
             </p>
 
             <!-- CONTROLE DE CUSTO -->
@@ -23122,6 +23157,11 @@ let campanhasAtuais = [];
 
 const campanhasRenderCache = {};
 
+// Mantém, em cada card agrupado, qual plataforma o usuário escolheu para
+// consultar e operar. A seleção é somente visual/local; cada linha e cada ID
+// remoto continuam independentes.
+const plataformaAtivaCardPorGrupo = new Map();
+
 let contaPagamentoAtual = null;
 
 let linkInstagramBusinessSettings = "https://business.facebook.com/settings/instagram-accounts";
@@ -23448,14 +23488,21 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
     (chaveAtivaInicial && pares.some(p => p.chave === chaveAtivaInicial))
       ? chaveAtivaInicial
       : (parEditavel?.chave || pares[0].chave);
+  const parInicial = pares.find(p => p.chave === chaveInicial);
+  const parParaAbrir =
+    parInicial && (
+      capacidadesPlataforma(parInicial.campanha.plataforma).editar ||
+      campanhaPodePublicarEmOutraPlataforma(parInicial.campanha)
+    )
+      ? parInicial
+      : parEditavel;
 
   renderizarAbasEdicaoCampanha(pares, chaveInicial);
 
-  if (parEditavel) {
-    // Fluxo existente, 100% inalterado — so reaproveitado aqui.
-    await abrirEdicaoCampanhaPorChave(parEditavel.chave);
+  if (parParaAbrir) {
+    await abrirEdicaoCampanhaPorChave(parParaAbrir.chave);
   } else {
-    abrirModalEdicaoSomenteLeitura(pares[0].campanha);
+    abrirModalEdicaoSomenteLeitura(parInicial?.campanha || pares[0].campanha);
   }
 
   ativarAbaEdicaoCampanha(chaveInicial);
@@ -23477,14 +23524,72 @@ function renderizarAbasEdicaoCampanha(pares, chaveAtiva) {
       type="button"
       class="campanha-drawer-aba${p.chave === chaveAtiva ? " ativa" : ""}"
       data-aba-edicao-chave="${p.chave}"
-      onclick="ativarAbaEdicaoCampanha('${p.chave}')"
+      onclick="trocarAbaEdicaoCampanha('${p.chave}')"
     >${platBadgeCampanha(p.campanha)}</button>
   `).join("");
 }
 
-// Trocar de aba e so visual: a Meta sempre usa os mesmos campos reais
-// (nunca precisam recarregar valor nenhum), as outras mostram um resumo
-// estatico no lugar. Nada e recarregado/reenviado ao trocar de aba.
+// Troca a campanha real carregada no formulário quando a nova aba também é
+// editável. Isso impede que a aba diga "TikTok", por exemplo, enquanto os
+// campos e o ID ainda pertencem ao Facebook. O snapshot original do formulário
+// de criação é preservado para o fechamento do modal continuar restaurando o
+// estado correto.
+let trocaAbaEdicaoGrupoEmAndamento = false;
+async function trocarAbaEdicaoCampanha(chave) {
+  if (trocaAbaEdicaoGrupoEmAndamento || chave === abaEdicaoAtivaGrupo) return;
+
+  const pares = [...camposEdicaoGrupo];
+  const parDestino = pares.find(p => p.chave === chave);
+  if (!parDestino) return;
+
+  const destinoEditavel = capacidadesPlataforma(
+    plataformaCampanhaExibicao(parDestino.campanha)
+  ).editar;
+  if (!destinoEditavel) {
+    ativarAbaEdicaoCampanha(chave);
+    return;
+  }
+
+  const mesmaCampanhaCarregada =
+    Number(campanhaEmEdicao?.id) === Number(parDestino.campanha?.id);
+  if (mesmaCampanhaCarregada) {
+    ativarAbaEdicaoCampanha(chave);
+    return;
+  }
+
+  const parAtual = pares.find(p => p.chave === abaEdicaoAtivaGrupo);
+  const atualEditavel = parAtual && capacidadesPlataforma(
+    plataformaCampanhaExibicao(parAtual.campanha)
+  ).editar;
+  if (
+    atualEditavel &&
+    !confirm("Ao trocar de plataforma, alterações ainda não salvas nesta aba serão descartadas. Deseja continuar?")
+  ) {
+    return;
+  }
+
+  const snapshotCriacaoOriginal = _snapshotCriarCampanha;
+  trocaAbaEdicaoGrupoEmAndamento = true;
+  document
+    .querySelectorAll("#editar_campanha_abas .campanha-drawer-aba")
+    .forEach(botao => { botao.disabled = true; });
+
+  try {
+    await abrirEdicaoCampanhaPorChave(chave);
+    _snapshotCriarCampanha = snapshotCriacaoOriginal;
+    camposEdicaoGrupo = pares;
+    renderizarAbasEdicaoCampanha(pares, chave);
+    ativarAbaEdicaoCampanha(chave);
+  } finally {
+    trocaAbaEdicaoGrupoEmAndamento = false;
+    document
+      .querySelectorAll("#editar_campanha_abas .campanha-drawer-aba")
+      .forEach(botao => { botao.disabled = false; });
+  }
+}
+
+// Atualiza o destaque da aba e alterna entre formulário e resumo somente
+// leitura. O carregamento dos dados editáveis é feito acima.
 function ativarAbaEdicaoCampanha(chave) {
   abaEdicaoAtivaGrupo = chave;
 
@@ -23518,12 +23623,10 @@ function ativarAbaEdicaoCampanha(chave) {
   // em qualquer aba editável (ex: Google), então continua checando ehMeta
   // especificamente, não ehEditavel.
   const addPlatBloco = document.getElementById("editar_campanha_add_plataforma_bloco");
-  const addPlatBtn = document.getElementById("editar_campanha_btn_publicar_adicionais");
   if (ehMeta) {
     renderizarSeletorPlataformasAdicionaisEdicao();
-  } else {
-    if (addPlatBloco) addPlatBloco.style.display = "none";
-    if (addPlatBtn) addPlatBtn.style.display = "none";
+  } else if (addPlatBloco) {
+    addPlatBloco.style.display = "none";
   }
 }
 
@@ -23565,7 +23668,6 @@ function abrirModalEdicaoSomenteLeitura(campanhaRef) {
   if (btnSalvar) btnSalvar.style.display = "none";
 
   document.getElementById("editar_campanha_add_plataforma_bloco")?.style.setProperty("display", "none");
-  document.getElementById("editar_campanha_btn_publicar_adicionais")?.style.setProperty("display", "none");
 
   document.getElementById("campanhaEditarModal")?.classList.add("active");
 }
@@ -27370,9 +27472,18 @@ function selecionarPlataformaAdicionalEdicao(plat) {
 }
 
 function atualizarBotaoPublicarPlataformasAdicionais() {
-  const btn = document.getElementById("editar_campanha_btn_publicar_adicionais");
-  if (!btn) return;
-  btn.style.display = plataformasNovasParaPublicarEdicao().length ? "" : "none";
+  const btnSalvar = document.getElementById("editar_campanha_btn_salvar");
+  if (!btnSalvar || !campanhaEmEdicao) return;
+
+  const temNovasRedes = plataformasNovasParaPublicarEdicao().length > 0;
+  const podeSalvarOriginal = capacidadesPlataforma(
+    plataformaCampanhaExibicao(campanhaEmEdicao)
+  ).editar;
+
+  btnSalvar.style.display = (podeSalvarOriginal || temNovasRedes) ? "" : "none";
+  btnSalvar.textContent = temNovasRedes
+    ? "💾 Salvar alterações e publicar"
+    : "💾 Salvar alterações";
 }
 
 function plataformasNovasParaPublicarEdicao() {
@@ -29759,6 +29870,23 @@ function configurarCliquesDinamicos() {
 
   document.addEventListener("click", async (event) => {
     try {
+      const seletorPlataformaCard =
+        event.target.closest("#campanhas_lista [data-plataforma-card-key]");
+
+      if (seletorPlataformaCard) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
+        const grupoId = seletorPlataformaCard.dataset.plataformaCardGrupo;
+        const chave = seletorPlataformaCard.dataset.plataformaCardKey;
+        if (grupoId && chave) {
+          plataformaAtivaCardPorGrupo.set(grupoId, chave);
+          await carregarCampanhas(true);
+        }
+        return;
+      }
+
       const acaoCampanha =
         event.target.closest("#campanhas_lista [data-campanha-action], #campanha_drawer_conteudo [data-campanha-action]");
 
@@ -29791,6 +29919,14 @@ function configurarCliquesDinamicos() {
           return;
         }
 
+        if (action === "editar" && typeof abrirEdicaoCampanhaPorChaves === "function") {
+          await abrirEdicaoCampanhaPorChaves(
+            chaves,
+            acaoCampanha.dataset.campanhaKey
+          );
+          return;
+        }
+
         const parEscolhido = await escolherCampanhaParaAcao(
           chaves,
           action,
@@ -29815,8 +29951,6 @@ function configurarCliquesDinamicos() {
           } else if (typeof toggleCampanha === "function") {
             await toggleCampanha(campanha.campaign_id, campanha.status, acaoCampanha, plataforma);
           }
-        } else if (action === "editar" && typeof abrirEdicaoCampanhaPorChaves === "function") {
-          await abrirEdicaoCampanhaPorChaves([parEscolhido.chave], parEscolhido.chave);
         } else if (action === "duplicar" && typeof duplicarCampanhaPorChave === "function") {
           duplicarCampanhaPorChave(parEscolhido.chave);
         } else if (action === "encaminhar" && typeof abrirModalEncaminharCampanhaPorChave === "function") {
@@ -32072,6 +32206,11 @@ function validarPublicacaoCampanhaTikTok({ imagens = [], temVideo = false } = {}
     return "Selecione a identidade (perfil) do TikTok antes de publicar.";
   }
   if (!tiktokLocalidadeSelecionada) {
+    const blocoPublico = document.getElementById("bloco_publico_orcamento");
+    if (blocoPublico) blocoPublico.open = true;
+    const buscaLocalizacao = document.getElementById("tiktok_localidade_busca");
+    buscaLocalizacao?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => buscaLocalizacao?.focus(), 250);
     return "Busque e selecione ao menos uma localização para o TikTok antes de publicar.";
   }
   const formato = obterFormatoCriativoTikTok();
@@ -34183,6 +34322,11 @@ function abrirEdicaoCampanha(campanhaEncoded) {
         ? `Ajuste os campos disponíveis para ${platNome(plataformaEdicao)} ou selecione outra plataforma para publicar uma nova campanha.`
         : `A campanha original em ${platNome(plataformaEdicao)} permanece somente leitura. Complete os dados necessários e selecione abaixo outra plataforma para publicar uma nova campanha.`;
     }
+    const introducaoEdicao = textoModoEdicao?.closest(".pagamento-modal-text");
+    const blocoNovasPlataformas = document.getElementById("editar_campanha_add_plataforma_bloco");
+    if (introducaoEdicao && blocoNovasPlataformas) {
+      introducaoEdicao.insertAdjacentElement("afterend", blocoNovasPlataformas);
+    }
 
     selecionarNichoCampanhaNoEditor(
       campanha,
@@ -34326,7 +34470,6 @@ function fecharEdicaoCampanha() {
     abaAtivaAddPlataformaEdicao = null;
     _dadosAddPlataformaEdicaoPorRede = { facebook: null, instagram: null };
     document.getElementById("editar_campanha_add_plataforma_bloco")?.style.setProperty("display", "none");
-    document.getElementById("editar_campanha_btn_publicar_adicionais")?.style.setProperty("display", "none");
     document.getElementById("editar_campanha_add_plataforma_abas")?.style.setProperty("display", "none");
     aplicarRedesCampanha();
     configurarEdicaoDestinoCampanha(null);
@@ -34365,6 +34508,29 @@ async function salvarEdicaoCampanha() {
   const [usuario_id] = decoded.split(":");
 
   const plataforma = plataformaCampanhaExibicao(campanhaEmEdicao);
+  const novasRedes = plataformasNovasParaPublicarEdicao();
+
+  // O salvamento é a única confirmação do modal. Quando houver redes novas,
+  // publica cada perna selecionada antes de salvar a campanha original. Se
+  // alguma publicação falhar, mantém o modal aberto com os dados preenchidos
+  // para correção e nova tentativa.
+  if (novasRedes.length) {
+    const resultadoPublicacao = await publicarPlataformasAdicionaisCampanha({
+      acionadoPorSalvar: true,
+      mostrarResumoAoConcluir: false
+    });
+    if (!resultadoPublicacao?.ok) return;
+
+    if (!capacidadesPlataforma(plataforma).editar) {
+      fecharEdicaoCampanha();
+      alert(
+        novasRedes.length === 1
+          ? "Alterações salvas e campanha publicada na nova plataforma."
+          : "Alterações salvas e campanhas publicadas nas novas plataformas."
+      );
+      return;
+    }
+  }
 
   if (plataforma === "google") {
     await salvarEdicaoCampanhaGoogle(token, usuario_id);
@@ -37952,7 +38118,7 @@ async function criarCampanhaCompleta() {
 // em" — reaproveita os mesmos campos compartilhados (já visíveis no modal de
 // edição) e as mesmas funções de publicação/validação por rede, sem tocar em
 // Meta (a campanha original nunca é republicada aqui).
-async function publicarPlataformasAdicionaisCampanha() {
+async function publicarPlataformasAdicionaisCampanha(opcoes = {}) {
   if (!campanhaEmEdicao) return;
 
   const novasRedes = plataformasNovasParaPublicarEdicao();
@@ -38003,7 +38169,7 @@ async function publicarPlataformasAdicionaisCampanha() {
   const imagensParaValidar = imagensArquivos.length ? imagensArquivos : imagensUrlsFallback;
 
   const feedback = document.getElementById("editar_campanha_add_plataforma_feedback");
-  const btn = document.getElementById("editar_campanha_btn_publicar_adicionais");
+  const btn = document.getElementById("editar_campanha_btn_salvar");
   if (feedback) {
     feedback.style.display = "none";
     feedback.textContent = "";
@@ -38187,7 +38353,14 @@ async function publicarPlataformasAdicionaisCampanha() {
     }
 
     renderizarSeletorPlataformasAdicionaisEdicao();
-    setTimeout(() => mostrarResumoPublicacaoMultiRede(resultados), 800);
+
+    const publicacaoCompleta =
+      resultados.length > 0 && resultados.every(resultado => resultado.ok);
+    if (opcoes.mostrarResumoAoConcluir !== false || !publicacaoCompleta) {
+      setTimeout(() => mostrarResumoPublicacaoMultiRede(resultados), 800);
+    }
+
+    return { ok: publicacaoCompleta, resultados };
 
   } catch (err) {
     console.error("PUBLICAR PLATAFORMAS ADICIONAIS:", err);
@@ -38198,8 +38371,12 @@ async function publicarPlataformasAdicionaisCampanha() {
     } else {
       mostrarErroPublicacao(msg);
     }
+    return { ok: false, resultados: [], erro: msg };
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "🚀 Publicar nas novas plataformas"; }
+    if (btn) {
+      btn.disabled = false;
+      atualizarBotaoPublicarPlataformasAdicionais();
+    }
   }
 }
 
@@ -42463,26 +42640,29 @@ async function carregarStatusMeta() {
 }
 
 
-async function carregarCampanhas() {
+async function carregarCampanhas(somenteRenderizar = false) {
 
-  const token = localStorage.getItem("token");
+  let campanhas = campanhasAtuais;
+  if (!somenteRenderizar) {
+    const token = localStorage.getItem("token");
 
-  // 🔥 busca métricas reais
-  const res = await fetch(
-    `${API}/meta/metricas-campanhas`,
-    {
-      headers: {
-        "Authorization": `Bearer ${token}`
+    // 🔥 busca métricas reais
+    const res = await fetch(
+      `${API}/meta/metricas-campanhas`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
       }
-    }
-  );
+    );
 
-  const campanhas = await res.json();
+    campanhas = await res.json();
 
-  campanhasAtuais =
-    Array.isArray(campanhas)
-      ? campanhas
-      : [];
+    campanhasAtuais =
+      Array.isArray(campanhas)
+        ? campanhas
+        : [];
+  }
 
   atualizarGuiaSecreto();
 
@@ -42743,30 +42923,44 @@ async function carregarCampanhas() {
   });
 
   const _campanhasHTMLParts = [];
-  campanhasFiltradas.forEach((c, indiceCampanha) => {
+  campanhasFiltradas.forEach((campanhaPrincipal, indiceCampanha) => {
 
     const linhasGrupoCampanha =
-      c.publicacao_grupo_id ? gruposPublicacaoCampanha.get(c.publicacao_grupo_id) : null;
+      campanhaPrincipal.publicacao_grupo_id
+        ? gruposPublicacaoCampanha.get(campanhaPrincipal.publicacao_grupo_id)
+        : null;
 
-    // So a linha principal do grupo desenha card — as outras ja estao
-    // registradas no cache acima e aparecem como aba dentro do drawer dela.
-    if (linhasGrupoCampanha && linhasGrupoCampanha[0] !== c) {
+    // Só a primeira linha desenha o card agrupado. A linha efetivamente
+    // exibida dentro dele é escolhida pelos botões de plataforma.
+    if (linhasGrupoCampanha && linhasGrupoCampanha[0] !== campanhaPrincipal) {
       return;
     }
 
-    const campanhaCacheKey =
-      chavePorLinhaCampanha.get(c);
+    const chavePrincipal = chavePorLinhaCampanha.get(campanhaPrincipal);
+    const chavesGrupoCampanha = linhasGrupoCampanha
+      ? linhasGrupoCampanha.map(linha => chavePorLinhaCampanha.get(linha))
+      : [chavePrincipal];
+    const grupoSelecaoId = String(
+      campanhaPrincipal.publicacao_grupo_id || `linha_${chavePrincipal}`
+    );
+    const chaveAtivaSalva = plataformaAtivaCardPorGrupo.get(grupoSelecaoId);
+    const c = linhasGrupoCampanha?.find(
+      linha => chavePorLinhaCampanha.get(linha) === chaveAtivaSalva
+    ) || campanhaPrincipal;
+    const campanhaCacheKey = chavePorLinhaCampanha.get(c);
 
-    const chavesGrupoCampanha =
-      linhasGrupoCampanha
-        ? linhasGrupoCampanha.map(l => chavePorLinhaCampanha.get(l))
-        : [campanhaCacheKey];
+    if (linhasGrupoCampanha) {
+      plataformaAtivaCardPorGrupo.set(grupoSelecaoId, campanhaCacheKey);
+    }
 
-    const linhasCardCampanha = linhasGrupoCampanha || [c];
+    const linhasCardCampanha = [c];
     const chavesDasLinhas = linhas =>
       linhas.map(linha => chavePorLinhaCampanha.get(linha)).filter(Boolean);
     const chavesNaoExcluidas = chavesDasLinhas(
       linhasCardCampanha.filter(linha => !campanhaEstaExcluida(linha))
+    );
+    const chavesNaoExcluidasGrupo = chavesDasLinhas(
+      (linhasGrupoCampanha || [c]).filter(linha => !campanhaEstaExcluida(linha))
     );
     const chavesSincronizaveis = chavesDasLinhas(
       linhasCardCampanha.filter(linha =>
@@ -42958,9 +43152,20 @@ async function carregarCampanhas() {
               </span>
             ` : ""}
             ${linhasGrupoCampanha
-              ? linhasGrupoCampanha.map(l =>
-                  platBadgeCampanha(l, true)
-                ).join("")
+              ? `<div class="campanha-plataforma-seletor" role="group" aria-label="Plataforma exibida no card">${linhasGrupoCampanha.map(linha => {
+                  const chaveLinha = chavePorLinhaCampanha.get(linha);
+                  const ativa = chaveLinha === campanhaCacheKey;
+                  return `
+                    <button
+                      type="button"
+                      class="campanha-plataforma-btn${ativa ? " ativa" : ""}"
+                      data-plataforma-card-grupo="${escaparHtml(grupoSelecaoId)}"
+                      data-plataforma-card-key="${chaveLinha}"
+                      aria-pressed="${ativa ? "true" : "false"}"
+                      title="Mostrar status, métricas e ações desta plataforma"
+                    >${platBadgeCampanha(linha, true)}</button>
+                  `;
+                }).join("")} </div>`
               : platBadgeCampanha(c, true)}
             <span class="badge meta" style="display:none;">${escaparHtml(c.origem)}</span>
           </div>
@@ -43367,7 +43572,7 @@ async function carregarCampanhas() {
                   type="button"
                   data-campanha-action="editar"
                   data-campanha-key="${campanhaCacheKey}"
-                  data-campanha-keys='${JSON.stringify(chavesNaoExcluidas)}'
+                  data-campanha-keys='${JSON.stringify(chavesNaoExcluidasGrupo)}'
                   title="Editar campanha"
                 >
                   ✏️
@@ -50795,16 +51000,6 @@ async function enviarFeedback() {
     </div>
 
     <div id="editar_campanha_add_plataforma_feedback" class="pagamento-modal-alerta erro" style="display:none;"></div>
-
-    <button
-      type="button"
-      id="editar_campanha_btn_publicar_adicionais"
-      class="btn"
-      style="display:none;margin-top:10px;width:100%;"
-      onclick="publicarPlataformasAdicionaisCampanha()"
-    >
-      🚀 Publicar nas novas plataformas
-    </button>
 
     <div id="editar_campanha_resumo_outra_plataforma" style="display:none;"></div>
 

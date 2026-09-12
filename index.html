@@ -2776,6 +2776,39 @@ body.tema-claro .passo-meta-step-text p {
   margin-top: 0;
 }
 
+.detailed-targeting-search.autocomplete-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.targeting-results-autocomplete {
+  display: block;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(125,211,252,0.22);
+  border-radius: 8px;
+  background: rgba(2,6,23,0.88);
+}
+
+.targeting-results-autocomplete:empty {
+  display: none;
+}
+
+.targeting-results-autocomplete .geo-sugestao-item {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
 .targeting-results,
 .targeting-selected {
 
@@ -18215,20 +18248,21 @@ body.tema-claro .criar-campanha-descricao {
                 Busque e selecione a localização que vai receber os anúncios no TikTok.
               </p>
 
-              <div class="detailed-targeting-search">
+              <div class="detailed-targeting-search autocomplete-only">
                 <input
                   type="search"
                   id="tiktok_localidade_busca"
                   placeholder="Ex: São Paulo, Brasil"
+                  autocomplete="off"
                   oninput="agendarBuscaLocalidadeTikTok()"
+                  onkeydown="buscarLocalidadeTikTokComEnter(event)"
                 >
-                <button type="button" onclick="buscarLocalidadeTikTok()">Procurar</button>
               </div>
 
               <div id="tiktok_localidade_selecionada_chip" class="targeting-selected"></div>
-              <div id="tiktok_localidade_resultados" class="targeting-results"></div>
+              <div id="tiktok_localidade_resultados" class="targeting-results targeting-results-autocomplete" role="listbox"></div>
               <div id="tiktok_localidade_feedback" class="targeting-empty">
-                Busque e selecione uma localização (obrigatório para o TikTok).
+                Digite ao menos 2 letras e selecione uma das sugestões (obrigatório para o TikTok).
               </div>
             </div>
 
@@ -32039,7 +32073,27 @@ async function criarFormularioGoogleAutomatico(usuario_id, token, campanhaNome) 
 
 function agendarBuscaLocalidadeTikTok() {
   clearTimeout(buscaLocalidadeTikTokTimer);
+  const termo = document.getElementById("tiktok_localidade_busca")?.value?.trim() || "";
+  const resultadosEl = document.getElementById("tiktok_localidade_resultados");
+  const feedback = document.getElementById("tiktok_localidade_feedback");
+
+  if (termo.length < 2) {
+    buscaLocalidadeTikTokSequencia += 1;
+    window._tiktokLocalidadeResultadosAtuais = [];
+    if (resultadosEl) resultadosEl.innerHTML = "";
+    if (feedback) feedback.textContent = "Digite ao menos 2 letras para ver as localizações do TikTok.";
+    return;
+  }
+
+  if (feedback) feedback.textContent = "Buscando localizações no TikTok...";
   buscaLocalidadeTikTokTimer = setTimeout(buscarLocalidadeTikTok, 450);
+}
+
+function buscarLocalidadeTikTokComEnter(event) {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  clearTimeout(buscaLocalidadeTikTokTimer);
+  buscarLocalidadeTikTok();
 }
 
 async function buscarLocalidadeTikTok() {
@@ -32050,44 +32104,61 @@ async function buscarLocalidadeTikTok() {
 
   if (termo.length < 2) {
     resultadosEl.innerHTML = "";
+    if (feedback) feedback.textContent = "Digite ao menos 2 letras para ver as localizações do TikTok.";
     return;
   }
 
   const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
-  if (!token) return;
+  if (!token) {
+    if (feedback) feedback.textContent = "Entre novamente na plataforma para buscar localizações.";
+    return;
+  }
 
   const sequenciaAtual = ++buscaLocalidadeTikTokSequencia;
+  resultadosEl.innerHTML = "";
+  if (feedback) feedback.textContent = "Buscando localizações no TikTok...";
 
   try {
     const res = await fetch(`${API}/tiktok/direcionamento/localizacao`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ usuario_id, busca: termo })
+      body: JSON.stringify({
+        usuario_id,
+        busca: termo,
+        pais: document.getElementById("adv_pais")?.value || "BR",
+        destino: destinoCampanhaTikTokSelecionado
+      })
     });
     const data = await res.json();
 
     if (sequenciaAtual !== buscaLocalidadeTikTokSequencia) return;
 
+    if (!res.ok || data?.error) {
+      throw new Error(data?.error || "Não foi possível consultar as localizações do TikTok.");
+    }
+
     const itens = Array.isArray(data.data) ? data.data : [];
     if (!itens.length) {
       resultadosEl.innerHTML = "";
+      window._tiktokLocalidadeResultadosAtuais = [];
       if (feedback) feedback.textContent = "Nenhuma localização encontrada. Tente outro termo.";
       return;
     }
 
     resultadosEl.innerHTML = itens.map((item, i) => `
-      <div class="geo-sugestao-item" onclick="selecionarLocalidadeTikTokPorIndice(${i})">
-        ${escaparHtml(item.nome)}
-        <span class="geo-sugestao-tipo">${escaparHtml(item.tipo || "")}</span>
-      </div>`
+      <button type="button" class="geo-sugestao-item" role="option" onclick="selecionarLocalidadeTikTokPorIndice(${i})">
+        <span>${escaparHtml(item.nome)}</span>
+        <span class="geo-sugestao-tipo">${escaparHtml(item.detalhe || item.tipo || "")}</span>
+      </button>`
     ).join("");
 
     window._tiktokLocalidadeResultadosAtuais = itens;
     if (feedback) feedback.textContent = "Selecione uma sugestão.";
-  } catch (_) {
+  } catch (erro) {
     if (sequenciaAtual !== buscaLocalidadeTikTokSequencia) return;
     resultadosEl.innerHTML = "";
-    if (feedback) feedback.textContent = "Erro ao buscar localização.";
+    window._tiktokLocalidadeResultadosAtuais = [];
+    if (feedback) feedback.textContent = erro?.message || "Erro ao buscar localização.";
   }
 }
 
@@ -32103,11 +32174,17 @@ function selecionarLocalidadeTikTokPorIndice(indice) {
 
   const input = document.getElementById("tiktok_localidade_busca");
   if (input) input.value = "";
+
+  const feedback = document.getElementById("tiktok_localidade_feedback");
+  if (feedback) feedback.textContent = `Localização selecionada: ${item.nome || item.key}.`;
 }
 
 function removerLocalidadeTikTok() {
   tiktokLocalidadeSelecionada = null;
   renderizarLocalidadeTikTokSelecionada();
+  const feedback = document.getElementById("tiktok_localidade_feedback");
+  if (feedback) feedback.textContent = "Digite ao menos 2 letras e selecione uma das sugestões.";
+  document.getElementById("tiktok_localidade_busca")?.focus();
 }
 
 // Busca/seleção de localização do LinkedIn — mesmo padrão de

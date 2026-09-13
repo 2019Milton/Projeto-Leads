@@ -18791,9 +18791,9 @@ body.tema-claro .criar-campanha-descricao {
               <input type="text" id="campanha_google_nome_anunciante" maxlength="25" placeholder="Até 25 caracteres">
             </div>
             <div class="advanced-full" data-plat-only="google" style="display:none;">
-              <label>URL de destino (Google) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Obrigatória em todos os destinos do Google. O título do anúncio abre esta página, inclusive quando há formulário ou botão de WhatsApp.', event)">i</button></label>
+              <label>Página aberta ao clicar no título do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('O Google exige uma página de destino no anúncio de Pesquisa. O clique no título ou no texto abre esta página; quando o destino for WhatsApp, somente o botão de mensagem abre a conversa.', event)">i</button></label>
               <input type="url" id="campanha_google_url" placeholder="https://seusite.com.br" autocomplete="url">
-              <small id="campanha_google_url_ajuda" style="display:block;margin-top:5px;opacity:.65;">Página aberta quando a pessoa clicar no anúncio.</small>
+              <small id="campanha_google_url_ajuda" style="display:block;margin-top:5px;opacity:.65;">Obrigatória: esta página será aberta quando a pessoa clicar no título ou no texto do anúncio.</small>
             </div>
 
             <div id="bloco_formulario_google" data-plat-only="google" data-google-destino-only="lead_ads" style="display:none;">
@@ -18816,6 +18816,11 @@ body.tema-claro .criar-campanha-descricao {
             </div>
 
             <div id="bloco_whatsapp_google" class="advanced-full" data-plat-only="google" data-google-destino-only="whatsapp" style="display:none;">
+              <div class="channel-picker-status sucesso" style="margin-bottom:10px;line-height:1.5;">
+                <strong>Como o anúncio abre o WhatsApp:</strong><br>
+                • Clique no título ou no texto do anúncio → abre a página informada acima.<br>
+                • Clique no botão de mensagem → abre a conversa no WhatsApp conectado à Plataforma de Leads.
+              </div>
               <label>Mensagem inicial do WhatsApp <button type="button" class="info-icone" onclick="mostrarInfoCampo('É a mensagem que aparecerá pronta quando a pessoa tocar no botão de WhatsApp do anúncio. Ela poderá editar antes de enviar.', event)">i</button></label>
               <textarea id="campanha_google_whatsapp_mensagem" maxlength="200" placeholder="Olá! Gostaria de receber mais informações.">Olá! Gostaria de receber mais informações.</textarea>
               <small style="display:block;margin-top:5px;opacity:.65;">O Google vinculará o anúncio ao mesmo número conectado na aba WhatsApp Bot.</small>
@@ -28186,8 +28191,8 @@ async function aplicarDestinoCampanhaGoogle() {
   if (infoDisplay) infoDisplay.style.display = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" ? "" : "none";
   if (ajudaUrl) {
     ajudaUrl.textContent = destinoCampanhaGoogleSelecionado === "whatsapp"
-      ? "O título do anúncio abre esta página; o botão de mensagem abre o WhatsApp."
-      : "Obrigatória: página aberta quando a pessoa clicar no título do anúncio.";
+      ? "Obrigatória: o título e o texto do anúncio abrem esta página; somente o botão de mensagem abre o WhatsApp."
+      : "Obrigatória: esta página será aberta quando a pessoa clicar no título ou no texto do anúncio.";
   }
 
   if (!infoWhatsapp) return;

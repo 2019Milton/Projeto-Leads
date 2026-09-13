@@ -8527,6 +8527,7 @@ body.tema-claro .cal-nav span { color: #111827; }
   gap: 8px;
   width: 100%;
   min-width: 0;
+  margin-bottom: 8px;
 }
 
 .campanha-plataforma-btn {
@@ -43923,22 +43924,7 @@ async function carregarCampanhas(somenteRenderizar = false) {
                 ${nomeExibirNicho({ nome: c.nicho_nome || nichoCampanha.nome, slug: c.nicho_slug || nichoCampanha.slug, id: c.nicho_id || nichoCampanha.id })}
               </span>
             ` : ""}
-            ${linhasGrupoCampanha
-              ? `<div class="campanha-plataforma-seletor" role="group" aria-label="Plataforma exibida no card">${linhasGrupoCampanha.map(linha => {
-                  const chaveLinha = chavePorLinhaCampanha.get(linha);
-                  const ativa = chaveLinha === campanhaCacheKey;
-                  return `
-                    <button
-                      type="button"
-                      class="campanha-plataforma-btn${ativa ? " ativa" : ""}"
-                      data-plataforma-card-grupo="${escaparHtml(grupoSelecaoId)}"
-                      data-plataforma-card-key="${chaveLinha}"
-                      aria-pressed="${ativa ? "true" : "false"}"
-                      title="Mostrar status, métricas e ações desta plataforma"
-                    >${platBadgeCampanha(linha, true)}</button>
-                  `;
-                }).join("")} </div>`
-              : platBadgeCampanha(c, true)}
+            ${linhasGrupoCampanha ? "" : platBadgeCampanha(c, true)}
             <span class="badge meta" style="display:none;">${escaparHtml(c.origem)}</span>
           </div>
 
@@ -43993,6 +43979,23 @@ async function carregarCampanhas(somenteRenderizar = false) {
         }
     
       </div>
+
+      ${linhasGrupoCampanha
+        ? `<div class="campanha-plataforma-seletor" role="group" aria-label="Plataforma exibida no card">${linhasGrupoCampanha.map(linha => {
+            const chaveLinha = chavePorLinhaCampanha.get(linha);
+            const ativa = chaveLinha === campanhaCacheKey;
+            return `
+              <button
+                type="button"
+                class="campanha-plataforma-btn${ativa ? " ativa" : ""}"
+                data-plataforma-card-grupo="${escaparHtml(grupoSelecaoId)}"
+                data-plataforma-card-key="${chaveLinha}"
+                aria-pressed="${ativa ? "true" : "false"}"
+                title="Mostrar status, métricas e ações desta plataforma"
+              >${platBadgeCampanha(linha, true)}</button>
+            `;
+          }).join("")} </div>`
+        : ""}
     
       <div class="
         status-badge

@@ -23555,7 +23555,11 @@ function renderizarAbasEdicaoCampanha(pares, chaveAtiva) {
   }
 
   container.style.display = "";
-  container.innerHTML = pares.map(p => `
+  container.innerHTML = `
+    <span style="font-size:12px;font-weight:700;color:#cbd5e1;align-self:center;">
+      Editar plataforma:
+    </span>
+  ` + pares.map(p => `
     <button
       type="button"
       class="campanha-drawer-aba${p.chave === chaveAtiva ? " ativa" : ""}"
@@ -34457,7 +34461,14 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     const introducaoEdicao = textoModoEdicao?.closest(".pagamento-modal-text");
     const blocoNovasPlataformas = document.getElementById("editar_campanha_add_plataforma_bloco");
     if (introducaoEdicao && blocoNovasPlataformas) {
-      introducaoEdicao.insertAdjacentElement("afterend", blocoNovasPlataformas);
+      // Num grupo já existente, as abas Facebook/TikTok/etc. vêm primeiro e
+      // deixam explícito qual registro está sendo editado. O seletor abaixo
+      // continua reservado apenas para adicionar redes que ainda não existem.
+      const abasGrupo = document.getElementById("editar_campanha_abas");
+      const ancora = camposEdicaoGrupo.length > 1 && abasGrupo
+        ? abasGrupo
+        : introducaoEdicao;
+      ancora.insertAdjacentElement("afterend", blocoNovasPlataformas);
     }
 
     selecionarNichoCampanhaNoEditor(
@@ -34794,6 +34805,15 @@ async function salvarEdicaoCampanha() {
   if (novasRedes.length) {
     const resultadoRascunhos = await salvarRascunhosPlataformasAdicionais();
     if (!resultadoRascunhos?.ok) return;
+
+    // Adicionar uma nova plataforma é uma operação independente. Depois de
+    // persistir os rascunhos, encerra aqui para não reenviar também a campanha
+    // original à rede remota. Esse reenvio desnecessário fazia, por exemplo,
+    // uma campanha Facebook já ativa voltar para análise da Meta ao simples
+    // ato de adicionar um rascunho TikTok.
+    fecharEdicaoCampanha();
+    await carregarCampanhas();
+    return;
   }
 
   // Os campos compartilhados (nome, orçamento, texto, imagem...) refletem a
@@ -43416,6 +43436,33 @@ async function carregarCampanhas(somenteRenderizar = false) {
     );
   }
 
+  // O filtro decide quais GRUPOS aparecem, não quais pernas do grupo são
+  // descartadas. Ex.: se a perna Facebook está ACTIVE e a TikTok ainda é um
+  // rascunho PAUSED, filtrar por ativas deve manter o card do grupo e trazer
+  // também a perna TikTok para o seletor, o editor e as ações individuais.
+  // Antes, a filtragem acontecia linha a linha e o rascunho simplesmente
+  // desaparecia da interface, embora estivesse salvo corretamente no banco.
+  const campanhasCorrespondentesAosFiltros = [...campanhasFiltradas];
+  const gruposCorrespondentesAosFiltros = new Set(
+    campanhasCorrespondentesAosFiltros
+      .map(c => c.publicacao_grupo_id)
+      .filter(Boolean)
+  );
+
+  if (gruposCorrespondentesAosFiltros.size) {
+    const linhasJaIncluidas = new Set(campanhasFiltradas);
+    campanhasAtuais.forEach(c => {
+      if (
+        c.publicacao_grupo_id &&
+        gruposCorrespondentesAosFiltros.has(c.publicacao_grupo_id) &&
+        !linhasJaIncluidas.has(c)
+      ) {
+        campanhasFiltradas.push(c);
+        linhasJaIncluidas.add(c);
+      }
+    });
+  }
+
   const contador =
     document.getElementById("campanhas_contador");
 
@@ -43423,7 +43470,7 @@ async function carregarCampanhas(somenteRenderizar = false) {
     // Campanhas do mesmo publicacao_grupo_id contam como 1 (viram um card só).
     const total =
       new Set(
-        campanhasFiltradas.map((c, i) => c.publicacao_grupo_id || `__linha_${i}`)
+        campanhasCorrespondentesAosFiltros.map((c, i) => c.publicacao_grupo_id || `__linha_${i}`)
       ).size;
 
     contador.innerText =

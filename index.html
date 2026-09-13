@@ -27560,9 +27560,7 @@ function atualizarBotaoPublicarPlataformasAdicionais() {
   ).editar;
 
   btnSalvar.style.display = (podeSalvarOriginal || temNovasRedes) ? "" : "none";
-  btnSalvar.textContent = temNovasRedes
-    ? "💾 Salvar alterações e publicar"
-    : "💾 Salvar alterações";
+  btnSalvar.textContent = "💾 Salvar alterações";
 }
 
 function plataformasNovasParaPublicarEdicao() {
@@ -32095,11 +32093,13 @@ function validarPublicacaoCampanhaGoogle(imagensArquivos) {
 // formulário (compartilhados com a Meta): título/descrição do anúncio, perguntas
 // qualificadoras e a tela de "obrigado". Chamado quando o usuário não escolhe um
 // Lead Form já existente em "Formulário Google".
-async function criarFormularioGoogleAutomatico(usuario_id, token, campanhaNome) {
-  const perguntas = (document.getElementById("adv_perguntas")?.value || "")
-    .split("\n")
-    .map(p => p.trim())
-    .filter(Boolean);
+async function criarFormularioGoogleAutomatico(usuario_id, token, campanhaNome, configuracao = null) {
+  const perguntas = configuracao
+    ? (Array.isArray(configuracao.perguntas) ? configuracao.perguntas : [])
+    : (document.getElementById("adv_perguntas")?.value || "")
+        .split("\n")
+        .map(p => p.trim())
+        .filter(Boolean);
 
   try {
     const res = await fetch(`${API}/google/formulario`, {
@@ -32107,14 +32107,14 @@ async function criarFormularioGoogleAutomatico(usuario_id, token, campanhaNome) 
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
       body: JSON.stringify({
         usuario_id,
-        nome_negocio: document.getElementById("campanha_google_nome_anunciante")?.value?.trim(),
-        headline: document.getElementById("adv_titulo")?.value?.trim() || campanhaNome,
-        descricao: document.getElementById("adv_descricao")?.value?.trim(),
+        nome_negocio: configuracao?.nome_anunciante || document.getElementById("campanha_google_nome_anunciante")?.value?.trim(),
+        headline: configuracao?.titulo || document.getElementById("adv_titulo")?.value?.trim() || campanhaNome,
+        descricao: configuracao?.descricao || document.getElementById("adv_descricao")?.value?.trim(),
         perguntas,
-        obrigado_titulo: document.getElementById("adv_obrigado_titulo")?.value?.trim(),
-        obrigado_texto: document.getElementById("adv_obrigado_texto")?.value?.trim(),
-        url_destino: document.getElementById("campanha_google_url")?.value?.trim(),
-        privacidade_url: document.getElementById("adv_privacidade_url")?.value?.trim()
+        obrigado_titulo: configuracao?.obrigado_titulo || document.getElementById("adv_obrigado_titulo")?.value?.trim(),
+        obrigado_texto: configuracao?.obrigado_texto || document.getElementById("adv_obrigado_texto")?.value?.trim(),
+        url_destino: configuracao?.url_destino || document.getElementById("campanha_google_url")?.value?.trim(),
+        privacidade_url: configuracao?.privacidade_url || document.getElementById("adv_privacidade_url")?.value?.trim()
       })
     });
     return await res.json();
@@ -34620,10 +34620,180 @@ function fecharEdicaoCampanha() {
 // Dispatcher fino, no mesmo espírito de criarCampanhaCompleta()/publicarCampanhaX():
 // coleta o token uma vez e despacha pra uma função de salvamento dedicada por
 // plataforma — cada uma sabe seu próprio payload/endpoint/unidade de orçamento.
+async function salvarRascunhosPlataformasAdicionais() {
+  if (!campanhaEmEdicao) return { ok: false };
+
+  const novasRedes = plataformasNovasParaPublicarEdicao();
+  if (!novasRedes.length) return { ok: true, rascunhos: [] };
+
+  const { token } = obterTokenEUsuarioIdCampanha();
+  if (!token) return { ok: false };
+
+  salvarOrcamentoRede(_orcamentoEdicaoPorRede, abaAtivaAddPlataformaEdicao);
+
+  const feedback = document.getElementById("editar_campanha_add_plataforma_feedback") ||
+    document.getElementById("editar_campanha_feedback");
+  const btn = document.getElementById("editar_campanha_btn_salvar");
+  if (feedback) {
+    feedback.style.display = "none";
+    feedback.textContent = "";
+  }
+
+  const camposBasicos = coletarCamposBasicosCampanha();
+  const cfgOrigem = obterConfiguracoesCampanha(campanhaEmEdicao);
+  const cfgCompartilhada = normalizarConfiguracoesAvancadasParaEnvio({
+    ...cfgOrigem,
+    ...coletarConfiguracoesAvancadas(),
+    ...coletarDadosNichoAtivo(),
+    texto: camposBasicos.texto,
+    cta: camposBasicos.cta,
+    page_id: camposBasicos.page_id
+  });
+
+  // IDs de campanha/criativo são exclusivos da rede de origem e nunca podem
+  // ser herdados pela nova perna. Mídia reaproveitável é guardada por URL.
+  ["campaign_id", "adset_id", "ad_id", "creative_id", "ultimo_erro_publicacao"]
+    .forEach(chave => delete cfgCompartilhada[chave]);
+
+  const urlsImagens = Array.from(document.querySelectorAll("#imagens-container .imagem-item"))
+    .map(item => item.dataset.urlExistente)
+    .filter(Boolean);
+  const urlsOrigem = Array.isArray(cfgOrigem.image_urls) ? cfgOrigem.image_urls.filter(Boolean) : [];
+  const imageUrls = Array.from(new Set([...urlsImagens, ...urlsOrigem]));
+  const imageHashes = Array.from(document.querySelectorAll("#imagens-container .imagem-item"))
+    .map(item => item.dataset.hashExistente)
+    .filter(Boolean);
+  const videoUrl = primeiraUrlValidaCampanhaIA([
+    cfgOrigem.video_url,
+    cfgOrigem.videoUrl,
+    cfgOrigem.video?.url
+  ]);
+  const possuiArquivoNovo = Boolean(
+    obterArquivoVideoCampanha() ||
+    Array.from(document.querySelectorAll("#imagens-container .imagem-input"))
+      .some(input => input.files?.[0])
+  );
+
+  const nome = String(camposBasicos.nome || campanhaEmEdicao.nome || "").trim();
+  if (!nome) {
+    if (feedback) {
+      feedback.textContent = "Informe o nome da campanha antes de salvar.";
+      feedback.style.display = "block";
+    }
+    return { ok: false };
+  }
+
+  const rascunhos = novasRedes.map(rede => {
+    const valorReais = Number(orcamentoSalvoRede(
+      _orcamentoEdicaoPorRede,
+      rede,
+      document.getElementById("orcamento")?.value || 0
+    ));
+    const configuracoes = {
+      ...cfgCompartilhada,
+      plataforma: rede,
+      image_urls: imageUrls,
+      video_url: videoUrl || null,
+      videoUrl: videoUrl || null,
+      midia_pendente_reanexar: possuiArquivoNovo && !imageUrls.length && !videoUrl
+    };
+
+    // Não reutilize IDs de mídia entre redes: hashes Meta, assets Google e IDs
+    // TikTok pertencem a bibliotecas diferentes.
+    delete configuracoes.image_ids;
+    delete configuracoes.video_id;
+    delete configuracoes.videoId;
+
+    if (rede === "google") {
+      const google = snapshotCamposGoogleCampanha();
+      Object.assign(configuracoes, google, {
+        form_id: google.formulario_id || null,
+        plataformas: ["google"]
+      });
+    } else if (rede === "tiktok") {
+      const tiktok = snapshotCamposTikTokCampanha();
+      Object.assign(configuracoes, tiktok, {
+        localidades: tiktok.localidade ? [{ ...tiktok.localidade }] : [],
+        plataformas: ["tiktok"]
+      });
+    } else {
+      configuracoes.plataformas = [rede];
+      configuracoes.image_hashes = imageHashes;
+      configuracoes.instagram_actor_id = rede === "instagram"
+        ? instagramActorIdSelecionado || null
+        : null;
+    }
+
+    return {
+      plataforma: rede,
+      nome,
+      daily_budget: rede === "google"
+        ? Math.max(0, valorReais)
+        : Math.round(Math.max(0, valorReais) * 100),
+      configuracoes_avancadas: configuracoes
+    };
+  });
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Salvando...";
+  }
+
+  try {
+    const res = await fetch(`${API}/campanhas/${campanhaEmEdicao.id}/rascunhos-plataformas`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ rascunhos })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) {
+      throw new Error(data.error || "Não foi possível salvar as novas plataformas");
+    }
+
+    campanhaEmEdicao.publicacao_grupo_id = data.publicacao_grupo_id ||
+      campanhaEmEdicao.publicacao_grupo_id;
+    novasRedes.forEach(rede => plataformasExistentesEdicaoGrupo.add(rede));
+    mostrarSucessoPublicacao(
+      novasRedes.length === 1
+        ? `${platNome(novasRedes[0])} foi salvo como rascunho. Publique depois pelo card.`
+        : "As novas plataformas foram salvas como rascunhos. Publique cada uma pelo card."
+    );
+    return { ok: true, ...data };
+  } catch (err) {
+    const mensagem = err?.message || "Erro ao salvar rascunhos das plataformas";
+    if (feedback) {
+      feedback.textContent = mensagem;
+      feedback.style.display = "block";
+    } else {
+      mostrarErroPublicacao(mensagem);
+    }
+    return { ok: false, erro: mensagem };
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      atualizarBotaoPublicarPlataformasAdicionais();
+    }
+  }
+}
+
 async function salvarEdicaoCampanha() {
 
   if (!campanhaEmEdicao) {
     return;
+  }
+
+  const novasRedes = plataformasNovasParaPublicarEdicao();
+
+  // Salva primeiro as novas pernas como rascunhos locais independentes. Esta
+  // ação não chama nenhuma API de anúncios e não publica nada remotamente.
+  // O envio ao Google/TikTok/Meta acontece depois, no botão Publicar do card
+  // da plataforma correspondente.
+  if (novasRedes.length) {
+    const resultadoRascunhos = await salvarRascunhosPlataformasAdicionais();
+    if (!resultadoRascunhos?.ok) return;
   }
 
   // Os campos compartilhados (nome, orçamento, texto, imagem...) refletem a
@@ -34646,28 +34816,16 @@ async function salvarEdicaoCampanha() {
   const [usuario_id] = decoded.split(":");
 
   const plataforma = plataformaCampanhaExibicao(campanhaEmEdicao);
-  const novasRedes = plataformasNovasParaPublicarEdicao();
 
-  // O salvamento é a única confirmação do modal. Quando houver redes novas,
-  // publica cada perna selecionada antes de salvar a campanha original. Se
-  // alguma publicação falhar, mantém o modal aberto com os dados preenchidos
-  // para correção e nova tentativa.
-  if (novasRedes.length) {
-    const resultadoPublicacao = await publicarPlataformasAdicionaisCampanha({
-      acionadoPorSalvar: true,
-      mostrarResumoAoConcluir: false
-    });
-    if (!resultadoPublicacao?.ok) return;
-
-    if (!capacidadesPlataforma(plataforma).editar) {
-      fecharEdicaoCampanha();
-      alert(
-        novasRedes.length === 1
-          ? "Alterações salvas e campanha publicada na nova plataforma."
-          : "Alterações salvas e campanhas publicadas nas novas plataformas."
-      );
-      return;
-    }
+  if (!capacidadesPlataforma(plataforma).editar) {
+    fecharEdicaoCampanha();
+    await carregarCampanhas();
+    mostrarSucessoPublicacao(
+      novasRedes.length === 1
+        ? "Rascunho da nova plataforma salvo. Publique-o depois pelo card."
+        : "Rascunhos das novas plataformas salvos. Publique cada um pelo card."
+    );
+    return;
   }
 
   if (plataforma === "google") {
@@ -36857,7 +37015,7 @@ function validarCamposCompartilhadosCampanha({
   return true;
 }
 
-async function descartarCampanhaTikTokCriadaPorFalha(campaign_id, token) {
+async function descartarCampanhaTikTokCriadaPorFalha(campaign_id, token, campanhaLocalId = null) {
   if (!campaign_id || !token) return;
   try {
     await fetch(`${API}/tiktok/excluir-campanha`, {
@@ -36867,6 +37025,15 @@ async function descartarCampanhaTikTokCriadaPorFalha(campaign_id, token) {
     });
   } catch (err) {
     console.warn("Não foi possível remover a campanha TikTok criada após falha:", err);
+  } finally {
+    if (campanhaLocalId) try {
+      await fetch(`${API}/campanhas/${campanhaLocalId}/reverter-publicacao-rascunho`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.warn("Não foi possível devolver a campanha TikTok ao estado de rascunho:", err);
+    }
   }
 }
 
@@ -37154,19 +37321,30 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, texto, cta, orcamento,
-    configuracoesBase, imagensArquivos, videoArquivo, videoUrlFallback, publicacaoGrupoId
+    configuracoesBase, imagensArquivos, videoArquivo, videoUrlFallback, publicacaoGrupoId,
+    campanhaLocalId, nichoId, plataformaConfig
   } = contexto;
   const prefixo = isMultiRede ? "[TikTok] " : "";
-  const destinoTikTok = ["lead_ads", "site", "whatsapp"].includes(destinoCampanhaTikTokSelecionado)
-    ? destinoCampanhaTikTokSelecionado
+  const destinoConfigurado = plataformaConfig?.destino ?? destinoCampanhaTikTokSelecionado;
+  const destinoTikTok = ["lead_ads", "site", "whatsapp"].includes(destinoConfigurado)
+    ? destinoConfigurado
     : "lead_ads";
-  const urlDestinoTikTok = document.getElementById("campanha_tiktok_url")?.value?.trim() || "";
-  const formularioId = destinoTikTok === "lead_ads" ? obterFormularioTikTokEscolhido() : null;
-  const identidadeId = tiktokIdentidadeSelecionada?.identity_id || null;
-  const identidadeTipo = tiktokIdentidadeSelecionada?.identity_type || null;
+  const urlDestinoTikTok = plataformaConfig
+    ? String(plataformaConfig.url_destino || "").trim()
+    : document.getElementById("campanha_tiktok_url")?.value?.trim() || "";
+  const formularioId = destinoTikTok === "lead_ads"
+    ? (plataformaConfig ? plataformaConfig.form_id || null : obterFormularioTikTokEscolhido())
+    : null;
+  const identidadeId = plataformaConfig?.identity_id || tiktokIdentidadeSelecionada?.identity_id || null;
+  const identidadeTipo = plataformaConfig?.identity_type || tiktokIdentidadeSelecionada?.identity_type || null;
+  const localidadeTikTok = plataformaConfig
+    ? (plataformaConfig.localidade || plataformaConfig.localidades?.[0] || null)
+    : tiktokLocalidadeSelecionada;
 
   try {
-    const formatoCriativo = obterFormatoCriativoTikTok();
+    const formatoCriativo = ["video", "imagem"].includes(plataformaConfig?.formato_criativo)
+      ? plataformaConfig.formato_criativo
+      : obterFormatoCriativoTikTok();
     const configuracoes_avancadas = {
       ...configuracoesBase,
       destino: destinoTikTok,
@@ -37177,7 +37355,7 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
       identity_type: identidadeTipo
     };
     if (publicacaoGrupoId) configuracoes_avancadas.publicacao_grupo_id = publicacaoGrupoId;
-    if (tiktokLocalidadeSelecionada) configuracoes_avancadas.localidades = [tiktokLocalidadeSelecionada];
+    if (localidadeTikTok) configuracoes_avancadas.localidades = [localidadeTikTok];
 
     setPublishProgress(3, `${prefixo}Validando conta, identidade e destino no TikTok...`);
     const preflightRes = await fetch(`${API}/tiktok/preflight-publicacao`, {
@@ -37203,6 +37381,13 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     const fontesImagemDisponiveis = montarFontesImagem(imagensArquivos, contexto.imagensUrlsFallback);
     const fontesImagem = formatoCriativo === "imagem" ? fontesImagemDisponiveis.slice(0, 1) : [];
     const totalImagens = fontesImagem.length;
+
+    if (formatoCriativo === "imagem" && !totalImagens) {
+      return { ok: false, mensagem: "O rascunho TikTok não possui uma imagem reutilizável. Abra Editar, adicione a mídia e salve antes de publicar." };
+    }
+    if (formatoCriativo === "video" && !videoArquivo && !videoUrlFallback) {
+      return { ok: false, mensagem: "O rascunho TikTok não possui um vídeo reutilizável. Abra Editar, adicione o vídeo e salve antes de publicar." };
+    }
 
     for (let i = 0; i < fontesImagem.length; i++) {
       setPublishProgress(
@@ -37255,9 +37440,10 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
       body: JSON.stringify({
         usuario_id,
+        campanha_local_id: campanhaLocalId || null,
         nome: campanha_nome,
         configuracoes_avancadas,
-        nicho_id: window._nichoAtivo?.id || null,
+        nicho_id: nichoId || window._nichoAtivo?.id || null,
         daily_budget: Number(orcamento) * 100,
         publicacao_grupo_id: publicacaoGrupoId,
         destino: destinoTikTok,
@@ -37290,7 +37476,7 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     const adgroup = await adgroupRes.json();
 
     if (adgroup.error) {
-      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token);
+      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
       return { ok: false, mensagem: adgroup.error };
     }
 
@@ -37320,7 +37506,7 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     const anuncio = await anuncioRes.json();
 
     if (anuncio.error) {
-      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token);
+      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
       return { ok: false, mensagem: anuncio.error };
     }
 
@@ -37329,13 +37515,13 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
   } catch (err) {
     console.error("ERRO publicarCampanhaTikTok:", err);
     if (campanhaCriadaId) {
-      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token);
+      await descartarCampanhaTikTokCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
     }
     return { ok: false, mensagem: "Erro ao criar campanha TikTok: " + (err?.message || String(err) || "Erro desconhecido") };
   }
 }
 
-async function descartarCampanhaGoogleCriadaPorFalha(campaign_id, token) {
+async function descartarCampanhaGoogleCriadaPorFalha(campaign_id, token, campanhaLocalId = null) {
   if (!campaign_id || !token) return;
   try {
     await fetch(`${API}/google/excluir-campanha`, {
@@ -37345,6 +37531,15 @@ async function descartarCampanhaGoogleCriadaPorFalha(campaign_id, token) {
     });
   } catch (err) {
     console.warn("Não foi possível remover a campanha Google Ads criada após falha:", err);
+  } finally {
+    if (campanhaLocalId) try {
+      await fetch(`${API}/campanhas/${campanhaLocalId}/reverter-publicacao-rascunho`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.warn("Não foi possível devolver a campanha Google Ads ao estado de rascunho:", err);
+    }
   }
 }
 
@@ -37384,14 +37579,25 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
   const {
     token, usuario_id, campanha_nome, orcamento,
     publicacaoGrupoId, imagensArquivos, imagensUrlsFallback,
-    videoArquivo, videoUrlFallback
+    videoArquivo, videoUrlFallback, campanhaLocalId, plataformaConfig
   } = contexto;
   const prefixo = isMultiRede ? "[Google Ads] " : "";
-  const tipoCampanha = tipoCampanhaGoogleSelecionado === "display" ? "display" : "search";
-  const destinoGoogle = ["lead_ads", "site", "whatsapp"].includes(destinoCampanhaGoogleSelecionado)
-    ? destinoCampanhaGoogleSelecionado
+  const tipoConfigurado = plataformaConfig?.tipo_campanha ?? tipoCampanhaGoogleSelecionado;
+  const tipoCampanha = tipoConfigurado === "display" ? "display" : "search";
+  const destinoConfigurado = plataformaConfig?.destino ?? destinoCampanhaGoogleSelecionado;
+  const destinoGoogle = ["lead_ads", "site", "whatsapp"].includes(destinoConfigurado)
+    ? destinoConfigurado
     : "lead_ads";
-  const camposAnuncioGoogle = coletarCamposGoogleAnuncio();
+  const camposAnuncioGoogle = plataformaConfig
+    ? {
+        titulos: Array.isArray(plataformaConfig.titulos) ? plataformaConfig.titulos.filter(Boolean) : [],
+        descricoes: Array.isArray(plataformaConfig.descricoes) ? plataformaConfig.descricoes.filter(Boolean) : [],
+        titulo_longo: plataformaConfig.titulo_longo || "",
+        nome_anunciante: plataformaConfig.nome_anunciante || "",
+        url_destino: plataformaConfig.url_destino || "",
+        mensagem_whatsapp: plataformaConfig.mensagem_whatsapp || ""
+      }
+    : coletarCamposGoogleAnuncio();
 
   try {
     // Prepara o formulário antes da campanha. Assim, termos não aceitos ou dados
@@ -37399,9 +37605,16 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
     let formularioId = "";
     if (destinoGoogle === "lead_ads") {
       setPublishProgress(12, `${prefixo}Preparando formulário de lead...`);
-      formularioId = obterFormularioGoogleEscolhido();
+      formularioId = plataformaConfig
+        ? plataformaConfig.form_id || plataformaConfig.formulario_id || ""
+        : obterFormularioGoogleEscolhido();
       if (!formularioId) {
-        const formularioAuto = await criarFormularioGoogleAutomatico(usuario_id, token, campanha_nome);
+        const formularioAuto = await criarFormularioGoogleAutomatico(
+          usuario_id,
+          token,
+          campanha_nome,
+          plataformaConfig
+        );
         if (formularioAuto.error) {
           return { ok: false, mensagem: formularioAuto.error };
         }
@@ -37416,6 +37629,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
       body: JSON.stringify({
         usuario_id,
+        campanha_local_id: campanhaLocalId || null,
         nome: campanha_nome,
         orcamento: Number(orcamento),
         publicacao_grupo_id: publicacaoGrupoId,
@@ -37424,8 +37638,9 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         titulos: camposAnuncioGoogle.titulos,
         mensagem_whatsapp: camposAnuncioGoogle.mensagem_whatsapp || null,
         url_destino: camposAnuncioGoogle.url_destino,
-        privacidade_url: document.getElementById("adv_privacidade_url")?.value?.trim() || null,
-        form_id: formularioId || null
+        privacidade_url: plataformaConfig?.privacidade_url || document.getElementById("adv_privacidade_url")?.value?.trim() || null,
+        form_id: formularioId || null,
+        configuracoes_avancadas: contexto.configuracoesBase || plataformaConfig || {}
       })
     });
     const campanha = await campanhaRes.json();
@@ -37450,7 +37665,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
     const adgroup = await adgroupRes.json();
 
     if (adgroup.error) {
-      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
       return { ok: false, mensagem: adgroup.error };
     }
 
@@ -37460,7 +37675,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
     const imagensPaisagemAssets = [];
     const imagensQuadradasAssets = [];
     if (tipoCampanha === "display" && !fontesImagemGoogle.length) {
-      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
       return { ok: false, mensagem: "Selecione ao menos uma imagem para o anúncio de Display do Google Ads." };
     }
     if (fontesImagemGoogle.length) {
@@ -37477,7 +37692,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
           });
           const upload = await uploadRes.json().catch(() => ({}));
           if (!uploadRes.ok || upload.error || !upload.resource_name) {
-            await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+            await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
             return { ok: false, mensagem: upload.error || `Erro ao enviar a imagem ${indice + 1} para o Google Ads.` };
           }
           if (tipo === "paisagem") imagensPaisagemAssets.push(upload.resource_name);
@@ -37493,7 +37708,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
           arquivo: videoArquivo, url: videoUrlFallback, token, usuario_id, titulo: campanha_nome
         });
       } catch (err) {
-        await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+        await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
         return { ok: false, mensagem: err?.message || "Erro ao processar vídeo no Google Ads." };
       }
     }
@@ -37533,7 +37748,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
     const anuncio = await anuncioRes.json();
 
     if (anuncio.error) {
-      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
       return { ok: false, mensagem: anuncio.error };
     }
 
@@ -37546,7 +37761,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
   } catch (err) {
     console.error("ERRO publicarCampanhaGoogle:", err);
     if (campanhaCriadaId) {
-      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token);
+      await descartarCampanhaGoogleCriadaPorFalha(campanhaCriadaId, token, campanhaLocalId);
     }
     return { ok: false, mensagem: "Erro ao criar campanha Google Ads: " + (err?.message || String(err) || "Erro desconhecido") };
   }
@@ -39349,8 +39564,8 @@ const CAPACIDADES_PLATAFORMA = {
   meta:      { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
   facebook:  { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
   instagram: { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
-  google:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
-  tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
+  google:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
+  tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
   linkedin:  { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
   kwai:      { previewReal: false, restaurar: false, alterarStatus: false, publicarRascunho: false, sincronizar: false, excluir: false, duplicar: false, encaminhar: false, editar: false },
 };
@@ -43552,7 +43767,11 @@ async function carregarCampanhas(somenteRenderizar = false) {
           data-campanha-key="${campanhaCacheKey}"
           data-campanha-keys='${JSON.stringify(chavesComAcaoStatus)}'
           title="${campanhaGoogleIncompleta ? "Continuar a configuração desta campanha no Google Ads" : campanhaLocalPublicavel ? (c.plataforma && c.plataforma !== "meta" ? `Publicar campanha (${c.plataforma})` : "Publicar campanha na sua Meta conectada") : "Publicar / ativar campanha"}"
-        >${campanhaGoogleIncompleta ? "Completar" : "Publicar"}</button>
+        >${campanhaGoogleIncompleta
+          ? "Completar"
+          : campanhaLocalPublicavel
+          ? `Publicar no ${escaparHtml(platNome(plataformaCampanhaExibicao(c)))}`
+          : "Publicar"}</button>
             `
         }
     
@@ -43561,6 +43780,8 @@ async function carregarCampanhas(somenteRenderizar = false) {
       <div class="
         status-badge
         ${publicacaoExpirada
+          ? "status-paused"
+          : campanhaLocalPublicavel
           ? "status-paused"
           : campanhaEstaAtiva(c)
           ? "status-active"
@@ -43573,6 +43794,8 @@ async function carregarCampanhas(somenteRenderizar = false) {
         ${
           publicacaoExpirada
             ? "🟠 ENCERRADA"
+            : campanhaLocalPublicavel
+            ? "📝 RASCUNHO"
             : campanhaEstaAtiva(c)
             ? `🟢 ${String(c.status || "ACTIVE").toUpperCase()}`
             : campanhaEstaPausada(c)
@@ -45305,6 +45528,129 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
     : String(plataforma || "meta").toLowerCase();
 
   if (!token || !campanhaId) {
+    return;
+  }
+
+  if (plataformaPublicacao === "tiktok") {
+    const campanhaTikTok = campanhasAtuais.find(c => Number(c.id) === Number(campanhaId));
+    if (!campanhaTikTok) {
+      mostrarErroPublicacao("Não foi possível carregar o rascunho TikTok. Atualize a página e tente novamente.");
+      return;
+    }
+
+    const cfg = obterConfiguracoesCampanha(campanhaTikTok);
+    const imageUrls = Array.isArray(cfg.image_urls)
+      ? cfg.image_urls.filter(Boolean)
+      : Array.isArray(cfg.imagens_urls)
+      ? cfg.imagens_urls.filter(Boolean)
+      : [];
+    const videoUrl = primeiraUrlValidaCampanhaIA([
+      cfg.video_url,
+      cfg.videoUrl,
+      cfg.video?.url
+    ]);
+
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.dataset.textoOriginal = btnEl.textContent.trim();
+      btnEl.innerHTML = '<span class="spinner-toggle"></span> Publicando...';
+    }
+
+    try {
+      const tokenInfo = obterTokenEUsuarioIdCampanha();
+      const resultado = await publicarCampanhaTikTok({
+        token,
+        usuario_id: tokenInfo.usuario_id,
+        campanha_nome: campanhaTikTok.nome,
+        texto: cfg.texto || cfg.descricao || campanhaTikTok.nome,
+        cta: cfg.cta || "LEARN_MORE",
+        orcamento: orcamentoDiarioEmReais(campanhaTikTok),
+        configuracoesBase: cfg,
+        imagensArquivos: [],
+        imagensUrlsFallback: imageUrls,
+        videoArquivo: null,
+        videoUrlFallback: videoUrl,
+        publicacaoGrupoId: campanhaTikTok.publicacao_grupo_id || cfg.publicacao_grupo_id || null,
+        campanhaLocalId: campanhaTikTok.id,
+        nichoId: campanhaTikTok.nicho_id || null,
+        plataformaConfig: cfg
+      }, false);
+
+      if (!resultado?.ok) {
+        mostrarErroPublicacao(resultado?.mensagem || "Não foi possível publicar o rascunho no TikTok.");
+        await carregarCampanhas();
+        return;
+      }
+
+      await carregarCampanhas();
+      mostrarSucessoPublicacao("Campanha publicada no TikTok. A versão Facebook permaneceu inalterada.");
+    } catch (err) {
+      console.error("PUBLICAR RASCUNHO TIKTOK:", err);
+      mostrarErroPublicacao(err?.message || "Erro ao publicar o rascunho no TikTok");
+      await carregarCampanhas();
+    } finally {
+      setPublishProgress(null);
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.textContent = btnEl.dataset.textoOriginal || "Publicar no TikTok";
+      }
+    }
+    return;
+  }
+
+  if (plataformaPublicacao === "google") {
+    const campanhaGoogle = campanhasAtuais.find(c => Number(c.id) === Number(campanhaId));
+    if (!campanhaGoogle) {
+      mostrarErroPublicacao("Não foi possível carregar o rascunho Google Ads. Atualize a página e tente novamente.");
+      return;
+    }
+
+    const cfg = obterConfiguracoesCampanha(campanhaGoogle);
+    const imageUrls = Array.isArray(cfg.image_urls) ? cfg.image_urls.filter(Boolean) : [];
+    const videoUrl = primeiraUrlValidaCampanhaIA([cfg.video_url, cfg.videoUrl, cfg.video?.url]);
+
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.dataset.textoOriginal = btnEl.textContent.trim();
+      btnEl.innerHTML = '<span class="spinner-toggle"></span> Publicando...';
+    }
+
+    try {
+      const tokenInfo = obterTokenEUsuarioIdCampanha();
+      const resultado = await publicarCampanhaGoogle({
+        token,
+        usuario_id: tokenInfo.usuario_id,
+        campanha_nome: campanhaGoogle.nome,
+        orcamento: orcamentoDiarioEmReais(campanhaGoogle),
+        configuracoesBase: cfg,
+        imagensArquivos: [],
+        imagensUrlsFallback: imageUrls,
+        videoArquivo: null,
+        videoUrlFallback: videoUrl,
+        publicacaoGrupoId: campanhaGoogle.publicacao_grupo_id || cfg.publicacao_grupo_id || null,
+        campanhaLocalId: campanhaGoogle.id,
+        plataformaConfig: cfg
+      }, false);
+
+      if (!resultado?.ok) {
+        mostrarErroPublicacao(resultado?.mensagem || "Não foi possível publicar o rascunho no Google Ads.");
+        await carregarCampanhas();
+        return;
+      }
+
+      await carregarCampanhas();
+      mostrarSucessoPublicacao("Campanha publicada no Google Ads. As outras plataformas permaneceram inalteradas.");
+    } catch (err) {
+      console.error("PUBLICAR RASCUNHO GOOGLE:", err);
+      mostrarErroPublicacao(err?.message || "Erro ao publicar o rascunho no Google Ads");
+      await carregarCampanhas();
+    } finally {
+      setPublishProgress(null);
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.textContent = btnEl.dataset.textoOriginal || "Publicar no Google Ads";
+      }
+    }
     return;
   }
 

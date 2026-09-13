@@ -8549,6 +8549,14 @@ body.tema-claro .cal-nav span { color: #111827; }
   background: rgba(20,83,45,.3);
 }
 
+.campanha-plataforma-btn.ativa .plat-badge,
+.campanha-plataforma-btn.ativa .plat-sub-badge {
+  background: linear-gradient(135deg,#16a34a,#15803d) !important;
+  border-color: #4ade80 !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 1px rgba(74,222,128,.2);
+}
+
 .campanha-plataforma-btn .plat-badge,
 .campanha-plataforma-btn .plat-sub-badge {
   pointer-events: none;
@@ -18084,6 +18092,9 @@ body.tema-claro .criar-campanha-descricao {
                 recortada automaticamente nos formatos paisagem e quadrado. Você também pode adicionar
                 um vídeo; o Google alternará imagens e vídeo conforme a oportunidade de exibição.
               </p>
+              <p id="google_midia_edicao_info" style="display:none;font-size:11px;color:#fcd34d;margin:6px 0 0;">
+                A mídia da campanha Google publicada será preservada. Para trocar imagens ou vídeo, duplique a campanha e publique um novo criativo.
+              </p>
 
               <label id="video_anuncio_label" style="margin-top:14px;">Vídeo do anúncio <span style="font-weight:400;font-size:12px;opacity:.7">(opcional)</span></label>
               <div class="video-anuncio-card" id="video_anuncio_card">
@@ -18729,19 +18740,22 @@ body.tema-claro .criar-campanha-descricao {
                 </div>
               </div>
               <div id="destino_google_display_info" class="channel-picker-status alerta" style="display:none;">
-                Em Display, use endereço do site ou formulário de leads. O formulário depende dos requisitos de gasto, reputação e verificação da conta Google Ads. Para WhatsApp, selecione Pesquisa.
+                Em Display, o destino disponível neste formato é o endereço do site. Para usar formulário de leads ou WhatsApp, selecione Pesquisa.
               </div>
               <div id="destino_google_whatsapp_info" class="channel-picker-status alerta" style="display:none;">
                 Verificando o WhatsApp e a liberação da conta no Google Ads...
               </div>
               <p style="font-size:11px;opacity:.65;margin:8px 0 0;">
-                O formulário pode acompanhar anúncios de Pesquisa e Display quando a conta for elegível. O WhatsApp é um recurso Beta exclusivo de <strong>Pesquisa</strong>; o título continua abrindo a URL do site.
+                Formulário de leads e WhatsApp acompanham anúncios de <strong>Pesquisa</strong>, conforme a elegibilidade da conta. Em Display, o clique abre o endereço do site.
               </p>
+              <div id="config_google_bloqueada_aviso" class="channel-picker-status alerta" style="display:none;margin-top:8px;">
+                Tipo e destino não podem ser trocados depois da publicação. Para usar outra combinação, duplique a campanha.
+              </div>
             </section>
 
             <div class="advanced-subsection" data-plat-only="google" data-google-tipo-only="search" style="display:none;">
               <h5>Anúncio de Pesquisa (Google Ads)</h5>
-              <p>Anúncio de texto (Responsive Search Ad) exibido nas buscas do Google — sem imagem. Use os 3 títulos abaixo como base; eles também viram as palavras-chave que fazem o anúncio aparecer.</p>
+              <p>Anúncio de texto (Responsive Search Ad) exibido nas buscas do Google. As imagens são recursos complementares opcionais. Use os 3 títulos abaixo como base; eles também viram as palavras-chave que fazem o anúncio aparecer.</p>
             </div>
             <div class="advanced-subsection" data-plat-only="google" data-google-tipo-only="display" style="display:none;">
               <h5>Anúncio de Display (Google Ads)</h5>
@@ -27930,12 +27944,13 @@ function atualizarDisponibilidadeVideoCampanha() {
   const googleEmFoco = redeEmFoco === "google";
   const tiktokEmFoco = redeEmFoco === "tiktok";
   const formatoTikTok = obterFormatoCriativoTikTok();
-  const editandoGoogleExistente = Boolean(
+  const editandoGooglePublicado = Boolean(
     googleEmFoco && typeof campanhaEmEdicao !== "undefined" && campanhaEmEdicao &&
-    plataformaCampanhaExibicao(campanhaEmEdicao) === "google"
+    plataformaCampanhaExibicao(campanhaEmEdicao) === "google" &&
+    campanhaJaFoiPublicada(campanhaEmEdicao)
   );
   const videoPermitidoPelaRede = !googleEmFoco || (
-    tipoCampanhaGoogleSelecionado === "display" && !editandoGoogleExistente
+    tipoCampanhaGoogleSelecionado === "display" && !editandoGooglePublicado
   );
   const videoDisponivel = videoPermitidoPelaRede && (!tiktokEmFoco || formatoTikTok === "video");
   const imagensDisponiveis = !tiktokEmFoco || formatoTikTok === "imagem";
@@ -27956,7 +27971,7 @@ function atualizarDisponibilidadeVideoCampanha() {
     if (el) el.style.display = imagensDisponiveis ? "" : "none";
   });
   if (infoGoogle) {
-    infoGoogle.style.display = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" && !editandoGoogleExistente ? "" : "none";
+    infoGoogle.style.display = googleEmFoco && tipoCampanhaGoogleSelecionado === "display" && !editandoGooglePublicado ? "" : "none";
   }
   if (limiteImagens) {
     limiteImagens.textContent = tiktokEmFoco
@@ -27965,6 +27980,17 @@ function atualizarDisponibilidadeVideoCampanha() {
       ? "(máx. 7)"
       : "(máx. 10)";
   }
+  const infoMidiaGoogle = document.getElementById("google_midia_edicao_info");
+  if (infoMidiaGoogle) {
+    infoMidiaGoogle.style.display = editandoGooglePublicado ? "" : "none";
+  }
+  ["btn-adicionar-imagem", "btn-gerar-banner-campanha"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && googleEmFoco) el.style.display = editandoGooglePublicado ? "none" : (imagensDisponiveis ? "" : "none");
+  });
+  document.querySelectorAll("#imagens-container button, #imagens-container input").forEach(el => {
+    el.disabled = editandoGooglePublicado;
+  });
   if (!videoDisponivel || tiktokEmFoco) {
     const posicao = document.getElementById("video_posicao_carrossel_bloco");
     const escolhaInstagram = document.getElementById("instagram_escolha_midia_bloco");
@@ -27981,17 +28007,25 @@ function aplicarTipoCampanhaGoogle() {
   const radioChecado = document.querySelector('input[name="campanha_google_tipo"]:checked');
   tipoCampanhaGoogleSelecionado = radioChecado?.value === "display" ? "display" : "search";
 
-  const radioWhatsapp = document.getElementById("google_destino_whatsapp");
-  const labelWhatsapp = document.getElementById("google_destino_whatsapp_label");
-  const whatsappIndisponivel = tipoCampanhaGoogleSelecionado === "display";
-  if (radioWhatsapp) radioWhatsapp.disabled = whatsappIndisponivel;
-  if (labelWhatsapp) {
-    labelWhatsapp.classList.toggle("google-destino-indisponivel", whatsappIndisponivel);
-    labelWhatsapp.title = whatsappIndisponivel
-      ? "O botão nativo de WhatsApp está disponível somente em campanhas de Pesquisa."
-      : "";
-  }
-  if (whatsappIndisponivel && radioWhatsapp?.checked) {
+  const destinoIndisponivelNoDisplay = tipoCampanhaGoogleSelecionado === "display";
+  [
+    ["google_destino_lead_ads", "google_destino_lead_ads_label"],
+    ["google_destino_whatsapp", "google_destino_whatsapp_label"]
+  ].forEach(([radioId, labelId]) => {
+    const radio = document.getElementById(radioId);
+    const label = document.getElementById(labelId);
+    const bloqueadoPorPublicacao = Boolean(radio?.dataset.bloqueadoPublicacao === "1");
+    if (radio) radio.disabled = destinoIndisponivelNoDisplay || bloqueadoPorPublicacao;
+    if (label) {
+      label.classList.toggle("google-destino-indisponivel", destinoIndisponivelNoDisplay || bloqueadoPorPublicacao);
+      label.title = destinoIndisponivelNoDisplay
+        ? "Este destino está disponível somente em campanhas de Pesquisa."
+        : bloqueadoPorPublicacao
+        ? "Para trocar o destino, duplique a campanha."
+        : "";
+    }
+  });
+  if (destinoIndisponivelNoDisplay && destinoCampanhaGoogleSelecionado !== "site") {
     const radioSite = document.getElementById("google_destino_site");
     if (radioSite) radioSite.checked = true;
   }
@@ -32021,8 +32055,8 @@ function validarPublicacaoCampanhaGoogle(imagensArquivos) {
   // limite local de 7 preserva o máximo combinado de 15 assets do Google.
   const emDisplay = tipoCampanhaGoogleSelecionado === "display";
 
-  if (emDisplay && destinoCampanhaGoogleSelecionado === "whatsapp") {
-    return "O botão de WhatsApp está disponível somente em campanhas de Pesquisa. Em Display, escolha endereço do site ou formulário de leads.";
+  if (emDisplay && destinoCampanhaGoogleSelecionado !== "site") {
+    return "Campanhas de Display usam endereço do site. Para formulário de leads ou WhatsApp, selecione Pesquisa.";
   }
 
   const urlDestino = document.getElementById("campanha_google_url")?.value?.trim() || "";
@@ -32090,6 +32124,61 @@ function validarPublicacaoCampanhaGoogle(imagensArquivos) {
       return "Selecione no máximo 7 imagens para o anúncio de Display do Google Ads.";
     }
   }
+  return null;
+}
+
+// O botão do card publica um rascunho sem reabrir o formulário. Portanto, ele
+// precisa validar os dados persistidos antes de criar qualquer objeto remoto no
+// Google Ads. Isso evita deixar campanha/grupo incompletos na conta do cliente.
+function validarRascunhoPublicacaoGoogle(cfg = {}, imagensUrls = []) {
+  const tipo = cfg.tipo_campanha === "display" ? "display" : "search";
+  const destino = ["lead_ads", "site", "whatsapp"].includes(cfg.destino)
+    ? cfg.destino
+    : "lead_ads";
+  const titulos = Array.isArray(cfg.titulos) ? cfg.titulos.filter(Boolean) : [];
+  const descricoes = Array.isArray(cfg.descricoes) ? cfg.descricoes.filter(Boolean) : [];
+
+  if (tipo === "display" && destino !== "site") {
+    return "Campanhas de Display usam endereço do site. Para formulário de leads ou WhatsApp, edite o rascunho e selecione Pesquisa.";
+  }
+
+  try {
+    const url = new URL(String(cfg.url_destino || "").trim());
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("protocolo inválido");
+  } catch (_) {
+    return "Edite o rascunho e informe uma URL de destino válida e completa para o Google Ads.";
+  }
+
+  if (destino === "lead_ads" && !(cfg.form_id || cfg.formulario_id)) {
+    try {
+      const url = new URL(String(cfg.privacidade_url || "").trim());
+      if (!["http:", "https:"].includes(url.protocol)) throw new Error("protocolo inválido");
+    } catch (_) {
+      return "Edite o rascunho e informe a URL da política de privacidade para criar o formulário de leads do Google.";
+    }
+  }
+
+  if (destino === "whatsapp") {
+    if (!String(cfg.mensagem_whatsapp || "").trim()) {
+      return "Edite o rascunho e informe a mensagem inicial do WhatsApp para o anúncio do Google Ads.";
+    }
+    if (titulos.some(titulo => /whats[\s-]*app/i.test(String(titulo)))) {
+      return "Edite o rascunho e retire a palavra WhatsApp dos títulos do Google. Somente o botão de mensagem deve abrir a conversa.";
+    }
+  }
+
+  if (tipo === "search" && titulos.length < 3) return "Edite o rascunho e informe os 3 títulos do anúncio do Google Ads.";
+  if (tipo === "search" && descricoes.length < 2) return "Edite o rascunho e informe as 2 descrições do anúncio do Google Ads.";
+  if (!String(cfg.nome_anunciante || "").trim()) return "Edite o rascunho e informe o nome do anunciante do Google Ads.";
+
+  if (tipo === "display") {
+    if (titulos.length < 1) return "Edite o rascunho e informe ao menos 1 título do anúncio de Display do Google Ads.";
+    if (!String(cfg.titulo_longo || "").trim()) return "Edite o rascunho e informe o título longo do anúncio de Display do Google Ads.";
+    if (descricoes.length < 1) return "Edite o rascunho e informe ao menos 1 descrição do anúncio de Display do Google Ads.";
+    if (!imagensUrls.length) return "Edite o rascunho e selecione ao menos 1 imagem para o anúncio de Display do Google Ads.";
+    if (imagensUrls.length > 7) return "Edite o rascunho e mantenha no máximo 7 imagens para o anúncio de Display do Google Ads.";
+  }
+
   return null;
 }
 
@@ -34007,7 +34096,7 @@ function preencherEstadoGoogleCampanha(cfg = {}) {
   const destinoSolicitado = ["lead_ads", "site", "whatsapp"].includes(cfg.destino)
     ? cfg.destino
     : "lead_ads";
-  const destino = tipo === "display" && destinoSolicitado === "whatsapp"
+  const destino = tipo === "display" && destinoSolicitado !== "site"
     ? "site"
     : destinoSolicitado;
   const radioDestino = document.querySelector(`input[name="campanha_google_destino"][value="${destino}"]`);
@@ -34052,7 +34141,7 @@ function preencherCamposGoogleAnuncio(cfg) {
   definirValorCampo("campanha_google_whatsapp_mensagem", cfg.mensagem_whatsapp || "");
 }
 
-function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
+function preencherConfiguracoesAvancadas(cfg, dailyBudgetSalvo, plataformaOrcamento = null) {
 
   cfg = cfg || {};
 
@@ -34182,8 +34271,10 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetCentavos) {
 
   definirValorCampo(
     "orcamento",
-    dailyBudgetCentavos
-      ? Number(dailyBudgetCentavos) / 100
+    dailyBudgetSalvo
+      ? plataformaOrcamento === "google"
+        ? Number(dailyBudgetSalvo)
+        : Number(dailyBudgetSalvo) / 100
       : ""
   );
 
@@ -34198,6 +34289,9 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
   const campanhaTikTokPublicada =
     campanhaJaFoiPublicada(campanha) &&
     plataformaBase === "tiktok";
+  const campanhaGooglePublicada =
+    campanhaJaFoiPublicada(campanha) &&
+    plataformaBase === "google";
 
   // Marca o radio (Formulario de Leads / WhatsApp) de acordo com o destino
   // real ja salvo na campanha — antes disso, o modal sempre abria mostrando
@@ -34244,6 +34338,32 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
   if (avisoTikTok) {
     avisoTikTok.style.display = campanhaTikTokPublicada ? "block" : "none";
   }
+
+  document
+    .querySelectorAll('input[name="campanha_google_tipo"], input[name="campanha_google_destino"]')
+    .forEach(input => {
+      input.disabled = campanhaGooglePublicada;
+      input.dataset.bloqueadoPublicacao = campanhaGooglePublicada ? "1" : "0";
+      input.title = campanhaGooglePublicada
+        ? "Para trocar tipo ou destino, duplique a campanha."
+        : "";
+    });
+
+  document
+    .querySelectorAll('#bloco_formulario_google input, #bloco_formulario_google select, #bloco_whatsapp_google textarea')
+    .forEach(input => {
+      input.disabled = campanhaGooglePublicada;
+      input.title = campanhaGooglePublicada
+        ? "Este recurso não pode ser trocado depois da publicação. Duplique a campanha para alterá-lo."
+        : "";
+    });
+
+  const avisoGoogle = document.getElementById("config_google_bloqueada_aviso");
+  if (avisoGoogle) {
+    avisoGoogle.style.display = campanhaGooglePublicada ? "block" : "none";
+  }
+
+  aplicarTipoCampanhaGoogle();
 }
 
 function chaveNichoFormulario(nicho = {}) {
@@ -34478,7 +34598,8 @@ function abrirEdicaoCampanha(campanhaEncoded) {
 
     preencherConfiguracoesAvancadas(
       configuracoesCampanha,
-      campanha.daily_budget
+      campanha.daily_budget,
+      plataformaBaseEdicao
     );
     preencherEstadoGoogleCampanha(
       plataformaBaseEdicao === "google"
@@ -34503,6 +34624,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       configuracoesCampanha,
       campanha
     );
+    atualizarDisponibilidadeVideoCampanha();
     _snapshotCriarCampanha.imagensAssinatura = assinaturaImagensCampanha();
     _snapshotCriarCampanha.videoAssinatura = assinaturaVideoCampanha();
 
@@ -34877,6 +34999,8 @@ async function salvarEdicaoCampanhaGoogle(token, usuario_id) {
   const camposGoogle = coletarCamposGoogleAnuncio();
   const cfgAtual = obterConfiguracoesCampanha(campanhaEmEdicao);
   const tipoCampanhaBanco = String(cfgAtual?.tipo_campanha || "search").toLowerCase();
+  const ehRascunhoGoogle = campanhaEhRascunhoLocal(campanhaEmEdicao);
+  const estadoGoogle = snapshotCamposGoogleCampanha();
 
   const feedback = document.getElementById("editar_campanha_feedback");
   const btn = document.getElementById("editar_campanha_btn_salvar");
@@ -34934,8 +35058,24 @@ async function salvarEdicaoCampanhaGoogle(token, usuario_id) {
       nome_anunciante: camposGoogle.nome_anunciante,
       url_destino: camposGoogle.url_destino,
       configuracoes_avancadas: {
+        ...cfgAtual,
+        ...normalizarConfiguracoesAvancadasParaEnvio({
+          ...coletarConfiguracoesAvancadas(),
+          ...coletarDadosNichoAtivo()
+        }),
         tipo_campanha: tipoCampanhaBanco,
-        destino: cfgAtual?.destino || "lead_ads"
+        destino: cfgAtual?.destino || estadoGoogle.destino || "lead_ads",
+        titulos: camposGoogle.titulos,
+        descricoes: camposGoogle.descricoes,
+        titulo_longo: camposGoogle.titulo_longo,
+        nome_anunciante: camposGoogle.nome_anunciante,
+        url_destino: camposGoogle.url_destino,
+        mensagem_whatsapp: camposGoogle.mensagem_whatsapp,
+        formulario_valor: estadoGoogle.formulario_valor,
+        formulario_id: estadoGoogle.formulario_id || null,
+        formulario_manual: estadoGoogle.formulario_manual,
+        form_id: estadoGoogle.formulario_id || cfgAtual?.form_id || null,
+        plataformas: ["google"]
       }
     };
 
@@ -34952,7 +35092,11 @@ async function salvarEdicaoCampanhaGoogle(token, usuario_id) {
     }
 
     fecharEdicaoCampanha();
-    await sincronizarCampanhas("google");
+    if (ehRascunhoGoogle) {
+      await carregarCampanhas();
+    } else {
+      await sincronizarCampanhas("google");
+    }
     alert(data.aviso ? `Campanha atualizada com sucesso.\n\n⚠️ ${data.aviso}` : "Campanha atualizada com sucesso");
 
   } catch (err) {
@@ -37592,8 +37736,8 @@ async function enviarVideoCampanhaGoogle({ arquivo, url, token, usuario_id, titu
   throw new Error("O Google recebeu o vídeo, mas ainda não terminou o processamento. Aguarde alguns minutos e tente publicar novamente.");
 }
 
-// Mesma orquestração do Meta/TikTok. O destino é independente no Google: Lead Form,
-// endereço do site ou botão nativo de WhatsApp (este último somente em Pesquisa).
+// Mesma orquestração do Meta/TikTok. Pesquisa aceita Lead Form, endereço do site
+// ou botão nativo de WhatsApp; Display usa o endereço do site.
 async function publicarCampanhaGoogle(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
@@ -38914,7 +39058,11 @@ async function publicarPlataformasAdicionaisCampanha(opcoes = {}) {
     // engano o que ficou na última aba Meta usada aqui.
     if (novasRedesMeta.length === 2) {
       const cfgBaseAtual = obterConfiguracoesCampanha(campanhaEmEdicao);
-      preencherConfiguracoesAvancadas(cfgBaseAtual, campanhaEmEdicao.daily_budget);
+      preencherConfiguracoesAvancadas(
+        cfgBaseAtual,
+        campanhaEmEdicao.daily_budget,
+        plataformaCampanhaExibicao(campanhaEmEdicao)
+      );
       preencherCamposGoogleAnuncio(cfgBaseAtual);
       preencherCamposBasicosCampanha({ ...campanhaEmEdicao, configuracoes_avancadas: cfgBaseAtual });
     }
@@ -45653,8 +45801,16 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
     }
 
     const cfg = obterConfiguracoesCampanha(campanhaGoogle);
-    const imageUrls = Array.isArray(cfg.image_urls) ? cfg.image_urls.filter(Boolean) : [];
+    const imageUrls = Array.from(new Set([
+      ...(Array.isArray(cfg.image_urls) ? cfg.image_urls : []),
+      ...(Array.isArray(cfg.imagens_urls) ? cfg.imagens_urls : [])
+    ].filter(Boolean)));
     const videoUrl = primeiraUrlValidaCampanhaIA([cfg.video_url, cfg.videoUrl, cfg.video?.url]);
+    const erroRascunhoGoogle = validarRascunhoPublicacaoGoogle(cfg, imageUrls);
+    if (erroRascunhoGoogle) {
+      mostrarErroPublicacao(erroRascunhoGoogle);
+      return;
+    }
 
     if (btnEl) {
       btnEl.disabled = true;

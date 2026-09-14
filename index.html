@@ -4049,6 +4049,38 @@ body.tema-claro .perguntas-rapidas-ajuda {
   box-shadow: none;
 }
 
+.btn-campanha-toggle.encerrada.encerrada-reativavel {
+  background: rgba(250,204,21,0.16);
+  border: 1px solid rgba(250,204,21,0.5);
+  color: #fde68a;
+  box-shadow: 0 0 0 2px rgba(250,204,21,0.4), 0 0 12px rgba(250,204,21,0.35);
+  animation: pulso-toggle 1.6s ease-in-out infinite;
+  position: relative;
+}
+
+.btn-campanha-toggle.encerrada.encerrada-reativavel::after {
+  content: "Clique para editar a data e reativar esta campanha";
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #1a1f2e;
+  color: #fde68a;
+  border: 1px solid rgba(250,204,21,0.45);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  z-index: 200;
+}
+
+.btn-campanha-toggle.encerrada.encerrada-reativavel:hover::after {
+  opacity: 1;
+}
+
 @keyframes spin-toggle {
   to { transform: rotate(360deg); }
 }
@@ -43970,14 +44002,14 @@ async function carregarCampanhas(somenteRenderizar = false) {
             ? (chavesNaoExcluidas.length && publicacaoExpirada ? (
                 capacidadesPlataforma(plataformaCampanhaExibicao(c)).editar ? `
         <button
-          class="btn-campanha-toggle encerrada"
+          class="btn-campanha-toggle encerrada encerrada-reativavel"
           type="button"
           data-campanha-action="editar"
           data-campanha-key="${campanhaCacheKey}"
           data-foco-campo="#adv_fim_btn"
           data-foco-mensagem="📅 Publicação encerrada — escolha uma nova data de término (ou deixe em branco) para esta mesma campanha voltar a rodar."
           title="A data de publicação expirou. Clique para editar a data e publicar novamente esta mesma campanha."
-        >Encerrada</button>
+        >🔄 Encerrada</button>
               ` : `
         <button
           class="btn-campanha-toggle encerrada"

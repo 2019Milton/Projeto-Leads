@@ -36933,7 +36933,20 @@ function mostrarErroPublicacao(mensagem) {
 
   const seletor = mapearErroMetaParaCampo(mensagem);
   const mensagemFinal = traduzirErroMeta(mensagem);
-  if (seletor && document.querySelector(seletor)) {
+  const campoMapeado = seletor ? document.querySelector(seletor) : null;
+  const modalEdicaoAberto =
+    document.getElementById("campanhaEditarModal")?.classList.contains("active");
+  const modalCriacao = document.getElementById("criar_campanha_modal");
+  const modalCriacaoAberto = Boolean(
+    modalCriacao && getComputedStyle(modalCriacao).display !== "none"
+  );
+
+  // Quando a ação parte do card, os campos do formulário continuam no DOM,
+  // mas ficam dentro do criador/editor fechado. Encaminhar o erro para esse
+  // campo invisível fazia o clique parecer morto. Só conduzimos até o campo
+  // quando um dos formulários está realmente aberto; fora deles, exibimos o
+  // aviso flutuante abaixo para o usuário saber exatamente o que corrigir.
+  if (campoMapeado && (modalEdicaoAberto || modalCriacaoAberto)) {
     conduzirParaCampoCampanha(seletor, "❌ " + mensagemFinal);
     return;
   }

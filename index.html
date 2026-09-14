@@ -36915,7 +36915,7 @@ function traduzirErroMeta(mensagem, mensagemTecnica = "") {
   return mensagemOriginal || mensagem;
 }
 
-function mostrarErroPublicacao(mensagem) {
+function mostrarErroPublicacao(mensagem, btnEl) {
   const mensagemLower =
     String(mensagem || "").toLowerCase();
   const estrategiaAtual =
@@ -36950,6 +36950,20 @@ function mostrarErroPublicacao(mensagem) {
     conduzirParaCampoCampanha(seletor, "❌ " + mensagemFinal);
     return;
   }
+
+  // Ação partiu do card (nenhum formulário aberto), mas dá pra identificar o
+  // campo E a campanha (via as chaves do próprio botão clicado): em vez de só
+  // avisar que falta algo, abre o editor dessa campanha específica e já
+  // conduz até o campo — o usuário não precisa adivinhar onde corrigir.
+  if (campoMapeado && btnEl && typeof abrirEdicaoCampanhaPorChaves === "function") {
+    const chaves = typeof chavesAcaoCampanha === "function" ? chavesAcaoCampanha(btnEl) : [];
+    if (chaves.length) {
+      Promise.resolve(abrirEdicaoCampanhaPorChaves(chaves, btnEl.dataset?.campanhaKey))
+        .then(() => conduzirParaCampoCampanha(seletor, "❌ " + mensagemFinal));
+      return;
+    }
+  }
+
   const el = document.createElement("div");
   el.textContent = "❌ " + mensagemFinal;
   Object.assign(el.style, {
@@ -45810,7 +45824,7 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
       }, false);
 
       if (!resultado?.ok) {
-        mostrarErroPublicacao(resultado?.mensagem || "Não foi possível publicar o rascunho no TikTok.");
+        mostrarErroPublicacao(resultado?.mensagem || "Não foi possível publicar o rascunho no TikTok.", btnEl);
         await carregarCampanhas();
         return;
       }
@@ -45819,7 +45833,7 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
       mostrarSucessoPublicacao("Campanha publicada no TikTok. A versão Facebook permaneceu inalterada.");
     } catch (err) {
       console.error("PUBLICAR RASCUNHO TIKTOK:", err);
-      mostrarErroPublicacao(err?.message || "Erro ao publicar o rascunho no TikTok");
+      mostrarErroPublicacao(err?.message || "Erro ao publicar o rascunho no TikTok", btnEl);
       await carregarCampanhas();
     } finally {
       setPublishProgress(null);
@@ -45846,7 +45860,7 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
     const videoUrl = primeiraUrlValidaCampanhaIA([cfg.video_url, cfg.videoUrl, cfg.video?.url]);
     const erroRascunhoGoogle = validarRascunhoPublicacaoGoogle(cfg, imageUrls);
     if (erroRascunhoGoogle) {
-      mostrarErroPublicacao(erroRascunhoGoogle);
+      mostrarErroPublicacao(erroRascunhoGoogle, btnEl);
       return;
     }
 
@@ -45874,7 +45888,7 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
       }, false);
 
       if (!resultado?.ok) {
-        mostrarErroPublicacao(resultado?.mensagem || "Não foi possível publicar o rascunho no Google Ads.");
+        mostrarErroPublicacao(resultado?.mensagem || "Não foi possível publicar o rascunho no Google Ads.", btnEl);
         await carregarCampanhas();
         return;
       }
@@ -45883,7 +45897,7 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
       mostrarSucessoPublicacao("Campanha publicada no Google Ads. As outras plataformas permaneceram inalteradas.");
     } catch (err) {
       console.error("PUBLICAR RASCUNHO GOOGLE:", err);
-      mostrarErroPublicacao(err?.message || "Erro ao publicar o rascunho no Google Ads");
+      mostrarErroPublicacao(err?.message || "Erro ao publicar o rascunho no Google Ads", btnEl);
       await carregarCampanhas();
     } finally {
       setPublishProgress(null);
@@ -45945,7 +45959,8 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
     if (!res.ok || data.error) {
       mostrarErroPublicacao(
         data.error ||
-        "Não foi possível publicar esta campanha"
+        "Não foi possível publicar esta campanha",
+        btnEl
       );
       await carregarCampanhas();
       return;
@@ -45967,7 +45982,8 @@ async function publicarCampanhaRecebida(campanhaId, btnEl, plataforma) {
     );
 
     mostrarErroPublicacao(
-      "Erro ao publicar campanha recebida"
+      "Erro ao publicar campanha recebida",
+      btnEl
     );
 
     await carregarCampanhas();

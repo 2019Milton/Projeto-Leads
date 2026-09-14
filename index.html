@@ -30071,6 +30071,14 @@ function configurarCliquesDinamicos() {
             chaves,
             acaoCampanha.dataset.campanhaKey
           );
+          // Alguns gatilhos de "editar" (ex: botão "Encerrada" de uma campanha
+          // com a data de término vencida) já sabem qual campo o usuário
+          // precisa corrigir — leva direto até ele em vez de só abrir o editor
+          // e deixar a pessoa procurar.
+          const campoFoco = acaoCampanha.dataset?.focoCampo;
+          if (campoFoco && typeof conduzirParaCampoCampanha === "function") {
+            conduzirParaCampoCampanha(campoFoco, acaoCampanha.dataset?.focoMensagem || "");
+          }
           return;
         }
 
@@ -43959,14 +43967,26 @@ async function carregarCampanhas(somenteRenderizar = false) {
     
         ${
           !chavesComAcaoStatus.length
-            ? (chavesNaoExcluidas.length && publicacaoExpirada ? `
+            ? (chavesNaoExcluidas.length && publicacaoExpirada ? (
+                capacidadesPlataforma(plataformaCampanhaExibicao(c)).editar ? `
+        <button
+          class="btn-campanha-toggle encerrada"
+          type="button"
+          data-campanha-action="editar"
+          data-campanha-key="${campanhaCacheKey}"
+          data-foco-campo="#adv_fim_btn"
+          data-foco-mensagem="📅 Publicação encerrada — escolha uma nova data de término (ou deixe em branco) para esta mesma campanha voltar a rodar."
+          title="A data de publicação expirou. Clique para editar a data e publicar novamente esta mesma campanha."
+        >Encerrada</button>
+              ` : `
         <button
           class="btn-campanha-toggle encerrada"
           type="button"
           disabled
           title="A data de publicação expirou. Edite a campanha e escolha uma nova data para publicar."
         >Encerrada</button>
-            ` : "")
+              `
+              ) : "")
             : chavesComAcaoStatus.length > 1
             ? `
         <button

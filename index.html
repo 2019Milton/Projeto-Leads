@@ -27175,6 +27175,7 @@ function camposFaltantesCampanhaIA(plataformas = []) {
       ...(tipoCampanhaGoogleSelecionado === "display" ? ["campanha_google_titulo_longo"] : []),
       "campanha_google_descricao_1",
       "campanha_google_descricao_2", "campanha_google_nome_anunciante",
+      ...(tipoCampanhaGoogleSelecionado !== "display" ? ["campanha_google_palavras_chave"] : []),
       ...(destinoCampanhaGoogleSelecionado === "whatsapp" ? ["campanha_google_whatsapp_mensagem"] : [])
     ]);
   }

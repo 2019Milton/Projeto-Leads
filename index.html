@@ -39822,17 +39822,18 @@ function platNome(plataforma) {
 // Matriz única de capacidades usada nos cards e no drawer. Uma ação só aparece
 // quando existe implementação remota segura para a plataforma correspondente.
 const CAPACIDADES_PLATAFORMA = {
-  meta:      { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
-  facebook:  { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
-  instagram: { previewReal: true,  restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
-  google:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: false, editar: true },
-  tiktok:    { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: false, editar: true },
-  linkedin:  { previewReal: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
-  kwai:      { previewReal: false, restaurar: false, alterarStatus: false, publicarRascunho: false, sincronizar: false, excluir: false, duplicar: false, encaminhar: false, editar: false },
+  meta:      { previewReal: true,  previewLink: false, restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
+  facebook:  { previewReal: true,  previewLink: false, restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
+  instagram: { previewReal: true,  previewLink: false, restaurar: true,  alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: true,  editar: true },
+  google:    { previewReal: false, previewLink: true,  restaurar: false, alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: false, editar: true },
+  tiktok:    { previewReal: false, previewLink: true,  restaurar: false, alterarStatus: true,  publicarRascunho: true,  sincronizar: true,  excluir: true,  duplicar: true,  encaminhar: false, editar: true },
+  linkedin:  { previewReal: false, previewLink: false, restaurar: false, alterarStatus: true,  publicarRascunho: false, sincronizar: true,  excluir: true,  duplicar: false, encaminhar: false, editar: true },
+  kwai:      { previewReal: false, previewLink: false, restaurar: false, alterarStatus: false, publicarRascunho: false, sincronizar: false, excluir: false, duplicar: false, encaminhar: false, editar: false },
 };
 function capacidadesPlataforma(plataforma) {
   return CAPACIDADES_PLATAFORMA[(plataforma || "meta").toLowerCase()] || {
     previewReal: false,
+    previewLink: false,
     restaurar: false,
     alterarStatus: false,
     publicarRascunho: false,
@@ -44952,6 +44953,45 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
       `
       : "";
 
+  // Nem Google nem TikTok expõem uma API de preview embutido como a Meta:
+  // o GenerateShareablePreviews do Google só cobre Performance Max e certos
+  // anúncios de vídeo do YouTube (Pesquisa/Display, os únicos tipos que esta
+  // plataforma cria, retornam UNSUPPORTED_AD_TYPE); o link compartilhável do
+  // TikTok é um recurso manual só dentro do próprio Ads Manager, sem endpoint
+  // de API. Por isso aqui é um link pra abrir o anúncio de verdade na
+  // plataforma de origem, não um preview embutido na nossa tela.
+  const infoPreviewLink =
+    !capacidadesPlataforma(campanha.plataforma).previewLink
+      ? null
+      : campanha.plataforma === "google"
+      ? {
+          titulo: "Anúncio no Google Ads",
+          texto: "O Google não permite gerar uma prévia do anúncio embutida aqui — a API de preview dele não cobre campanhas de Pesquisa nem Display. Abra direto no Gerenciador do Google Ads pra ver o anúncio de verdade.",
+          cta: "🔴 Ver anúncio no Google Ads",
+          url: `https://ads.google.com/aw/ads?${new URLSearchParams({
+            ...(campanha.campaign_id ? { campaignId: String(campanha.campaign_id) } : {}),
+            ...(campanha.adset_id ? { adGroupId: String(campanha.adset_id) } : {})
+          }).toString()}`
+        }
+      : campanha.plataforma === "tiktok"
+      ? {
+          titulo: "Anúncio no TikTok Ads",
+          texto: "O TikTok não tem API de preview — o link compartilhável dele é um recurso manual, só dentro do próprio Ads Manager. Abra a campanha lá e use o botão \"Preview\" do TikTok pra ver o anúncio de verdade.",
+          cta: "🎵 Ver campanha no TikTok Ads",
+          url: `https://ads.tiktok.com/i18n/perf/campaign?${new URLSearchParams({
+            ...(campanha.conta_anuncios_id ? { aadvid: String(campanha.conta_anuncios_id) } : {})
+          }).toString()}`
+        }
+      : null;
+
+  const previewLinkBox = infoPreviewLink ? `
+    <div class="preview-anuncio-meta-box">
+      <h4>${escaparHtml(infoPreviewLink.titulo)}</h4>
+      <p>${escaparHtml(infoPreviewLink.texto)}</p>
+      <a class="preview-anuncio-meta-link" href="${infoPreviewLink.url}" target="_blank" rel="noopener noreferrer">${infoPreviewLink.cta}</a>
+    </div>
+  ` : "";
+
   return `
     ${acoesPainel}
 
@@ -44962,6 +45002,7 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
     ` : ""}
 
     ${previewBox}
+    ${previewLinkBox}
 
     <div class="ia-ouro-destaque">
       <h4>IA Ouro - Analise de campanha</h4>

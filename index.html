@@ -18843,6 +18843,11 @@ body.tema-claro .criar-campanha-descricao {
               <label>Nome do anunciante (Google)</label>
               <input type="text" id="campanha_google_nome_anunciante" maxlength="25" placeholder="Até 25 caracteres">
             </div>
+            <div class="advanced-full" data-plat-only="google" data-google-tipo-only="search" style="display:none;">
+              <label>Palavras-chave (Google) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Termos que a pessoa digita no Google para o anúncio aparecer. Uma por linha. Se deixar em branco, a plataforma usa os títulos do anúncio como palavras-chave — o que costuma gerar poucas ou nenhuma exibição, pois títulos são frases publicitárias, não termos de busca reais.', event)">i</button></label>
+              <textarea id="campanha_google_palavras_chave" rows="4" placeholder="Uma palavra-chave por linha, ex:&#10;crm para corretores&#10;plataforma de leads&#10;automação de whatsapp para vendas"></textarea>
+              <small style="display:block;margin-top:5px;opacity:.65;">Opcional, mas recomendado: até 20 termos, um por linha. Pense em como um cliente pesquisaria no Google — não use frases do anúncio.</small>
+            </div>
             <div class="advanced-full" data-plat-only="google" style="display:none;">
               <label>Página aberta ao clicar no título do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('O Google exige uma página de destino no anúncio de Pesquisa. O clique no título ou no texto abre esta página; quando o destino for WhatsApp, somente o botão de mensagem abre a conversa.', event)">i</button></label>
               <input type="url" id="campanha_google_url" placeholder="https://seusite.com.br" autocomplete="url">
@@ -27754,7 +27759,7 @@ const CAMPOS_EXCLUSIVOS_PLATAFORMA_EDICAO = {
     "campanha_google_titulo_1", "campanha_google_titulo_2", "campanha_google_titulo_3",
     "campanha_google_titulo_longo",
     "campanha_google_descricao_1", "campanha_google_descricao_2",
-    "campanha_google_nome_anunciante", "campanha_google_url",
+    "campanha_google_nome_anunciante", "campanha_google_url", "campanha_google_palavras_chave",
     "campanha_google_whatsapp_mensagem", "campanha_google_formulario_manual"
   ],
   tiktok: [
@@ -28826,6 +28831,7 @@ function campoRealmentePendenteIA(seletor, plataformasAlvo) {
   const alvos = new Set(plataformasAlvo || []);
   if (seletor.startsWith("#campanha_google_") && !alvos.has("google")) return false;
   if (seletor === "#campanha_google_whatsapp_mensagem" && destinoCampanhaGoogleSelecionado !== "whatsapp") return false;
+  if (seletor === "#campanha_google_palavras_chave" && tipoCampanhaGoogleSelecionado === "display") return false;
   if (seletor === "#campanha_tiktok_url" && (!alvos.has("tiktok") || destinoCampanhaTikTokSelecionado !== "site")) return false;
   if (["#campanha_tiktok_identidade_select", "#tiktok_localidade_busca", "#campanha_tiktok_formulario_select"].includes(seletor) && !alvos.has("tiktok")) return false;
   if (seletor === "#pagina_select" && !["facebook", "instagram"].some(p => alvos.has(p))) return false;
@@ -28926,6 +28932,7 @@ function marcarCamposAposAplicarIA(camposPreenchidos = [], plataformasAlvo = pla
     ["#campanha_google_nome_anunciante", "nome do anunciante (Google)"],
     ["#campanha_google_url", "URL de destino (Google)"],
     ["#campanha_google_whatsapp_mensagem", "mensagem do WhatsApp (Google)"],
+    ["#campanha_google_palavras_chave", "palavras-chave (Google)"],
     ["#campanha_tiktok_url", "URL de destino (TikTok)"]
   ].forEach(([seletor, texto]) => {
     if (preenchidos.has(seletor) && campoPertenceAoNichoAtivoIA(seletor)) {
@@ -28980,6 +28987,7 @@ function marcarCamposAposAplicarIA(camposPreenchidos = [], plataformasAlvo = pla
     ["#campanha_google_nome_anunciante", "nome do anunciante (Google)"],
     ["#campanha_google_url", "URL de destino (Google)"],
     ["#campanha_google_whatsapp_mensagem", "mensagem do WhatsApp (Google)"],
+    ["#campanha_google_palavras_chave", "palavras-chave (Google)"],
     ["#campanha_tiktok_url", "URL de destino (TikTok)"]
   ].forEach(([seletor, texto]) => {
     if (!preenchidos.has(seletor) && campoRealmentePendenteIA(seletor, plataformasAlvo)) {
@@ -29406,6 +29414,10 @@ function aplicarCampanhaIA(indice) {
   preencherCampoIA("#campanha_google_descricao_2", s.google_descricao_2);
   preencherCampoIA("#campanha_google_nome_anunciante", s.google_nome_anunciante);
   preencherCampoIA("#campanha_google_whatsapp_mensagem", s.google_mensagem_whatsapp);
+  preencherCampoIA(
+    "#campanha_google_palavras_chave",
+    String(s.google_palavras_chave || "").split(",").map(t => t.trim()).filter(Boolean).join("\n")
+  );
   preencherCampoIA("#campanha_google_url", s.google_url_destino);
   preencherCampoIA("#campanha_tiktok_url", s.tiktok_url_destino);
 
@@ -34136,7 +34148,9 @@ function coletarCamposGoogleAnuncio() {
     titulo_longo: document.getElementById("campanha_google_titulo_longo")?.value?.trim() || "",
     nome_anunciante: document.getElementById("campanha_google_nome_anunciante")?.value?.trim() || "",
     url_destino: document.getElementById("campanha_google_url")?.value?.trim() || "",
-    mensagem_whatsapp: document.getElementById("campanha_google_whatsapp_mensagem")?.value?.trim() || ""
+    mensagem_whatsapp: document.getElementById("campanha_google_whatsapp_mensagem")?.value?.trim() || "",
+    palavras_chave: (document.getElementById("campanha_google_palavras_chave")?.value || "")
+      .split("\n").map(t => t.trim()).filter(Boolean).slice(0, 20)
   };
 }
 
@@ -34205,6 +34219,7 @@ function preencherCamposGoogleAnuncio(cfg) {
   definirValorCampo("campanha_google_nome_anunciante", cfg.nome_anunciante || "");
   definirValorCampo("campanha_google_url", cfg.url_destino || "");
   definirValorCampo("campanha_google_whatsapp_mensagem", cfg.mensagem_whatsapp || "");
+  definirValorCampo("campanha_google_palavras_chave", (Array.isArray(cfg.palavras_chave) ? cfg.palavras_chave : []).join("\n"));
 }
 
 function preencherConfiguracoesAvancadas(cfg, dailyBudgetSalvo, plataformaOrcamento = null) {
@@ -35137,6 +35152,7 @@ async function salvarEdicaoCampanhaGoogle(token, usuario_id) {
         nome_anunciante: camposGoogle.nome_anunciante,
         url_destino: camposGoogle.url_destino,
         mensagem_whatsapp: camposGoogle.mensagem_whatsapp,
+        palavras_chave: camposGoogle.palavras_chave,
         formulario_valor: estadoGoogle.formulario_valor,
         formulario_id: estadoGoogle.formulario_id || null,
         formulario_manual: estadoGoogle.formulario_manual,
@@ -37852,7 +37868,8 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         titulo_longo: plataformaConfig.titulo_longo || "",
         nome_anunciante: plataformaConfig.nome_anunciante || "",
         url_destino: plataformaConfig.url_destino || "",
-        mensagem_whatsapp: plataformaConfig.mensagem_whatsapp || ""
+        mensagem_whatsapp: plataformaConfig.mensagem_whatsapp || "",
+        palavras_chave: Array.isArray(plataformaConfig.palavras_chave) ? plataformaConfig.palavras_chave.filter(Boolean) : []
       }
     : coletarCamposGoogleAnuncio();
 
@@ -37988,6 +38005,7 @@ async function publicarCampanhaGoogle(contexto, isMultiRede) {
         titulo_longo: camposAnuncioGoogle.titulo_longo,
         nome_anunciante: camposAnuncioGoogle.nome_anunciante,
         url_destino: camposAnuncioGoogle.url_destino,
+        palavras_chave: camposAnuncioGoogle.palavras_chave,
         daily_budget: Number(orcamento),
         imagem_paisagem_asset: imagensPaisagemAssets[0] || null,
         imagem_quadrada_asset: imagensQuadradasAssets[0] || null,

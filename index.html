@@ -34814,6 +34814,16 @@ function fecharEdicaoCampanha() {
   } catch (err) {
     console.error("ERRO ao fechar edição de campanha:", err);
   } finally {
+    // Rede de segurança: se algo acima falhou antes de chegar nos restaurarBloco
+    // do try, os blocos (inclusive o de IA) ficam presos dentro do modal de
+    // edição, que este finally já esconde a seguir — sem isso, o bloco fica
+    // órfão e invisível em "Criar Campanha" até a página ser recarregada.
+    try {
+      BLOCOS_SEGMENTACAO_EDITAVEL.forEach(restaurarBloco);
+      restaurarBloco("ia_criador_campanha_box");
+    } catch (errRestaurar) {
+      console.error("ERRO ao restaurar blocos movidos da edição:", errRestaurar);
+    }
     _snapshotCriarCampanha = null;
     campanhaEmEdicao = null;
     plataformasOriginaisEdicao = new Set();

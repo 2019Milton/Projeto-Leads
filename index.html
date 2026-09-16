@@ -17859,6 +17859,11 @@ body.tema-claro .criar-campanha-descricao {
           <input type="text" id="whatsapp_bot_nome" style="width:100%;font-size:13px;margin-top:6px;margin-bottom:14px;"
             placeholder="Ex: Seguro auto, Saúde corporativo...">
 
+          <label style="font-size:13px;font-weight:600;">Nicho <button type="button" class="info-icone" onclick="mostrarInfoCampo('Cada nicho pode ter seu próprio roteiro. As campanhas criadas nesse nicho usam o roteiro ativo dele; \'Geral\' roda quando o nicho da conversa não é identificado (contato orgânico, sem clique de anúncio rastreado) ou quando o nicho específico não tem roteiro ativo.', event)">i</button></label>
+          <select id="whatsapp_bot_nicho" style="width:100%;font-size:13px;margin-top:6px;margin-bottom:14px;" onchange="renderWhatsappBotPreview()">
+            <option value="">Geral (todos os nichos)</option>
+          </select>
+
           <div class="wpp-ia-box">
             <label style="font-size:13px;font-weight:600;">✨ Gerar roteiro com IA</label>
             <textarea id="whatsapp_bot_ia_contexto" rows="2" style="width:100%;font-size:13px;margin-top:6px;"
@@ -17883,6 +17888,7 @@ body.tema-claro .criar-campanha-descricao {
               <li><b>Bot já tinha terminado ou te transferido a conversa (handoff):</b> o bot fica em silêncio — a mensagem só entra no histórico esperando você responder, sem repetir a saudação nem o roteiro.</li>
               <li><b>Você trocou o roteiro ativo enquanto essa conversa estava esperando resposta:</b> o bot percebe a troca e não tenta encaixar a resposta na pergunta errada. Se a conversa tinha avançado pouco, ele reinicia o roteiro novo do começo. Se já tinha avançado bastante (ou o lead já estava "Em Conversa"/"Fechado" no Kanban), ele pula direto pra você e te avisa no seu WhatsApp — sem tentar continuar sozinho.</li>
               <li><b>Trocou o roteiro, mas essa conversa já estava com você (handoff):</b> nada muda — trocar de roteiro nunca reativa uma conversa que já virou humana.</li>
+              <li><b>Qual roteiro atende cada conversa:</b> quando dá pra identificar de qual campanha/nicho o contato veio, o bot usa o roteiro ativo daquele nicho. Sem identificar (contato orgânico, por exemplo) ou sem roteiro ativo pra esse nicho específico, ele cai no roteiro "Geral" ativo.</li>
             </ol>
             <div class="wpp-guia-aviso">
               Hoje não existe um botão pra "reiniciar" manualmente uma conversa antiga — se o cliente voltou depois de meses e a conversa já tinha virado humana, o bot continua quieto por padrão.
@@ -42529,6 +42535,9 @@ function renderRoteiroWhatsappBotCard(r) {
   const ativoBadge = r.ativo
     ? `<span class="wpp-badge wpp-badge-ativo">🟢 Ativo</span>`
     : `<span class="wpp-badge wpp-badge-inativo">Inativo</span>`;
+  const nichoBadge = r.nicho_id
+    ? `<span class="wpp-badge" style="background:${r.nicho_cor || "#334155"}22;color:${r.nicho_cor || "#94a3b8"};border:1px solid ${r.nicho_cor || "#334155"}55;">${escaparHtml(r.nicho_nome || "Nicho")}</span>`
+    : `<span class="wpp-badge" style="background:rgba(255,255,255,.08);color:#94a3b8;">Geral</span>`;
   const acaoAtivar = r.ativo
     ? `<button class="btn wpp-btn wpp-btn-ghost" onclick="desativarRoteiroWhatsappBot(${r.id})">Desativar</button>`
     : _whatsappBotConectado
@@ -42538,7 +42547,7 @@ function renderRoteiroWhatsappBotCard(r) {
     <div class="wpp-roteiro-card ${r.ativo ? "ativo" : ""}">
       <div>
         <div class="wpp-roteiro-nome">${escaparHtml(r.nome)}</div>
-        <div>${ativoBadge}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">${nichoBadge}${ativoBadge}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <button class="btn wpp-btn wpp-btn-neutro" onclick="editarRoteiroWhatsappBot(${r.id})">Editar</button>
@@ -42721,6 +42730,20 @@ async function carregarDiagnosticoWhatsapp(token) {
   }
 }
 
+// Popula o select de nicho do roteiro com os nichos habilitados do corretor
+// (usuarioLogado.nichos, mesma fonte usada no seletor de nicho da campanha).
+// "Geral" (value vazio) sempre existe pra cobrir conversa sem nicho identificado.
+function preencherSelectNichoWhatsappBot() {
+  const select = document.getElementById("whatsapp_bot_nicho");
+  if (!select) return;
+  const nichos = Array.isArray(usuarioLogado?.nichos) ? usuarioLogado.nichos : [];
+  const valorAtual = select.value;
+  select.innerHTML =
+    `<option value="">Geral (todos os nichos)</option>` +
+    nichos.map(n => `<option value="${n.id}">${escaparHtml(n.nome)}</option>`).join("");
+  if (nichos.some(n => String(n.id) === valorAtual)) select.value = valorAtual;
+}
+
 async function carregarWhatsappBot() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -42728,6 +42751,8 @@ async function carregarWhatsappBot() {
   const statusEl = document.getElementById("whatsapp_conexao_status");
   const editorEl = document.getElementById("whatsapp_bot_editor");
   if (!statusEl) return;
+
+  preencherSelectNichoWhatsappBot();
 
   try {
     const resConexoes = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
@@ -42775,10 +42800,12 @@ function novoRoteiroWhatsappBot() {
   whatsappBotEditandoId = null;
   const titulo = document.getElementById("whatsapp_bot_editor_titulo");
   const nomeInput = document.getElementById("whatsapp_bot_nome");
+  const nichoSelect = document.getElementById("whatsapp_bot_nicho");
   const textarea = document.getElementById("whatsapp_bot_passos");
   const statusSpan = document.getElementById("whatsapp_bot_salvar_status");
   if (titulo) titulo.textContent = "Novo roteiro";
   if (nomeInput) nomeInput.value = "";
+  if (nichoSelect) nichoSelect.value = "";
   if (textarea) textarea.value = "";
   if (statusSpan) statusSpan.textContent = "";
   renderWhatsappBotPreview();
@@ -42790,10 +42817,12 @@ function editarRoteiroWhatsappBot(id) {
   whatsappBotEditandoId = id;
   const titulo = document.getElementById("whatsapp_bot_editor_titulo");
   const nomeInput = document.getElementById("whatsapp_bot_nome");
+  const nichoSelect = document.getElementById("whatsapp_bot_nicho");
   const textarea = document.getElementById("whatsapp_bot_passos");
   const statusSpan = document.getElementById("whatsapp_bot_salvar_status");
   if (titulo) titulo.textContent = `Editando: ${roteiro.nome}`;
   if (nomeInput) nomeInput.value = roteiro.nome;
+  if (nichoSelect) nichoSelect.value = roteiro.nicho_id || "";
   if (textarea) textarea.value = serializarPassosWhatsappBot(roteiro.passos);
   if (statusSpan) statusSpan.textContent = "";
   renderWhatsappBotPreview();
@@ -42863,10 +42892,11 @@ async function gerarRoteiroWhatsappBotIA() {
   if (statusSpan) statusSpan.textContent = "Gerando roteiro com IA...";
 
   try {
+    const nichoId = document.getElementById("whatsapp_bot_nicho")?.value || null;
     const res = await fetch(`${API}/ia/whatsapp-bot/gerar`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ contexto }),
+      body: JSON.stringify({ contexto, nicho_id: nichoId }),
     });
     const data = await res.json();
     if (!res.ok) {
@@ -42909,10 +42939,11 @@ async function salvarWhatsappBot() {
 
   try {
     const url = whatsappBotEditandoId ? `${API}/whatsapp/bot/${whatsappBotEditandoId}` : `${API}/whatsapp/bot`;
+    const nichoId = document.getElementById("whatsapp_bot_nicho")?.value || null;
     const res = await fetch(url, {
       method: whatsappBotEditandoId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ nome, passos }),
+      body: JSON.stringify({ nome, passos, nicho_id: nichoId }),
     });
     const data = await res.json();
     if (!res.ok) {

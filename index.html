@@ -17684,9 +17684,14 @@ body.tema-claro .criar-campanha-descricao {
             <h3 style="margin-bottom:4px;">🔌 Integrações</h3>
             <p class="integ-desc">Gerencie as conexões com plataformas de anúncio e captação de leads.</p>
           </div>
-          <button id="btn_atualizar_plataformas" class="btn-sync" type="button" onclick="atualizarTodasPlataformas(this)" title="Atualizar o status de todas as integrações">
-            🔄 Atualizar plataformas
-          </button>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+            <button id="btn_criar_contas_anuncios" class="btn-sync" type="button" onclick="abrirAssistenteContasAnuncios()" title="Criar ou configurar contas de anúncios com orientação passo a passo">
+              ✨ Criar minhas contas de anúncios
+            </button>
+            <button id="btn_atualizar_plataformas" class="btn-sync" type="button" onclick="atualizarTodasPlataformas(this)" title="Atualizar o status de todas as integrações">
+              🔄 Atualizar plataformas
+            </button>
+          </div>
         </div>
         <div id="hub_conexoes_grid">
           <div style="color:#64748b;font-size:13px;">Carregando...</div>
@@ -17701,6 +17706,22 @@ body.tema-claro .criar-campanha-descricao {
         <!-- 🔴 GOOGLE ADS — detalhes expandíveis; conteúdo gerenciado por carregarStatusGoogle() -->
         <div class="meta-card" id="card-google" style="display:none;">
           <div id="google_info">Carregando conexão...</div>
+        </div>
+      </div>
+
+      <!-- Assistente unificado: prepara os dados e conduz pelas autorizações oficiais. -->
+      <div id="assistente_contas_modal" class="assistente-contas-overlay" style="display:none;" onclick="if(event.target===this) fecharAssistenteContasAnuncios()">
+        <div class="assistente-contas-box" role="dialog" aria-modal="true" aria-labelledby="assistente_contas_titulo">
+          <div class="assistente-contas-header">
+            <div>
+              <h2 id="assistente_contas_titulo">✨ Criar minhas contas de anúncios</h2>
+              <p>Informe os dados uma vez e acompanhe a configuração de Meta, Google e TikTok no mesmo lugar.</p>
+            </div>
+            <button type="button" class="assistente-contas-fechar" onclick="fecharAssistenteContasAnuncios()" aria-label="Fechar">✕</button>
+          </div>
+          <div id="assistente_contas_etapas" class="assistente-contas-etapas"></div>
+          <div id="assistente_contas_corpo" class="assistente-contas-corpo"></div>
+          <div id="assistente_contas_footer" class="assistente-contas-footer"></div>
         </div>
       </div>
 
@@ -56317,6 +56338,9 @@ async function criarLookalike() {
   }
 }
 </script>
+
+<link rel="stylesheet" href="assistente-contas.css">
+<script src="assistente-contas.js"></script>
 
 </body>
 </html>

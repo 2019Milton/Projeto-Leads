@@ -43,6 +43,8 @@
   const monitor = {
     ativo: false,
     pausado: false,
+    preparada: null,
+    limiteAtingido: false,
     plataforma: null,
     stream: null,
     video: null,
@@ -85,6 +87,8 @@
     Object.assign(monitor, {
       ativo: false,
       pausado: false,
+      preparada: null,
+      limiteAtingido: false,
       plataforma: null,
       stream: null,
       video: null,
@@ -422,13 +426,28 @@
         ${alertas.length ? `<div class="assistente-monitor-alertas">${alertas.map(alerta => `<div>⚠ ${esc(alerta)}</div>`).join("")}</div>` : ""}
         ${r?.sensivel && monitor.pausado ? `<div class="assistente-monitor-sensivel"><b>Proteção ativada:</b> foi detectada uma etapa sensível. A captura foi pausada. Conclua senha, código, CAPTCHA, documento ou pagamento pessoalmente e só depois retome.</div>` : ""}
         <div class="assistente-monitor-acoes">
-          <button class="assistente-btn-secundario" onclick="assistenteAlternarPausaTela()">${monitor.pausado ? "▶ Retomar verificação" : "⏸ Pausar"}</button>
+          <button class="assistente-btn-secundario" onclick="assistenteAlternarPausaTela()">${monitor.limiteAtingido ? "↻ Iniciar nova sessão" : monitor.pausado ? "▶ Retomar verificação" : "⏸ Pausar"}</button>
           <button class="assistente-btn-primario" onclick="assistenteAnalisarTelaAgora()" ${monitor.analisando || monitor.pausado ? "disabled" : ""}>${monitor.analisando ? "Analisando..." : "🔎 Analisar agora"}</button>
           <button class="assistente-btn-secundario" onclick="assistentePararMonitorTela()">■ Encerrar compartilhamento</button>
         </div>
         <div class="assistente-monitor-privacidade">
           Compartilhe somente a janela oficial de ${esc(p.nome)}. Pause antes de digitar senha, cartão, documento, CAPTCHA ou código de segurança.
         </div>
+      </section>`;
+  }
+
+  function renderPreparoMonitor() {
+    if (!monitor.preparada || monitor.ativo) return "";
+    const p = plataformas[monitor.preparada];
+    if (!p) return "";
+    return `
+      <section id="assistente_monitor_preparo" class="assistente-monitor-preparo" aria-live="polite">
+        <div>
+          <b>1. A página oficial de ${esc(p.nome)} foi aberta.</b>
+          <span>Deixe essa página aberta, volte aqui e inicie a verificação. O navegador mostrará a lista de janelas; escolha somente a janela oficial de ${esc(p.nome)}.</span>
+        </div>
+        <button class="assistente-btn-primario" onclick="assistenteAcompanharTela('${esc(monitor.preparada)}')">2. Começar verificação</button>
+        <small>Pause antes de digitar senha, cartão, documento, CAPTCHA ou código de segurança.</small>
       </section>`;
   }
 
@@ -458,7 +477,10 @@
           const criar = id === "google" && capacidade.automatico
             ? `${seletorGerenciadora}<button class="assistente-btn-secundario" onclick="assistenteCriarContaGoogle(this)">✨ Criar conta automaticamente</button>`
             : `<button class="assistente-btn-secundario" onclick="assistenteAbrirTutorial('${id}')">Continuar criação oficial</button>`;
-          const acompanhar = `<button class="assistente-btn-secundario assistente-btn-monitor" onclick="assistenteAcompanharTela('${id}', this)">👁 ${monitor.ativo && monitor.plataforma === id ? "Tela acompanhada" : "Verificar cada detalhe"}</button>`;
+          const compartilhamentoDisponivel = Boolean(navigator.mediaDevices?.getDisplayMedia);
+          const acompanhar = compartilhamentoDisponivel
+            ? `<button class="assistente-btn-secundario assistente-btn-monitor" onclick="assistenteAcompanharTela('${id}', this)">${monitor.ativo && monitor.plataforma === id ? "👁 Tela acompanhada" : monitor.preparada === id ? "▶ Começar verificação" : "👁 Verificar cada detalhe"}</button>`
+            : `<span class="assistente-monitor-indisponivel">Verificação visual disponível no computador com Chrome ou Edge atualizado. O restante do assistente continua funcionando normalmente.</span>`;
           return `
             <div class="assistente-status-card">
               <div class="assistente-status-identidade"><span>${p.icone}</span>${p.nome}</div>
@@ -476,6 +498,7 @@
             </div>`;
         }).join("")}
       </div>
+      ${renderPreparoMonitor()}
       ${renderMonitorTela()}
       <div class="assistente-contas-aviso">
         O verificador acompanha somente a janela que você escolher e cruza a leitura visual com o status real das integrações. Login, aceite de termos, verificação empresarial e pagamento continuam sendo concluídos pelo titular na página oficial.
@@ -602,8 +625,9 @@
     if (!monitor.ativo || monitor.pausado || monitor.analisando || !monitor.plataforma) return;
     if (monitor.analises >= 60) {
       monitor.pausado = true;
+      monitor.limiteAtingido = true;
       definirFaixaMonitor(false);
-      monitor.erro = "A sessão atingiu o limite de verificações. Retome se ainda estiver configurando a conta.";
+      monitor.erro = "A sessão atingiu o limite de verificações. Inicie uma nova sessão para continuar acompanhando esta mesma janela.";
       if (aberto()) render();
       return;
     }
@@ -689,18 +713,30 @@
       return;
     }
     if (!navigator.mediaDevices?.getDisplayMedia) {
-      alert("Este navegador não oferece compartilhamento de janela. Use uma versão atual do Chrome ou Edge em conexão segura (HTTPS). ");
+      alert("A verificação visual não está disponível neste navegador. Continue usando o assistente normalmente ou abra a plataforma em um computador com Chrome ou Edge atualizado.");
       return;
     }
 
-    const continuar = confirm(
-      `O assistente abrirá ${configuracao.nome} e pedirá para você compartilhar uma janela.\n\n` +
-      `Escolha SOMENTE a janela oficial de ${configuracao.nome}. Pause o compartilhamento antes de digitar senha, cartão, documento, CAPTCHA ou código de segurança.\n\n` +
-      "Deseja iniciar?"
-    );
-    if (!continuar) return;
+    if (monitor.preparada !== plataforma) {
+      if (monitor.ativo) pararMonitorTela(false);
+      const janelaOficial = window.open(
+        configuracao.urlOficial,
+        `assistente_${plataforma}`,
+        "popup=yes,width=1280,height=860,resizable=yes,scrollbars=yes"
+      );
+      if (!janelaOficial) {
+        alert(`O navegador bloqueou a abertura de ${configuracao.nome}. Libere pop-ups para este site e tente novamente.`);
+        return;
+      }
+      monitor.preparada = plataforma;
+      monitor.erro = "";
+      if (aberto()) {
+        render();
+        setTimeout(() => document.getElementById("assistente_monitor_preparo")?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
+      }
+      return;
+    }
 
-    window.open(configuracao.urlOficial, `assistente_${plataforma}`, "popup=yes,width=1280,height=860,resizable=yes,scrollbars=yes");
     let novoStream = null;
     try {
       novoStream = await navigator.mediaDevices.getDisplayMedia({
@@ -727,6 +763,8 @@
       Object.assign(monitor, {
         ativo: true,
         pausado: false,
+        preparada: null,
+        limiteAtingido: false,
         plataforma,
         stream: novoStream,
         video,
@@ -749,13 +787,34 @@
     } catch (err) {
       novoStream?.getTracks?.().forEach(track => track.stop());
       if (err?.name !== "NotAllowedError") {
-        alert(err?.message || "Não foi possível iniciar o compartilhamento da janela.");
+        const mensagem = err?.name === "InvalidStateError"
+          ? "O navegador perdeu a autorização do clique. Volte ao assistente e clique novamente em ‘Começar verificação’."
+          : err?.message || "Não foi possível iniciar o compartilhamento da janela.";
+        alert(mensagem);
       }
     }
   };
 
   window.assistenteAlternarPausaTela = function () {
     if (!monitor.ativo) return;
+    if (monitor.limiteAtingido) {
+      Object.assign(monitor, {
+        pausado: false,
+        limiteAtingido: false,
+        analisando: false,
+        resultado: null,
+        erro: "",
+        assinatura: null,
+        ultimaAnalise: 0,
+        analises: 0,
+        checklist: {},
+        historico: []
+      });
+      definirFaixaMonitor(true);
+      if (aberto()) render();
+      setTimeout(() => analisarTelaMonitor({ forcar: true }), 600);
+      return;
+    }
     monitor.pausado = !monitor.pausado;
     definirFaixaMonitor(!monitor.pausado);
     monitor.erro = monitor.pausado ? "Verificação pausada pelo usuário." : "";

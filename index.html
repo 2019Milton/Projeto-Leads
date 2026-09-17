@@ -22064,7 +22064,11 @@ async function login() {
   const data = await res.json();
 
   if (data.token) {
-    localStorage.setItem("token", data.token);
+    if (painelSlugUrl) {
+      sessionStorage.setItem(PAINEL_CLIENTE_TOKEN_KEY, data.token);
+    } else {
+      localStorage.setItem("token", data.token);
+    }
     await iniciarAplicacaoAutenticada();
   } else {
     alert("Login inválido");
@@ -22246,7 +22250,7 @@ function montarSidebar() {
   const slimTopbar = document.createElement("div");
   slimTopbar.className = "app-topbar-slim";
   slimTopbar.innerHTML = `
-    <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Recolher menu" style="margin-right:8px;">☰</button>
+    <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Recolher menu" aria-label="Recolher menu" aria-controls="sidebar-nav" aria-expanded="true" style="margin-right:8px;">☰</button>
     <span id="sidebar-secao-titulo" style="font-size:14px;font-weight:600;color:#e2e8f0;">Leads</span>
     <span class="app-topbar-spacer"></span>
   `;
@@ -22326,6 +22330,16 @@ function montarSidebar() {
 
   app.insertBefore(sidebar, app.firstChild);
   app.appendChild(contentArea);
+
+  // Em telas estreitas, iniciar recolhida preserva a área útil sem remover
+  // o acesso ao menu pelo botão da barra superior.
+  if (window.matchMedia("(max-width: 760px)").matches) {
+    sidebar.classList.add("recolhida");
+    const botaoMenu = slimTopbar.querySelector(".sidebar-toggle-btn");
+    botaoMenu?.setAttribute("title", "Expandir menu");
+    botaoMenu?.setAttribute("aria-label", "Expandir menu");
+    botaoMenu?.setAttribute("aria-expanded", "false");
+  }
 
   // Mostrar seção inicial
   navegarPara("dashboard");
@@ -23242,7 +23256,14 @@ function toggleSidebar() {
   if (!sidebar) return;
   sidebar.classList.toggle("recolhida");
   const btn = document.querySelector(".sidebar-toggle-btn");
-  if (btn) btn.textContent = sidebar.classList.contains("recolhida") ? "☰" : "☰";
+  if (btn) {
+    const recolhida = sidebar.classList.contains("recolhida");
+    const rotulo = recolhida ? "Expandir menu" : "Recolher menu";
+    btn.textContent = "☰";
+    btn.setAttribute("title", rotulo);
+    btn.setAttribute("aria-label", rotulo);
+    btn.setAttribute("aria-expanded", String(!recolhida));
+  }
 }
 
 // Expor itens condicionais do sidebar para funções que já existem
@@ -23270,7 +23291,7 @@ async function atualizarPainelCliente() {
   const status = document.getElementById("pc_status_atualizacao");
   if (status) status.textContent = "Atualizando dados...";
   try {
-    const res = await fetch(`${API}/painel-cliente/resumo`, { headers:{ "Authorization":"Bearer " + localStorage.getItem("token") } });
+    const res = await fetch(`${API}/painel-cliente/resumo`, { headers:{ "Authorization":"Bearer " + obterTokenSessaoAtual() } });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Não foi possível atualizar o painel");
     renderizarPainelClienteResumo(data);
@@ -23313,7 +23334,7 @@ async function iniciarPainelCliente(perfil = {}) {
 async function init() {
 
   const token =
-    localStorage.getItem("token");
+    obterTokenSessaoAtual();
   let perfilInicial = null;
 
   try {
@@ -23322,11 +23343,17 @@ async function init() {
     });
 
     if (!resPerfilInicial.ok) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("gestor_token_original");
-      localStorage.removeItem("gestor_cliente_contexto");
+      if (painelSlugUrl) {
+        sessionStorage.removeItem(PAINEL_CLIENTE_TOKEN_KEY);
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("gestor_token_original");
+        localStorage.removeItem("gestor_cliente_contexto");
+      }
       document.getElementById("app").style.display = "none";
       document.getElementById("loginBox").style.display = "flex";
+      const avisoPainel = document.getElementById("painel_cliente_login_aviso");
+      if (avisoPainel && painelSlugUrl) avisoPainel.style.display = "block";
       return;
     }
 
@@ -23621,6 +23648,11 @@ function inicializarKanbanTopScrollbar() {
 // LOGOUT
 function logout() {
   clearInterval(painelClienteIntervalo);
+  if (painelSlugUrl) {
+    sessionStorage.removeItem(PAINEL_CLIENTE_TOKEN_KEY);
+    location.reload();
+    return;
+  }
   localStorage.removeItem("token");
   localStorage.removeItem("gestor_token_original");
   localStorage.removeItem("gestor_cliente_contexto");
@@ -49639,6 +49671,15 @@ const params =
 const painelSlugUrl =
   params.get("painel") || "";
 
+const PAINEL_CLIENTE_TOKEN_KEY =
+  `painel_cliente_token:${painelSlugUrl}`;
+
+function obterTokenSessaoAtual() {
+  return painelSlugUrl
+    ? sessionStorage.getItem(PAINEL_CLIENTE_TOKEN_KEY)
+    : localStorage.getItem("token");
+}
+
 const resetTokenUrl =
   params.get("reset_token");
 
@@ -50709,7 +50750,7 @@ if (renderizarPaginaLegal()) {
 } else if (renderizarLandingPage()) {
   // landing pública renderizada
 } else {
-  const token = localStorage.getItem("token");
+  const token = obterTokenSessaoAtual();
 
   document.getElementById("landingPage").style.display = "none";
 

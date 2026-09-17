@@ -10,19 +10,22 @@
       nome: "Meta Ads",
       icone: "∞",
       descricao: "Uma conta de anúncios para Facebook e Instagram.",
-      observacao: "Página e Instagram são vinculados depois da autorização."
+      observacao: "Página e Instagram são vinculados depois da autorização.",
+      urlOficial: "https://business.facebook.com/settings/ad-accounts"
     },
     google: {
       nome: "Google Ads",
       icone: "🔴",
       descricao: "Conta para Pesquisa, Display, formulários e WhatsApp elegível.",
-      observacao: "O Google pode exigir confirmação de identidade e pagamento."
+      observacao: "O Google pode exigir confirmação de identidade e pagamento.",
+      urlOficial: "https://ads.google.com/aw/accounts"
     },
     tiktok: {
       nome: "TikTok Ads",
       icone: "🎵",
       descricao: "Conta de anunciante vinculada ao TikTok Business Center.",
-      observacao: "O TikTok pode solicitar verificação empresarial e cobrança."
+      observacao: "O TikTok pode solicitar verificação empresarial e cobrança.",
+      urlOficial: "https://business.tiktok.com/"
     }
   };
 
@@ -37,6 +40,23 @@
   };
   let salvamentoTimer = null;
   let interagiuDesdeAbertura = false;
+  const monitor = {
+    ativo: false,
+    pausado: false,
+    plataforma: null,
+    stream: null,
+    video: null,
+    timer: null,
+    analisando: false,
+    resultado: null,
+    erro: "",
+    preview: "",
+    assinatura: null,
+    ultimaAnalise: 0,
+    analises: 0,
+    checklist: {},
+    historico: []
+  };
 
   const esc = (valor) => typeof window.escaparHtml === "function"
     ? window.escaparHtml(String(valor ?? ""))
@@ -45,6 +65,77 @@
   function aberto() {
     const modal = document.getElementById("assistente_contas_modal");
     return Boolean(modal && modal.style.display !== "none");
+  }
+
+  function contextoMonitor() {
+    const r = monitor.resultado;
+    if (!r) return "";
+    return [r.pagina, r.etapa, r.resumo, r.proxima_acao].filter(Boolean).join(" | ").slice(0, 1200);
+  }
+
+  function definirFaixaMonitor(ativa) {
+    monitor.stream?.getVideoTracks?.().forEach(track => { track.enabled = ativa; });
+  }
+
+  function pararMonitorTela(renderizar = true) {
+    if (monitor.timer) clearInterval(monitor.timer);
+    monitor.timer = null;
+    monitor.stream?.getTracks?.().forEach(track => track.stop());
+    if (monitor.video) monitor.video.srcObject = null;
+    Object.assign(monitor, {
+      ativo: false,
+      pausado: false,
+      plataforma: null,
+      stream: null,
+      video: null,
+      analisando: false,
+      resultado: null,
+      erro: "",
+      preview: "",
+      assinatura: null,
+      ultimaAnalise: 0,
+      analises: 0,
+      checklist: {},
+      historico: []
+    });
+    if (renderizar && aberto()) render();
+  }
+
+  function assinaturaCanvas(canvas) {
+    const mini = document.createElement("canvas");
+    mini.width = 16;
+    mini.height = 9;
+    const ctx = mini.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(canvas, 0, 0, mini.width, mini.height);
+    const pixels = ctx.getImageData(0, 0, mini.width, mini.height).data;
+    const assinatura = [];
+    for (let i = 0; i < pixels.length; i += 4) {
+      assinatura.push(Math.round((pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3));
+    }
+    return assinatura;
+  }
+
+  function telaMudou(nova) {
+    if (!monitor.assinatura || monitor.assinatura.length !== nova.length) return true;
+    const diferenca = nova.reduce((total, valor, i) => total + Math.abs(valor - monitor.assinatura[i]), 0) / nova.length;
+    return diferenca >= 4.5;
+  }
+
+  function capturarTelaMonitor() {
+    const video = monitor.video;
+    if (!video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) return null;
+    const limiteLargura = 1280;
+    const limiteAltura = 800;
+    const escala = Math.min(1, limiteLargura / video.videoWidth, limiteAltura / video.videoHeight);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(video.videoWidth * escala));
+    canvas.height = Math.max(1, Math.round(video.videoHeight * escala));
+    const ctx = canvas.getContext("2d", { alpha: false });
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return {
+      imagem: canvas.toDataURL("image/jpeg", 0.72),
+      assinatura: assinaturaCanvas(canvas)
+    };
   }
 
   function carregarRascunho() {
@@ -272,6 +363,75 @@
     };
   }
 
+  function renderMonitorTela() {
+    if (!monitor.ativo || !monitor.plataforma) return "";
+    const p = plataformas[monitor.plataforma];
+    const r = monitor.resultado;
+    const campos = Object.values(monitor.checklist || {});
+    const alertas = Array.isArray(r?.alertas) ? r.alertas : [];
+    const historico = Array.isArray(monitor.historico) ? monitor.historico : [];
+    const status = monitor.pausado
+      ? "Pausado"
+      : monitor.analisando
+      ? "Analisando a tela..."
+      : r?.concluido
+      ? "Verificação concluída"
+      : "Acompanhamento ativo";
+
+    return `
+      <section id="assistente_monitor_tela" class="assistente-monitor ${monitor.pausado ? "pausado" : ""}" aria-live="polite">
+        <div class="assistente-monitor-topo">
+          <div>
+            <b>👁 Verificador de tela — ${esc(p.nome)}</b>
+            <span>${esc(status)} · a imagem é analisada, mas não é salva no banco da plataforma</span>
+          </div>
+          <span class="assistente-monitor-pulso ${monitor.pausado ? "pausado" : ""}"></span>
+        </div>
+        <div class="assistente-monitor-grid">
+          <div class="assistente-monitor-preview">
+            <video id="assistente_monitor_video" autoplay muted playsinline></video>
+            ${monitor.pausado ? `<div class="assistente-monitor-preview-aviso">Compartilhamento pausado</div>` : ""}
+          </div>
+          <div class="assistente-monitor-orientacao">
+            ${monitor.erro ? `<div class="assistente-monitor-erro">${esc(monitor.erro)}</div>` : ""}
+            ${!r ? `
+              <strong>Preparando a primeira conferência</strong>
+              <p>Deixe visível a página oficial. O assistente identificará a etapa e revisará os campos apresentados.</p>
+            ` : `
+              <div class="assistente-monitor-etapa">${esc(r.pagina || p.nome)} · ${esc(r.etapa || "Etapa identificada")}</div>
+              <strong>${esc(r.resumo || "Tela verificada")}</strong>
+              <div class="assistente-monitor-proxima"><b>Próxima ação</b>${esc(r.proxima_acao || "Continue pela página oficial.")}</div>
+              <div class="assistente-monitor-confianca">Confiança da leitura: ${Math.round(Math.max(0, Math.min(1, Number(r.confianca) || 0)) * 100)}%</div>
+            `}
+          </div>
+        </div>
+        ${campos.length ? `
+          <div class="assistente-monitor-subtitulo">Checklist acumulado desta sessão · ${campos.length} item(ns) conferido(s)</div>
+          <div class="assistente-monitor-checklist">
+            ${campos.map(campo => `
+              <div class="assistente-monitor-campo ${esc(campo.status)}">
+                <span>${campo.status === "preenchido" ? "✓" : campo.status === "faltando" ? "!" : campo.status === "atencao" ? "⚠" : "–"}</span>
+                <div><b>${esc(campo.nome)}</b><small>${esc(campo.orientacao || "")}</small></div>
+              </div>`).join("")}
+          </div>` : ""}
+        ${historico.length > 1 ? `
+          <div class="assistente-monitor-historico">
+            <b>Etapas reconhecidas</b>
+            ${historico.slice(-6).map(item => `<span>${esc(item.etapa)}${item.concluido ? " ✓" : ""}</span>`).join("")}
+          </div>` : ""}
+        ${alertas.length ? `<div class="assistente-monitor-alertas">${alertas.map(alerta => `<div>⚠ ${esc(alerta)}</div>`).join("")}</div>` : ""}
+        ${r?.sensivel && monitor.pausado ? `<div class="assistente-monitor-sensivel"><b>Proteção ativada:</b> foi detectada uma etapa sensível. A captura foi pausada. Conclua senha, código, CAPTCHA, documento ou pagamento pessoalmente e só depois retome.</div>` : ""}
+        <div class="assistente-monitor-acoes">
+          <button class="assistente-btn-secundario" onclick="assistenteAlternarPausaTela()">${monitor.pausado ? "▶ Retomar verificação" : "⏸ Pausar"}</button>
+          <button class="assistente-btn-primario" onclick="assistenteAnalisarTelaAgora()" ${monitor.analisando || monitor.pausado ? "disabled" : ""}>${monitor.analisando ? "Analisando..." : "🔎 Analisar agora"}</button>
+          <button class="assistente-btn-secundario" onclick="assistentePararMonitorTela()">■ Encerrar compartilhamento</button>
+        </div>
+        <div class="assistente-monitor-privacidade">
+          Compartilhe somente a janela oficial de ${esc(p.nome)}. Pause antes de digitar senha, cartão, documento, CAPTCHA ou código de segurança.
+        </div>
+      </section>`;
+  }
+
   function renderStatus() {
     if (estado.carregando && !Object.keys(estado.status).length) {
       return `<div style="padding:42px;text-align:center;color:#94a3b8;"><span class="spinner-toggle"></span> Verificando suas contas...</div>`;
@@ -298,6 +458,7 @@
           const criar = id === "google" && capacidade.automatico
             ? `${seletorGerenciadora}<button class="assistente-btn-secundario" onclick="assistenteCriarContaGoogle(this)">✨ Criar conta automaticamente</button>`
             : `<button class="assistente-btn-secundario" onclick="assistenteAbrirTutorial('${id}')">Continuar criação oficial</button>`;
+          const acompanhar = `<button class="assistente-btn-secundario assistente-btn-monitor" onclick="assistenteAcompanharTela('${id}', this)">👁 ${monitor.ativo && monitor.plataforma === id ? "Tela acompanhada" : "Verificar cada detalhe"}</button>`;
           return `
             <div class="assistente-status-card">
               <div class="assistente-status-identidade"><span>${p.icone}</span>${p.nome}</div>
@@ -310,12 +471,14 @@
               <div class="assistente-status-acoes">
                 ${acao}
                 ${criar}
+                ${acompanhar}
               </div>
             </div>`;
         }).join("")}
       </div>
+      ${renderMonitorTela()}
       <div class="assistente-contas-aviso">
-        As páginas oficiais podem pedir login, aceite de termos, verificação empresarial ou pagamento. Conclua essas confirmações na própria rede e depois clique em “Verificar novamente”.
+        O verificador acompanha somente a janela que você escolher e cruza a leitura visual com o status real das integrações. Login, aceite de termos, verificação empresarial e pagamento continuam sendo concluídos pelo titular na página oficial.
       </div>`;
   }
 
@@ -342,6 +505,11 @@
     corpo.innerHTML = estado.etapa === 1 ? renderPlataformas() : estado.etapa === 2 ? renderDados() : renderStatus();
     renderFooter();
     atualizarIndicadorSalvamento();
+    const preview = document.getElementById("assistente_monitor_video");
+    if (preview && monitor.stream) {
+      preview.srcObject = monitor.stream;
+      preview.play().catch(() => {});
+    }
   }
 
   async function carregarStatus(opcoes = {}) {
@@ -430,6 +598,179 @@
     if (!opcoes.silencioso && typeof window.carregarHub === "function") await window.carregarHub();
   }
 
+  async function analisarTelaMonitor(opcoes = {}) {
+    if (!monitor.ativo || monitor.pausado || monitor.analisando || !monitor.plataforma) return;
+    if (monitor.analises >= 60) {
+      monitor.pausado = true;
+      definirFaixaMonitor(false);
+      monitor.erro = "A sessão atingiu o limite de verificações. Retome se ainda estiver configurando a conta.";
+      if (aberto()) render();
+      return;
+    }
+
+    const captura = capturarTelaMonitor();
+    if (!captura) {
+      monitor.erro = "A janela compartilhada ainda não forneceu uma imagem. Mantenha-a aberta e tente novamente.";
+      if (aberto()) render();
+      return;
+    }
+
+    const mudou = telaMudou(captura.assinatura);
+    const venceuRevisao = Date.now() - monitor.ultimaAnalise > 45000;
+    if (!opcoes.forcar && !mudou && !venceuRevisao) return;
+
+    monitor.assinatura = captura.assinatura;
+    monitor.analisando = true;
+    monitor.erro = "";
+    if (aberto()) render();
+
+    let timeoutAnalise = null;
+    try {
+      const token = localStorage.getItem("token");
+      const controller = new AbortController();
+      timeoutAnalise = setTimeout(() => controller.abort(), 35000);
+      const res = await fetch(`${API}/assistente-contas-anuncios/analisar-tela`, {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          plataforma: monitor.plataforma,
+          imagem: captura.imagem,
+          contexto_anterior: contextoMonitor()
+        })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "A leitura visual não respondeu agora.");
+      monitor.resultado = data.analise || null;
+      monitor.ultimaAnalise = Date.now();
+      monitor.analises += 1;
+      (Array.isArray(monitor.resultado?.campos) ? monitor.resultado.campos : []).forEach(campo => {
+        const chave = String(campo?.nome || "").trim().toLocaleLowerCase("pt-BR");
+        if (!chave) return;
+        monitor.checklist[chave] = {
+          nome: String(campo.nome || "Campo"),
+          status: String(campo.status || "atencao"),
+          orientacao: String(campo.orientacao || "")
+        };
+      });
+      const ultimaEtapa = monitor.historico[monitor.historico.length - 1];
+      if (monitor.resultado?.etapa && ultimaEtapa?.etapa !== monitor.resultado.etapa) {
+        monitor.historico.push({
+          etapa: monitor.resultado.etapa,
+          concluido: Boolean(monitor.resultado.concluido)
+        });
+        monitor.historico = monitor.historico.slice(-12);
+      } else if (ultimaEtapa && monitor.resultado?.concluido) {
+        ultimaEtapa.concluido = true;
+      }
+      if (monitor.resultado?.sensivel) {
+        monitor.pausado = true;
+        definirFaixaMonitor(false);
+      }
+    } catch (err) {
+      monitor.erro = err?.name === "AbortError"
+        ? "A análise demorou mais que o esperado. A próxima verificação tentará novamente."
+        : err?.message || "Não foi possível analisar esta tela.";
+    } finally {
+      if (timeoutAnalise) clearTimeout(timeoutAnalise);
+      monitor.analisando = false;
+      if (aberto()) render();
+    }
+  }
+
+  window.assistenteAcompanharTela = async function (plataforma) {
+    const configuracao = plataformas[plataforma];
+    if (!configuracao) return;
+    if (monitor.ativo && monitor.plataforma === plataforma) {
+      document.getElementById("assistente_monitor_tela")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      alert("Este navegador não oferece compartilhamento de janela. Use uma versão atual do Chrome ou Edge em conexão segura (HTTPS). ");
+      return;
+    }
+
+    const continuar = confirm(
+      `O assistente abrirá ${configuracao.nome} e pedirá para você compartilhar uma janela.\n\n` +
+      `Escolha SOMENTE a janela oficial de ${configuracao.nome}. Pause o compartilhamento antes de digitar senha, cartão, documento, CAPTCHA ou código de segurança.\n\n` +
+      "Deseja iniciar?"
+    );
+    if (!continuar) return;
+
+    window.open(configuracao.urlOficial, `assistente_${plataforma}`, "popup=yes,width=1280,height=860,resizable=yes,scrollbars=yes");
+    let novoStream = null;
+    try {
+      novoStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          displaySurface: "window",
+          frameRate: { ideal: 1, max: 2 },
+          width: { ideal: 1280 },
+          height: { ideal: 800 }
+        },
+        audio: false,
+        preferCurrentTab: false,
+        selfBrowserSurface: "exclude",
+        surfaceSwitching: "include"
+      });
+
+      pararMonitorTela(false);
+      const video = document.createElement("video");
+      video.autoplay = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.srcObject = novoStream;
+      await video.play();
+
+      Object.assign(monitor, {
+        ativo: true,
+        pausado: false,
+        plataforma,
+        stream: novoStream,
+        video,
+        analisando: false,
+        resultado: null,
+        erro: "",
+        assinatura: null,
+        ultimaAnalise: 0,
+        analises: 0,
+        checklist: {},
+        historico: []
+      });
+      const faixaCompartilhada = novoStream.getVideoTracks()[0];
+      faixaCompartilhada?.addEventListener("ended", () => {
+        if (monitor.stream === novoStream) pararMonitorTela(true);
+      }, { once: true });
+      monitor.timer = setInterval(() => analisarTelaMonitor({ forcar: false }), 12000);
+      if (aberto()) render();
+      setTimeout(() => analisarTelaMonitor({ forcar: true }), 1000);
+    } catch (err) {
+      novoStream?.getTracks?.().forEach(track => track.stop());
+      if (err?.name !== "NotAllowedError") {
+        alert(err?.message || "Não foi possível iniciar o compartilhamento da janela.");
+      }
+    }
+  };
+
+  window.assistenteAlternarPausaTela = function () {
+    if (!monitor.ativo) return;
+    monitor.pausado = !monitor.pausado;
+    definirFaixaMonitor(!monitor.pausado);
+    monitor.erro = monitor.pausado ? "Verificação pausada pelo usuário." : "";
+    if (aberto()) render();
+    if (!monitor.pausado) setTimeout(() => analisarTelaMonitor({ forcar: true }), 600);
+  };
+
+  window.assistenteAnalisarTelaAgora = function () {
+    analisarTelaMonitor({ forcar: true });
+  };
+
+  window.assistentePararMonitorTela = function () {
+    pararMonitorTela(true);
+  };
+
   window.abrirAssistenteContasAnuncios = function () {
     interagiuDesdeAbertura = false;
     carregarRascunho();
@@ -445,6 +786,7 @@
   window.fecharAssistenteContasAnuncios = function () {
     capturarFormulario();
     salvarRascunho({ imediato: true });
+    pararMonitorTela(false);
     const modal = document.getElementById("assistente_contas_modal");
     if (modal) modal.style.display = "none";
     document.body.style.overflow = "";
@@ -583,9 +925,16 @@
   // Quando o usuário volta da página oficial, reconsulta as conexões sem
   // depender de acesso ao conteúdo da janela OAuth (que é de outro domínio).
   window.addEventListener("focus", () => {
-    if (aberto() && estado.etapa === 3) setTimeout(() => carregarStatus({ silencioso: true }), 350);
+    if (aberto() && estado.etapa === 3) {
+      setTimeout(() => carregarStatus({ silencioso: true }), 350);
+      if (monitor.ativo && !monitor.pausado) setTimeout(() => analisarTelaMonitor({ forcar: true }), 900);
+    }
   });
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && aberto() && estado.etapa === 3) carregarStatus({ silencioso: true });
+    if (!document.hidden && aberto() && estado.etapa === 3) {
+      carregarStatus({ silencioso: true });
+      if (monitor.ativo && !monitor.pausado) setTimeout(() => analisarTelaMonitor({ forcar: true }), 900);
+    }
   });
+  window.addEventListener("beforeunload", () => pararMonitorTela(false));
 })();

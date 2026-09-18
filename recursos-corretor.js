@@ -54,6 +54,11 @@
       </div>`);
   }
 
+  function removerControlesGestorDoPainelCliente() {
+    document.getElementById("gt_modal_recursos")?.remove();
+    document.getElementById("gt_modal_financeiro")?.remove();
+  }
+
   function clientePorId(id) {
     try { return clienteGerenciadoPorId(Number(id)); }
     catch (_) { return null; }
@@ -400,7 +405,6 @@
 
   function instalarExtensoes() {
     injetarEstilos();
-    injetarModalGestor();
 
     if (typeof renderizarClientesGerenciados === "function") {
       const original = renderizarClientesGerenciados;
@@ -431,6 +435,7 @@
       iniciarPainelCliente = async function iniciarPainelComRecursos(perfil = {}) {
         clearInterval(atualizacaoConversas);
         conversaSelecionadaId = null;
+        removerControlesGestorDoPainelCliente();
         const retorno = await original.call(this, perfil);
         montarRecursosPainel(perfil);
         return retorno;

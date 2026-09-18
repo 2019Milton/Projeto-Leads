@@ -13208,89 +13208,22 @@ body.tema-claro .targeting-chip {
 }
 .chat-janela-fechar:hover { color: #e2e8f0; }
 
-/* ✨ Atalho flutuante pro Gerar/Editar Criativo — centralizado na sidebar de
-   220px e com largura interna suficiente para não cortar o texto. */
-.banner-ia-fab {
-  position: fixed;
-  left: 10px;
-  right: auto;
-  bottom: 178px;
-  z-index: 5200;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 200px;
-  max-width: 200px;
-  min-width: 0;
-  padding: 12px 8px;
-  box-sizing: border-box;
-  border: 1px solid rgba(245,158,11,0.5);
-  border-radius: 16px;
+/* ✨ Gerar/Editar Criativo — antes era um atalho flutuante (position:fixed)
+   sobreposto ao conteúdo em telas menores/janelas curtas, cobrindo itens do
+   menu. Virou um item normal dentro de .sidebar-menu (rola junto com o
+   resto), só que com o mesmo destaque em gradiente pra continuar chamando
+   atenção. Herda layout/collapse (ícone-só quando a sidebar recolhe) de
+   .sidebar-item/.sidebar-label — não precisa de CSS de colapso próprio. */
+.sidebar-item-criativo {
   background: linear-gradient(135deg, #7c3aed, #f59e0b);
   color: #fff7ed;
-  font-size: 12px;
   font-weight: 800;
-  line-height: 1.3;
-  text-align: center;
-  white-space: normal;
-  box-shadow: 0 18px 44px rgba(124,58,237,0.28), 0 0 0 1px rgba(255,255,255,0.08) inset;
-  cursor: pointer;
-  transition:
-    left .22s cubic-bezier(.4,0,.2,1),
-    width .22s cubic-bezier(.4,0,.2,1),
-    max-width .22s cubic-bezier(.4,0,.2,1),
-    padding .22s cubic-bezier(.4,0,.2,1),
-    border-radius .22s cubic-bezier(.4,0,.2,1),
-    transform .16s,
-    box-shadow .16s;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.28), 0 0 0 1px rgba(255,255,255,0.08) inset;
 }
-
-.banner-ia-fab-icone {
-  flex: 0 0 auto;
-  font-size: 16px;
-  line-height: 1;
-}
-
-.banner-ia-fab-texto {
-  overflow: hidden;
-  white-space: nowrap;
-  transition: opacity .12s, width .22s;
-}
-
-/* O atalho ocupa a largura da sidebar aberta. Quando o menu recolhe, vira
-   apenas um botao quadrado e deixa de cobrir os cards de campanha. */
-#sidebar-nav.recolhida ~ #app-content-area .banner-ia-fab {
-  left: 6px;
-  width: 44px;
-  max-width: 44px;
-  height: 44px;
-  padding: 0;
-  border-radius: 13px;
-  gap: 0;
-}
-
-#sidebar-nav.recolhida ~ #app-content-area .banner-ia-fab-texto {
-  width: 0;
-  opacity: 0;
-}
-
-.banner-ia-fab:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 22px 56px rgba(245,158,11,0.32), 0 0 0 1px rgba(255,255,255,0.12) inset;
-}
-
-@media (max-width: 720px) {
-  .banner-ia-fab {
-    left: 16px;
-    right: auto;
-    bottom: 16px;
-  }
-
-  #sidebar-nav.recolhida ~ #app-content-area .banner-ia-fab {
-    left: 6px;
-    bottom: 16px;
-  }
+.sidebar-item-criativo:hover {
+  background: linear-gradient(135deg, #8b4ff0, #fbbf24);
+  color: #fff7ed;
+  box-shadow: 0 6px 18px rgba(245,158,11,0.32), 0 0 0 1px rgba(255,255,255,0.12) inset;
 }
 
 /* Janelas flutuantes de suporte (admin/suporte) */
@@ -19361,18 +19294,6 @@ body.tema-claro .criar-campanha-descricao {
       </div>
     </div>
 
-    <!-- ✨ Atalho flutuante pro Gerar/Editar Criativo (mesmo lugar onde ficava o ChatIALeads) -->
-    <button
-      class="banner-ia-fab"
-      type="button"
-      onclick="abrirModalGerarBanner()"
-      title="Gerar/Editar Criativo"
-      aria-label="Gerar ou editar criativo"
-    >
-      <span class="banner-ia-fab-icone">✨</span>
-      <span class="banner-ia-fab-texto">Gerar/Editar Criativo</span>
-    </button>
-
     <!-- 🔍 LIGHTBOX (visualização de imagem do chat) -->
     <div id="chat_lightbox" class="chat-lightbox" style="display:none;" onclick="fecharLightboxChat()">
       <img id="chat_lightbox_img" src="" alt="Visualização">
@@ -22296,7 +22217,15 @@ function montarSidebar() {
         <span class="sidebar-icone">${s.icone}</span>
         <span class="sidebar-label">${s.label}</span>
       </button>
-    `).join("");
+    `).join("") + `
+      <div class="sidebar-separador"></div>
+      <button class="sidebar-item sidebar-item-criativo" type="button"
+              onclick="abrirModalGerarBanner()" data-tooltip="Gerar/Editar Criativo"
+              aria-label="Gerar ou editar criativo">
+        <span class="sidebar-icone">✨</span>
+        <span class="sidebar-label">Gerar/Editar Criativo</span>
+      </button>
+    `;
 
   sidebar.innerHTML = `
     <div class="sidebar-topo">

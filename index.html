@@ -40269,7 +40269,7 @@ const HUB_PLATAFORMAS = [
   { id: "meta",      nome: "Meta Ads",      icone: PLATAFORMA_META.meta.icone,      disponivelConectar: true,  desc: "Facebook & Instagram Lead Ads" },
   { id: "google",    nome: "Google Ads",    icone: PLATAFORMA_META.google.icone,    disponivelConectar: true,  desc: "Lead Form Extensions via Google" },
   { id: "tiktok",    nome: "TikTok Ads",    icone: PLATAFORMA_META.tiktok.icone,    disponivelConectar: true,  desc: "TikTok Instant Form Leads" },
-  { id: "linkedin",  nome: "LinkedIn Ads",  icone: PLATAFORMA_META.linkedin.icone,  disponivelConectar: true,  desc: "LinkedIn Lead Gen Forms", emConfiguracao: true },
+  { id: "linkedin",  nome: "LinkedIn Ads",  icone: PLATAFORMA_META.linkedin.icone,  disponivelConectar: true,  desc: "Campanhas, relatórios e LinkedIn Lead Gen Forms" },
   { id: "kwai",      nome: "Kwai Ads",      icone: PLATAFORMA_META.kwai.icone,      disponivelConectar: true,  desc: "Kwai Lead Form Ads", emConfiguracao: true },
   { id: "pinterest", nome: "Pinterest Ads", icone: PLATAFORMA_META.pinterest.icone, disponivelConectar: false, desc: "Pinterest Lead Ads Webhook" },
   { id: "snapchat",  nome: "Snapchat Ads",  icone: PLATAFORMA_META.snapchat.icone,  disponivelConectar: false, desc: "Snap Lead Generation API" },
@@ -40633,7 +40633,7 @@ async function carregarRankingHub(mapaConexoes = {}, opcoes = {}) {
   if (hubRankingPromise) return hubRankingPromise;
 
   hubRankingPromise = (async () => {
-    const plataformasComPerformance = ["meta", "google", "tiktok"]
+    const plataformasComPerformance = ["meta", "google", "tiktok", "linkedin"]
       .filter(id => mapaConexoes[id]?.status === "conectado");
     let baseLocal = {};
     try {
@@ -40867,18 +40867,18 @@ function renderResumoTikTok(conn) {
     </div>`;
 }
 
-function renderResumoLinkedIn(conn) {
+function renderResumoLinkedIn(conn, statusCompleto) {
   const conectado = conn?.status === "conectado";
 
-  // Mesmo padrão do renderResumoKwai: a integração já existe no backend
-  // (campanhas, sync, conversion API — tudo implementado), mas publicar de
-  // verdade depende da aprovação da Advertising API do LinkedIn pro nosso
-  // app, então o alerta fica em "warn" com o mesmo aviso de "aguardando
-  // liberação" em vez de prometer um fluxo de conexão pleno como Meta/TikTok.
   if (!conectado) {
     return `
       <div class="integ-card-resumo">
-        ${hubResumoAlerta("Integração com o LinkedIn Ads em configuração — aguardando aprovação da Advertising API do LinkedIn. O botão \"Conectar\" já existe, mas o acesso pode responder como indisponível por enquanto.", "warn")}
+        ${hubResumoAlerta(
+          conn?.status === "erro"
+            ? "A autorização do LinkedIn precisa ser refeita. Clique em Reconectar."
+            : "Conecte o LinkedIn Ads para administrar contas, campanhas e relatórios.",
+          conn?.status === "erro" ? "warn" : ""
+        )}
         <div style="margin:6px 0 2px;">
           <button type="button" onclick="abrirPassoLinkedInConta()"
             style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(100,116,139,0.12);border:1px solid rgba(100,116,139,0.3);color:#94a3b8;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;"
@@ -40888,7 +40888,7 @@ function renderResumoLinkedIn(conn) {
           ${hubResumoItem("Leads", "Pausados")}
           ${hubResumoItem("Campanhas", "Sem sync")}
           ${hubResumoItem("Conta de anúncios", "Não conectada")}
-          ${hubResumoItem("Próximo passo", "Aguardar liberação da API")}
+          ${hubResumoItem("Próximo passo", "Conectar")}
         </div>
       </div>`;
   }
@@ -40906,11 +40906,36 @@ function renderResumoLinkedIn(conn) {
       </div>`;
   }
 
+  const conta = statusCompleto?.conta || null;
+  const companyPage = statusCompleto?.company_page || null;
+  const campanhasAtivas = Number(statusCompleto?.campanhas_ativas || 0);
+  const campanhasTotal = Number(statusCompleto?.campanhas_total || 0);
+  const leadsHoje = Number(statusCompleto?.leads_hoje || 0);
+  const gastoHoje = typeof statusCompleto?.gasto_hoje === "number"
+    ? statusCompleto.gasto_hoje.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: conta?.moeda || conn?.conta?.moeda || "BRL"
+      })
+    : "—";
+  const apta = statusCompleto?.veiculacao?.apta === true;
+  const leadSyncDisponivel = statusCompleto?.lead_sync?.disponivel === true;
+
   return `
     <div class="integ-card-resumo">
-      ${hubResumoAlerta("Conta de anúncios selecionada. Use \"Sincronizar agora\" nos detalhes para importar campanhas e leads.", "ok")}
+      ${hubResumoAlerta(
+        apta
+          ? "Conta validada e apta para veicular anúncios no LinkedIn."
+          : "Conta conectada. Abra os detalhes para revisar veiculação, faturamento e permissões.",
+        apta ? "ok" : "warn"
+      )}
       <div class="integ-resumo-grid">
-        ${hubResumoItem("Conta de anúncios", adAccountId, "sucesso")}
+        ${hubResumoItem("Conta Ads", conta?.nome || adAccountId, "sucesso")}
+        ${hubResumoItem("Company Page", companyPage?.nome || companyPage?.id || "Vinculada", companyPage ? "sucesso" : "alerta")}
+        ${hubResumoItem("Status", conta?.status || "—", conta?.status === "ACTIVE" ? "sucesso" : "alerta")}
+        ${hubResumoItem("Campanhas", `${campanhasAtivas}/${campanhasTotal} ativas`)}
+        ${hubResumoItem("Leads hoje", leadsHoje, leadsHoje > 0 ? "sucesso" : "")}
+        ${hubResumoItem("Gasto hoje", gastoHoje)}
+        ${hubResumoItem("Lead Sync", leadSyncDisponivel ? "Disponível" : "Aguardando aprovação", leadSyncDisponivel ? "sucesso" : "alerta")}
         ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
       </div>
     </div>`;
@@ -41038,6 +41063,7 @@ async function carregarHub(opcoes = {}) {
   let mapa = {};
   let metaStatusCompleto = null;
   let googleStatusCompleto = null;
+  let linkedinStatusCompleto = null;
   try {
     const res = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) {
@@ -41064,9 +41090,26 @@ async function carregarHub(opcoes = {}) {
     } catch (_) {}
   }
 
+  if (mapa.linkedin?.status === "conectado") {
+    try {
+      const resLinkedIn = await fetch(`${API}/linkedin/status-completo`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (resLinkedIn.ok) {
+        linkedinStatusCompleto = await resLinkedIn.json();
+      }
+    } catch (_) {}
+  }
+
   grid.innerHTML = HUB_PLATAFORMAS.map(p => renderIntegCard(
     p, mapa[p.id],
-    p.id === "meta" ? metaStatusCompleto : p.id === "google" ? googleStatusCompleto : null
+    p.id === "meta"
+      ? metaStatusCompleto
+      : p.id === "google"
+      ? googleStatusCompleto
+      : p.id === "linkedin"
+      ? linkedinStatusCompleto
+      : null
   )).join("");
 
   const rankingPromise = carregarRankingHub(mapa, {
@@ -41161,7 +41204,7 @@ function renderIntegCard(p, conn, statusCompleto = null) {
     : p.id === "google"
     ? renderResumoGoogle(conn, statusCompleto)
     : p.id === "linkedin"
-    ? renderResumoLinkedIn(conn)
+    ? renderResumoLinkedIn(conn, statusCompleto)
     : p.id === "kwai"
     ? renderResumoKwai(conn)
     : emBreve
@@ -41641,20 +41684,74 @@ async function recarregarHubMantendoDetalhesLinkedInAbertos() {
   await carregarDetalhesLinkedInHub(el);
 }
 
+function rotuloStatusContaLinkedIn(status) {
+  const mapa = { ACTIVE: "Ativa", DRAFT: "Rascunho / configuração incompleta", CANCELED: "Cancelada" };
+  return mapa[String(status || "").toUpperCase()] || status || "Não identificado";
+}
+
+function rotuloPapelLinkedIn(papel) {
+  const mapa = {
+    VIEWER: "Visualizador",
+    CREATIVE_MANAGER: "Gerenciador de criativos",
+    CAMPAIGN_MANAGER: "Gerenciador de campanhas",
+    ACCOUNT_MANAGER: "Gerenciador da conta",
+    ACCOUNT_BILLING_ADMIN: "Administrador de faturamento",
+  };
+  return mapa[String(papel || "").toUpperCase()] || papel || "Não identificado";
+}
+
+function formatarValorLinkedIn(valor, moeda = "BRL") {
+  if (valor === null || valor === undefined || valor === "") return "—";
+  const numero = Number(valor);
+  if (!Number.isFinite(numero)) return "—";
+  try {
+    return numero.toLocaleString("pt-BR", { style: "currency", currency: moeda || "BRL" });
+  } catch (_) {
+    return `${numero.toFixed(2)} ${moeda || ""}`.trim();
+  }
+}
+
+function renderFaturamentoLinkedIn(dataStatus, conta) {
+  const veiculacao = dataStatus?.veiculacao || {};
+  const motivos = Array.isArray(veiculacao.motivos) ? veiculacao.motivos : [];
+  const statusTexto = veiculacao.apta
+    ? "Apta para veicular"
+    : veiculacao.status === "BILLING_HOLD"
+    ? "Pendência de faturamento"
+    : veiculacao.status || "Revisar no Campaign Manager";
+  const itens = [
+    hubResumoItem("Veiculação", statusTexto, veiculacao.apta ? "sucesso" : "alerta"),
+    hubResumoItem("Moeda da conta", conta?.moeda || "—"),
+    hubResumoItem("Status da conta", rotuloStatusContaLinkedIn(conta?.status), conta?.status === "ACTIVE" ? "sucesso" : "alerta"),
+  ];
+  if (motivos.length) itens.push(hubResumoItem("Sinais do LinkedIn", motivos.join(" · ")));
+
+  return `
+    <div class="integ-resumo-grid" style="margin-bottom:9px;">${itens.join("")}</div>
+    ${veiculacao.apta
+      ? hubResumoAlerta("O LinkedIn confirmou que a conta está liberada para veicular anúncios.", "ok")
+      : hubResumoAlerta("Revise faturamento, orçamento total e demais restrições diretamente no Campaign Manager.", "warn")}
+    <p style="margin:8px 0 0;font-size:11px;color:#64748b;line-height:1.45;">
+      A API informa os bloqueios de veiculação, mas não expõe cartão, faturas ou saldo detalhado. Contas em BRL exibem orçamento, lances e gasto em reais; o faturamento do LinkedIn pode ocorrer em USD.
+    </p>`;
+}
+
 async function carregarDetalhesLinkedInHub(elAlvo = null) {
   const el = elAlvo || document.getElementById("integ-detalhes-linkedin");
   if (!el) return;
   const token = localStorage.getItem("token");
-  el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando contas de anúncios...</span>`;
+  el.innerHTML = `<span style="color:#64748b;font-size:12px;">Carregando status, conta e permissões...</span>`;
   try {
-    const [resContas, resConexoes] = await Promise.all([
+    const [resContas, resConexoes, resStatus] = await Promise.all([
       fetch(`${API}/linkedin/contas`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${API}/linkedin/status-completo`, { headers: { Authorization: `Bearer ${token}` } })
     ]);
     const dataContas = await resContas.json();
     const dataConexoes = await resConexoes.json();
+    const dataStatus = resStatus.ok ? await resStatus.json() : {};
     const conn = (dataConexoes?.conexoes || []).find(c => c.plataforma === "linkedin");
-    const adAccountIdAtual = conn?.conta?.ad_account_id || "";
+    const adAccountIdAtual = conn?.conta?.ad_account_id || dataStatus?.ad_account_id || "";
 
     if (!resContas.ok) {
       el.innerHTML = `<span style="color:#f87171;">${escaparHtml(dataContas?.error || "Erro ao carregar contas de anúncios.")}</span>`;
@@ -41663,65 +41760,112 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
 
     const contas = dataContas.contas || [];
     if (!contas.length) {
-      el.innerHTML = `<span style="color:#f87171;">Nenhuma conta de anúncios encontrada para esse login LinkedIn.</span>`;
+      el.innerHTML = `
+        ${hubResumoAlerta("Nenhuma conta de anúncios foi encontrada para este login do LinkedIn.", "warn")}
+        ${secaoAcoesRapidas([
+          linkAcaoRapida("➕", "Criar conta no Campaign Manager", "https://www.linkedin.com/campaignmanager/accounts", "sucesso"),
+          botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoLinkedInConta()", "indigo")
+        ].join(""))}`;
       return;
     }
 
-    // Se só existe uma conta e ainda nenhuma foi escolhida, seleciona automático (mesmo padrão do Meta/Google/TikTok)
-    if (!adAccountIdAtual && contas.length === 1) {
-      await selecionarContaLinkedIn(String(contas[0].id), contas[0].org_urn, contas[0].moeda, { silencioso: true });
-      await recarregarHubMantendoDetalhesLinkedInAbertos();
-      return;
-    }
+    const opcoes = contas.map(conta => {
+      const indisponivel = conta.pode_gerenciar === false || !conta.org_urn || !conta.moeda;
+      const detalhes = [conta.moeda, rotuloPapelLinkedIn(conta.papel), rotuloStatusContaLinkedIn(conta.status)].filter(Boolean).join(" · ");
+      return `
+        <option value="${escaparHtml(String(conta.id))}" ${String(conta.id) === String(adAccountIdAtual) ? "selected" : ""} ${indisponivel ? "disabled" : ""}>
+          ${escaparHtml(conta.nome || String(conta.id))}${detalhes ? ` — ${escaparHtml(detalhes)}` : ""}${!conta.org_urn ? " — sem Company Page" : ""}
+        </option>`;
+    }).join("");
 
-    const opcoes = contas.map(conta => `
-      <option value="${escaparHtml(String(conta.id))}" data-org="${escaparHtml(conta.org_urn || "")}" data-moeda="${escaparHtml(conta.moeda || "BRL")}" ${String(conta.id) === String(adAccountIdAtual) ? "selected" : ""}>
-        ${escaparHtml(conta.nome || String(conta.id))}
-      </option>`).join("");
-
+    const contaAtual = dataStatus?.conta || contas.find(conta => String(conta.id) === String(adAccountIdAtual)) || null;
+    const companyPage = dataStatus?.company_page || null;
     const conversionQualificadoAtual = conn?.conta?.conversion_rule_qualified_urn || "";
     const conversionFechadoAtual = conn?.conta?.conversion_rule_closed_urn || "";
+    const leadSyncDisponivel = dataStatus?.lead_sync?.disponivel === true;
+    const companyPageLabel = companyPage?.nome || contaAtual?.organization_nome || companyPage?.id || contaAtual?.org_urn || "Não vinculada";
+    const billingUrl = adAccountIdAtual
+      ? `https://www.linkedin.com/campaignmanager/accounts/${encodeURIComponent(adAccountIdAtual)}/billing/billing-setup`
+      : "https://www.linkedin.com/campaignmanager/accounts";
 
     el.innerHTML = `
-      <div class="integ-detalhe-linha">
-        <span class="integ-detalhe-label">Conta de anúncios</span>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
-        <select id="linkedin_conta_select" style="flex:1;min-width:180px;">${opcoes}</select>
-        <button type="button" onclick="(function(btn){var sel=document.getElementById('linkedin_conta_select');selecionarContaLinkedIn(sel.value, sel.selectedOptions[0]?.dataset.org, sel.selectedOptions[0]?.dataset.moeda, {}, btn);})(this)">Usar esta conta</button>
-      </div>
-      <div class="integ-detalhe-linha">
-        <span class="integ-detalhe-label">Sincronização</span>
-        <span class="integ-detalhe-valor" id="linkedin_sync_status">${adAccountIdAtual ? "Pronto para sincronizar" : "Selecione uma conta primeiro"}</span>
-      </div>
-      <div style="margin-top:8px;">
-        <button type="button" id="btn_linkedin_sync" onclick="sincronizarLinkedIn()" ${adAccountIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
-      </div>
+      ${secaoColapsavel("📊 Status LinkedIn Ads", `
+        <div class="integ-detalhe-linha">
+          <span class="integ-detalhe-label">Conta de anúncios</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px;">
+          <select id="linkedin_conta_select" style="flex:1;min-width:180px;">${opcoes}</select>
+          <button type="button" onclick="(function(btn){var sel=document.getElementById('linkedin_conta_select');selecionarContaLinkedIn(sel.value, {}, btn);})(this)">Usar esta conta</button>
+        </div>
+        <div class="integ-resumo-grid" style="margin-bottom:10px;">
+          ${hubResumoItem("Nome da conta", contaAtual?.nome || "Selecione uma conta", contaAtual ? "sucesso" : "alerta")}
+          ${hubResumoItem("ID da conta", adAccountIdAtual || "—")}
+          ${hubResumoItem("Status", rotuloStatusContaLinkedIn(contaAtual?.status), contaAtual?.status === "ACTIVE" ? "sucesso" : "alerta")}
+          ${hubResumoItem("Função do usuário", rotuloPapelLinkedIn(contaAtual?.papel))}
+          ${hubResumoItem("Moeda", contaAtual?.moeda || conn?.conta?.moeda || "—")}
+          ${hubResumoItem("Company Page", companyPageLabel, companyPage || contaAtual?.org_urn ? "sucesso" : "erro")}
+          ${hubResumoItem("Conectado em", hubResumoData(dataStatus?.conectado_em || conn?.conectado_em), "sucesso")}
+          ${hubResumoItem("Token válido até", hubResumoData(dataStatus?.token_expira_em))}
+        </div>
+        <div class="integ-detalhe-linha">
+          <span class="integ-detalhe-label">Sincronização</span>
+          <span class="integ-detalhe-valor" id="linkedin_sync_status">${adAccountIdAtual ? "Pronto para sincronizar campanhas" : "Selecione uma conta primeiro"}</span>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" id="btn_linkedin_sync" onclick="sincronizarLinkedIn()" ${adAccountIdAtual ? "" : "disabled"}>🔄 Sincronizar agora</button>
+          ${companyPage?.url ? linkAcaoRapida("🏢", "Abrir Company Page", companyPage.url, "neutro") : ""}
+        </div>
+      `, { margemTopo: "0" })}
 
-      <div class="integ-detalhe-linha" style="margin-top:14px;">
-        <span class="integ-detalhe-label">Conversion Rules (Campaign Manager)</span>
-      </div>
-      <div style="font-size:11.5px;color:#64748b;margin:2px 0 8px;">
-        O LinkedIn exige que cada Conversion Rule já exista no Campaign Manager antes — crie lá e cole o URN aqui pra ativar o envio de qualificação/fechamento.
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
-        <input type="text" id="linkedin_conversion_qualificado" placeholder="URN da Conversion Rule — Lead qualificado" value="${escaparHtml(conversionQualificadoAtual)}" ${adAccountIdAtual ? "" : "disabled"} style="width:100%;">
-        <input type="text" id="linkedin_conversion_fechado" placeholder="URN da Conversion Rule — Negócio fechado" value="${escaparHtml(conversionFechadoAtual)}" ${adAccountIdAtual ? "" : "disabled"} style="width:100%;">
-        <button type="button" onclick="salvarConversionRulesLinkedIn(this)" ${adAccountIdAtual ? "" : "disabled"}>Salvar Conversion Rules</button>
-      </div>
+      ${secaoColapsavel("📈 Desempenho LinkedIn Ads", `
+        <div class="integ-resumo-grid">
+          ${hubResumoItem("Campanhas", `${Number(dataStatus?.campanhas_ativas || 0)}/${Number(dataStatus?.campanhas_total || 0)} ativas`)}
+          ${hubResumoItem("Leads hoje", Number(dataStatus?.leads_hoje || 0))}
+          ${hubResumoItem("Gasto hoje", formatarValorLinkedIn(dataStatus?.gasto_hoje, contaAtual?.moeda || "BRL"))}
+          ${hubResumoItem("Última atualização", hubResumoData(dataStatus?.ultimo_sync))}
+        </div>
+      `)}
+
+      ${secaoColapsavel("💳 Faturamento e veiculação", `
+        ${renderFaturamentoLinkedIn(dataStatus, contaAtual)}
+        <div style="margin-top:10px;">
+          ${linkAcaoRapida("💳", "Abrir faturamento no Campaign Manager", billingUrl, "alerta")}
+        </div>
+      `)}
+
+      ${secaoColapsavel("🧲 Lead Sync API", `
+        ${leadSyncDisponivel
+          ? hubResumoAlerta("Lead Sync API disponível para importar respostas dos formulários.", "ok")
+          : hubResumoAlerta("A importação automática de respostas está aguardando aprovação do LinkedIn. Campanhas e relatórios continuam disponíveis.", "warn")}
+        <div style="margin-top:8px;">
+          <button type="button" onclick="configurarWebhookLinkedIn(this)" ${adAccountIdAtual && leadSyncDisponivel ? "" : "disabled"}>⚡ Ativar leads em tempo real</button>
+        </div>
+      `)}
+
+      ${secaoColapsavel("🎯 Conversion Rules", `
+        <div style="font-size:11.5px;color:#64748b;margin:2px 0 8px;">
+          Crie as regras no Campaign Manager e cole os URNs abaixo para enviar qualificação e fechamento.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <input type="text" id="linkedin_conversion_qualificado" placeholder="URN da Conversion Rule — Lead qualificado" value="${escaparHtml(conversionQualificadoAtual)}" ${adAccountIdAtual ? "" : "disabled"} style="width:100%;">
+          <input type="text" id="linkedin_conversion_fechado" placeholder="URN da Conversion Rule — Negócio fechado" value="${escaparHtml(conversionFechadoAtual)}" ${adAccountIdAtual ? "" : "disabled"} style="width:100%;">
+          <button type="button" onclick="salvarConversionRulesLinkedIn(this)" ${adAccountIdAtual ? "" : "disabled"}>Salvar Conversion Rules</button>
+        </div>
+      `)}
 
       ${secaoAcoesRapidas([
         linkAcaoRapida("🏠", "Abrir LinkedIn Campaign Manager", "https://www.linkedin.com/campaignmanager/", "sucesso"),
+        linkAcaoRapida("➕", "Contas de anúncios", "https://www.linkedin.com/campaignmanager/accounts", "neutro"),
         botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoLinkedInConta()", "indigo"),
         linkAcaoRapida("❓", "Central de Ajuda do LinkedIn Ads", "https://www.linkedin.com/help/lms", "neutro"),
       ].join(""))}
     `;
   } catch (_) {
-    el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar detalhes.</span>`;
+    el.innerHTML = `<span style="color:#f87171;">Não foi possível carregar os detalhes do LinkedIn Ads.</span>`;
   }
 }
 
-async function selecionarContaLinkedIn(adAccountId, orgUrn, moeda, opts = {}, btnEl) {
+async function selecionarContaLinkedIn(adAccountId, opts = {}, btnEl) {
   const token = localStorage.getItem("token");
   if (!token || !adAccountId) return;
 
@@ -41745,10 +41889,11 @@ async function selecionarContaLinkedIn(adAccountId, orgUrn, moeda, opts = {}, bt
     const res = await fetch(`${API}/linkedin/selecionar-conta`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ad_account_id: adAccountId, org_urn: orgUrn || "", moeda: moeda || "" })
+      body: JSON.stringify({ ad_account_id: adAccountId })
     });
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+      if (!opts.silencioso) alert(data?.error || "Erro ao selecionar a conta de anúncios.");
       restaurarBotao();
       return;
     }
@@ -41764,16 +41909,14 @@ async function selecionarContaLinkedIn(adAccountId, orgUrn, moeda, opts = {}, bt
 // Salva só as Conversion Rules do LinkedIn (URNs criadas manualmente no
 // Campaign Manager — ver enviarEventoLinkedInConversionLeads no backend, que
 // não consegue enviar qualificação/fechamento sem elas). Reusa
-// /linkedin/selecionar-conta mandando junto a conta já selecionada, pra não
-// sobrescrever ad_account_id/org_urn/moeda com valores vazios.
+// /linkedin/selecionar-conta mandando junto a conta já selecionada; os dados
+// sensíveis da conta são validados novamente pelo backend antes de salvar.
 async function salvarConversionRulesLinkedIn(btnEl) {
   const token = localStorage.getItem("token");
   const sel = document.getElementById("linkedin_conta_select");
   const adAccountId = sel?.value;
   if (!token || !adAccountId) return;
 
-  const orgUrn = sel.selectedOptions[0]?.dataset.org || "";
-  const moeda = sel.selectedOptions[0]?.dataset.moeda || "";
   const conversionQualificado = document.getElementById("linkedin_conversion_qualificado")?.value.trim() || "";
   const conversionFechado = document.getElementById("linkedin_conversion_fechado")?.value.trim() || "";
 
@@ -41789,14 +41932,15 @@ async function salvarConversionRulesLinkedIn(btnEl) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         ad_account_id: adAccountId,
-        org_urn: orgUrn,
-        moeda,
         conversion_rule_qualified_urn: conversionQualificado,
         conversion_rule_closed_urn: conversionFechado
       })
     });
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      alert("Erro ao salvar as Conversion Rules.");
+      alert(data?.error || "Erro ao salvar as Conversion Rules.");
+    } else {
+      alert("Conversion Rules salvas.");
     }
   } catch (_) {
     alert("Erro ao salvar as Conversion Rules.");
@@ -41812,8 +41956,12 @@ async function sincronizarLinkedIn() {
   const token = localStorage.getItem("token");
   if (!token) return;
   const btn = document.getElementById("btn_linkedin_sync");
-  const status = document.getElementById("linkedin_sync_status");
+  const painelAtual = btn?.closest("#integ-detalhes-linkedin")
+    || document.getElementById("integ-detalhes-linkedin");
+  const status = painelAtual?.querySelector("#linkedin_sync_status")
+    || document.getElementById("linkedin_sync_status");
   if (btn) { btn.disabled = true; btn.textContent = "🔄 Sincronizando..."; }
+  if (status) status.textContent = "Sincronizando campanhas e dados disponíveis...";
   try {
     const res = await fetch(`${API}/linkedin/sincronizar-campanhas`, {
       method: "POST",
@@ -41826,7 +41974,11 @@ async function sincronizarLinkedIn() {
     }
     await recarregarHubMantendoDetalhesLinkedInAbertos();
     const statusNovo = document.getElementById("linkedin_sync_status");
-    if (statusNovo) statusNovo.textContent = `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
+    if (statusNovo) {
+      statusNovo.textContent = data?.aviso
+        ? `${data.campanhas ?? 0} campanhas sincronizadas. ${data.aviso}`
+        : `Sincronizado: ${data.campanhas ?? 0} campanhas, ${data.leads_novos ?? 0} leads novos.`;
+    }
     return;
   } catch (_) {
     if (status) status.textContent = "Erro ao sincronizar.";

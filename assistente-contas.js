@@ -142,16 +142,20 @@
     };
   }
 
+  function normalizarPlataformaSelecionada(valor) {
+    const primeiraValida = Array.isArray(valor)
+      ? valor.find(plataforma => plataformas[plataforma])
+      : null;
+    return [primeiraValida || "meta"];
+  }
+
   function carregarRascunho() {
     try {
       const salvo = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       if (!salvo || typeof salvo !== "object") return;
       estado.etapa = Math.min(3, Math.max(1, Number(salvo.etapa) || 1));
-      estado.plataformas = Array.isArray(salvo.plataformas)
-        ? salvo.plataformas.filter(p => plataformas[p])
-        : ["meta"];
+      estado.plataformas = normalizarPlataformaSelecionada(salvo.plataformas);
       estado.dados = salvo.dados && typeof salvo.dados === "object" ? salvo.dados : {};
-      if (!estado.plataformas.length) estado.plataformas = ["meta"];
     } catch (_) {}
   }
 
@@ -224,14 +228,16 @@
           return;
         }
         estado.etapa = Math.min(3, Math.max(1, Number(salvo.etapa) || 1));
-        estado.plataformas = Array.isArray(salvo.plataformas)
-          ? salvo.plataformas.filter(p => plataformas[p])
-          : ["meta"];
-        if (!estado.plataformas.length) estado.plataformas = ["meta"];
+        estado.plataformas = normalizarPlataformaSelecionada(salvo.plataformas);
         estado.dados = salvo.dados && typeof salvo.dados === "object" ? salvo.dados : {};
         estado.salvamento = "salvo";
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(salvo));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            ...salvo,
+            etapa: estado.etapa,
+            plataformas: estado.plataformas,
+            dados: estado.dados
+          }));
         } catch (_) {}
         if (aberto()) render();
       } else {
@@ -252,7 +258,7 @@
   function renderEtapas() {
     const el = document.getElementById("assistente_contas_etapas");
     if (!el) return;
-    const nomes = ["Escolher plataformas", "Dados da empresa", "Conectar e acompanhar"];
+    const nomes = ["Escolher plataforma", "Dados da empresa", "Conectar e acompanhar"];
     el.innerHTML = nomes.map((nome, i) => {
       const numero = i + 1;
       const classe = numero === estado.etapa ? "ativa" : numero < estado.etapa ? "concluida" : "";
@@ -263,14 +269,14 @@
   function renderPlataformas() {
     return `
       <p class="assistente-contas-intro">
-        Escolha onde deseja anunciar. Você pode configurar uma rede agora e continuar as demais depois sem perder o progresso.
+        Escolha uma plataforma para configurar agora. Depois você poderá voltar e criar outra conta sem preencher novamente os dados da empresa.
       </p>
       <div class="assistente-plataformas-grid">
         ${Object.entries(plataformas).map(([id, p]) => {
           const selecionada = estado.plataformas.includes(id);
           return `
             <label class="assistente-plataforma-opcao ${selecionada ? "selecionada" : ""}" onclick="event.preventDefault();assistenteSelecionarPlataforma('${id}')">
-              <input type="checkbox" ${selecionada ? "checked" : ""}>
+              <input type="radio" name="assistente_plataforma" ${selecionada ? "checked" : ""}>
               <div class="assistente-plataforma-topo">
                 <span class="assistente-plataforma-icone">${p.icone}</span>
                 <span class="assistente-plataforma-check">✓</span>
@@ -282,7 +288,7 @@
         }).join("")}
       </div>
       <div class="assistente-contas-aviso">
-        Facebook e Instagram usam a mesma conta de anúncios da Meta. A plataforma não criará duas contas separadas para essas redes.
+        Uma conta é configurada por vez. Facebook e Instagram usam a mesma conta de anúncios da Meta, portanto não são criadas duas contas separadas para essas redes.
       </div>`;
   }
 
@@ -854,10 +860,7 @@
   window.assistenteSelecionarPlataforma = function (plataforma) {
     if (!plataformas[plataforma]) return;
     interagiuDesdeAbertura = true;
-    const selecionadas = new Set(estado.plataformas);
-    if (selecionadas.has(plataforma)) selecionadas.delete(plataforma);
-    else selecionadas.add(plataforma);
-    estado.plataformas = [...selecionadas];
+    estado.plataformas = [plataforma];
     salvarRascunho();
     render();
   };

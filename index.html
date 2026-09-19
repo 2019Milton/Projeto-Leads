@@ -41974,6 +41974,17 @@ async function sincronizarLinkedIn() {
       return;
     }
     await recarregarHubMantendoDetalhesLinkedInAbertos();
+    const statusAtualizando = document.getElementById("linkedin_sync_status");
+    if (statusAtualizando) {
+      statusAtualizando.textContent = "Campanhas sincronizadas. Atualizando a lista geral...";
+    }
+    try {
+      // A tela de campanhas mantém um cache em memória. Recarregá-lo aqui
+      // evita que a campanha recém-importada só apareça após atualizar a página.
+      await carregarCampanhas();
+    } catch (err) {
+      console.error("ERRO ATUALIZANDO LISTA APÓS SYNC LINKEDIN:", err);
+    }
     const statusNovo = document.getElementById("linkedin_sync_status");
     if (statusNovo) {
       statusNovo.textContent = data?.aviso

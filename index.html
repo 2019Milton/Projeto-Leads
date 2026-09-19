@@ -40721,6 +40721,17 @@ function hubResumoData(data) {
   }
 }
 
+function hubResumoDataExpiracao(data) {
+  if (!data) return "Não informado pelo LinkedIn";
+  const valor = new Date(data);
+  if (Number.isNaN(valor.getTime())) return "Não informado pelo LinkedIn";
+  const dataHora = valor.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short"
+  });
+  return valor.getTime() <= Date.now() ? `Expirado em ${dataHora}` : dataHora;
+}
+
 function hubResumoPagamento(conta) {
   if (!conta) {
     return { texto: "Não identificado", classe: "erro" };
@@ -41821,9 +41832,7 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
           ${hubResumoItem("Conectado em", hubResumoData(dataStatus?.conectado_em || conn?.conectado_em), "sucesso")}
           ${hubResumoItem(
             "Token válido até",
-            dataStatus?.token_expira_em
-              ? hubResumoData(dataStatus.token_expira_em)
-              : "Não informado pelo LinkedIn"
+            hubResumoDataExpiracao(dataStatus?.token_expira_em)
           )}
         </div>
         <div class="integ-detalhe-linha">

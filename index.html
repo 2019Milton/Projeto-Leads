@@ -38670,12 +38670,16 @@ async function removerAdGroupGoogleCriadoPorFalha(campaignId, adgroupId, token) 
 }
 
 function validarPublicacaoCampanhaLinkedIn() {
-  // Sem campos obrigatórios próprios além dos compartilhados (nome, texto,
-  // orçamento) — geo padrão é Brasil e o Lead Gen Form é sempre criado
-  // automaticamente a partir dos campos de "obrigado" já compartilhados com
-  // a Meta/Google. Mantido como função dedicada (mesmo padrão de
-  // validarPublicacaoCampanhaGoogle/TikTok) para dar um lugar único pra
-  // crescer se surgir uma validação própria do LinkedIn no futuro.
+  if (destinoCampanhaSelecionado !== "whatsapp") {
+    const privacidade = document.getElementById("adv_privacidade_url")?.value?.trim() || "";
+    if (!/^https:\/\//i.test(privacidade)) {
+      conduzirParaCampoCampanha(
+        "#adv_privacidade_url",
+        "Informe uma URL HTTPS válida da política de privacidade para o formulário do LinkedIn."
+      );
+      return "URL de política de privacidade inválida";
+    }
+  }
   return null;
 }
 
@@ -38711,7 +38715,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
   const destino = destinoCampanhaSelecionado === "whatsapp" ? "whatsapp" : "lead_ads";
 
   try {
-    setPublishProgress(20, `${prefixo}Criando campanha no LinkedIn Ads...`);
+    setPublishProgress(20, `${prefixo}Criando rascunho no LinkedIn Ads...`);
 
     const campanhaRes = await fetch(`${API}/linkedin/campanha`, {
       method: "POST",
@@ -38804,6 +38808,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
         body: JSON.stringify({
           usuario_id,
+          campaign_id: campanhaCriadaId,
           nome_negocio: campanha_nome,
           headline: document.getElementById("adv_titulo")?.value?.trim() || campanha_nome,
           descricao: document.getElementById("adv_descricao")?.value?.trim(),
@@ -38821,7 +38826,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
       formId = formulario.form_id;
     }
 
-    setPublishProgress(92, `${prefixo}Publicando anúncio...`);
+    setPublishProgress(92, `${prefixo}Criando anúncio em rascunho...`);
 
     const anuncioRes = await fetch(`${API}/linkedin/anuncio`, {
       method: "POST",
@@ -38846,7 +38851,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
       return { ok: false, mensagem: anuncio.error };
     }
 
-    setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
+    setPublishProgress(100, `${prefixo}Rascunho criado com sucesso — ainda não está veiculando.`);
     return { ok: true };
   } catch (err) {
     console.error("ERRO publicarCampanhaLinkedIn:", err);
@@ -41814,7 +41819,12 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
           ${hubResumoItem("Moeda", contaAtual?.moeda || conn?.conta?.moeda || "—")}
           ${hubResumoItem("Company Page", companyPageLabel, companyPage || contaAtual?.org_urn ? "sucesso" : "erro")}
           ${hubResumoItem("Conectado em", hubResumoData(dataStatus?.conectado_em || conn?.conectado_em), "sucesso")}
-          ${hubResumoItem("Token válido até", hubResumoData(dataStatus?.token_expira_em))}
+          ${hubResumoItem(
+            "Token válido até",
+            dataStatus?.token_expira_em
+              ? hubResumoData(dataStatus.token_expira_em)
+              : "Não informado pelo LinkedIn"
+          )}
         </div>
         <div class="integ-detalhe-linha">
           <span class="integ-detalhe-label">Sincronização</span>

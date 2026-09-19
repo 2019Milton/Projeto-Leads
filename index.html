@@ -17909,7 +17909,8 @@ body.tema-claro .criar-campanha-descricao {
               <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:-2px;"><circle cx="7" cy="7" r="5.5" fill="#4285F4"/><circle cx="17" cy="7" r="5.5" fill="#EA4335"/><circle cx="7" cy="17" r="5.5" fill="#FBBC05"/><circle cx="17" cy="17" r="5.5" fill="#34A853"/></svg> Google Ads
             </button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">🎬 Kwai Ads</button>
-            <button type="button" class="plat-sel-btn" disabled title="Em breve">💼 LinkedIn Ads</button>
+            <button type="button" class="plat-sel-btn" data-plat="linkedin"
+              onclick="selecionarPlataformaCampanha('linkedin')">💼 LinkedIn Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">📌 Pinterest Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">👻 Snapchat Ads</button>
             <button type="button" class="plat-sel-btn" disabled title="Em breve">🪟 Microsoft Ads</button>
@@ -41701,6 +41702,13 @@ function rotuloPapelLinkedIn(papel) {
   return mapa[String(papel || "").toUpperCase()] || papel || "Não identificado";
 }
 
+function rotuloPapeisLinkedIn(conta) {
+  const papeis = Array.isArray(conta?.papeis) && conta.papeis.length
+    ? conta.papeis
+    : (conta?.papel ? [conta.papel] : []);
+  return [...new Set(papeis.map(rotuloPapelLinkedIn))].join(" + ") || "Não identificado";
+}
+
 function formatarValorLinkedIn(valor, moeda = "BRL") {
   if (valor === null || valor === undefined || valor === "") return "—";
   const numero = Number(valor);
@@ -41772,7 +41780,7 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
 
     const opcoes = contas.map(conta => {
       const indisponivel = conta.pode_gerenciar === false || !conta.org_urn || !conta.moeda;
-      const detalhes = [conta.moeda, rotuloPapelLinkedIn(conta.papel), rotuloStatusContaLinkedIn(conta.status)].filter(Boolean).join(" · ");
+      const detalhes = [conta.moeda, rotuloPapeisLinkedIn(conta), rotuloStatusContaLinkedIn(conta.status)].filter(Boolean).join(" · ");
       return `
         <option value="${escaparHtml(String(conta.id))}" ${String(conta.id) === String(adAccountIdAtual) ? "selected" : ""} ${indisponivel ? "disabled" : ""}>
           ${escaparHtml(conta.nome || String(conta.id))}${detalhes ? ` — ${escaparHtml(detalhes)}` : ""}${!conta.org_urn ? " — sem Company Page" : ""}
@@ -41802,7 +41810,7 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
           ${hubResumoItem("Nome da conta", contaAtual?.nome || "Selecione uma conta", contaAtual ? "sucesso" : "alerta")}
           ${hubResumoItem("ID da conta", adAccountIdAtual || "—")}
           ${hubResumoItem("Status", rotuloStatusContaLinkedIn(contaAtual?.status), contaAtual?.status === "ACTIVE" ? "sucesso" : "alerta")}
-          ${hubResumoItem("Função do usuário", rotuloPapelLinkedIn(contaAtual?.papel))}
+          ${hubResumoItem("Funções do usuário", rotuloPapeisLinkedIn(contaAtual))}
           ${hubResumoItem("Moeda", contaAtual?.moeda || conn?.conta?.moeda || "—")}
           ${hubResumoItem("Company Page", companyPageLabel, companyPage || contaAtual?.org_urn ? "sucesso" : "erro")}
           ${hubResumoItem("Conectado em", hubResumoData(dataStatus?.conectado_em || conn?.conectado_em), "sucesso")}

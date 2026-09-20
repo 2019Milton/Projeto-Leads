@@ -26438,12 +26438,15 @@ function textoDetalhe(valor, fallback = "-") {
   return valor;
 }
 
-// Google grava daily_budget em reais crus na campanha; Meta/TikTok gravam em
-// centavos (mesma distinção documentada em salvarEdicaoCampanhaGoogle) — sem
-// isso, o orçamento do Google aparecia 100x menor nos cards/detalhes.
+// Google e LinkedIn gravam daily_budget em reais crus na campanha; Meta/TikTok
+// gravam em centavos (mesma distinção documentada em
+// salvarEdicaoCampanhaGoogle) — sem isso, o orçamento dessas integrações
+// aparece 100x menor nos cards/detalhes.
 function orcamentoDiarioEmReais(campanha) {
   const valor = Number(campanha?.daily_budget || 0);
-  return campanha?.plataforma === "google" ? valor : valor / 100;
+  return ["google", "linkedin"].includes(String(campanha?.plataforma || "").toLowerCase())
+    ? valor
+    : valor / 100;
 }
 
 function formatarMoeda(valor) {

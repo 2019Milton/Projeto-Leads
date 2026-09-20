@@ -38712,7 +38712,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
   let campanhaCriadaId = null;
   const {
     token, usuario_id, campanha_nome, texto, cta, orcamento,
-    imagensArquivos, videoArquivo, publicacaoGrupoId
+    imagensArquivos, videoArquivo, publicacaoGrupoId, configuracoesBase
   } = contexto;
   const prefixo = isMultiRede ? "[LinkedIn Ads] " : "";
   const destino = destinoCampanhaSelecionado === "whatsapp" ? "whatsapp" : "lead_ads";
@@ -38726,7 +38726,8 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
       body: JSON.stringify({
         usuario_id,
         nome: campanha_nome,
-        publicacao_grupo_id: publicacaoGrupoId
+        publicacao_grupo_id: publicacaoGrupoId,
+        configuracoes_avancadas: configuracoesBase
       })
     });
     const campanha = await campanhaRes.json();
@@ -38746,6 +38747,7 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
         daily_budget: Number(orcamento),
         destino,
         configuracoes_avancadas: {
+          ...configuracoesBase,
           geo_urn: linkedinLocalidadeSelecionada?.key || ""
         }
       })
@@ -38842,6 +38844,8 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
         texto,
         cta,
         titulo: document.getElementById("adv_titulo")?.value?.trim(),
+        descricao: document.getElementById("adv_descricao")?.value?.trim(),
+        configuracoes_avancadas: configuracoesBase,
         image_urn: imageUrn,
         video_urn: videoUrn,
         daily_budget: Number(orcamento),

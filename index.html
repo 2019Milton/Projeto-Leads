@@ -31182,6 +31182,11 @@ function formatarPercentualPerformance(valor) {
   return `${Number(valor).toFixed(1).replace(".", ",")}%`;
 }
 
+// Conversões do Google Ads podem vir fracionadas (atribuição por dados) — 1 casa decimal.
+function formatarConversoesGoogle(valor) {
+  return Number(valor || 0).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+}
+
 function formatarDataPerformance(data) {
 
   if (!data) {
@@ -31512,6 +31517,31 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
         <small>${leituraCplTexto}</small>
       </div>
     </div>
+
+    ${plataformaId === "google" && data.conversoes_google ? `
+    <div class="performance-meta-cards">
+      <div class="performance-meta-card">
+        <span>Conversões no periodo (Google)</span>
+        <strong>${formatarConversoesGoogle(data.conversoes_google.conversoes)}</strong>
+        <small>Conta inteira do Google Ads, só ações principais. Não soma com os leads.</small>
+      </div>
+      <div class="performance-meta-card">
+        <span>Custo por conversão</span>
+        <strong>${
+          data.conversoes_google.custo_por_conversao != null
+            ? formatarMoeda(data.conversoes_google.custo_por_conversao)
+            : "-"
+        }</strong>
+        <small>Gasto da conta inteira no periodo: ${formatarMoeda(data.conversoes_google.gasto)}</small>
+      </div>
+      ${Number(data.conversoes_google.valor) > 0 ? `
+      <div class="performance-meta-card">
+        <span>Valor das conversões</span>
+        <strong>${formatarMoeda(data.conversoes_google.valor)}</strong>
+      </div>
+      ` : ""}
+    </div>
+    ` : ""}
 
     ${avisoDivergenciaLeadsHtml}
 
@@ -32088,7 +32118,7 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
   try {
 
     const res = await fetch(
-      `${API}/${plataformaId}/performance-diaria?periodo=${performanceMetaPeriodoAtual}`,
+      `${API}/${plataformaId}/performance-diaria?periodo=${performanceMetaPeriodoAtual}${plataformaId === "google" ? "&conversoes=1" : ""}`,
       {
         headers: {
           "Authorization": `Bearer ${token}`
@@ -45231,6 +45261,24 @@ async function carregarCampanhas(somenteRenderizar = false) {
           <small>CPC</small>
         </div>
 
+        ${c.conversoes_google != null ? `
+        <div class="metrica" title="Conversões que o Google Ads contabilizou nos últimos 30 dias (só ações principais). Não é somado aos leads: um lead do formulário também pode ser uma conversão.">
+          ✅
+          <span>
+            ${formatarConversoesGoogle(c.conversoes_google)}
+          </span>
+          <small>Conversões (Google)</small>
+        </div>
+
+        <div class="metrica" title="Custo por conversão: gasto desta campanha dividido pelas conversões do Google Ads no período.">
+          🏷️
+          <span>
+            ${c.custo_por_conversao_google != null ? formatarMoeda(c.custo_por_conversao_google) : "-"}
+          </span>
+          <small>Custo/conversão</small>
+        </div>
+        ` : ""}
+
       </div>
     
       <div class="campanha-footer">
@@ -45864,6 +45912,9 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
     <div class="detalhes-grid">
       ${detalheItem("Status", campanha.status)}
       ${detalheItem("Origem", campanha.origem)}
+      ${campanha.conversoes_google != null ? detalheItem("Conversões no Google (30 dias)", formatarConversoesGoogle(campanha.conversoes_google)) : ""}
+      ${campanha.conversoes_google != null && Number(campanha.valor_conversoes_google) > 0 ? detalheItem("Valor das conversões (Google)", formatarMoeda(campanha.valor_conversoes_google)) : ""}
+      ${campanha.conversoes_google != null ? detalheItem("Custo por conversão (Google)", campanha.custo_por_conversao_google != null ? formatarMoeda(campanha.custo_por_conversao_google) : "-") : ""}
       ${detalheItem("ID da campanha", campanha.campaign_id)}
       ${detalheItem("ID do conjunto", campanha.adset_id || cfg.adset_id)}
       ${detalheItem("ID do anúncio", campanha.ad_id || cfg.ad_id)}

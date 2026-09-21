@@ -40261,8 +40261,9 @@ function botaoAcaoRapida(icone, label, onclick, cor = "indigo") {
 }
 
 // O Google Ads só abre uma conta específica pelo ocid da URL, que é um ID interno e não
-// existe na API. Por isso o botão de saldo abre o Google Ads sem conta definida, e este
-// bloco mostra o ID da conta e o caminho até o Resumo de cobrança.
+// existe na API. Por isso o botão de saldo abre o Google Ads sem conta definida, e o
+// cartão abaixo dele (mesma cor verde do botão) mostra o ID da conta e o caminho até o
+// Resumo de cobrança. Sem conta selecionada, devolve só o botão.
 function formatarCustomerIdGoogle(customerId) {
   const cid = String(customerId || "").replace(/[^0-9]/g, "");
   return cid.replace(/^([0-9]{3})([0-9]{3})([0-9]{4})$/, "$1-$2-$3");
@@ -40279,25 +40280,31 @@ async function copiarIdContaGoogle(cid, btn) {
   }
 }
 
-function blocoContaPagamentoGoogle(customerId, nomeConta) {
+function blocoContaPagamentoGoogle(customerId, nomeConta, botaoHtml) {
   const cid = formatarCustomerIdGoogle(customerId);
-  if (!cid) return "";
+  if (!cid) return `<div style="margin-top:10px;">${botaoHtml}</div>`;
   const nome = nomeConta && nomeConta !== String(customerId) ? nomeConta : "";
+  const verde = CORES_ACAO_RAPIDA.sucesso;
+  const passo = texto => `<li style="color:${verde.texto};margin-bottom:2px;"><span style="color:#cbd5e1;">${texto}</span></li>`;
+  const destaque = texto => `<b style="color:${verde.texto};">${texto}</b>`;
   return `
-    <div style="margin-top:10px;padding:10px 12px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:8px;font-size:12px;line-height:1.5;">
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span style="color:#94a3b8;">Conta para adicionar saldo:</span>
-        ${nome ? `<b style="color:#e2e8f0;">${escaparHtml(nome)}</b>` : ""}
-        <code style="color:#a5b4fc;background:rgba(15,23,42,0.6);padding:2px 6px;border-radius:5px;">${escaparHtml(cid)}</code>
-        <button type="button" onclick="copiarIdContaGoogle('${escaparHtml(cid)}', this)" style="${estiloAcaoRapida("indigo")}">📋 Copiar ID</button>
-      </div>
-      <div style="margin-top:8px;color:#cbd5e1;">
-        Se o Google abrir a tela de outra conta (por exemplo, a gerenciadora):
-        <ol style="margin:4px 0 0;padding-left:18px;">
-          <li>Clique no seletor de contas, no canto superior esquerdo, e escolha o ID acima.</li>
-          <li>No menu lateral, vá em <b>Faturamento</b> e depois em <b>Resumo</b>.</li>
-          <li>Use <b>Adicionar fundos</b> ou o botão de pagamento que aparecer.</li>
-        </ol>
+    <div style="margin-top:10px;padding:12px;background:rgba(34,197,94,0.06);border:1px solid ${verde.border};border-radius:10px;">
+      ${botaoHtml}
+      <div style="margin-top:12px;padding-top:12px;border-top:1px dashed ${verde.border};font-size:12px;line-height:1.5;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="color:#94a3b8;">Conta para adicionar saldo:</span>
+          ${nome ? `<b style="color:#e2e8f0;">${escaparHtml(nome)}</b>` : ""}
+          <code style="color:${verde.texto};background:rgba(15,23,42,0.6);border:1px solid ${verde.border};padding:2px 8px;border-radius:5px;">${escaparHtml(cid)}</code>
+          <button type="button" onclick="copiarIdContaGoogle('${escaparHtml(cid)}', this)" style="${estiloAcaoRapida("sucesso")}">📋 Copiar ID</button>
+        </div>
+        <div style="margin-top:10px;color:#cbd5e1;">
+          <span style="color:${verde.texto};font-weight:700;">↳</span> Se o Google abrir a tela de outra conta (por exemplo, a gerenciadora):
+          <ol style="margin:6px 0 0;padding-left:20px;">
+            ${passo("Clique no seletor de contas, no canto superior esquerdo, e escolha o ID acima.")}
+            ${passo(`No menu lateral, vá em ${destaque("Faturamento")} e depois em ${destaque("Resumo")}.`)}
+            ${passo(`Use ${destaque("Adicionar fundos")} ou o botão de pagamento que aparecer.`)}
+          </ol>
+        </div>
       </div>
     </div>`;
 }
@@ -42523,10 +42530,11 @@ async function carregarStatusGoogle() {
 
           ${secaoColapsavel("💳 Status de Pagamento Google Ads", `
               ${renderPagamentoGoogle(dataStatus)}
-              <div style="margin-top:10px;">
-                ${linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso")}
-              </div>
-              ${blocoContaPagamentoGoogle(customerIdAtual, contaInfo?.nome)}
+              ${blocoContaPagamentoGoogle(
+                customerIdAtual,
+                contaInfo?.nome,
+                linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso")
+              )}
           `)}
 
           ${secaoAcoesRapidas([

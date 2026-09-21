@@ -11953,8 +11953,11 @@ body.tema-claro .integ-ranking-selo {
   background: #1e293b;
 }
 .integ-ranking-barra-conta { background: linear-gradient(90deg,#22c55e,#86efac); }
+.integ-ranking-barra-rede { background: linear-gradient(90deg,#38bdf8,#2563eb); }
 .integ-ranking-barra-nicho { background: linear-gradient(90deg,#fbbf24,#d97706); }
 .integ-ranking-legenda { color: #94a3b8; font-size: 10px; }
+.integ-ranking-fontes { margin-top: 7px; color: #94a3b8; font-size: 10.5px; line-height: 1.6; }
+.integ-ranking-fontes a { color: #93c5fd; text-decoration: underline; overflow-wrap: anywhere; }
 @media (max-width: 440px) {
   .integ-ranking-detalhes-topo { align-items: flex-start; }
   .integ-ranking-medalha-grande { width: 58px; height: 58px; flex-basis: 58px; font-size: 19px; }
@@ -40398,6 +40401,8 @@ const HUB_RANKING_MOTIVOS_MERCADO = {
 let hubRankingEstado = {
   porPlataforma: {},
   nicho: { slug: "geral", nome: "Todos os nichos", origem: "referencia_geral" },
+  web: null,
+  rede: null,
   atualizadoEm: null,
   carregadoEmMs: 0,
   assinaturaConexoes: ""
@@ -40456,7 +40461,14 @@ function formatarMoedaRanking(valor) {
   });
 }
 
-function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = null) {
+// Três fontes formam a nota de cada plataforma, das mais genéricas para a mais específica:
+//  1. mercado: nota do nicho, vinda da pesquisa semanal na internet (extras.mercadoWeb);
+//     enquanto ela não existe, usa a tabela fixa HUB_RANKING_MERCADO;
+//  2. rede: resultado agregado e anônimo de todos os clientes no mesmo nicho (extras.rede);
+//  3. conta: o histórico do próprio usuário.
+// O peso da conta cresce com a amostra dela; o da rede, com a amostra da rede, sobre o que
+// sobrar; o restante fica com o mercado. Sem rede nem pesquisa, o cálculo é o de antes.
+function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = null, extras = {}) {
   const nichoSlug = normalizarNichoRanking(nichoInformado?.slug);
   const nicho = {
     slug: nichoSlug,
@@ -40465,6 +40477,10 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
   };
   const referencia = HUB_RANKING_MERCADO[nichoSlug] || HUB_RANKING_MERCADO.geral;
   const metricasLocais = baseLocal?.plataformas || {};
+  // Pesquisa e rede são gravadas pelo slug do banco (ex.: "saas"), não pelo normalizado.
+  const slugBanco = String(nichoInformado?.slug || "");
+  const webNicho = extras?.mercadoWeb?.nichos?.[slugBanco] || null;
+  const redeNicho = extras?.rede?.nichos?.[slugBanco] || null;
 
   const custosValidos = HUB_PLATAFORMAS.map(p => {
     const local = metricasLocais[p.id] || {};
@@ -40487,7 +40503,12 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
     const impressoes = Number(perf?.impressoes || 0);
     const cpl = gasto > 0 && leads > 0 ? gasto / leads : null;
     const confianca = nivelConfiancaRanking(leads, gasto, cliques, impressoes);
-    const mercado = Number(referencia[p.id] || HUB_RANKING_MERCADO.geral[p.id] || 50);
+    const notaWeb = Number(webNicho?.plataformas?.[p.id]?.nota);
+    const usaWeb = Number.isFinite(notaWeb);
+    const mercado = usaWeb
+      ? notaWeb
+      : Number(referencia[p.id] || HUB_RANKING_MERCADO.geral[p.id] || 50);
+    const redeInfo = redeNicho?.[p.id] || null;
 
     const custoScore = cpl && menorCpl
       ? limitarRanking((menorCpl / cpl) * 100)
@@ -40511,20 +40532,36 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
     // fique acima de um canal que já provou resultado na própria conta. O teto de
     // 3,4 pontos mantém o nicho e a eficiência muito mais importantes que o volume.
     const bonusValidacao = confianca.peso * 4;
+    const pesoRedeBruto = redeInfo ? limitarRanking(redeInfo.peso, 0, 1) : 0;
+    const pesoRede = (1 - confianca.peso) * pesoRedeBruto;
+    const pesoMercado = 1 - confianca.peso - pesoRede;
+    const redeNota = redeInfo ? limitarRanking(redeInfo.nota) : null;
     const score = limitarRanking(
-      mercado * (1 - confianca.peso) + desempenho * confianca.peso + bonusValidacao
+      mercado * pesoMercado
+        + (redeNota !== null ? redeNota * pesoRede : 0)
+        + desempenho * confianca.peso
+        + bonusValidacao
     );
 
     const possuiSinaisConta = leads > 0 || Boolean(perf && (gasto > 0 || cliques > 0 || impressoes > 0));
-    const fonte = possuiSinaisConta
-      ? "Conta + adequação estimada ao nicho"
-      : "Adequação estimada ao nicho";
+    const fonte = [
+      possuiSinaisConta ? "Conta" : null,
+      pesoRede > 0 ? "Rede de clientes" : null,
+      usaWeb ? "Pesquisa na internet" : "Adequação estimada ao nicho"
+    ].filter(Boolean).join(" + ");
+    const motivoWeb = String(webNicho?.plataformas?.[p.id]?.motivo || "").trim();
 
     return {
       id: p.id,
       indice,
       score,
       mercado,
+      usaWeb,
+      pesoRede,
+      pesoMercado,
+      redeNota,
+      redeContas: Number(redeInfo?.contas || 0),
+      redeLeads: Number(redeInfo?.leads || 0),
       leads,
       qualificados,
       fechados,
@@ -40536,7 +40573,9 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
       confianca: confianca.texto,
       pesoConta: confianca.peso,
       usaDadosConta: possuiSinaisConta,
-      motivoMercado: HUB_RANKING_MOTIVOS_MERCADO[p.id] || "Canal ainda em avaliação para este nicho."
+      motivoMercado: (usaWeb && motivoWeb)
+        ? motivoWeb
+        : (HUB_RANKING_MOTIVOS_MERCADO[p.id] || "Canal ainda em avaliação para este nicho.")
     };
   });
 
@@ -40558,6 +40597,19 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
 
   return {
     nicho,
+    web: webNicho
+      ? {
+          atualizadoEm: webNicho.atualizado_em || null,
+          fontes: Array.isArray(webNicho.fontes) ? webNicho.fontes : []
+        }
+      : null,
+    rede: redeNicho
+      ? {
+          periodoDias: Number(extras?.rede?.periodo_dias || 30),
+          minimoContas: Number(extras?.rede?.minimo_contas || 3),
+          minimoLeads: Number(extras?.rede?.minimo_leads || 20)
+        }
+      : null,
     porPlataforma: Object.fromEntries(linhas.map((linha, indice) => [
       linha.id,
       { ...linha, posicao: indice + 1 }
@@ -40565,18 +40617,27 @@ function calcularRankingHub(baseLocal = {}, performance = {}, nichoInformado = n
   };
 }
 
+// Percentuais (inteiros, somando 100) de cada fonte na nota de uma plataforma.
+function composicaoRankingHub(ranking) {
+  const conta = Math.round(Number(ranking?.pesoConta || 0) * 100);
+  const rede = Math.min(100 - conta, Math.round(Number(ranking?.pesoRede || 0) * 100));
+  return { conta, rede, mercado: 100 - conta - rede };
+}
+
 function textoDetalheRanking(p, ranking) {
   if (!ranking) return `Calculando a posição de ${p.nome}...`;
   const nichoNome = hubRankingEstado.nicho?.nome || "Todos os nichos";
-  const percentualConta = Math.round(Number(ranking.pesoConta || 0) * 100);
-  const percentualNicho = 100 - percentualConta;
+  const comp = composicaoRankingHub(ranking);
+  const rotuloMercado = ranking.usaWeb ? "pesquisa na internet" : "adequação estratégica estimada para o nicho";
+  const partesComposicao = [];
+  if (comp.conta > 0) partesComposicao.push(`${comp.conta}% histórico da sua conta neste nicho`);
+  if (comp.rede > 0) partesComposicao.push(`${comp.rede}% resultado da rede de clientes`);
+  partesComposicao.push(`${comp.mercado}% ${rotuloMercado}`);
   const linhas = [
     `${ranking.posicao}º lugar no nicho ${nichoNome}.`,
     `Fonte: ${ranking.fonte}. Janela: ${HUB_RANKING_CONFIG.periodoDias} dias.`,
     `Confiança dos dados da conta: ${ranking.confianca}.`,
-    percentualConta > 0
-      ? `Composição: ${percentualConta}% histórico da conta neste nicho + ${percentualNicho}% adequação estratégica estimada para o nicho.`
-      : "Composição: 100% adequação estratégica estimada para o nicho; ainda não há histórico suficiente da conta."
+    `Composição: ${partesComposicao.join(" + ")}.`
   ];
   if (ranking.usaDadosConta) {
     linhas.push(`Gasto: ${formatarMoedaRanking(ranking.gasto)}; leads: ${ranking.leads}; qualificados: ${ranking.qualificados}; fechados: ${ranking.fechados}.`);
@@ -40585,7 +40646,11 @@ function textoDetalheRanking(p, ranking) {
     linhas.push(ranking.motivoMercado);
     linhas.push("Estimativa estratégica, não garantia de resultado.");
   }
-  linhas.push(`Referência estratégica revisada em ${HUB_RANKING_CONFIG.revisaoMercado.slice(5, 7)}/${HUB_RANKING_CONFIG.revisaoMercado.slice(0, 4)}.`);
+  if (ranking.usaWeb && hubRankingEstado.web?.atualizadoEm) {
+    linhas.push(`Pesquisa na internet de ${new Date(hubRankingEstado.web.atualizadoEm).toLocaleDateString("pt-BR")}.`);
+  } else {
+    linhas.push(`Referência estratégica revisada em ${HUB_RANKING_CONFIG.revisaoMercado.slice(5, 7)}/${HUB_RANKING_CONFIG.revisaoMercado.slice(0, 4)}.`);
+  }
   if (hubRankingEstado.atualizadoEm) {
     linhas.push(`Atualizado em ${new Date(hubRankingEstado.atualizadoEm).toLocaleString("pt-BR")}.`);
   }
@@ -40622,8 +40687,13 @@ function abrirDetalhesRankingHub(plataformaId) {
   document.body.appendChild(conteudo);
 
   const nichoNome = hubRankingEstado.nicho?.nome || "Todos os nichos";
-  const percentualConta = Math.round(Number(ranking.pesoConta || 0) * 100);
-  const percentualNicho = 100 - percentualConta;
+  const comp = composicaoRankingHub(ranking);
+  const rotuloMercado = ranking.usaWeb ? "pesquisa na internet" : "adequação estratégica estimada para o nicho";
+  const legendaComposicao = [
+    comp.conta > 0 ? `${comp.conta}% histórico real desta conta e deste nicho` : null,
+    comp.rede > 0 ? `${comp.rede}% resultado da rede de clientes (dados anônimos)` : null,
+    `${comp.mercado}% ${rotuloMercado}`
+  ].filter(Boolean).join(" · ");
   const atualizado = hubRankingEstado.atualizadoEm
     ? new Date(hubRankingEstado.atualizadoEm).toLocaleString("pt-BR")
     : "Agora";
@@ -40644,7 +40714,31 @@ function abrirDetalhesRankingHub(plataformaId) {
         <div class="integ-ranking-detalhe-item"><span>CPL observado</span><strong>${escaparHtml(cpl)}</strong></div>
         <div class="integ-ranking-detalhe-item"><span>Entrega</span><strong>${Number(ranking.cliques || 0)} cliques · ${Number(ranking.impressoes || 0)} impressões</strong></div>
       </div>`
-    : `<div class="integ-ranking-explicacao"><strong>Ainda sem histórico suficiente nesta plataforma.</strong><br>${escaparHtml(ranking.motivoMercado)} A posição é uma estimativa estratégica, não uma garantia de resultado.</div>`;
+    : `<div class="integ-ranking-explicacao"><strong>Ainda sem histórico suficiente nesta plataforma.</strong><br>A posição usa as outras fontes abaixo e é uma estimativa estratégica, não uma garantia de resultado.</div>`;
+
+  // Só links http(s) viram <a>; qualquer outra coisa vinda da pesquisa é descartada.
+  const fontesWeb = ranking.usaWeb
+    ? (hubRankingEstado.web?.fontes || [])
+        .filter(f => /^https?:\/\//i.test(String(f?.url || "")))
+        .slice(0, 6)
+    : [];
+  const dataPesquisa = ranking.usaWeb && hubRankingEstado.web?.atualizadoEm
+    ? new Date(hubRankingEstado.web.atualizadoEm).toLocaleDateString("pt-BR")
+    : null;
+  const blocoMercado = `
+    <div class="integ-ranking-explicacao">
+      <strong>${ranking.usaWeb ? "Pesquisa na internet" : "Adequação estimada ao nicho"}${dataPesquisa ? ` · ${escaparHtml(dataPesquisa)}` : ""}</strong><br>
+      ${escaparHtml(ranking.motivoMercado)}
+      ${fontesWeb.length ? `<div class="integ-ranking-fontes">Fontes: ${fontesWeb.map(f => `<a href="${escaparHtml(f.url)}" target="_blank" rel="noopener noreferrer">${escaparHtml(f.titulo || f.url)}</a>`).join(" · ")}</div>` : ""}
+    </div>`;
+
+  const blocoRede = comp.rede > 0
+    ? `
+    <div class="integ-ranking-explicacao">
+      <strong>Rede de clientes</strong><br>
+      Resultado agregado e anônimo de ${ranking.redeContas} contas (${ranking.redeLeads} leads) da plataforma no mesmo nicho, nos últimos ${hubRankingEstado.rede?.periodoDias || 30} dias. Nenhum dado individual é exibido.
+    </div>`
+    : "";
 
   conteudo.innerHTML = `
     <div class="integ-ranking-detalhes-topo">
@@ -40663,15 +40757,18 @@ function abrirDetalhesRankingHub(plataformaId) {
     ${metricasConta}
     <div class="integ-ranking-composicao">
       <strong>Como os dados foram combinados</strong>
-      <div class="integ-ranking-barra" aria-label="${percentualConta}% histórico da conta e ${percentualNicho}% adequação estimada ao nicho">
-        <span class="integ-ranking-barra-conta" style="width:${percentualConta}%"></span>
-        <span class="integ-ranking-barra-nicho" style="width:${percentualNicho}%"></span>
+      <div class="integ-ranking-barra" aria-label="${escaparHtml(legendaComposicao)}">
+        <span class="integ-ranking-barra-conta" style="width:${comp.conta}%"></span>
+        <span class="integ-ranking-barra-rede" style="width:${comp.rede}%"></span>
+        <span class="integ-ranking-barra-nicho" style="width:${comp.mercado}%"></span>
       </div>
-      <div class="integ-ranking-legenda">${percentualConta}% histórico real desta conta e deste nicho · ${percentualNicho}% adequação estratégica estimada para o nicho</div>
+      <div class="integ-ranking-legenda">${escaparHtml(legendaComposicao)}</div>
     </div>
+    ${blocoMercado}
+    ${blocoRede}
     <div class="integ-ranking-explicacao">
       <strong>Por que está nesta posição?</strong><br>
-      A plataforma compara CPL, qualidade dos leads, negócios fechados, volume e engajamento. O gasto e os leads de cada rede são filtrados para o mesmo nicho e para a mesma janela antes da comparação. A adequação estratégica funciona como ponto de partida e perde peso conforme o histórico real aumenta.
+      A plataforma compara CPL, qualidade dos leads, negócios fechados, volume e engajamento. Três fontes entram na conta: a pesquisa semanal na internet sobre o nicho, o resultado agregado e anônimo dos clientes da plataforma no mesmo nicho (só quando há ao menos ${hubRankingEstado.rede?.minimoContas || 3} contas e ${hubRankingEstado.rede?.minimoLeads || 20} leads) e o histórico da sua conta. O gasto e os leads de cada rede são filtrados para o mesmo nicho e para a mesma janela antes da comparação. Quanto mais dados reais, menos peso a estimativa da pesquisa tem.
     </div>`;
 
   abrirIntegDetalhesModal(`Ranking — ${p.nome}`, conteudo);
@@ -40714,15 +40811,25 @@ async function carregarRankingHub(mapaConexoes = {}, opcoes = {}) {
   hubRankingPromise = (async () => {
     const plataformasComPerformance = ["meta", "google", "tiktok", "linkedin"]
       .filter(id => mapaConexoes[id]?.status === "conectado");
-    let baseLocal = {};
-    try {
-      baseLocal = await buscarJsonRanking(
+    // A base local é essencial; a pesquisa na internet e a rede de clientes são
+    // complementares: se qualquer uma falhar, o ranking segue sem ela.
+    const [baseLocal, mercadoWeb, rede] = await Promise.all([
+      buscarJsonRanking(
         `${API}/plataformas/ranking-base?periodo_dias=${HUB_RANKING_CONFIG.periodoDias}`,
         token
-      );
-    } catch (err) {
-      console.warn("BASE LOCAL DO RANKING:", err);
-    }
+      ).catch(err => {
+        console.warn("BASE LOCAL DO RANKING:", err);
+        return {};
+      }),
+      buscarJsonRanking(`${API}/plataformas/ranking-mercado`, token).catch(err => {
+        console.warn("PESQUISA DE MERCADO DO RANKING:", err);
+        return null;
+      }),
+      buscarJsonRanking(`${API}/plataformas/ranking-rede`, token).catch(err => {
+        console.warn("REDE DE CLIENTES DO RANKING:", err);
+        return null;
+      })
+    ]);
 
     // Primeiro identificamos o nicho predominante; só então buscamos gasto,
     // cliques e impressões das campanhas pertencentes a esse mesmo nicho.
@@ -40744,7 +40851,7 @@ async function carregarRankingHub(mapaConexoes = {}, opcoes = {}) {
       }
     });
 
-    const calculado = calcularRankingHub(baseLocal, performance, baseLocal?.nicho_referencia);
+    const calculado = calcularRankingHub(baseLocal, performance, baseLocal?.nicho_referencia, { mercadoWeb, rede });
     hubRankingEstado = {
       ...calculado,
       atualizadoEm: baseLocal?.atualizado_em || new Date().toISOString(),

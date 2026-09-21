@@ -18813,7 +18813,7 @@ body.tema-claro .criar-campanha-descricao {
             <div class="advanced-full" data-plat-only="google" data-google-tipo-only="search" style="display:none;">
               <label>Palavras-chave (Google) <button type="button" class="info-icone" onclick="mostrarInfoCampo('Termos que a pessoa digita no Google para o anúncio aparecer. Uma por linha. Se deixar em branco, a plataforma usa os títulos do anúncio como palavras-chave — o que costuma gerar poucas ou nenhuma exibição, pois títulos são frases publicitárias, não termos de busca reais.', event)">i</button></label>
               <textarea id="campanha_google_palavras_chave" rows="4" placeholder="Uma palavra-chave por linha, ex:&#10;crm para corretores&#10;plataforma de leads&#10;automação de whatsapp para vendas"></textarea>
-              <small style="display:block;margin-top:5px;opacity:.65;">Opcional, mas recomendado: até 20 termos, um por linha. Pense em como um cliente pesquisaria no Google — não use frases do anúncio.</small>
+              <small style="display:block;margin-top:5px;opacity:.65;">Opcional, mas recomendado: até 20 termos, um por linha. Pense em como um cliente pesquisaria no Google — não use frases do anúncio. Para controlar a correspondência, use [termo] para exata e "termo" para de frase; sem marcação é ampla.</small>
             </div>
             <div class="advanced-full" data-plat-only="google" style="display:none;">
               <label>Página aberta ao clicar no título do anúncio <button type="button" class="info-icone" onclick="mostrarInfoCampo('O Google exige uma página de destino no anúncio de Pesquisa. O clique no título ou no texto abre esta página; quando o destino for WhatsApp, somente o botão de mensagem abre a conversa.', event)">i</button></label>
@@ -24495,7 +24495,8 @@ function duplicarCampanhaPorChave(chave) {
 
   duplicarCampanha(
     Number(campanha.id),
-    campanha.nome || "Campanha"
+    campanha.nome || "Campanha",
+    campanha.plataforma
   );
 }
 
@@ -36495,10 +36496,18 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
 
 let _duplicarCampanhaId = null;
 let _duplicarCampanhaNome = null;
+let _duplicarCampanhaPlataforma = "";
+let _duplicacaoEmAndamento = false;
+// Resultado da última duplicação ({ copiado, naoCopiado, aviso, avisoPublicacao }) quando o
+// servidor leu a configuração de uma campanha criada direto no Google Ads; senão null.
+let _resultadoUltimaDuplicacao = null;
 
-function duplicarCampanha(campanhaId, nomeAtual) {
+function duplicarCampanha(campanhaId, nomeAtual, plataforma = "") {
   _duplicarCampanhaId = campanhaId;
   _duplicarCampanhaNome = nomeAtual;
+  _duplicarCampanhaPlataforma = String(plataforma || "").toLowerCase();
+  const dicaGoogle = document.getElementById("duplicar_dica_google");
+  if (dicaGoogle) dicaGoogle.style.display = _duplicarCampanhaPlataforma === "google" ? "" : "none";
   const input = document.getElementById("input_nome_duplicar");
   if (input) input.value = `Cópia de ${nomeAtual}`;
   const modal = document.getElementById("modal_duplicar_campanha");
@@ -36513,6 +36522,7 @@ function fecharModalDuplicar() {
   if (modal) modal.style.display = "none";
   _duplicarCampanhaId = null;
   _duplicarCampanhaNome = null;
+  _duplicarCampanhaPlataforma = "";
 }
 
 async function criarRascunhoLocalDaCampanha(campanhaId, novoNome) {
@@ -36537,6 +36547,17 @@ async function criarRascunhoLocalDaCampanha(campanhaId, novoNome) {
   if (!res.ok || data.error || !data.id) {
     throw new Error(data.error || `Erro HTTP ${res.status}`);
   }
+
+  // Campanha criada direto no Google Ads: o servidor devolve o que copiou e o que não copiou.
+  _resultadoUltimaDuplicacao =
+    data.copiado || data.nao_copiado || data.aviso
+      ? {
+          copiado: data.copiado || [],
+          naoCopiado: data.nao_copiado || [],
+          aviso: data.aviso || "",
+          avisoPublicacao: data.aviso_publicacao || ""
+        }
+      : null;
 
   return Number(data.id);
 }
@@ -36599,15 +36620,68 @@ async function criarRascunhoEditavelParaTrocarDestino() {
   }
 }
 
+// Mesma normalização do servidor: sem acento, sem maiúsculas, espaços colapsados.
+function nomeCampanhaParaComparar(nome) {
+  return String(nome || "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+// Depois de duplicar uma campanha criada direto no Google Ads: mostra o que foi copiado, o que
+// NÃO foi (pro usuário conferir antes de publicar) e o alerta de que publicar cria uma campanha nova.
+function mostrarResumoDuplicacaoGoogle(resultado) {
+  if (!resultado) {
+    return;
+  }
+
+  const linhas = [];
+
+  if (resultado.aviso) {
+    linhas.push(`⚠️ ${resultado.aviso}`);
+  }
+  if (resultado.copiado.length) {
+    linhas.push("", "✅ Copiado da campanha original:", ...resultado.copiado.map(item => `• ${item}`));
+  }
+  if (resultado.naoCopiado.length) {
+    linhas.push("", "⚠️ NÃO copiado (confira antes de publicar):", ...resultado.naoCopiado.map(item => `• ${item}`));
+  }
+  if (resultado.avisoPublicacao) {
+    linhas.push("", resultado.avisoPublicacao);
+  }
+
+  if (linhas.length) {
+    alert(linhas.join("\n").trim());
+  }
+}
+
 async function confirmarDuplicarCampanha() {
   const input = document.getElementById("input_nome_duplicar");
   const novoNome = (input?.value || "").trim() || `Cópia de ${_duplicarCampanhaNome}`;
   const campanhaId = _duplicarCampanhaId;
-  fecharModalDuplicar();
+  const ehGoogle = _duplicarCampanhaPlataforma === "google";
+
+  if (_duplicacaoEmAndamento) {
+    return;
+  }
+
+  // Google: o nome da cópia precisa ser diferente do original (o servidor confere também
+  // contra as outras campanhas da conta). O modal continua aberto pra corrigir o nome.
+  if (ehGoogle && nomeCampanhaParaComparar(novoNome) === nomeCampanhaParaComparar(_duplicarCampanhaNome)) {
+    alert("O nome da cópia precisa ser diferente do nome da campanha original.");
+    input?.focus();
+    return;
+  }
+
+  _duplicacaoEmAndamento = true;
+  _resultadoUltimaDuplicacao = null;
 
   try {
     const novoId =
       await criarRascunhoLocalDaCampanha(campanhaId, novoNome);
+    fecharModalDuplicar();
 
     const ok = document.createElement("div");
     ok.textContent = "✅ Rascunho duplicado. Revise antes de publicar.";
@@ -36615,9 +36689,12 @@ async function confirmarDuplicarCampanha() {
     document.body.appendChild(ok);
     setTimeout(() => ok.remove(), 3500);
     await abrirRascunhoDuplicado(novoId);
+    mostrarResumoDuplicacaoGoogle(_resultadoUltimaDuplicacao);
   } catch (err) {
     console.error("ERRO duplicarCampanha:", err);
     alert(err?.message || "Erro ao duplicar campanha.");
+  } finally {
+    _duplicacaoEmAndamento = false;
   }
 }
 
@@ -53568,6 +53645,7 @@ async function enviarFeedback() {
   <div style="background:#1e2535;border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:28px 28px 22px;width:420px;max-width:90vw;">
     <h3 style="margin:0 0 6px;font-size:16px;color:#f1f5f9;">📋 Duplicar Campanha</h3>
     <p style="margin:0 0 18px;font-size:13px;color:#94a3b8;">Escolha o nome para a cópia da campanha.</p>
+    <p id="duplicar_dica_google" style="display:none;margin:-8px 0 14px;font-size:12px;color:#fbbf24;">No Google, o nome precisa ser diferente do da campanha original e de qualquer outra campanha da conta.</p>
     <input
       id="input_nome_duplicar"
       type="text"

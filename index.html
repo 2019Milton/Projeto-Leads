@@ -40250,15 +40250,6 @@ function estiloAcaoRapida(cor) {
   return `display:inline-flex;align-items:center;gap:6px;padding:7px 12px;background:${c.bg};border:1px solid ${c.border};color:${c.texto};border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer;`;
 }
 
-// Abre o Resumo de cobranca (onde se adiciona saldo) ja na conta do cliente.
-// __e recebe o ID da conta (10 digitos, sem tracos); sem ele o Google abre a
-// ultima conta usada no navegador, que pode nao ser a do cliente.
-function urlPagamentoGoogleAds(customerId) {
-  const cid = String(customerId || "").replace(/[^0-9]/g, "");
-  const base = "https://ads.google.com/aw/billing/summary";
-  return cid ? `${base}?__e=${cid}` : base;
-}
-
 // Botão que abre um link externo (config/billing da própria plataforma) em nova guia.
 function linkAcaoRapida(icone, label, href, cor = "neutro") {
   return `<a href="${escaparHtml(href)}" target="_blank" rel="noopener noreferrer" style="${estiloAcaoRapida(cor)}">${icone} ${escaparHtml(label)}</a>`;
@@ -42491,7 +42482,7 @@ async function carregarStatusGoogle() {
           ${secaoColapsavel("💳 Status de Pagamento Google Ads", `
               ${renderPagamentoGoogle(dataStatus)}
               <div style="margin-top:10px;">
-                ${linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", urlPagamentoGoogleAds(customerIdAtual), "sucesso")}
+                ${linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso")}
               </div>
           `)}
 

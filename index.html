@@ -23972,6 +23972,148 @@ let abaEdicaoAtivaGrupo = null;
 // quando a rede original ainda nao oferece edicao direta (ex.: TikTok), uma
 // campanha remota pode abrir o formulario para ser publicada em outra rede;
 // nesse caso o botao de salvar a campanha original permanece escondido.
+// Campanha do Google criada direto no Google Ads e sincronizada pra cá (origem = a própria
+// rede): chega só com nome, status e IDs — sem grupo de anúncios/anúncio salvos aqui. Edição
+// real dela ainda não existe (o servidor também bloqueia); os detalhes são lidos do Google.
+function campanhaGoogleImportada(campanha) {
+  return (
+    String(campanha?.plataforma || "").toLowerCase() === "google" &&
+    campanhaOrigemImportada(campanha) &&
+    Boolean(campanha?.campaign_id)
+  );
+}
+
+function campanhaGoogleImportadaSemEdicao(campanha) {
+  return campanhaGoogleImportada(campanha) && !campanha?.adset_id && !campanha?.ad_id;
+}
+
+function campanhaPodeAbrirFormularioEdicao(campanha) {
+  return (
+    !campanhaGoogleImportadaSemEdicao(campanha) &&
+    (
+      capacidadesPlataforma(campanha?.plataforma).editar ||
+      campanhaPodePublicarEmOutraPlataforma(campanha)
+    )
+  );
+}
+
+// Detalhes de campanha Google lidos direto do Google Ads (somente leitura), mostrados no
+// drawer de Detalhes das campanhas importadas. O backend guarda a leitura por alguns minutos.
+async function carregarDetalhesGoogleCampanha(campanha) {
+  const campaignId = String(campanha?.campaign_id || "");
+  const token = localStorage.getItem("token");
+  const alvoInicial = document.getElementById("google_detalhes_ao_vivo");
+
+  if (!alvoInicial) {
+    return;
+  }
+
+  if (!token || !campaignId) {
+    alvoInicial.innerHTML = "";
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/google/campanha-detalhes/${encodeURIComponent(campaignId)}`,
+      { headers: { "Authorization": "Bearer " + token } }
+    );
+    const data = await res.json().catch(() => ({}));
+
+    // O drawer pode ter sido fechado ou trocado de campanha enquanto a resposta chegava.
+    const alvo = document.getElementById("google_detalhes_ao_vivo");
+    if (!alvo || alvo.dataset.campaignId !== campaignId) {
+      return;
+    }
+
+    if (!res.ok || data.error) {
+      alvo.innerHTML = `<div class="campanha-drawer-painel-erro">⚠️ ${escaparHtml(data.error || "Não foi possível buscar os detalhes no Google Ads agora.")}</div>`;
+      return;
+    }
+
+    alvo.innerHTML = renderizarDetalhesGoogleCampanha(data);
+  } catch (err) {
+    console.error("DETALHES GOOGLE CAMPANHA:", err);
+    const alvo = document.getElementById("google_detalhes_ao_vivo");
+    if (alvo && alvo.dataset.campaignId === campaignId) {
+      alvo.innerHTML = `<div class="campanha-drawer-painel-erro">⚠️ Não foi possível buscar os detalhes no Google Ads agora.</div>`;
+    }
+  }
+}
+
+function renderizarDetalhesGoogleCampanha(d) {
+  const dataBR = valor => valor ? String(valor).split("-").reverse().join("/") : "-";
+
+  const redes = d.redes
+    ? [
+        d.redes.pesquisa ? "Pesquisa do Google" : null,
+        d.redes.parceiros_pesquisa ? "Parceiros de pesquisa" : null,
+        d.redes.display ? "Rede de Display" : null
+      ].filter(Boolean).join(" · ") || "-"
+    : "-";
+
+  const lance = [
+    d.lance?.label,
+    d.lance?.meta_cpa != null ? `CPA desejado ${formatarMoeda(d.lance.meta_cpa)}` : null,
+    d.lance?.meta_roas != null ? `ROAS desejado ${d.lance.meta_roas}` : null
+  ].filter(Boolean).join(" · ");
+
+  const localidades = (d.localidades || [])
+    .map(l => l.excluida ? `${l.nome} (excluída)` : l.nome)
+    .join(" · ");
+  const idiomas = (d.idiomas || []).map(i => i.nome).join(" · ");
+  const grupos = (d.grupos_anuncios || []).map(g => g.nome).filter(Boolean).join(" · ");
+  const extensoes = Object.entries(d.extensoes || {})
+    .map(([nome, quantidade]) => `${nome}: ${quantidade}`)
+    .join(" · ");
+
+  const palavras = (d.palavras_chave || [])
+    .map(k => `${k.texto}${k.correspondencia ? ` [${k.correspondencia}]` : ""}${k.negativa ? " (negativa)" : ""}`)
+    .join(" · ");
+
+  // true/false/null: null = não deu pra ler as extensões, então não afirma nada.
+  const formulario =
+    d.formulario_lead_vinculado === true
+      ? "Sim — os leads desse formulário chegam à plataforma na sincronização (a cada 30 minutos)."
+      : d.formulario_lead_vinculado === false
+      ? "Nenhum formulário de lead vinculado a esta campanha — leads de site ou telefone não chegam à plataforma."
+      : "Não foi possível verificar agora.";
+
+  const anuncios = (d.anuncios || []).slice(0, 3).map((a, i) => `
+    ${detalheItem(`Anúncio ${i + 1}${a.tipo ? ` (${a.tipo})` : ""} — títulos`, (a.titulos || []).join(" | "), "full")}
+    ${(a.descricoes || []).length ? detalheItem(`Anúncio ${i + 1} — descrições`, a.descricoes.join(" | "), "full") : ""}
+    ${(a.urls || []).length ? detalheItem(`Anúncio ${i + 1} — link de destino`, a.urls.join(" | "), "full") : ""}
+  `).join("");
+
+  const avisos = (d.avisos || []).length
+    ? `<div class="campanha-drawer-painel-erro">⚠️ Algumas informações não puderam ser lidas do Google Ads agora: ${escaparHtml(d.avisos.join(", "))}.</div>`
+    : "";
+
+  return `
+    <div class="google-detalhes-ao-vivo">
+      <h4 style="margin:16px 0 8px;font-size:14px;">Configuração no Google Ads <small style="font-weight:400;opacity:.7;">(lida agora, somente leitura)</small></h4>
+      ${avisos}
+      <div class="detalhes-grid">
+        ${detalheItem("Tipo de campanha", d.tipo?.label)}
+        ${detalheItem("Status no Google", d.status_label)}
+        ${detalheItem("Estratégia de lance", lance || "-", "full")}
+        ${detalheItem("Orçamento/dia", d.orcamento_diario != null ? formatarMoeda(d.orcamento_diario) : "-")}
+        ${detalheItem("Início", dataBR(d.data_inicio))}
+        ${detalheItem("Término", d.data_fim ? dataBR(d.data_fim) : "Sem data de término")}
+        ${detalheItem("Redes", redes)}
+        ${detalheItem("Localidades", localidades || "-", "full")}
+        ${detalheItem("Idiomas", idiomas || "-")}
+        ${detalheItem(`Grupos de anúncios (${d.total_grupos_anuncios ?? 0})`, grupos || "-", "full")}
+        ${anuncios}
+        ${detalheItem(`Palavras-chave (${d.total_palavras_chave ?? 0})`, palavras || "-", "full")}
+        ${detalheItem("Extensões", extensoes || "Nenhuma", "full")}
+        ${detalheItem("Formulário de lead vinculado", formulario, "full")}
+      </div>
+      <p style="font-size:11px;opacity:.7;margin:8px 0 0;">Para alterar a campanha, use o Google Ads — a edição por aqui ainda não está disponível para campanhas criadas fora da plataforma.</p>
+    </div>
+  `;
+}
+
 async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
   const lista =
     (Array.isArray(chaves) ? chaves : [chaves]).filter(Boolean);
@@ -23998,10 +24140,7 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
   if (pares.length < 2) {
     esconderAbasEdicaoCampanha();
     camposEdicaoGrupo = pares;
-    if (
-      capacidadesPlataforma(pares[0].campanha.plataforma).editar ||
-      campanhaPodePublicarEmOutraPlataforma(pares[0].campanha)
-    ) {
+    if (campanhaPodeAbrirFormularioEdicao(pares[0].campanha)) {
       await abrirEdicaoCampanhaPorChave(pares[0].chave);
     } else {
       abrirModalEdicaoSomenteLeitura(pares[0].campanha);
@@ -24010,8 +24149,8 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
   }
 
   const parEditavel =
-    pares.find(p => capacidadesPlataforma(p.campanha.plataforma).editar) ||
-    pares.find(p => campanhaPodePublicarEmOutraPlataforma(p.campanha));
+    pares.find(p => !campanhaGoogleImportadaSemEdicao(p.campanha) && capacidadesPlataforma(p.campanha.plataforma).editar) ||
+    pares.find(p => !campanhaGoogleImportadaSemEdicao(p.campanha) && campanhaPodePublicarEmOutraPlataforma(p.campanha));
 
   const chaveInicial =
     (chaveAtivaInicial && pares.some(p => p.chave === chaveAtivaInicial))
@@ -24019,10 +24158,7 @@ async function abrirEdicaoCampanhaPorChaves(chaves, chaveAtivaInicial) {
       : (parEditavel?.chave || pares[0].chave);
   const parInicial = pares.find(p => p.chave === chaveInicial);
   const parParaAbrir =
-    parInicial && (
-      capacidadesPlataforma(parInicial.campanha.plataforma).editar ||
-      campanhaPodePublicarEmOutraPlataforma(parInicial.campanha)
-    )
+    parInicial && campanhaPodeAbrirFormularioEdicao(parInicial.campanha)
       ? parInicial
       : parEditavel;
 
@@ -24077,7 +24213,7 @@ async function trocarAbaEdicaoCampanha(chave) {
 
   const destinoEditavel = capacidadesPlataforma(
     plataformaCampanhaExibicao(parDestino.campanha)
-  ).editar;
+  ).editar && !campanhaGoogleImportadaSemEdicao(parDestino.campanha);
   if (!destinoEditavel) {
     ativarAbaEdicaoCampanha(chave);
     return;
@@ -24165,6 +24301,19 @@ function ativarAbaEdicaoCampanha(chave) {
 
 function renderizarResumoEdicaoSomenteLeitura(campanha) {
   const cfg = campanha.configuracoes_avancadas || {};
+
+  if (campanhaGoogleImportadaSemEdicao(campanha)) {
+    return `
+      <div class="campanha-drawer-painel-erro">
+        ✏️ Esta campanha foi criada direto no Google Ads e ainda não pode ser editada por aqui. Para alterar, use o Google Ads. Os detalhes dela, lidos direto do Google, ficam na engrenagem (Detalhes).
+      </div>
+      <div class="detalhes-grid">
+        ${detalheItem("Status", campanha.status)}
+        ${detalheItem("ID da campanha", campanha.campaign_id)}
+      </div>
+      <a class="preview-anuncio-meta-link" href="https://ads.google.com/aw/campaigns?campaignId=${encodeURIComponent(String(campanha.campaign_id))}" target="_blank" rel="noopener noreferrer">🔴 Abrir no Google Ads</a>
+    `;
+  }
   return `
     <div class="campanha-drawer-painel-erro">
       ✏️ Edição direta ainda não está disponível para ${escaparHtml(platNome(campanha.plataforma))} por aqui — use Pausar, Duplicar ou Excluir na lista (ou no drawer de Detalhes) enquanto isso não é suportado.
@@ -35034,6 +35183,13 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     campanha = JSON.parse(decodeURIComponent(campanhaEncoded));
   } catch (err) {
     console.error("ERRO CAMPANHA EDITAR:", err);
+    return;
+  }
+
+  // Última barreira: campanha do Google criada direto no Google Ads não abre o formulário
+  // de edição (salvar trataria como rascunho local e desvincularia a campanha do Google).
+  if (campanhaGoogleImportadaSemEdicao(campanha)) {
+    abrirModalEdicaoSomenteLeitura(campanha);
     return;
   }
 
@@ -45952,6 +46108,12 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
 
     ${renderizarImagensCampanhaDetalhe(campanha, cfg)}
 
+    ${campanhaGoogleImportada(campanha) ? `
+      <div id="google_detalhes_ao_vivo" data-campaign-id="${escaparHtml(String(campanha.campaign_id))}">
+        <div class="perf-vazio">Buscando os detalhes no Google Ads...</div>
+      </div>
+    ` : ""}
+
     <div class="detalhes-grid">
       ${detalheItem("Status", campanha.status)}
       ${detalheItem("Origem", campanha.origem)}
@@ -46098,6 +46260,11 @@ function ativarAbaCampanhaDrawer(chave) {
   if (conteudo) {
     conteudo.innerHTML =
       renderizarPainelPlataformaCampanha(par.campanha, par.chave);
+
+    // Campanha do Google criada direto no Google Ads: a configuração real é lida do Google.
+    if (campanhaGoogleImportada(par.campanha)) {
+      carregarDetalhesGoogleCampanha(par.campanha);
+    }
   }
 }
 

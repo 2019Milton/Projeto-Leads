@@ -20072,6 +20072,15 @@ body.tema-claro .criar-campanha-descricao {
           <div class="admin-nav-card-acao" id="nav-acao-financeiro-usuarios">Expandir →</div>
         </div>
 
+        <div class="admin-nav-card" id="nav-card-ranking" onclick="toggleSecaoAdmin('ranking')">
+          <div class="admin-nav-card-topo">
+            <span class="admin-nav-card-emoji">🏅</span>
+            <span class="admin-nav-card-titulo">Ranking das Plataformas</span>
+          </div>
+          <div class="admin-nav-card-resumo">Pesquisa na internet e rede de clientes</div>
+          <div class="admin-nav-card-acao" id="nav-acao-ranking">Expandir →</div>
+        </div>
+
       </div><!-- /admin-nav-grid -->
 
       <!-- RECURSOS -->
@@ -20857,6 +20866,22 @@ body.tema-claro .criar-campanha-descricao {
         <div id="resultado_corrigir_datas" style="margin-top:14px;font-size:13px;display:none;"></div>
       </div>
 
+      <!-- 🏅 RANKING DAS PLATAFORMAS -->
+      <div id="admin-secao-ranking" class="admin-secao admin-secao-b admin-secao-colapsavel fechada">
+        <h3 onclick="toggleSecaoAdmin('ranking')" style="cursor:pointer;margin-bottom:8px;color:white;">🏅 Ranking das Plataformas <span class="admin-sec-chevron">▶</span></h3>
+        <p style="color:#9ca3af;font-size:13px;margin-bottom:16px;">
+          A pesquisa na internet (uma vez por semana, por nicho) e o histórico diário de gasto que alimenta a rede de clientes
+          rodam sozinhos. Use os botões para forçar uma atualização ou conferir o resultado.
+        </p>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+          <button id="btn_ranking_atualizar" class="btn" style="white-space:nowrap;" onclick="atualizarRankingPlataformasAdmin()">Atualizar agora</button>
+          <button id="btn_ranking_status" class="btn" style="white-space:nowrap;" onclick="carregarStatusRankingAdmin()">Conferir status</button>
+        </div>
+
+        <div id="admin_ranking_status" style="font-size:13px;color:#94a3b8;">Carregando...</div>
+      </div>
+
       <!-- 🤝 FINANCEIRO DE PARCEIROS -->
       <div id="admin-secao-financeiro" class="admin-secao admin-secao-b admin-secao-colapsavel fechada">
         <h3 onclick="toggleSecaoAdmin('financeiro')" style="cursor:pointer;margin-bottom:8px;color:white;">🤝 Financeiro de Parceiros <span class="admin-sec-chevron">▶</span></h3>
@@ -21357,6 +21382,7 @@ function renderizarPaginaLegal() {
         <li>Dados de conexão com o Google Ads, como identificador da conta de anúncios, campanhas, grupos de anúncios, anúncios e formulários de lead, quando o usuário autoriza a integração via OAuth.</li>
         <li>Dados de conexão com o TikTok Ads, quando o usuário autoriza a integração.</li>
         <li>Métricas de campanhas, como impressões, cliques, CTR, CPC, gasto e quantidade de leads.</li>
+        <li>Histórico diário de gasto, cliques e impressões das campanhas de cada conta, guardado para calcular o ranking de plataformas descrito abaixo.</li>
       </ul>
 
       <h2>Finalidade</h2>
@@ -21367,6 +21393,38 @@ function renderizarPaginaLegal() {
         ativar e pausar campanhas do Google Ads em nome do usuário, mediante
         autorização OAuth), organização de leads e acompanhamento de
         desempenho comercial.
+      </p>
+
+      <h2>Ranking de plataformas e dados agregados</h2>
+
+      <p>
+        A tela de Integrações mostra uma posição (ranking) das plataformas de
+        anúncio para cada nicho de atuação. Essa posição combina três fontes:
+        (i) pesquisas públicas de mercado na internet, atualizadas
+        semanalmente com apoio de inteligência artificial; (ii) resultados
+        agregados e anonimizados dos clientes da Plataforma de Leads no mesmo
+        nicho, como volume e qualificação de leads, negócios fechados, custo
+        por lead, gasto, cliques e impressões; e (iii) o histórico da própria
+        conta do usuário.
+      </p>
+
+      <p>
+        Os resultados agregados são calculados por nicho e por plataforma e só
+        são usados quando há contas e leads em quantidade suficiente para que
+        nenhum cliente possa ser identificado (no mínimo 3 contas e 20 leads).
+        Eles aparecem apenas dentro da plataforma, de forma consolidada, e
+        nunca revelam nome, email, campanhas, valores ou leads de uma conta
+        individual a outros usuários. São usados somente para operar e
+        melhorar esse ranking e não são vendidos nem compartilhados com
+        terceiros. Quando uma conta é excluída, seus dados individuais deixam
+        de compor novos cálculos.
+      </p>
+
+      <p>
+        Na pesquisa semanal de mercado, a Plataforma de Leads envia à OpenAI
+        apenas o nome do nicho, os nomes das plataformas de anúncio e as notas
+        de referência anteriores. Nenhum dado de usuário, conta ou lead é
+        enviado nessa etapa.
       </p>
 
       <h2>Segurança e proteção dos dados</h2>
@@ -21456,6 +21514,7 @@ function renderizarPaginaLegal() {
         <li>Dados cadastrais do usuário.</li>
         <li>Tokens de integração com a Meta Ads, Google Ads e TikTok Ads.</li>
         <li>Leads e campanhas associados à conta, quando aplicável.</li>
+        <li>Histórico diário de gasto, cliques e impressões das campanhas da conta.</li>
       </ul>
 
       <h2>Prazo</h2>
@@ -21509,6 +21568,20 @@ function renderizarPaginaLegal() {
         Ao conectar a Meta, o usuário autoriza a Plataforma de Leads a acessar
         informações necessárias para criar, sincronizar e exibir campanhas,
         formulários, métricas e leads, conforme permissões concedidas.
+      </p>
+
+      <h2>Ranking de plataformas</h2>
+
+      <p>
+        O ranking exibido na tela de Integrações é uma estimativa estratégica,
+        baseada em pesquisas de mercado, em dados agregados e anonimizados dos
+        clientes da Plataforma de Leads e no histórico da própria conta. Ele
+        não é garantia de resultado, e o desempenho real de cada anunciante
+        pode variar. Ao usar a plataforma, o usuário concorda que os
+        resultados de suas campanhas e leads sejam utilizados de forma
+        agregada e anonimizada, sem identificação, para compor o ranking
+        mostrado aos usuários, conforme descrito na
+        <a href="/privacy-policy">Política de Privacidade</a>.
       </p>
 
       <h2>Dados e privacidade</h2>
@@ -47761,6 +47834,7 @@ function toggleSecaoAdmin(id) {
   if (navCard) navCard.classList.toggle("ativo", abrindo);
   if (navAcao) navAcao.textContent = abrindo ? "▲ Recolher" : "Expandir →";
   if (abrindo) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (abrindo && id === "ranking") carregarStatusRankingAdmin();
 }
 
 function _atualizarNavResumosAdmin(data) {
@@ -48263,6 +48337,109 @@ async function corrigirDatasLeads() {
   } finally {
     btn.disabled = false;
     btn.textContent = "Corrigir datas";
+  }
+}
+
+// Ranking das plataformas (só super admin): status da pesquisa semanal na internet e do
+// histórico de gasto da rede de clientes, e disparo manual de ambos.
+function formatarDataHoraRankingAdmin(valor) {
+  const data = valor ? new Date(valor) : null;
+  return data && !Number.isNaN(data.getTime()) ? data.toLocaleString("pt-BR") : "—";
+}
+
+async function carregarStatusRankingAdmin() {
+  const alvo = document.getElementById("admin_ranking_status");
+  if (!alvo) return;
+  alvo.style.color = "#94a3b8";
+  alvo.textContent = "Carregando...";
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/admin/ranking-plataformas/status`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erro desconhecido");
+
+    const mercado = data.mercado || [];
+    const execucoes = data.execucoes || [];
+    const historico = data.historico_desempenho || {};
+    const emAndamento = [
+      data.pesquisa_em_andamento ? "pesquisa de mercado" : null,
+      data.historico_em_andamento ? "histórico de gasto" : null
+    ].filter(Boolean);
+    const dia = valor => valor ? new Date(valor).toLocaleDateString("pt-BR", { timeZone: "UTC" }) : "—";
+
+    const tabelaMercado = mercado.length
+      ? `<table class="tabela-admin" style="min-width:0;width:100%;margin-top:6px;">
+          <thead><tr><th>Nicho</th><th>Plataformas com nota</th><th>Atualizado em</th></tr></thead>
+          <tbody>${mercado.map(m => `<tr>
+            <td>${escHtml(m.nicho_slug)}</td>
+            <td>${Number(m.plataformas || 0)}</td>
+            <td>${escHtml(formatarDataHoraRankingAdmin(m.atualizado_em))}</td>
+          </tr>`).join("")}</tbody>
+        </table>`
+      : `<div>Nenhuma pesquisa concluída ainda.</div>`;
+
+    const tabelaExecucoes = execucoes.length
+      ? `<table class="tabela-admin" style="min-width:0;width:100%;margin-top:6px;">
+          <thead><tr><th>Quando</th><th>Nicho</th><th>Resultado</th><th>Custo est.</th><th>Erro</th></tr></thead>
+          <tbody>${execucoes.slice(0, 12).map(e => `<tr>
+            <td>${escHtml(formatarDataHoraRankingAdmin(e.criado_em))}</td>
+            <td>${escHtml(e.nicho_slug)}</td>
+            <td style="color:${e.status === "ok" ? "#22c55e" : "#ef4444"};">${e.status === "ok" ? "ok" : "erro"}</td>
+            <td>R$ ${Number(e.custo_estimado || 0).toFixed(2)}</td>
+            <td>${escHtml(e.erro || "")}</td>
+          </tr>`).join("")}</tbody>
+        </table>`
+      : `<div>Nenhuma execução registrada.</div>`;
+
+    alvo.style.color = "#cbd5e1";
+    alvo.innerHTML = `
+      ${emAndamento.length ? `<div style="color:#fbbf24;margin-bottom:10px;">⏳ Em andamento: ${escHtml(emAndamento.join(" e "))}.</div>` : ""}
+      <div style="font-weight:600;">Pesquisa na internet, por nicho</div>
+      ${tabelaMercado}
+      <div style="font-weight:600;margin-top:16px;">Histórico de gasto (rede de clientes)</div>
+      <div style="margin-top:4px;">
+        ${Number(historico.linhas || 0)} dia(s) gravado(s) de ${Number(historico.contas || 0)} conta(s),
+        de ${escHtml(dia(historico.primeiro_dia))} a ${escHtml(dia(historico.ultimo_dia))}.
+        Última atualização: ${escHtml(formatarDataHoraRankingAdmin(historico.atualizado_em))}.
+      </div>
+      <div style="font-weight:600;margin-top:16px;">Últimas execuções da pesquisa</div>
+      ${tabelaExecucoes}`;
+  } catch (err) {
+    alvo.style.color = "#ef4444";
+    alvo.textContent = "Erro: " + (err.message || err);
+  }
+}
+
+async function atualizarRankingPlataformasAdmin() {
+  const btn = document.getElementById("btn_ranking_atualizar");
+  const alvo = document.getElementById("admin_ranking_status");
+  if (!btn) return;
+  if (!confirm("Rodar agora a pesquisa na internet de todos os nichos e o histórico de gasto das contas? Isso usa a OpenAI, consulta as APIs de anúncio e leva alguns minutos.")) return;
+
+  btn.disabled = true;
+  btn.textContent = "Iniciando...";
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/admin/ranking-plataformas/atualizar`, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erro desconhecido");
+
+    if (alvo) {
+      alvo.style.color = "#22c55e";
+      alvo.textContent = "✓ Atualização iniciada em segundo plano. Clique em \"Conferir status\" em alguns minutos.";
+    }
+  } catch (err) {
+    alert("Erro: " + (err.message || err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Atualizar agora";
   }
 }
 

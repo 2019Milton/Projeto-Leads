@@ -25037,6 +25037,24 @@ async function carregarDashboardConversionLeadsMeta() {
   carregarGanhoProjetadoMeta(token);
 }
 
+// Conversões que o próprio Google Ads contabilizou (conta inteira, 30 dias) pra faixa
+// da caixa do Google. O backend guarda o resultado por alguns minutos (essa aba atualiza
+// a cada 30s). Nunca lança erro: null = sem dado, e a faixa simplesmente não aparece.
+async function carregarConversoesGoogleResumo(token) {
+  try {
+    const res = await fetch(`${API}/google/conversoes-resumo`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    if (!res.ok) {
+      return null;
+    }
+    const data = await res.json();
+    return data && data.conversoes ? data.conversoes : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 async function carregarEstatisticasMetaConversao(token) {
 
   const kpisEl = document.getElementById("meta-conversao-kpis");
@@ -25048,9 +25066,14 @@ async function carregarEstatisticasMetaConversao(token) {
 
   try {
 
-    const res = await fetch(`${API}/leads/meta-conversao/estatisticas`, {
-      headers: { "Authorization": "Bearer " + token }
-    });
+    // As conversões do Google são buscadas em paralelo (não atrasam a tela e não quebram
+    // o resto se falharem).
+    const [res, conversoesGoogle] = await Promise.all([
+      fetch(`${API}/leads/meta-conversao/estatisticas`, {
+        headers: { "Authorization": "Bearer " + token }
+      }),
+      carregarConversoesGoogleResumo(token)
+    ]);
 
     const estatisticas = await res.json();
 
@@ -25149,6 +25172,25 @@ async function carregarEstatisticasMetaConversao(token) {
         }
       ];
 
+      // Só a caixa do Google: conversões que o próprio Google Ads contabilizou (conta
+      // inteira, 30 dias). É um número diferente dos "enviados" acima — vem do Google, não
+      // da plataforma — por isso vai numa faixa separada, e nunca soma com os leads.
+      const blocoConversoesGoogle = chave === "google" && conversoesGoogle
+        ? `
+          <div class="iapm-stat-strip" style="margin-top:8px;">
+            <div class="iapm-stat" style="--iapm-stat-color:#a78bfa;grid-column:1 / -1;border-left:none;padding-left:2px;" title="Conversões que o próprio Google Ads contabilizou nos últimos 30 dias, na conta inteira (só ações principais, inclusive de campanhas que já existiam antes de conectar aqui). Não é o mesmo número dos eventos enviados e não se soma aos leads.">
+              <div class="n">${formatarConversoesGoogle(conversoesGoogle.conversoes)}</div>
+              <div class="l">Conversões no Google (30 dias)</div>
+              <div class="d">${
+                conversoesGoogle.custo_por_conversao != null
+                  ? `${formatarMoeda(conversoesGoogle.custo_por_conversao)} por conversão · conta inteira, só ações principais`
+                  : "Nenhuma conversão no período · conta inteira, só ações principais"
+              }</div>
+            </div>
+          </div>
+        `
+        : "";
+
       const eventosDaPlataforma = todosEventos.filter(ev => ev.plataforma === chave).slice(0, 5);
 
       // Ganho Projetado é exclusivo da Meta (só ela documenta a faixa de
@@ -25177,6 +25219,7 @@ async function carregarEstatisticasMetaConversao(token) {
               </div>
             `).join("")}
           </div>
+          ${blocoConversoesGoogle}
           <div class="iapm-plataforma-eventos" title="Eventos mais recentes enviados pra ${nome} — os 5 últimos.">
             ${renderizarListaEventos(eventosDaPlataforma, "Nenhum evento enviado ainda.")}
           </div>

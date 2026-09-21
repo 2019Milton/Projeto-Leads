@@ -35561,6 +35561,13 @@ async function salvarEdicaoCampanhaLinkedIn(token, usuario_id) {
 
   const camposBasicos = coletarCamposBasicosCampanha();
   const orcamento = Number(valorCampo("orcamento"));
+  const configuracoes_avancadas = normalizarConfiguracoesAvancadasParaEnvio({
+    ...obterConfiguracoesCampanha(campanhaEmEdicao),
+    ...coletarConfiguracoesAvancadas(),
+    ...coletarDadosNichoAtivo(),
+    texto: camposBasicos.texto,
+    cta: camposBasicos.cta,
+  });
 
   if (!camposBasicos.nome?.trim()) {
     return mostrarErro("Informe o nome da campanha.");
@@ -35585,6 +35592,7 @@ async function salvarEdicaoCampanhaLinkedIn(token, usuario_id) {
         nome: camposBasicos.nome,
         daily_budget: orcamento,
         nicho_id: window._nichoAtivo?.id || campanhaEmEdicao.nicho_id || null,
+        configuracoes_avancadas,
       })
     });
     const data = await res.json().catch(() => ({}));

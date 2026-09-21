@@ -34689,7 +34689,7 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetSalvo, plataformaOrcame
   definirValorCampo(
     "orcamento",
     dailyBudgetSalvo
-      ? plataformaOrcamento === "google"
+      ? ["google", "linkedin"].includes(plataformaOrcamento)
         ? Number(dailyBudgetSalvo)
         : Number(dailyBudgetSalvo) / 100
       : ""

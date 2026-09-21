@@ -22019,6 +22019,14 @@ const SIDEBAR_SECOES = {
 
 let secaoAtiva = "dashboard";
 
+const TIPOS_USUARIO_EDITAVEIS = [
+  "admin_corretor",
+  "corretor",
+  "corretor_receptor",
+  "suporte",
+  "criador_campanha"
+];
+
 function labelTipoUsuario(tipo) {
   const labels = {
     super_admin: "Super Admin",
@@ -47820,13 +47828,13 @@ async function carregarPainelAdmin() {
             >
 
               ${
-                ["admin_corretor", "corretor", "corretor_receptor"].includes(u.tipo)
+                TIPOS_USUARIO_EDITAVEIS.includes(u.tipo)
                   ? `
                     <select
                       class="tipo-select"
                       onchange="alterarTipoUsuario(${u.id}, this.value)"
                     >
-                      ${["admin_corretor", "corretor", "corretor_receptor"].map(tipo => `
+                      ${TIPOS_USUARIO_EDITAVEIS.map(tipo => `
                         <option
                           value="${tipo}"
                           ${u.tipo === tipo ? "selected" : ""}

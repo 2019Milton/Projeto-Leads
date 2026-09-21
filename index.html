@@ -40260,6 +40260,48 @@ function botaoAcaoRapida(icone, label, onclick, cor = "indigo") {
   return `<button type="button" onclick="${onclick}" style="${estiloAcaoRapida(cor)}">${icone} ${escaparHtml(label)}</button>`;
 }
 
+// O Google Ads só abre uma conta específica pelo ocid da URL, que é um ID interno e não
+// existe na API. Por isso o botão de saldo abre o Google Ads sem conta definida, e este
+// bloco mostra o ID da conta e o caminho até o Resumo de cobrança.
+function formatarCustomerIdGoogle(customerId) {
+  const cid = String(customerId || "").replace(/[^0-9]/g, "");
+  return cid.replace(/^([0-9]{3})([0-9]{3})([0-9]{4})$/, "$1-$2-$3");
+}
+
+async function copiarIdContaGoogle(cid, btn) {
+  try {
+    await copiarTextoSeguro(cid);
+    const original = btn.textContent;
+    btn.textContent = "✓ Copiado";
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  } catch (_) {
+    prompt("Copie o ID da conta:", cid);
+  }
+}
+
+function blocoContaPagamentoGoogle(customerId, nomeConta) {
+  const cid = formatarCustomerIdGoogle(customerId);
+  if (!cid) return "";
+  const nome = nomeConta && nomeConta !== String(customerId) ? nomeConta : "";
+  return `
+    <div style="margin-top:10px;padding:10px 12px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:8px;font-size:12px;line-height:1.5;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="color:#94a3b8;">Conta para adicionar saldo:</span>
+        ${nome ? `<b style="color:#e2e8f0;">${escaparHtml(nome)}</b>` : ""}
+        <code style="color:#a5b4fc;background:rgba(15,23,42,0.6);padding:2px 6px;border-radius:5px;">${escaparHtml(cid)}</code>
+        <button type="button" onclick="copiarIdContaGoogle('${escaparHtml(cid)}', this)" style="${estiloAcaoRapida("indigo")}">📋 Copiar ID</button>
+      </div>
+      <div style="margin-top:8px;color:#cbd5e1;">
+        Se o Google abrir a tela de outra conta (por exemplo, a gerenciadora):
+        <ol style="margin:4px 0 0;padding-left:18px;">
+          <li>Clique no seletor de contas, no canto superior esquerdo, e escolha o ID acima.</li>
+          <li>No menu lateral, vá em <b>Faturamento</b> e depois em <b>Resumo</b>.</li>
+          <li>Use <b>Adicionar fundos</b> ou o botão de pagamento que aparecer.</li>
+        </ol>
+      </div>
+    </div>`;
+}
+
 // Seção colapsável reutilizada nos painéis de detalhes (Meta/Google/TikTok) para agrupar
 // os links de configuração mais usados (criar conta, adicionar saldo, ajuda etc.), sempre
 // no mesmo padrão visual das seções "Status"/"Status de Pagamento" já existentes.
@@ -42484,6 +42526,7 @@ async function carregarStatusGoogle() {
               <div style="margin-top:10px;">
                 ${linkAcaoRapida("💳", "Adicionar saldo / gerenciar pagamento", "https://ads.google.com/aw/billing/summary", "sucesso")}
               </div>
+              ${blocoContaPagamentoGoogle(customerIdAtual, contaInfo?.nome)}
           `)}
 
           ${secaoAcoesRapidas([

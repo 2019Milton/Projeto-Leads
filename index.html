@@ -9961,29 +9961,30 @@ body.tema-claro .info-tooltip-popup {
   box-shadow: none !important;
 }
 
-.recuperacao-resumo {
+.recuperacao-leads-passo {
 
-  display: grid;
+  color: #7dd3a8;
 
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  font-size: 10.5px;
 
-  gap: 8px;
+  font-weight: 800;
 
-  margin-bottom: 10px;
+  text-transform: uppercase;
+
+  letter-spacing: .04em;
+
+  margin: 0 0 8px;
 }
 
-.recuperacao-resumo-item {
+.recuperacao-leads-divisor {
 
-  border: 1px solid rgba(148,163,184,0.18);
+  height: 1px;
 
-  border-radius: 12px;
+  margin: 14px 0;
 
-  background: #101a2f;
-
-  padding: 9px 10px;
+  background: rgba(148,163,184,0.18);
 }
 
-.recuperacao-resumo-item span,
 .recuperacao-card small {
 
   display: block;
@@ -9995,15 +9996,95 @@ body.tema-claro .info-tooltip-popup {
   line-height: 1.35;
 }
 
-.recuperacao-resumo-item strong {
+.recuperacao-card-nome {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  flex-wrap: wrap;
+}
+
+.recuperacao-card-tagia {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  border: 1px solid rgba(255,255,255,0.4);
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,0.16);
+
+  color: inherit;
+
+  font-size: 8.5px;
+
+  font-weight: 800;
+
+  letter-spacing: .03em;
+
+  padding: 2px 6px;
+
+  text-transform: uppercase;
+}
+
+.recuperacao-gerar-btn {
 
   display: block;
 
-  margin-top: 3px;
+  width: 100%;
 
-  color: #fff;
+  padding: 12px 14px;
 
-  font-size: 18px;
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(124,58,237,0.34),
+      rgba(245,158,11,0.22)
+    );
+
+  border: 1px solid rgba(245,158,11,0.46);
+
+  color: #fff7ed;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.recuperacao-gerar-btn:hover {
+
+  border-color: rgba(245,158,11,0.75);
+
+  transform: translateY(-1px);
+}
+
+.recuperacao-gerar-btn > span {
+
+  display: block;
+
+  font-size: 13px;
+
+  font-weight: 800;
+}
+
+.recuperacao-gerar-btn > small {
+
+  display: block;
+
+  margin-top: 4px;
+
+  color: #e9d5ff;
+
+  font-size: 11px;
+
+  line-height: 1.4;
 }
 
 .recuperacao-leads-actions {
@@ -10098,10 +10179,6 @@ body.tema-claro .info-tooltip-popup {
   .recuperacao-leads-topo {
     align-items: flex-start;
     flex-wrap: wrap;
-  }
-
-  .recuperacao-resumo {
-    grid-template-columns: 1fr;
   }
 
   .recuperacao-leads-actions {
@@ -10217,6 +10294,14 @@ body.tema-claro .info-tooltip-popup {
   border-color: rgba(245,158,11,0.46) !important;
 
   color: #fff7ed !important;
+}
+
+/* .ativo (verde, ver regra acima) tem a mesma especificidade que .ia-filtro
+   e perderia pra ele por vir antes no arquivo — sem isto, escolher o card
+   "Recuperáveis" nunca mostrava nenhum destaque de selecionado. */
+.recuperacao-leads-actions button.ia-filtro.ativo {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 0 2px rgba(251,191,36,0.35);
 }
 
 
@@ -12429,14 +12514,12 @@ body.tema-claro .recuperacao-leads-panel {
 }
 
 body.tema-claro .recuperacao-leads-topo strong,
-body.tema-claro .recuperacao-card strong,
-body.tema-claro .recuperacao-resumo-item strong {
+body.tema-claro .recuperacao-card strong {
   color: #0f172a;
 }
 
 body.tema-claro .recuperacao-leads-topo span,
-body.tema-claro .recuperacao-card small,
-body.tema-claro .recuperacao-resumo-item span {
+body.tema-claro .recuperacao-card small {
   color: #475569;
 }
 
@@ -12446,7 +12529,14 @@ body.tema-claro .recuperacao-leads-badge {
   color: #166534;
 }
 
-body.tema-claro .recuperacao-resumo-item,
+body.tema-claro .recuperacao-leads-passo {
+  color: #15803d;
+}
+
+body.tema-claro .recuperacao-leads-divisor {
+  background: rgba(15,23,42,0.12);
+}
+
 body.tema-claro .recuperacao-leads-actions button {
   background: #ffffff !important;
   border-color: #b8c8d8 !important;
@@ -12458,6 +12548,51 @@ body.tema-claro .recuperacao-leads-actions button:hover {
   background: #dcfce7 !important;
   border-color: #22c55e !important;
   color: #166534 !important;
+}
+
+/* .ia-filtro precisa de mais especificidade que a regra genérica de botão
+   acima (que zera o fundo pra branco) pra manter o degrade roxo/dourado
+   também no tema claro — sem isto o card "Recuperáveis · IA Ouro" ficava
+   idêntico aos outros no tema claro, apagando o destaque da IA. */
+body.tema-claro .recuperacao-leads-actions button.ia-filtro {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(124,58,237,0.14),
+      rgba(245,158,11,0.16)
+    ) !important;
+  border-color: rgba(217,119,6,0.55) !important;
+  color: #4c1d95 !important;
+}
+
+body.tema-claro .recuperacao-leads-actions button.ia-filtro:hover {
+  border-color: rgba(217,119,6,0.85) !important;
+}
+
+body.tema-claro .recuperacao-leads-actions button.ia-filtro.ativo {
+  border-color: #b45309 !important;
+  box-shadow: 0 0 0 2px rgba(217,119,6,0.3);
+}
+
+body.tema-claro .recuperacao-card-tagia {
+  background: rgba(124,58,237,0.12);
+  border-color: rgba(124,58,237,0.4);
+  color: #6d28d9;
+}
+
+body.tema-claro .recuperacao-gerar-btn {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(124,58,237,0.14),
+      rgba(245,158,11,0.16)
+    );
+  border-color: rgba(217,119,6,0.55);
+  color: #4c1d95;
+}
+
+body.tema-claro .recuperacao-gerar-btn > small {
+  color: #6d28d9;
 }
 
 body.tema-claro .recuperacao-leads-limpar {
@@ -19391,11 +19526,11 @@ body.tema-claro .criar-campanha-descricao {
 
           <div>
             <div class="recuperacao-leads-titulo">
-              <strong>Recuperacao de Perdidos</strong>
+              <strong>Recuperação de Perdidos</strong>
               <span class="recuperacao-leads-badge">Fila inteligente</span>
             </div>
-            <span>
-              Escolha um foco e a central mostra primeiro quem vale tentar recuperar agora.
+            <span id="recuperacao_leads_sumario">
+              Carregando leads perdidos...
             </span>
           </div>
 
@@ -19403,45 +19538,29 @@ body.tema-claro .criar-campanha-descricao {
             type="button"
             class="recuperacao-leads-limpar"
             onclick="limparFiltroRecuperacaoLeads()"
-            title="Limpar filtro e apagar o resultado gerado pela IA neste painel"
+            title="Volta a mostrar todos os perdidos e apaga o resultado gerado pela IA neste painel"
           >
-            Limpar tudo
+            Limpar filtro
           </button>
 
         </div>
 
-        <div class="recuperacao-resumo">
-
-          <div class="recuperacao-resumo-item">
-            <span>Total perdidos</span>
-            <strong id="count_rec_total">0</strong>
-          </div>
-
-          <div class="recuperacao-resumo-item">
-            <span>Boa chance de retorno</span>
-            <strong id="count_rec_resumo_recuperaveis">0</strong>
-          </div>
-
-          <div class="recuperacao-resumo-item">
-            <span>Prioridade com IA</span>
-            <strong id="count_rec_resumo_ia">0</strong>
-          </div>
-
-        </div>
+        <div class="recuperacao-leads-passo">1. Escolha por onde começar</div>
 
         <div class="recuperacao-leads-actions">
 
           <button
             type="button"
             id="btn_recuperacao_recuperaveis"
-            class="recuperacao-card"
+            class="recuperacao-card ia-filtro"
             onclick="filtrarRecuperacaoLeads('recuperaveis')"
+            title="A IA Ouro analisa score, motivo da perda, tempo parado e telefone para ordenar quem tem mais chance de voltar."
           >
             <span class="recuperacao-card-topo">
-              <strong>Recuperaveis</strong>
+              <strong class="recuperacao-card-nome">Recuperáveis <span class="recuperacao-card-tagia">IA Ouro</span></strong>
               <b id="count_recuperaveis">0</b>
             </span>
-            <small>Leads perdidos com sinais de que ainda podem voltar.</small>
+            <small>Sinais de que ainda podem voltar — já ordenados por prioridade.</small>
           </button>
 
           <button
@@ -19451,7 +19570,7 @@ body.tema-claro .criar-campanha-descricao {
             onclick="filtrarRecuperacaoLeads('nao_respondeu')"
           >
             <span class="recuperacao-card-topo">
-              <strong>Nao respondeu</strong>
+              <strong>Não respondeu</strong>
               <b id="count_rec_nao_respondeu">0</b>
             </span>
             <small>Contatos que sumiram e podem receber uma nova abordagem.</small>
@@ -19467,37 +19586,24 @@ body.tema-claro .criar-campanha-descricao {
               <strong>30+ dias parado</strong>
               <b id="count_rec_30dias">0</b>
             </span>
-            <small>Leads antigos que merecem uma tentativa de reativacao.</small>
-          </button>
-
-          <button
-            type="button"
-            id="btn_recuperacao_ia"
-            class="recuperacao-card ia-filtro"
-            onclick="filtrarRecuperacaoLeads('ia')"
-            title="Filtro do plano Ouro: usa IA para priorizar recuperacao"
-          >
-            <span class="recuperacao-card-topo">
-              <strong>Prioridade IA Ouro</strong>
-              <b id="count_rec_ia">0</b>
-            </span>
-            <small>Usa IA para destacar quem tem melhor chance no momento.</small>
-          </button>
-
-          <button
-            type="button"
-            class="recuperacao-card ia-filtro"
-            onclick="gerarReativacaoLoteIA()"
-            title="IA Ouro: gera mensagens de reativacao para os leads perdidos filtrados"
-          >
-            <span class="recuperacao-card-topo">
-              <strong>Gerar mensagens IA</strong>
-              <b>IA</b>
-            </span>
-            <small>Cria textos de WhatsApp para os leads filtrados.</small>
+            <small>Leads antigos que merecem uma tentativa de reativação.</small>
           </button>
 
         </div>
+
+        <div class="recuperacao-leads-divisor"></div>
+
+        <div class="recuperacao-leads-passo">2. Gere as mensagens para quem está na lista</div>
+
+        <button
+          type="button"
+          class="recuperacao-gerar-btn"
+          onclick="gerarReativacaoLoteIA()"
+          title="IA Ouro: gera mensagens de reativação para os leads perdidos filtrados"
+        >
+          <span>✨ Gerar mensagens de WhatsApp com IA</span>
+          <small>Usa até 10 leads da lista filtrada acima (ou de todos os perdidos, se nenhum filtro estiver escolhido).</small>
+        </button>
 
         <div
           id="ia_reativacao_lote_resultado"
@@ -25025,11 +25131,6 @@ function atualizarPainelRecuperacao() {
       lead => (idadeLeadDias(lead) || 0) >= 30
     );
 
-  const ia =
-    usuarioTemIAOuro()
-      ? recuperaveis
-      : [];
-
   const preencher = (id, valor) => {
     const el = document.getElementById(id);
     if (el) el.innerText = valor;
@@ -25038,16 +25139,23 @@ function atualizarPainelRecuperacao() {
   preencher("count_recuperaveis", recuperaveis.length);
   preencher("count_rec_nao_respondeu", naoRespondeu.length);
   preencher("count_rec_30dias", antigos.length);
-  preencher("count_rec_ia", ia.length);
-  preencher("count_rec_total", perdidos.length);
-  preencher("count_rec_resumo_recuperaveis", recuperaveis.length);
-  preencher("count_rec_resumo_ia", ia.length);
+
+  const sumario =
+    document.getElementById("recuperacao_leads_sumario");
+
+  if (sumario) {
+    sumario.textContent =
+      perdidos.length === 0
+        ? "Nenhum lead perdido no momento."
+        : recuperaveis.length > 0
+        ? `${perdidos.length} perdido(s) no total — ${recuperaveis.length} com boa chance de voltar, segundo a IA Ouro.`
+        : `${perdidos.length} perdido(s) no total, sem sinal forte de recuperação no momento.`;
+  }
 
   [
     "recuperaveis",
     "nao_respondeu",
-    "30dias",
-    "ia"
+    "30dias"
   ].forEach(tipo => {
     const btn =
       document.getElementById(
@@ -26041,11 +26149,14 @@ function aplicarFiltrosLeads() {
         );
       }
 
+      // "ia" existiu como um 4o filtro (Recuperação de Perdidos) separado de
+      // "recuperaveis", mas desde que a IA deixou de ser exclusiva do plano
+      // Ouro os dois sempre devolviam a mesma lista — foi fundido no card
+      // "Recuperáveis" (ver atualizarPainelRecuperacao). Nenhum botão passa
+      // mais "ia" aqui; o ramo fica só por segurança, caso algo antigo ainda
+      // guarde esse valor (ex.: localStorage de um filtro salvo).
       if (filtroRecuperacao === "ia") {
-        return (
-          usuarioTemIAOuro() &&
-          recuperacao.recuperavel
-        );
+        return recuperacao.recuperavel;
       }
 
       return true;

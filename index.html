@@ -25220,26 +25220,53 @@ function renderizarOtimizacaoGoogle(otimizacao) {
   const linhas = otimizacao.campanhas || [];
   const fatorTexto = fator => Number(fator).toFixed(1).replace(".", ",");
 
-  const etiqueta = linha => {
+  // Rótulo e explicação saem da mesma função pra nunca ficarem fora de sincronia (limiares
+  // espelham OTIMIZACAO_FATOR_RUIM/OTIMIZACAO_FATOR_BOM no backend: 2× e 0,7× a média da conta).
+  const classificar = linha => {
     // Conta sem nenhuma conversão: não há base pra comparar, então não classifica ninguém.
-    if (otimizacao.sem_conversoes_na_conta) return { texto: "Sem dado", cor: "#94a3b8", fundo: "rgba(148,163,184,0.16)" };
+    if (otimizacao.sem_conversoes_na_conta) {
+      return {
+        texto: "Sem dado", cor: "#94a3b8", fundo: "rgba(148,163,184,0.16)",
+        explicacao: "Nenhuma conversão registrada nesta campanha no período — sem base para comparar com as outras."
+      };
+    }
     // Não manda pausar o que já está pausado.
     const jaPausada = linha.pausada && (linha.sinal === "ruim" || linha.sinal === "sem_conversao");
-    if (jaPausada) return { texto: "Já pausada", cor: "#94a3b8", fundo: "rgba(148,163,184,0.16)" };
-    if (linha.sinal === "sem_conversao") return { texto: "Revisar ou pausar", cor: "#f87171", fundo: "rgba(248,113,113,0.16)" };
-    if (linha.sinal === "ruim") return { texto: "Reduzir ou pausar", cor: "#f87171", fundo: "rgba(248,113,113,0.16)" };
-    if (linha.sinal === "bom") return { texto: "Pode receber mais", cor: "#4ade80", fundo: "rgba(74,222,128,0.16)" };
-    return { texto: "Na média", cor: "#94a3b8", fundo: "rgba(148,163,184,0.16)" };
-  };
-
-  const dica = linha => {
+    if (jaPausada) {
+      return {
+        texto: "Já pausada", cor: "#94a3b8", fundo: "rgba(148,163,184,0.16)",
+        explicacao: "Campanha já está pausada — nenhuma ação necessária agora."
+      };
+    }
     if (linha.sinal === "sem_conversao") {
-      return `Gastou ${formatarMoeda(linha.gasto)} nos últimos 30 dias sem nenhuma conversão.`;
+      return {
+        texto: "Revisar ou pausar", cor: "#f87171", fundo: "rgba(248,113,113,0.16)",
+        explicacao: `Gastou ${formatarMoeda(linha.gasto)} nos últimos 30 dias e o Google não registrou nenhuma conversão para essa campanha. Revise a segmentação e o anúncio, ou pause até ajustar.`
+      };
     }
-    if (linha.fator_vs_media != null && media) {
-      return `Custo por conversão de ${fatorTexto(linha.fator_vs_media)}× a média da conta (${formatarMoeda(media)}).`;
+    const fator = linha.fator_vs_media != null && media ? `${fatorTexto(linha.fator_vs_media)}×` : null;
+    if (linha.sinal === "ruim") {
+      return {
+        texto: "Reduzir ou pausar", cor: "#f87171", fundo: "rgba(248,113,113,0.16)",
+        explicacao: fator
+          ? `Custo por conversão ${fator} a média da conta (${formatarMoeda(media)}) — pelo menos o dobro do normal. Considere reduzir o orçamento ou pausar até revisar segmentação e criativo.`
+          : "Custo por conversão bem acima da média da conta. Considere reduzir o orçamento ou pausar até revisar."
+      };
     }
-    return "";
+    if (linha.sinal === "bom") {
+      return {
+        texto: "Pode receber mais", cor: "#4ade80", fundo: "rgba(74,222,128,0.16)",
+        explicacao: fator
+          ? `Custo por conversão ${fator} a média da conta (${formatarMoeda(media)}) — bem abaixo do normal. Está performando bem; considere aumentar o orçamento dela.`
+          : "Custo por conversão bem abaixo da média da conta. Está performando bem; considere aumentar o orçamento dela."
+      };
+    }
+    return {
+      texto: "Na média", cor: "#94a3b8", fundo: "rgba(148,163,184,0.16)",
+      explicacao: fator
+        ? `Custo por conversão ${fator} a média da conta (${formatarMoeda(media)}) — dentro do esperado, sem necessidade de ajuste agora.`
+        : "Custo por conversão dentro do esperado, comparado às outras campanhas da conta."
+    };
   };
 
   const numero = (largura, conteudo) =>
@@ -25256,10 +25283,10 @@ function renderizarOtimizacaoGoogle(otimizacao) {
   `;
 
   const corpo = linhas.map(linha => {
-    const e = etiqueta(linha);
+    const e = classificar(linha);
     const custo = linha.custo_por_conversao != null ? formatarMoeda(linha.custo_por_conversao) : "—";
     return `
-      <div class="iapm-feed-row" title="${escaparHtml(dica(linha))}">
+      <div class="iapm-feed-row" title="${escaparHtml(e.explicacao)}">
         <span class="iapm-feed-name" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escaparHtml(linha.nome || "Campanha")}${linha.pausada ? ` <span class="iapm-feed-when">(pausada)</span>` : ""}</span>
         ${numero(86, formatarMoeda(linha.gasto))}
         ${numero(60, formatarConversoesGoogle(linha.conversoes))}

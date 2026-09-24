@@ -1064,6 +1064,9 @@ button {
 .topbar-tipo-usuario[data-tipo="criador_campanha"] {
   border-color: rgba(167,139,250,0.55); background: rgba(167,139,250,0.14); color: #c4b5fd;
 }
+.topbar-tipo-usuario[data-tipo="trafego_pago"] {
+  border-color: rgba(244,114,182,0.5); background: rgba(244,114,182,0.12); color: #f9a8d4;
+}
 @media (max-width: 520px) {
   /* Sem espaço no topo do celular; o tipo continua no menu do perfil. */
   .topbar-tipo-usuario { display: none; }
@@ -15986,6 +15989,9 @@ body.tema-claro .topbar-tipo-usuario[data-tipo="suporte"] {
 body.tema-claro .topbar-tipo-usuario[data-tipo="criador_campanha"] {
   border-color: #a78bfa; background: #ede9fe; color: #5b21b6;
 }
+body.tema-claro .topbar-tipo-usuario[data-tipo="trafego_pago"] {
+  border-color: #f472b6; background: #fce7f3; color: #9d174d;
+}
 
 body.tema-claro .secao-app {
   color: var(--claro-text) !important;
@@ -20866,6 +20872,10 @@ body.tema-claro .criar-campanha-descricao {
                 Criador de Campanha
               </option>
 
+              <option value="trafego_pago">
+                Tráfego Pago
+              </option>
+
             </select>
         
           </div>
@@ -22278,8 +22288,13 @@ const TIPOS_USUARIO_EDITAVEIS = [
   "corretor",
   "corretor_receptor",
   "suporte",
-  "criador_campanha"
+  "criador_campanha",
+  "trafego_pago"
 ];
+
+// Tipos que podem ser escolhidos no campo Vínculo de um corretor: o Admin Corretor
+// (administra outros corretores) e o Tráfego Pago (dono dos acessos dos clientes dele).
+const TIPOS_COM_VINCULOS = ["admin_corretor", "trafego_pago"];
 
 function labelTipoUsuario(tipo) {
   const labels = {
@@ -22289,7 +22304,8 @@ function labelTipoUsuario(tipo) {
     corretor: "Corretor",
     corretor_receptor: "Corretor Receptor",
     suporte: "Suporte",
-    criador_campanha: "Criador de Campanha"
+    criador_campanha: "Criador de Campanha",
+    trafego_pago: "Tráfego Pago"
   };
 
   return labels[tipo] || "Corretor";
@@ -23634,8 +23650,10 @@ async function init() {
       tipo === "criador_campanha"
     );
 
+    // "Clientes gerenciados" é do Tráfego Pago (e do super admin/master). O Admin
+    // Corretor administra outros corretores da plataforma e não usa esta tela.
     if (
-      ["admin_corretor", "super_admin", "master"].includes(tipo) &&
+      ["trafego_pago", "super_admin", "master"].includes(tipo) &&
       perfilInicial?.modo_acesso !== "gestor"
     ) {
       mostrarSidebarItem("gestao-clientes");
@@ -48691,7 +48709,7 @@ async function carregarPainelAdmin() {
 
     const adminsCorretores =
       data.usuarios.filter(
-        u => u.tipo === "admin_corretor"
+        u => TIPOS_COM_VINCULOS.includes(u.tipo)
       );
 
     const parceiros =
@@ -48791,9 +48809,9 @@ async function carregarPainelAdmin() {
                   `
                   : `<span>${labelTipoUsuario(u.tipo)}</span>`
               }
-              ${u.tipo === "admin_corretor" ? `
+              ${TIPOS_COM_VINCULOS.includes(u.tipo) ? `
                 <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
-                  ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${escaparHtml(x.email)}</div>`).join("") || "<div>Nenhum corretor</div>"}
+                  ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${escaparHtml(x.email)}</div>`).join("") || `<div>${u.tipo === "trafego_pago" ? "Nenhum cliente" : "Nenhum corretor"}</div>`}
                 </div>
               ` : ""}
 
@@ -48899,7 +48917,7 @@ async function carregarPainelAdmin() {
                         : ""
                     }
                   >
-                    ${escaparHtml(admin.email)}
+                    ${escaparHtml(admin.email)}${admin.tipo === "trafego_pago" ? " (Tráfego Pago)" : ""}
                   </option>
                 `).join("")}
           
@@ -50258,12 +50276,12 @@ async function carregarAdminsCorretores() {
   for (const usuario of data.usuarios) {
 
     if (
-      usuario.tipo === "admin_corretor"
+      TIPOS_COM_VINCULOS.includes(usuario.tipo)
     ) {
 
       select.innerHTML += `
         <option value="${usuario.id}">
-          ${usuario.email}
+          ${escaparHtml(usuario.email)}${usuario.tipo === "trafego_pago" ? " (Tráfego Pago)" : ""}
         </option>
       `;
     }

@@ -1028,6 +1028,47 @@ button {
 .app-topbar-slim .logout { font-size: 12px; padding: 4px 12px; }
 .app-topbar-spacer { flex: 1; }
 
+/* Tipo da conta logada (Super Admin, Corretor, Criador de Campanha...) ao lado do
+   título da seção; o texto e o data-tipo vêm de atualizarBadgeTipoUsuario(). */
+.topbar-tipo-usuario {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.35);
+  background: rgba(148,163,184,0.12);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.topbar-tipo-usuario:empty { display: none; }
+.topbar-tipo-usuario[data-tipo="super_admin"],
+.topbar-tipo-usuario[data-tipo="master"] {
+  border-color: rgba(251,191,36,0.5); background: rgba(251,191,36,0.12); color: #fcd34d;
+}
+.topbar-tipo-usuario[data-tipo="admin_corretor"] {
+  border-color: rgba(96,165,250,0.5); background: rgba(96,165,250,0.12); color: #93c5fd;
+}
+.topbar-tipo-usuario[data-tipo="corretor"] {
+  border-color: rgba(74,222,128,0.45); background: rgba(74,222,128,0.10); color: #86efac;
+}
+.topbar-tipo-usuario[data-tipo="corretor_receptor"] {
+  border-color: rgba(45,212,191,0.45); background: rgba(45,212,191,0.10); color: #5eead4;
+}
+.topbar-tipo-usuario[data-tipo="suporte"] {
+  border-color: rgba(251,146,60,0.5); background: rgba(251,146,60,0.12); color: #fdba74;
+}
+.topbar-tipo-usuario[data-tipo="criador_campanha"] {
+  border-color: rgba(167,139,250,0.55); background: rgba(167,139,250,0.14); color: #c4b5fd;
+}
+@media (max-width: 520px) {
+  /* Sem espaço no topo do celular; o tipo continua no menu do perfil. */
+  .topbar-tipo-usuario { display: none; }
+}
+
 /* No modo sidebar os botões expandir/recolher genéricos não fazem sentido */
 #app.sidebar-ativa .painel-recolhivel-toggle { display: none !important; }
 
@@ -15923,6 +15964,29 @@ body.tema-claro #sidebar-secao-titulo {
   color: var(--claro-text) !important;
 }
 
+body.tema-claro .topbar-tipo-usuario {
+  border-color: #b8c8d8; background: #eef2f7; color: #334155;
+}
+body.tema-claro .topbar-tipo-usuario[data-tipo="super_admin"],
+body.tema-claro .topbar-tipo-usuario[data-tipo="master"] {
+  border-color: #f59e0b; background: #fef3c7; color: #92400e;
+}
+body.tema-claro .topbar-tipo-usuario[data-tipo="admin_corretor"] {
+  border-color: #60a5fa; background: #dbeafe; color: #1d4ed8;
+}
+body.tema-claro .topbar-tipo-usuario[data-tipo="corretor"] {
+  border-color: #4ade80; background: #dcfce7; color: #166534;
+}
+body.tema-claro .topbar-tipo-usuario[data-tipo="corretor_receptor"] {
+  border-color: #2dd4bf; background: #ccfbf1; color: #0f766e;
+}
+body.tema-claro .topbar-tipo-usuario[data-tipo="suporte"] {
+  border-color: #fb923c; background: #ffedd5; color: #9a3412;
+}
+body.tema-claro .topbar-tipo-usuario[data-tipo="criador_campanha"] {
+  border-color: #a78bfa; background: #ede9fe; color: #5b21b6;
+}
+
 body.tema-claro .secao-app {
   color: var(--claro-text) !important;
 }
@@ -22231,6 +22295,16 @@ function labelTipoUsuario(tipo) {
   return labels[tipo] || "Corretor";
 }
 
+// Mostra no topo da página o tipo da conta logada, ao lado do título da seção.
+function atualizarBadgeTipoUsuario(tipo) {
+  const el = document.getElementById("topbar-tipo-usuario");
+  if (!el) return;
+  const rotulo = labelTipoUsuario(tipo);
+  el.textContent = rotulo;
+  el.dataset.tipo = tipo || "";
+  el.title = `Tipo de conta: ${rotulo}`;
+}
+
 function tipoUsuarioEhCorretor(tipo) {
   return ["corretor", "corretor_receptor"].includes(tipo);
 }
@@ -22372,6 +22446,7 @@ function montarSidebar() {
   slimTopbar.innerHTML = `
     <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Recolher menu" aria-label="Recolher menu" aria-controls="sidebar-nav" aria-expanded="true" style="margin-right:8px;">☰</button>
     <span id="sidebar-secao-titulo" style="font-size:14px;font-weight:600;color:#e2e8f0;">Leads</span>
+    <span id="topbar-tipo-usuario" class="topbar-tipo-usuario"></span>
     <span class="app-topbar-spacer"></span>
   `;
   // Mover plano, tema e notificações para slim topbar
@@ -23512,9 +23587,14 @@ async function init() {
     const email =
       partes[1];
     
+    // O tipo vem do banco (/usuarios/me), não de dentro do token: o token é emitido
+    // no login e vale 7 dias, então mudar o tipo de um usuário no painel admin só
+    // aparecia depois de ele sair e entrar de novo. O backend já usa o tipo do banco
+    // nas permissões (authMiddleware); isto alinha o que a tela mostra com ele. O do
+    // token fica só como reserva, se o perfil não tiver vindo.
     const tipo =
-      partes[2];
-    
+      perfilInicial?.tipo || partes[2];
+
     const nome =
       partes[3] || "";
     
@@ -23581,6 +23661,8 @@ async function init() {
     // Atualizar nome no sidebar
     const elNomeSidebar = document.getElementById("sidebar-nome-usuario");
     if (elNomeSidebar) elNomeSidebar.textContent = nomeCompleto || email;
+
+    atualizarBadgeTipoUsuario(tipo);
 
     const btnPerfil =
       document.getElementById("btn_perfil");

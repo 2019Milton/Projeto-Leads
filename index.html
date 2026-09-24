@@ -8550,6 +8550,12 @@ body.tema-claro .cal-nav span { color: #111827; }
 .campanha-origem-fita.nativa { background: linear-gradient(135deg, #0891b2, #0e7490); }
 .campanha-origem-fita.importada { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
 
+/* Escolha do nicho salvo de uma campanha importada (ver blocoNichoCampanhaImportada). */
+.campanha-nicho-import { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; max-width: 240px; }
+.campanha-nicho-import select { width: 100%; font-size: 11px; padding: 5px 8px; border-radius: 6px; }
+.campanha-nicho-import.sem-nicho select { border: 1px solid #f59e0b; }
+.campanha-nicho-import small { font-size: 10px; line-height: 1.3; color: #f59e0b; }
+
 .campanha-plataforma-seletor {
   display: flex;
   flex-direction: column;
@@ -40730,6 +40736,46 @@ function campanhaOrigemImportada(campanha) {
   );
 }
 
+// Campanha importada nasce sem nicho salvo, e é o nicho gravado que escolhe o
+// roteiro do WhatsApp Bot (o selo do card pode vir só do palpite pelo nome).
+function blocoNichoCampanhaImportada(c) {
+  const nichos = usuarioLogado?.nichos || [];
+  if (!nichos.length || !c?.id) return "";
+  const confirmado = Boolean(c.nicho_confirmado);
+  const opcoes = nichos.map(n => {
+    const selecionado = confirmado && Number(n.id) === Number(c.nicho_id) ? " selected" : "";
+    return `<option value="${Number(n.id)}"${selecionado}>${nomeExibirNicho(n)}</option>`;
+  }).join("");
+  const titulo = "O nicho define qual roteiro do WhatsApp Bot atende as conversas desta campanha";
+  return `
+    <div class="campanha-nicho-import ${confirmado ? "" : "sem-nicho"}" onclick="event.stopPropagation()">
+      <select onchange="salvarNichoCampanhaImportada(${Number(c.id)}, this)" title="${titulo}">
+        ${confirmado ? "" : `<option value="" selected disabled>Definir nicho da campanha…</option>`}
+        ${opcoes}
+      </select>
+      ${confirmado ? "" : `<small>Sem nicho salvo: o WhatsApp Bot não sabe qual roteiro usar nesta campanha.</small>`}
+    </div>`;
+}
+
+async function salvarNichoCampanhaImportada(campanhaId, select) {
+  const token = localStorage.getItem("token");
+  const nichoId = Number(select?.value);
+  if (!token || !nichoId) return;
+  select.disabled = true;
+  try {
+    const res = await fetch(`${API}/campanhas/${campanhaId}/nicho`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ nicho_id: nichoId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) alert(data?.error || "Erro ao salvar o nicho da campanha.");
+  } catch (e) {
+    alert("Erro ao salvar o nicho da campanha.");
+  }
+  await carregarCampanhas();
+}
+
 function fitaOrigemCampanha(campanha) {
   const importada = campanhaOrigemImportada(campanha);
   const classe = importada ? "importada" : "nativa";
@@ -45386,6 +45432,8 @@ async function carregarCampanhas(somenteRenderizar = false) {
             ${linhasGrupoCampanha ? "" : platBadgeCampanha(c, true)}
             <span class="badge meta" style="display:none;">${escaparHtml(c.origem)}</span>
           </div>
+
+          ${campanhaOrigemImportada(c) ? blocoNichoCampanhaImportada(c) : ""}
 
         </div>
     

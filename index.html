@@ -22292,10 +22292,6 @@ const TIPOS_USUARIO_EDITAVEIS = [
   "trafego_pago"
 ];
 
-// Tipos que podem ser escolhidos no campo Vínculo de um corretor: o Admin Corretor
-// (administra outros corretores) e o Tráfego Pago (dono dos acessos dos clientes dele).
-const TIPOS_COM_VINCULOS = ["admin_corretor", "trafego_pago"];
-
 function labelTipoUsuario(tipo) {
   const labels = {
     super_admin: "Super Admin",
@@ -22323,6 +22319,41 @@ function atualizarBadgeTipoUsuario(tipo) {
 
 function tipoUsuarioEhCorretor(tipo) {
   return ["corretor", "corretor_receptor"].includes(tipo);
+}
+
+// Célula "Vínculo" da tabela de usuários do painel admin. O Vínculo é exclusivo do
+// Admin Corretor (os corretores que ele administra), então só ele aparece no select.
+// Uma conta criada por um Tráfego Pago em "Clientes gerenciados" também guarda o dono
+// em admin_id, mas isso não é vínculo de Admin Corretor: mostra só de quem é o cliente,
+// em texto, sem select (que a exibiria como "Sem vínculo" e permitiria trocar o dono).
+function renderVinculoUsuario(u, usuarios, adminsCorretores) {
+  if (!tipoUsuarioEhCorretor(u.tipo)) return "-";
+
+  const dono = usuarios.find(x => Number(x.id) === Number(u.admin_id));
+  if (dono?.tipo === "trafego_pago") {
+    return `<span title="Cliente criado em Clientes gerenciados" style="font-size:12px;color:#9ca3af;line-height:1.35;">Cliente de<br>${escaparHtml(dono.email)}</span>`;
+  }
+
+  return `
+    <select
+      onchange="alterarVinculo(
+        ${u.id},
+        this.value
+      )"
+    >
+      <option value="">
+        Sem vínculo
+      </option>
+      ${adminsCorretores.map(admin => `
+        <option
+          value="${admin.id}"
+          ${Number(u.admin_id) === Number(admin.id) ? "selected" : ""}
+        >
+          ${escaparHtml(admin.email)}
+        </option>
+      `).join("")}
+    </select>
+  `;
 }
 
 function usuarioEhCorretorReceptor() {
@@ -48709,7 +48740,7 @@ async function carregarPainelAdmin() {
 
     const adminsCorretores =
       data.usuarios.filter(
-        u => TIPOS_COM_VINCULOS.includes(u.tipo)
+        u => u.tipo === "admin_corretor"
       );
 
     const parceiros =
@@ -48809,9 +48840,9 @@ async function carregarPainelAdmin() {
                   `
                   : `<span>${labelTipoUsuario(u.tipo)}</span>`
               }
-              ${TIPOS_COM_VINCULOS.includes(u.tipo) ? `
+              ${u.tipo === "admin_corretor" ? `
                 <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
-                  ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${escaparHtml(x.email)}</div>`).join("") || `<div>${u.tipo === "trafego_pago" ? "Nenhum cliente" : "Nenhum corretor"}</div>`}
+                  ${data.usuarios.filter(x => x.admin_id == u.id).map(x => `<div>👤 ${escaparHtml(x.email)}</div>`).join("") || "<div>Nenhum corretor</div>"}
                 </div>
               ` : ""}
 
@@ -48891,45 +48922,7 @@ async function carregarPainelAdmin() {
 
           <td>
 
-            ${
-              tipoUsuarioEhCorretor(u.tipo)
-          
-              ?
-          
-              `
-              <select
-                onchange="alterarVinculo(
-                  ${u.id},
-                  this.value
-                )"
-              >
-          
-                <option value="">
-                  Sem vínculo
-                </option>
-          
-                ${adminsCorretores.map(admin => `
-                  <option
-                    value="${admin.id}"
-                    ${
-                      Number(u.admin_id) === Number(admin.id)
-                        ? "selected"
-                        : ""
-                    }
-                  >
-                    ${escaparHtml(admin.email)}${admin.tipo === "trafego_pago" ? " (Tráfego Pago)" : ""}
-                  </option>
-                `).join("")}
-          
-              </select>
-              `
-          
-              :
-
-              `
-              -
-              `
-            }
+            ${renderVinculoUsuario(u, data.usuarios, adminsCorretores)}
 
           </td>
 
@@ -50276,12 +50269,12 @@ async function carregarAdminsCorretores() {
   for (const usuario of data.usuarios) {
 
     if (
-      TIPOS_COM_VINCULOS.includes(usuario.tipo)
+      usuario.tipo === "admin_corretor"
     ) {
 
       select.innerHTML += `
         <option value="${usuario.id}">
-          ${escaparHtml(usuario.email)}${usuario.tipo === "trafego_pago" ? " (Tráfego Pago)" : ""}
+          ${escaparHtml(usuario.email)}
         </option>
       `;
     }

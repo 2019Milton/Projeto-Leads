@@ -26706,7 +26706,7 @@ function criarLeadCard(lead) {
           nome: lead.nicho_nome,
           cor: lead.nicho_cor
         }
-      : detectarNichoPorNome(lead.campanha || "");
+      : null;
 
   const nichoCorSolida =
     nichoLead ? corSolidaNicho(nichoLead) : "";
@@ -35527,6 +35527,7 @@ function chaveNichoFormulario(nicho = {}) {
 }
 
 function resolverNichoCampanhaParaFormulario(campanha = {}, cfg = {}) {
+  if (campanhaOrigemImportada(campanha) && !campanha.nicho_id) return null;
   const catalogo = Array.isArray(usuarioLogado?.nichos)
     ? usuarioLogado.nichos
     : [];
@@ -35563,7 +35564,8 @@ function resolverNichoCampanhaParaFormulario(campanha = {}, cfg = {}) {
 function selecionarNichoCampanhaNoEditor(campanha = {}, cfg = {}) {
   const nicho = resolverNichoCampanhaParaFormulario(campanha, cfg);
   if (!nicho) {
-    console.warn("EDIÇÃO DE CAMPANHA: nicho não identificado", campanha?.id);
+    window._nichoAtivo = null;
+    document.querySelectorAll(".nicho-tab").forEach(item => item.classList.remove("ativo"));
     document.getElementById("nicho_campos_extras")?.replaceChildren();
     return null;
   }
@@ -36327,7 +36329,9 @@ async function salvarEdicaoCampanhaLinkedIn(token, usuario_id) {
         campaign_id: campanhaEhRascunhoLocal(campanhaEmEdicao) ? null : campanhaEmEdicao.campaign_id,
         nome: camposBasicos.nome,
         daily_budget: orcamento,
-        nicho_id: window._nichoAtivo?.id || campanhaEmEdicao.nicho_id || null,
+        nicho_id: campanhaOrigemImportada(campanhaEmEdicao)
+          ? undefined
+          : window._nichoAtivo?.id || campanhaEmEdicao.nicho_id || null,
         configuracoes_avancadas,
       })
     });
@@ -36524,7 +36528,9 @@ async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
         texto: camposBasicos.texto,
         cta: camposBasicos.cta,
         daily_budget: Math.round(orcamento * 100),
-        nicho_id: window._nichoAtivo?.id || campanhaEmEdicao.nicho_id || null,
+        nicho_id: campanhaOrigemImportada(campanhaEmEdicao)
+          ? undefined
+          : window._nichoAtivo?.id || campanhaEmEdicao.nicho_id || null,
         destino: destinoAtual,
         form_id: formId,
         url_destino: configuracoes_avancadas.url_destino,
@@ -40966,7 +40972,7 @@ function campanhaOrigemImportada(campanha) {
 }
 
 // Campanha importada nasce sem nicho salvo, e é o nicho gravado que escolhe o
-// roteiro do WhatsApp Bot (o selo do card pode vir só do palpite pelo nome).
+// roteiro do WhatsApp Bot.
 function blocoNichoCampanhaImportada(c) {
   const nichos = usuarioLogado?.nichos || [];
   if (!nichos.length || !c?.id) return "";
@@ -45171,7 +45177,7 @@ async function carregarCampanhas(somenteRenderizar = false) {
         }
       }
     } else {
-      nicho = detectarNichoPorNome(c.nome);
+      nicho = null;
     }
     return nicho;
   };
@@ -45566,7 +45572,7 @@ async function carregarCampanhas(somenteRenderizar = false) {
         }
         return base;
       }
-      return detectarNichoPorNome(c.nome);
+      return null;
     })();
 
     const nichoCampanhaTema =
@@ -51168,35 +51174,6 @@ function nomeExibirNicho(nicho = {}) {
 function normalizarTexto(t = "") {
   return String(t).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 }
-function detectarNichoPorNome(nomeCampanha = "") {
-  const nichos = usuarioLogado?.nichos || [];
-  if (!nichos.length || !nomeCampanha) return null;
-  // normaliza e substitui underscores por espaço para nomes como "Urgencia_Escassez_Imovel"
-  const nome = normalizarTexto(nomeCampanha).replace(/_/g, " ");
-
-  const palavrasPorSlug = {
-    saude:       ["saude", "plano", "convenio", "medico", "hospital", "clinica", "seguro saude"],
-    suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
-    imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
-    saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"],
-    higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"],
-    telecom:     ["telecom", "internet dedicada", "link dedicado", "firewall", "pabx", "hotspot", "wifi corporativo", "provedor"],
-    cursos_online: ["curso online", "curso", "aula", "infoproduto", "certificado", "formacao", "formação", "capacitacao", "capacitação"]
-  };
-
-  for (const nicho of nichos) {
-    const slug = normalizarTexto(nicho.slug || "");
-    const nichoNome = normalizarTexto(nicho.nome || "");
-
-    if (nome.includes(nichoNome)) return nicho;
-
-    for (const [s, palavras] of Object.entries(palavrasPorSlug)) {
-      if (slug.includes(s) && palavras.some(p => nome.includes(p))) return nicho;
-    }
-  }
-
-  return null;
-}
 
 // Definidas aqui pelo mesmo motivo: inicializarNichoTabs() é chamada dentro
 // de init() (await /usuario/nichos) antes dos blocos <script> posteriores
@@ -56560,35 +56537,6 @@ function normalizarTexto(t = "") {
   return String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-function detectarNichoPorNome(nomeCampanha = "") {
-  const nichos = usuarioLogado?.nichos || [];
-  if (!nichos.length || !nomeCampanha) return null;
-  // normaliza e substitui underscores por espaço para nomes como "Urgencia_Escassez_Imovel"
-  const nome = normalizarTexto(nomeCampanha).replace(/_/g, " ");
-
-  const palavrasPorSlug = {
-    saude:       ["saude", "plano", "convenio", "medico", "hospital", "clinica", "seguro saude"],
-    suplementos: ["suplement", "whey", "creatina", "bcaa", "proteina", "fitness", "academia"],
-    imoveis:     ["imovel", "imobil", "apartamento", "casa", "terreno", "aluguel", "corretor", "lancamento", "empreendimento", "condominio"],
-    saas:        ["saas", "plataforma", "software", "sistema", "app", "ferramenta", "crm", "leads", "marketing digital", "automacao"],
-    higienizacao:["higien", "estofado", "colchao", "colchão", "carpete", "tapete", "sofa", "sofá", "limpeza", "pos obra", "pós obra"],
-    telecom:     ["telecom", "internet dedicada", "link dedicado", "firewall", "pabx", "hotspot", "wifi corporativo", "provedor"],
-    cursos_online: ["curso online", "curso", "aula", "infoproduto", "certificado", "formacao", "formação", "capacitacao", "capacitação"]
-  };
-
-  for (const nicho of nichos) {
-    const slug = normalizarTexto(nicho.slug || "");
-    const nichoNome = normalizarTexto(nicho.nome || "");
-
-    if (nome.includes(nichoNome)) return nicho;
-
-    for (const [s, palavras] of Object.entries(palavrasPorSlug)) {
-      if (slug.includes(s) && palavras.some(p => nome.includes(p))) return nicho;
-    }
-  }
-
-  return null;
-}
 
 function corSolidaNicho(nicho = {}) {
   const slug = slugNichoNormalizado(nicho);

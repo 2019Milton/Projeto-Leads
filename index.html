@@ -32335,18 +32335,32 @@ async function exportarPerformanceMetaXLSX() {
   aplicarEstilo(wsDia, `A4:${ultimaColDia}4`, sHeader);
 
   // ─── ABA 3: POR CAMPANHA (busca async) ────────────────────────────────────
-  // Só existe pra Meta — /:data/campanhas ainda não tem equivalente pra Google/TikTok.
+  // Existe pra Meta e Google (/<plataforma>/performance-diaria/:data/campanhas); TikTok e
+  // LinkedIn ainda não têm essa rota. Uma consulta por dia com dados, uma de cada vez.
   let wsCampanha = null;
-  if (agrupamento === "diario" && ehMeta) {
+  let detalheCampanhaFalhou = false;
+  if (agrupamento === "diario" && PLATAFORMAS_COM_DETALHE_DIARIO.includes(plataformaId)) {
     const diasComDados = registros.filter(r => Number(r.gasto || 0) > 0 || Number(r.leads || 0) > 0);
     const linhasCampanha = [];
+    const diasSemDetalhe = [];
     const token = localStorage.getItem("token");
 
-    for (const dia of diasComDados) {
-      try {
-        const res  = await fetch(`${API}/meta/performance-diaria/${dia.data}/campanhas`, { headers: { "Authorization": "Bearer " + token } });
-        const json = await res.json();
-        if (!json.error && Array.isArray(json.campanhas)) {
+    // A consulta por dia demora (mais no Google): o botão mostra que está exportando e não
+    // aceita um segundo clique enquanto isso.
+    const btnExportar = document.querySelector('#painel_performance_meta button[onclick^="exportarPerformanceMetaXLSX"]');
+    const textoBtnExportar = btnExportar ? btnExportar.textContent : "";
+    if (btnExportar) { btnExportar.disabled = true; btnExportar.textContent = "Exportando..."; }
+
+    try {
+      for (const dia of diasComDados) {
+        try {
+          const res  = await fetch(`${API}/${plataformaId}/performance-diaria/${dia.data}/campanhas`, { headers: { "Authorization": "Bearer " + token } });
+          const json = await res.json();
+          if (!res.ok || json.error || !Array.isArray(json.campanhas)) {
+            diasSemDetalhe.push(dia.data);
+            continue;
+          }
+
           for (const camp of json.campanhas) {
             const gasto      = Number(camp.gasto || 0);
             const leads      = Number(camp.leads || 0);
@@ -32366,16 +32380,36 @@ async function exportarPerformanceMetaXLSX() {
               taxaLC
             ]);
           }
+
+          // Google: leads do dia que o banco tem, mas que não casam com nenhuma campanha da
+          // lista. Sem esta linha, a soma de leads desta aba ficaria menor que a da aba diária.
+          const semCampanha = Number(json.leads_sem_campanha || 0);
+          if (semCampanha > 0) {
+            linhasCampanha.push([dia.data, "(leads sem campanha correspondente)", "", semCampanha, "", "", "", "", ""]);
+          }
+        } catch {
+          diasSemDetalhe.push(dia.data);
         }
-      } catch {}
+      }
+    } finally {
+      if (btnExportar && btnExportar.isConnected) {
+        btnExportar.disabled = false;
+        btnExportar.textContent = textoBtnExportar;
+      }
     }
+
+    detalheCampanhaFalhou = diasSemDetalhe.length > 0;
+    // Dias que falharam não somem em silêncio: ficam listados na terceira linha da aba.
+    const avisoDiasSemDetalhe = diasSemDetalhe.length
+      ? [`Atenção: não foi possível carregar o detalhe por campanha de: ${diasSemDetalhe.map(d => `${d.slice(8, 10)}/${d.slice(5, 7)}`).join(", ")}`]
+      : [];
 
     if (linhasCampanha.length > 0) {
       const headersCamp = ["Data","Campanha","Gasto (R$)","Leads","CPL (R$)","Cliques","Impressões","CTR (%)","Taxa Lead/Clique (%)"];
       wsCampanha = XLSX.utils.aoa_to_sheet([
-        [`Performance Meta — ${tituloPeriodo} — Por Campanha`],
+        [`Performance ${nomePlataforma} — ${tituloPeriodo} — Por Campanha`],
         [periodoTexto, "", "", "", "", "", "", "", `Exportado: ${exportadoEm}`],
-        [],
+        avisoDiasSemDetalhe,
         headersCamp,
         ...linhasCampanha
       ]);
@@ -32397,6 +32431,12 @@ async function exportarPerformanceMetaXLSX() {
   }
 
   XLSX.writeFile(workbook, `Performance-${nomePlataforma.replace(/\s+/g, "")}-${periodo}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+  // Nenhum dia devolveu detalhe: a planilha sai só com Resumo e Performance Diária, e o
+  // usuário precisa saber por quê (antes ficava sem a aba, sem nenhum aviso).
+  if (detalheCampanhaFalhou && !wsCampanha) {
+    alert("Não foi possível carregar o detalhe por campanha. A planilha foi gerada sem a aba \"Por Campanha\".");
+  }
 }
 
 /* ===== CONTROLE DE CUSTO — descrição dinâmica ===== */

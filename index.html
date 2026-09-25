@@ -1206,6 +1206,10 @@ button {
   cursor: pointer; transition: all .15s; white-space: nowrap;
 }
 .desemp-tab.ativa { border-color: #3b82f6; background: #1e3a5f; color: #93c5fd; }
+/* Contorno claro na aba selecionada, igual para Meta, Google, TikTok e LinkedIn. Antes só
+   aparecia o anel padrão do navegador, e só na aba que acabou de ser clicada. */
+.desemp-tab.ativa { box-shadow: 0 0 0 2px rgba(241,245,249,0.95); }
+.desemp-tab.ativa:focus-visible { outline: none; }
 .desemp-tab:disabled { opacity: .4; cursor: default; pointer-events: none; }
 .perf-vazio {
   padding: 40px 20px; text-align: center;
@@ -16247,6 +16251,7 @@ body.tema-claro .desemp-tab.ativa {
   background: var(--claro-primary-soft) !important;
   border-color: #60a5fa !important;
   color: #1d4ed8 !important;
+  box-shadow: 0 0 0 2px #1d4ed8;
 }
 
 body.tema-claro .desemp-tab:disabled {
@@ -23501,6 +23506,10 @@ async function enviarNFFinanceiro(lancamentoId, inputEl) {
 // no HTML (title="Em breve") — nem chegam a cair aqui.
 const PLATAFORMAS_PERFORMANCE_DISPONIVEIS = ["meta", "google", "tiktok", "linkedin"];
 let performanceAtivaPlataforma = "meta";
+
+// Plataformas em que a linha de cada dia expande para mostrar as campanhas do dia
+// (rota /<plataforma>/performance-diaria/:data/campanhas no backend).
+const PLATAFORMAS_COM_DETALHE_DIARIO = ["meta", "google"];
 
 function selecionarTabDesempenho(plataformaId) {
   document.querySelectorAll(".desemp-tab[data-plat]").forEach(btn => {
@@ -31996,10 +32005,10 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
       registro.leads > 0 ||
       registro.cliques > 0;
 
-    // Detalhamento por campanha só existe pra Meta (/meta/performance-diaria/:data/campanhas);
-    // Google/TikTok ainda não têm essa rota, então a linha não expande pra eles.
+    // Detalhamento por campanha só existe pra Meta e Google (/<plataforma>/performance-diaria/
+    // :data/campanhas); TikTok/LinkedIn ainda não têm essa rota, então a linha não expande.
     const podeDetalhar =
-      agrupamento === "diario" && ehMeta;
+      agrupamento === "diario" && PLATAFORMAS_COM_DETALHE_DIARIO.includes(plataformaId);
 
     const chave =
       String(registro.data || registro.periodo || "")
@@ -32614,35 +32623,49 @@ async function togglePerfDetalhe(data) {
 
   if (_perfDetalheCarregado.has(data)) return;
 
-  await carregarCampanhasDia(data);
-  _perfDetalheCarregado.add(data);
+  // Só marca como carregado se o detalhe foi desenhado; com erro (ou se o usuário trocou
+  // de plataforma no meio), recolher e expandir de novo tenta outra vez.
+  if (await carregarCampanhasDia(data)) _perfDetalheCarregado.add(data);
 }
 
+// Devolve true quando o detalhe foi desenhado para a plataforma que ainda está na tela.
 async function carregarCampanhasDia(data) {
   const chave = data.replace(/-/g, "");
   const detalheRow = document.getElementById(`perf_detalhe_${chave}`);
-  if (!detalheRow) return;
+  if (!detalheRow) return false;
 
   const inner = detalheRow.querySelector(".perf-detalhe-inner");
+  const plataforma = performanceAtivaPlataforma || "meta";
 
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${API}/meta/performance-diaria/${data}/campanhas`, {
+    const res = await fetch(`${API}/${plataforma}/performance-diaria/${data}/campanhas`, {
       headers: { "Authorization": "Bearer " + token }
     });
 
     const json = await res.json();
 
+    // O painel foi refeito para outra plataforma enquanto a resposta vinha: descarta, para
+    // não escrever campanhas do Meta na linha do Google (ou o contrário).
+    if (plataforma !== (performanceAtivaPlataforma || "meta")) return false;
+
     if (!res.ok || json.error) {
-      inner.innerHTML = `<span style="color:#ef4444;font-size:12px;">Erro: ${json.error || "Falha ao carregar"}</span>`;
-      return;
+      inner.innerHTML = `<span style="color:#ef4444;font-size:12px;">Erro: ${escHtml(json.error || "Falha ao carregar")}</span>`;
+      return false;
     }
 
     const campanhas = json.campanhas || [];
 
+    // Leads do dia que o banco tem, mas que não casam com nenhuma campanha da lista
+    // (só o Google informa isso, porque casa o lead pelo nome da campanha).
+    const semCampanha = Number(json.leads_sem_campanha || 0);
+    const notaSemCampanha = semCampanha > 0
+      ? `<div class="perf-detalhe-loading" style="margin-top:6px;">+ ${semCampanha} lead${semCampanha > 1 ? "s" : ""} do dia sem campanha correspondente (campanha sem gasto neste dia ou com outro nome).</div>`
+      : "";
+
     if (campanhas.length === 0) {
-      inner.innerHTML = `<span class="perf-detalhe-loading">Nenhuma campanha com dados neste dia.</span>`;
-      return;
+      inner.innerHTML = `<span class="perf-detalhe-loading">Nenhuma campanha com dados neste dia.</span>${notaSemCampanha}`;
+      return true;
     }
 
     const linhas = campanhas.map(camp => `
@@ -32668,9 +32691,12 @@ async function carregarCampanhasDia(data) {
         </thead>
         <tbody>${linhas}</tbody>
       </table>
+      ${notaSemCampanha}
     `;
+    return true;
   } catch (err) {
     if (inner) inner.innerHTML = `<span style="color:#ef4444;font-size:12px;">Erro ao carregar campanhas.</span>`;
+    return false;
   }
 }
 

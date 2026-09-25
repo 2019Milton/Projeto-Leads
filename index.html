@@ -9111,6 +9111,19 @@ body.tema-claro .info-tooltip-popup {
     #ffd257;
 }
 
+/* Campanha ligada, mas sem nenhum anúncio veiculando (conjunto ou anúncios pausados
+   na Meta). Mesmo amarelo de "pausada", com contorno para não parecer só pausada. */
+.status-sem-veicular {
+
+  background:
+    rgba(255,193,7,0.12);
+
+  color:
+    #ffd257;
+
+  border: 1px solid rgba(255,193,7,0.4);
+}
+
 .status-deleted {
 
   background:
@@ -16607,6 +16620,13 @@ body.tema-claro .desemp-tab:disabled {
   color: #fde68a;
   background: rgba(245,158,11,0.12);
   border: 1px solid rgba(245,158,11,0.24);
+}
+
+/* Ligada, mas sem veicular: mesmo tom de "pausada", com contorno mais forte. */
+.dashboard-status-chip.semveicular {
+  color: #fde68a;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.5);
 }
 
 .dashboard-status-chip.issue {
@@ -24987,6 +25007,14 @@ function campanhaEstaAtiva(campanha) {
 
 function campanhaEstaPausada(campanha) {
   return String(campanha?.status || "").toUpperCase() === "PAUSED";
+}
+
+// Campanha ligada (status ACTIVE), mas sem nenhum anúncio veiculando porque o conjunto
+// (ou os anúncios) está pausado na Meta. Vem de veiculacao_sem_veicular, calculado no
+// backend a partir do status real de cada anúncio; só existe para campanhas da Meta.
+// "ACTIVE" sozinho só diz que o interruptor da campanha está ligado.
+function campanhaLigadaSemVeicular(campanha) {
+  return campanhaEstaAtiva(campanha) && campanha?.veiculacao_sem_veicular === true;
 }
 
 function campanhaEstaExcluida(campanha) {
@@ -40377,7 +40405,7 @@ function dashboardPercentual(valor) {
 
 const DASHBOARD_AJUDA = {
   leadsTotais: "Total de leads recentes.",
-  campanhas: "Ativas sobre o total.",
+  campanhas: "Campanhas veiculando sobre o total. \"Ligadas sem veicular\" estão ativas, mas com o conjunto ou os anúncios pausados na Meta.",
   investimento: "Gasto total das campanhas.",
   cplMedio: "Custo medio por lead.",
   ctrMedio: "Taxa media de cliques.",
@@ -40422,6 +40450,8 @@ function dashboardStatusCampanha(campanha) {
   }
 
   try {
+    // Ligada, mas sem nenhum anúncio veiculando: não conta como "veiculando".
+    if (campanhaLigadaSemVeicular(campanha)) return { classe: "semveicular", label: "Ativa · sem veicular" };
     if (campanhaEstaAtiva(campanha)) return { classe: "active", label: "Ativa" };
     if (campanhaEstaPausada(campanha)) return { classe: "paused", label: "Pausada" };
   } catch (_) {}
@@ -40430,6 +40460,42 @@ function dashboardStatusCampanha(campanha) {
   if (status === "PAUSED" || campanha?.ativo === false) return { classe: "paused", label: "Pausada" };
   if (veiculacao && !["ok", "active", "ativo"].includes(veiculacao)) return { classe: "issue", label: "Atenção" };
   return { classe: "issue", label: status || "Revisar" };
+}
+
+// Conta as campanhas por situação. "veiculando" só inclui as ativas que de fato rodam;
+// as ligadas com conjunto/anúncios pausados na Meta vão para "semVeicular".
+function dashboardContarCampanhas(campanhas) {
+  const contagem = { veiculando: 0, semVeicular: 0, pausadas: 0, atencao: 0 };
+
+  for (const campanha of campanhas) {
+    const classe = dashboardStatusCampanha(campanha).classe;
+    if (classe === "active") contagem.veiculando++;
+    else if (classe === "semveicular") contagem.semVeicular++;
+    else if (classe === "paused") contagem.pausadas++;
+    else if (classe === "issue") contagem.atencao++;
+  }
+
+  return contagem;
+}
+
+// Quantas campanhas da Meta estão ligadas sem veicular. Calculado no carregamento do
+// Dashboard e mostrado no cartão "Status Meta", que é montado por outra requisição —
+// por isso fica guardado aqui e aplicado dos dois lados (ver aplicarSemVeicularStatusMeta).
+let dashboardMetaSemVeicular = null;
+
+function aplicarSemVeicularStatusMeta() {
+  const quantidade = Number(dashboardMetaSemVeicular);
+
+  document.querySelectorAll(".dashboard-meta-sem-veicular").forEach(el => {
+    if (!Number.isFinite(quantidade) || quantidade <= 0) {
+      el.textContent = "";
+      el.style.display = "none";
+      return;
+    }
+    el.textContent = `${quantidade} sem veicular`;
+    el.title = "Ligadas, mas com o conjunto de anúncios (ou os anúncios) pausado na Meta";
+    el.style.display = "block";
+  });
 }
 
 function dashboardPlataformaId(valor) {
@@ -40689,9 +40755,14 @@ async function carregarDashboard() {
       0;
 
     const campanhasTotal = campanhas.length || campanhasPlataforma.length;
-    const campanhasAtivas = campanhas.filter(c => dashboardStatusCampanha(c).classe === "active").length;
-    const campanhasPausadas = campanhas.filter(c => dashboardStatusCampanha(c).classe === "paused").length;
-    const campanhasAtencao = campanhas.filter(c => dashboardStatusCampanha(c).classe === "issue").length;
+    const contagemCampanhas = dashboardContarCampanhas(campanhas);
+    const campanhasAtivas = contagemCampanhas.veiculando;
+    const campanhasSemVeicular = contagemCampanhas.semVeicular;
+    const campanhasPausadas = contagemCampanhas.pausadas;
+    const campanhasAtencao = contagemCampanhas.atencao;
+
+    dashboardMetaSemVeicular = campanhasSemVeicular;
+    aplicarSemVeicularStatusMeta();
 
     const gastoTotal = campanhas.reduce(
       (total, campanha) => total + dashboardPrimeiroNumero(campanha, ["gasto", "spend", "valor_gasto"]),
@@ -40740,7 +40811,7 @@ async function carregarDashboard() {
 
     const kpis = [
       { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto((leadsData?.novos || []).length)} aguardando primeiro contato`, cor: "#60a5fa", ajuda: "leadsTotais" },
-      { label: "Campanhas", valor: `${campanhasAtivas}/${campanhasTotal || 0}`, detalhe: `${campanhasPausadas} pausadas · ${campanhasAtencao} em atenção`, cor: "#22c55e", ajuda: "campanhas" },
+      { label: "Campanhas", valor: `${campanhasAtivas}/${campanhasTotal || 0}`, detalhe: `${campanhasSemVeicular ? `${campanhasSemVeicular} ligada${campanhasSemVeicular > 1 ? "s" : ""} sem veicular · ` : ""}${campanhasPausadas} pausadas · ${campanhasAtencao} em atenção`, cor: "#22c55e", ajuda: "campanhas" },
       { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Gasto consolidado das campanhas", cor: "#f59e0b", ajuda: "investimento" },
       { label: "CPL médio", valor: cplMedio ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa", ajuda: "cplMedio" },
       { label: "CTR médio", valor: ctrMedio ? `${ctrMedio.toFixed(1)}%` : "-", detalhe: `${dashboardCompacto(cliquesTotal)} cliques`, cor: "#38bdf8", ajuda: "ctrMedio" },
@@ -40756,7 +40827,7 @@ async function carregarDashboard() {
     `).join("");
 
     document.getElementById("dashboard-live-card").innerHTML = `
-      <div class="dashboard-live-row" ${dashboardAjuda("saude")}><span>Saúde das campanhas</span><strong>${campanhasAtencao ? `${campanhasAtencao} revisar` : "Estável"}</strong></div>
+      <div class="dashboard-live-row" ${dashboardAjuda("saude")}><span>Saúde das campanhas</span><strong>${(campanhasAtencao + campanhasSemVeicular) ? `${campanhasAtencao + campanhasSemVeicular} revisar` : "Estável"}</strong></div>
       <div class="dashboard-live-row" ${dashboardAjuda("orcamento")}><span>Orçamento diário</span><strong>${budgetDiario ? formatarMoeda(budgetDiario) : "-"}</strong></div>
       <div class="dashboard-live-row" ${dashboardAjuda("leadsPorClique")}><span>Leads por clique</span><strong>${taxaLeadClique ? `${taxaLeadClique.toFixed(1)}%` : "-"}</strong></div>
       <div class="dashboard-live-row" ${dashboardAjuda("base")}><span>Base analisada</span><strong>${dashboardCompacto(campanhasTotal)} campanhas</strong></div>
@@ -44929,6 +45000,7 @@ async function carregarStatusMeta() {
             <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
               <span style="font-size:22px;font-weight:800;color:#4ade80;display:block;">${data.metricas?.campanhas_ativas || 0}</span>
               <small style="margin-top:4px;font-size:11px;">🟢 Ativas</small>
+              <small class="dashboard-meta-sem-veicular" style="display:none;margin-top:2px;font-size:10px;font-weight:700;color:#fbbf24;"></small>
             </div>
             <div class="meta-status-tile" style="text-align:center;padding:10px 8px;">
               <span style="font-size:16px;font-weight:800;color:#fbbf24;display:block;line-height:1.4;">${gastoHoje}</span>
@@ -44959,6 +45031,10 @@ async function carregarStatusMeta() {
           </div>
         `
         : `<div class="dashboard-empty-state">🔴 Meta não conectada. <a href="#" onclick="navegarPara('integracoes');return false;" style="color:#60a5fa;">Conectar agora →</a></div>`;
+
+      // O cartão foi refeito: reaplica quantas campanhas estão ligadas sem veicular (o
+      // número vem da lista de campanhas do Dashboard, que pode ter chegado antes).
+      aplicarSemVeicularStatusMeta();
     }
 
     const ultimoSyncTexto =
@@ -45654,19 +45730,23 @@ async function carregarCampanhas(somenteRenderizar = false) {
           ? "status-paused"
           : campanhaLocalPublicavel
           ? "status-paused"
+          : campanhaLigadaSemVeicular(c)
+          ? "status-sem-veicular"
           : campanhaEstaAtiva(c)
           ? "status-active"
           : campanhaEstaPausada(c)
           ? "status-paused"
           : "status-deleted"
         }
-      ">
-    
+      " ${campanhaLigadaSemVeicular(c) ? 'title="A campanha está ligada, mas nenhum anúncio veicula: o conjunto de anúncios (ou os anúncios) está pausado na Meta."' : ""}>
+
         ${
           publicacaoExpirada
             ? "🟠 ENCERRADA"
             : campanhaLocalPublicavel
             ? "📝 RASCUNHO"
+            : campanhaLigadaSemVeicular(c)
+            ? "🟡 ATIVA · sem veicular"
             : campanhaEstaAtiva(c)
             ? `🟢 ${String(c.status || "ACTIVE").toUpperCase()}`
             : campanhaEstaPausada(c)

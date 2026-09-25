@@ -41065,7 +41065,7 @@ function platBadgeCampanha(campanha, mostrarPosicionamentos = false) {
   const plataforma = plataformaCampanhaExibicao(campanha);
   const posicionamentos =
     mostrarPosicionamentos && plataforma === "meta"
-      ? iconesPlacementMeta(obterConfiguracoesCampanha(campanha))
+      ? iconesPlacementMeta(obterConfiguracoesCampanha(campanha), campanha.campaign_id)
       : "";
   return platBadge(plataforma) + posicionamentos;
 }
@@ -41099,7 +41099,7 @@ function platBadgeComCanal(lead) {
 }
 
 // De qual posicionamento (Facebook ou Instagram) esse lead especifico veio —
-// diferente de iconesPlacementMeta (que mostra onde a campanha FOI VEICULADA,
+// diferente de iconesPlacementMeta (que mostra redes configuradas ou com entrega identificada,
 // podendo ser as duas ao mesmo tempo): aqui é o clique real de UM lead,
 // extraido do referral de Click-to-WhatsApp (lead.rede_origem, preenchido em
 // detectarRedeOrigemReferral no backend). Reaproveita os mesmos icones de
@@ -41118,21 +41118,31 @@ const ICONES_META_PUBLISHER = {
   instagram: `<svg width="11" height="11" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#E1306C"/><rect x="6.5" y="6.5" width="11" height="11" rx="3.5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="3.1" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="17" cy="7" r="1.1" fill="#fff"/></svg>`
 };
 
-// Ícones de Facebook/Instagram no card da campanha — o badge de rede (platBadge)
-// só diz "Meta Ads", sem revelar em qual dos dois a campanha realmente roda.
-// Reflete o que foi marcado em "Plataforma de anúncio" na criação/edição
-// (configuracoes_avancadas.plataformas: ["facebook","instagram"]); se o campo
-// vier vazio (campanhas antigas, ou sincronizadas direto da Meta) não mostra
-// nada extra em vez de supor um posicionamento que não foi confirmado.
-function iconesPlacementMeta(cfg) {
-  const plataformas = Array.isArray(cfg?.plataformas) ? cfg.plataformas : [];
-  if (!plataformas.length) return "";
-
+// Redes identificadas para exibição, sem modificar os posicionamentos do editor.
+// A evidência pertence ao campaign_id: uma duplicação não herda a rede detectada.
+function iconesPlacementMeta(cfg, campaignId) {
+  const normalizar = valor => {
+    const lista = Array.isArray(valor) ? valor.map(p => String(p).trim().toLowerCase()) : [];
+    return ["facebook", "instagram"].filter(p => lista.includes(p));
+  };
+  let plataformas = normalizar(cfg?.plataformas);
+  let fonte = "Posicionamento configurado";
+  const evidencia = cfg?.redes_identificadas_meta;
+  if (campaignId && evidencia?.campaign_id === String(campaignId)) {
+    const configuradas = normalizar(evidencia.configuradas);
+    if (evidencia.configuracao_completa === true) {
+      plataformas = configuradas;
+    } else {
+      const identificadas = normalizar([...configuradas, ...normalizar(evidencia.com_entrega)]);
+      if (identificadas.length) {
+        plataformas = identificadas;
+        fonte = "Rede identificada por configuração ou entrega recente";
+      }
+    }
+  }
   const nomes = { facebook: "Facebook", instagram: "Instagram" };
-
   return plataformas
-    .filter(p => ICONES_META_PUBLISHER[p])
-    .map(p => `<span class="plat-sub-badge" title="${nomes[p]}">${ICONES_META_PUBLISHER[p]}</span>`)
+    .map(p => `<span class="plat-sub-badge" title="${nomes[p]} — ${fonte}">${ICONES_META_PUBLISHER[p]}</span>`)
     .join("");
 }
 

@@ -20532,6 +20532,9 @@ body.tema-claro .criar-campanha-descricao {
           </div>
         </div>
 
+        <!-- Alertas dos provedores (sem crédito, chave inválida...) -->
+        <div id="ia_alertas_provedor" style="margin-top:18px;"></div>
+
         <!-- Consumo por provider -->
         <div style="margin-top:18px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -27823,6 +27826,13 @@ function renderizarSugestaoIA(sugestao, opcoes = {}) {
   `;
 }
 
+// Aviso em destaque quando a IA não respondeu e o backend devolveu texto-modelo em vez de
+// resposta gerada (ex.: provedor sem crédito). Sem aviso, devolve vazio.
+function htmlAvisoIA(texto) {
+  if (!texto) return "";
+  return `<div style="margin-bottom:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(251,191,36,.45);background:rgba(251,191,36,.12);color:#fbbf24;font-size:12px;line-height:1.4;">${escaparHtml(texto)}</div>`;
+}
+
 async function gerarSugestaoLeadIA(tipo) {
   if (!leadAtual?.id) return;
 
@@ -27857,6 +27867,7 @@ async function gerarSugestaoLeadIA(tipo) {
     }
 
     box.innerHTML =
+      htmlAvisoIA(data.aviso) +
       renderizarSugestaoIA(
         data.sugestao,
         {
@@ -29666,6 +29677,7 @@ async function gerarCampanhaComIA() {
     camposFaltantesSugestoesCampanhaIAAtual = new Set(idsCamposFaltantes);
     sugestoesCampanhaIAAtual = sugestoes;
     box.innerHTML =
+      htmlAvisoIA(data.aviso) +
       renderizarOpcoesCampanhaIA(sugestoesCampanhaIAAtual);
   } catch (err) {
     if (requisicaoAtual !== sequenciaGeracaoCampanhaIA) return;
@@ -49569,6 +49581,51 @@ async function carregarPainelIAAdmin() {
 
 let _saldosIAInterval = null;
 
+// Faixa vermelha no painel de IA quando OpenAI/Anthropic recusou chamadas por algo que só o
+// admin resolve (sem crédito, chave inválida, modelo removido). Vem em /admin/ia/saldos.
+function renderizarAlertasProvedorIA(alertas) {
+  const el = document.getElementById("ia_alertas_provedor");
+  if (!el) return;
+  const lista = Array.isArray(alertas) ? alertas : [];
+  if (!lista.length) {
+    el.innerHTML = "";
+    return;
+  }
+  el.innerHTML = lista.map((a) => {
+    const quando = a.ultima_em ? new Date(a.ultima_em).toLocaleString("pt-BR") : "-";
+    const vezes = Number(a.ocorrencias || 1);
+    const detalhe = a.mensagem ? ` · "${escaparHtml(a.mensagem)}"` : "";
+    return `
+      <div style="border:1px solid #b91c1c;background:rgba(127,29,29,.35);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;">
+        <div style="min-width:0;">
+          <strong style="color:#fecaca;font-size:13px;">${escaparHtml(a.provedor_nome || a.provider)} — ${escaparHtml(a.rotulo || a.tipo)}</strong>
+          <div style="color:#fca5a5;font-size:12px;margin-top:4px;">${escaparHtml(a.acao || "")}</div>
+          <div style="color:#9ca3af;font-size:11px;margin-top:4px;">Última falha: ${escaparHtml(quando)} · ${vezes} ocorrência(s) · em: ${escaparHtml(a.contexto || "-")}${detalhe}</div>
+        </div>
+        <button type="button" onclick="resolverAlertaProvedorIA(${Number(a.id)})" style="white-space:nowrap;">Marcar como resolvido</button>
+      </div>`;
+  }).join("");
+}
+
+async function resolverAlertaProvedorIA(id) {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${API}/admin/ia/alertas/${id}/resolver`, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert(data.error || "Erro ao resolver alerta");
+      return;
+    }
+    await carregarSaldosIA();
+  } catch (err) {
+    console.error("ERRO RESOLVER ALERTA IA:", err);
+    alert("Erro ao resolver alerta");
+  }
+}
+
 async function carregarSaldosIA() {
   const token = localStorage.getItem("token");
 
@@ -49581,6 +49638,8 @@ async function carregarSaldosIA() {
     const data = await res.json();
     const openai = data.openai || {};
     const anthropic = data.anthropic || {};
+
+    renderizarAlertasProvedorIA(data.alertas);
 
     const set = (id, val) => {
       const el = document.getElementById(id);

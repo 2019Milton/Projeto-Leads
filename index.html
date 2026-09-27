@@ -49500,9 +49500,13 @@ async function carregarPainelIAAdmin() {
 
     tabela.innerHTML = usuarios.map(u => {
       const chamadas = Number(u.chamadas_mes || 0);
-      const limite = Number(u.ia_limite_mensal || 0);
+      // Espelha o backend: vazio = padrão (300 chamadas / R$120) e 0 = ilimitado.
+      const limite = u.ia_limite_mensal == null ? 300 : Number(u.ia_limite_mensal);
       const custo = Number(u.custo_mes || 0);
-      const limiteCusto = Number(u.ia_custo_limite_mensal || 0);
+      const limiteCusto = u.ia_custo_limite_mensal == null ? 120 : Number(u.ia_custo_limite_mensal);
+      // Transcrição de áudio e classificação do Kanban rodam sozinhas e não entram no limite do usuário.
+      const chamadasAuto = Number(u.chamadas_automaticas_mes || 0);
+      const custoAuto = Number(u.custo_automatico_mes || 0);
       const usuarioIAAtiva = u.ia_ativo !== false;
       const tokensUsuario =
         Number(u.tokens_entrada_mes || 0) +
@@ -49527,9 +49531,9 @@ async function carregarPainelIAAdmin() {
             </div>
           </td>
           <td>${escaparHtml(u.assinatura_status || "manual")}</td>
-          <td>${chamadas} chamada(s)<br>${formatarMoeda(custo)}</td>
+          <td>${chamadas} chamada(s)<br>${formatarMoeda(custo)}${chamadasAuto > 0 ? `<br><small title="Transcrição de áudio e classificação de conversas do WhatsApp. Não contam no limite do usuário, só no limite global (${formatarMoeda(custoAuto)}).">+${chamadasAuto} automática(s)</small>` : ""}</td>
           <td>${tokensUsuario.toLocaleString("pt-BR")}<br><small>entrada + saida</small></td>
-          <td>${chamadas}/${limite} req<br>${formatarMoeda(custo)}/${formatarMoeda(limiteCusto)}</td>
+          <td>${chamadas}/${limite > 0 ? limite : "ilimitado"} req<br>${formatarMoeda(custo)}/${limiteCusto > 0 ? formatarMoeda(limiteCusto) : "ilimitado"}</td>
           <td>${u.ultimo_uso ? new Date(u.ultimo_uso).toLocaleString("pt-BR") : "-"}</td>
           <td>
             <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
@@ -49691,11 +49695,19 @@ async function salvarConfigIAAdmin() {
 
 async function alterarLimitesIAUsuario(id, limiteAtual, custoAtual, assinaturaAtual, iaAtivaAtual = true) {
 
-  const limite = prompt("Limite mensal de chamadas de IA:", limiteAtual);
+  const limite = prompt("Limite mensal de chamadas de IA (0 = ilimitado):", limiteAtual);
   if (limite === null) return;
 
-  const custo = prompt("Limite mensal de custo estimado:", custoAtual);
+  const custo = prompt("Limite mensal de custo estimado (0 = ilimitado):", custoAtual);
   if (custo === null) return;
+
+  // Campo em branco mantém o valor atual (0 agora significa ilimitado, então não dá para tratar vazio como 0).
+  const limiteNovo = String(limite).trim() === "" ? Number(limiteAtual) : Number(String(limite).replace(",", "."));
+  const custoNovo = String(custo).trim() === "" ? Number(custoAtual) : Number(String(custo).replace(",", "."));
+  if (!Number.isFinite(limiteNovo) || limiteNovo < 0 || !Number.isFinite(custoNovo) || custoNovo < 0) {
+    alert("Informe números válidos (0 = ilimitado).");
+    return;
+  }
 
   const assinatura = prompt("Status da assinatura do usuario:", assinaturaAtual || "manual");
   if (assinatura === null) return;
@@ -49711,8 +49723,8 @@ async function alterarLimitesIAUsuario(id, limiteAtual, custoAtual, assinaturaAt
         "Authorization": "Bearer " + token
       },
       body: JSON.stringify({
-        ia_limite_mensal: Number(limite || 0),
-        ia_custo_limite_mensal: Number(custo || 0),
+        ia_limite_mensal: limiteNovo,
+        ia_custo_limite_mensal: custoNovo,
         assinatura_status: assinatura,
         ia_ativo: Boolean(iaAtivaAtual)
       })

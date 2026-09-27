@@ -20597,6 +20597,7 @@ body.tema-claro .criar-campanha-descricao {
                   onmouseout="this.style.background='transparent'"
                 >Ver saldo no Console</a>
               </div>
+              <div id="ia_saldo_anthropic_modelo" style="font-size:10px;color:#6b7280;margin:-4px 0 8px;"></div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
                 <div>
                   <div style="color:#9ca3af;margin-bottom:2px;">Chamadas</div>
@@ -49671,6 +49672,21 @@ async function carregarSaldosIA() {
       ((Number(anthropic.tokens_entrada || 0) + Number(anthropic.tokens_saida || 0))
         .toLocaleString("pt-BR")) + " tokens");
     set("ia_saldo_anthropic_custo", formatarMoeda(anthropic.custo_total || 0));
+
+    // Rótulo curto do modelo que o backend usou pra estimar esse gasto (bate com o
+    // "modelo Anthropic" configurado em Operação da IA — evita achar que o custo é de
+    // outro modelo quando o admin troca o modelo ativo).
+    const ROTULOS_MODELO_ANTHROPIC = {
+      "claude-haiku-4-5-20251001": "Claude Haiku",
+      "claude-sonnet-4-6": "Claude Sonnet",
+      "claude-opus-4-8": "Claude Opus"
+    };
+    set(
+      "ia_saldo_anthropic_modelo",
+      anthropic.modelo_precificado
+        ? `Calculado com ${ROTULOS_MODELO_ANTHROPIC[anthropic.modelo_precificado] || anthropic.modelo_precificado}`
+        : ""
+    );
 
     const saldoCalc = anthropic.saldo_calculado;
     const anthropicBadge = document.getElementById("ia_saldo_anthropic_badge");

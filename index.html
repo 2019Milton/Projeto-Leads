@@ -17792,6 +17792,17 @@ body.tema-claro .criar-campanha-descricao {
         <strong id="plano_atual_nome">Bronze</strong>
       </div>
 
+      <!-- Só aparece pra quem tem IA no plano (ver recursos.ia_leads em carregarPlanoAtual).
+           A cor do ponto muda com o quanto já foi usado do limite mensal (ver corConsumoIA). -->
+      <div
+        id="ia_uso_topo"
+        style="display:none;align-items:center;gap:8px;min-height:42px;padding:7px 12px;border:1px solid rgba(124,77,255,0.32);border-radius:999px;background:linear-gradient(135deg,rgba(124,77,255,0.14),rgba(15,23,42,0.7));font-size:10px;font-weight:800;letter-spacing:0.3px;text-transform:uppercase;color:#c4b5fd;cursor:default;"
+      >
+        <span id="ia_uso_topo_ponto" style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;box-shadow:0 0 8px #4ade80;"></span>
+        IA
+        <strong id="ia_uso_topo_texto" style="color:#e2e8f0;font-size:13px;text-transform:none;">0/300</strong>
+      </div>
+
       <label class="tema-seletor" title="Escolha o visual da plataforma">
         Tema
 
@@ -25543,9 +25554,58 @@ async function carregarPlanoAtual() {
         Boolean(data.acesso_total);
     }
 
+    atualizarBadgeUsoIA(data);
+
   } catch (err) {
     console.error("PLANO ATUAL:", err);
   }
+}
+
+// Verde até 70% do limite, amarelo até 90%, vermelho dali pra cima — mesma lógica pros
+// dois limites (chamadas e custo); usa o pior dos dois, pra avisar cedo de qualquer lado.
+function corConsumoIA(percentual) {
+  if (percentual >= 90) return "#f87171";
+  if (percentual >= 70) return "#fbbf24";
+  return "#4ade80";
+}
+
+// Badge "IA X/Y" no topo, ao lado do selo de plano — só pra quem tem IA no plano
+// (recursos.ia_leads). Limite 0 = ilimitado (ver limiteMensalIAUsuario no backend).
+function atualizarBadgeUsoIA(data) {
+  const badge = document.getElementById("ia_uso_topo");
+  if (!badge) return;
+
+  if (!data?.recursos?.ia_leads) {
+    badge.style.display = "none";
+    return;
+  }
+
+  const ia = data.ia || {};
+  const usoMes = Number(ia.uso_mes || 0);
+  const custoMes = Number(ia.custo_mes || 0);
+  const limiteChamadas = Number(ia.limite_mensal || 0);
+  const limiteCusto = Number(ia.custo_limite_mensal || 0);
+
+  const percChamadas = limiteChamadas > 0 ? (usoMes / limiteChamadas) * 100 : 0;
+  const percCusto = limiteCusto > 0 ? (custoMes / limiteCusto) * 100 : 0;
+  const percentual = Math.max(percChamadas, percCusto);
+
+  const texto = document.getElementById("ia_uso_topo_texto");
+  const ponto = document.getElementById("ia_uso_topo_ponto");
+  const cor = corConsumoIA(percentual);
+
+  if (texto) {
+    texto.innerText = `${usoMes}/${limiteChamadas > 0 ? limiteChamadas : "∞"}`;
+  }
+  if (ponto) {
+    ponto.style.background = cor;
+    ponto.style.boxShadow = `0 0 8px ${cor}`;
+  }
+
+  badge.title =
+    `Chamadas de IA este mês: ${usoMes}${limiteChamadas > 0 ? ` de ${limiteChamadas}` : " (sem limite)"}\n` +
+    `Custo estimado: ${formatarMoeda(custoMes)}${limiteCusto > 0 ? ` de ${formatarMoeda(limiteCusto)}` : " (sem limite)"}`;
+  badge.style.display = "inline-flex";
 }
 
 // Dashboard "tempo real" da aba IA & Performance: o que já foi mandado

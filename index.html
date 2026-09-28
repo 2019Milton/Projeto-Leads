@@ -22613,6 +22613,17 @@ function iniciarStatusSyncSidebar() {
 }
 
 function montarSidebar() {
+  // Capturados AQUI, antes de mexer na árvore: uma vez movidos pra dentro de contentArea
+  // (linha logo abaixo, ainda desanexado do documento), document.getElementById() para de
+  // achar qualquer coisa dentro dele até contentArea ser reanexado lá embaixo
+  // (app.appendChild(contentArea)) — a busca por id só enxerga o que está preso no
+  // documento. Bug real, não só do badge novo de IA: o próprio selo de plano nunca
+  // aparecia na barra compacta por causa disso (ficava preso na barra antiga, oculta).
+  const plano = document.getElementById("plano_atual_topo");
+  const usoIA = document.getElementById("ia_uso_topo"); // irmão do plano, não filho — precisa mover junto
+  const tema = document.querySelector(".topbar .tema-seletor") || document.querySelector(".tema-seletor");
+  const notif = document.getElementById("btn-notificacoes");
+
   const app = document.getElementById("app");
   app.classList.add("sidebar-ativa");
 
@@ -22630,11 +22641,10 @@ function montarSidebar() {
     <span id="topbar-tipo-usuario" class="topbar-tipo-usuario"></span>
     <span class="app-topbar-spacer"></span>
   `;
-  // Mover plano, tema e notificações para slim topbar
-  const plano = document.getElementById("plano_atual_topo");
-  const tema = document.querySelector(".topbar .tema-seletor") || document.querySelector(".tema-seletor");
-  const notif = document.getElementById("btn-notificacoes");
+  // Mover plano, uso de IA, tema e notificações para a slim topbar (referências já
+  // capturadas lá em cima, antes do desanexo).
   if (plano) slimTopbar.appendChild(plano);
+  if (usoIA) slimTopbar.appendChild(usoIA);
   if (tema) slimTopbar.appendChild(tema);
   if (notif) slimTopbar.appendChild(notif);
 

@@ -79,7 +79,8 @@
       <li>Na plataforma, abra <strong>WhatsApp Bot</strong> e clique em <strong>Conectar meu WhatsApp</strong>. Essa conexão é separada da conexão Meta Ads.</li>
       <li>Na janela oficial da Meta, confira o perfil do Facebook e selecione o portfólio da empresa. Leia as permissões e escolha a conta de WhatsApp e o número corretos.</li>
       <li><strong>Já usa o aplicativo WhatsApp Business?</strong> Quando disponível, escolha <strong>Conectar um app do WhatsApp Business</strong>. Siga as instruções no celular e escaneie o QR Code se solicitado. Esse é o fluxo de coexistência; a disponibilidade depende da conta.</li>
-      <li><strong>Número novo ou outro fluxo?</strong> Siga o cadastro e a confirmação do número oferecidos pela Meta. Se o fluxo exigir migração ou não oferecer coexistência para seu número atual, esclareça isso antes de prosseguir.</li>
+      <li><strong>Ainda não usa o WhatsApp Business no celular?</strong> O botão da plataforma está configurado para conectar o aplicativo existente. Prepare o número no aplicativo WhatsApp Business antes de tentar esse fluxo. Se a Meta não oferecer a conexão do aplicativo, consulte o suporte para verificar a elegibilidade; este guia não confirma um fluxo alternativo de migração ou cadastro direto na API.</li>
+      <li>Uma <strong>conta empresarial do WhatsApp</strong> e um <strong>número de telefone</strong> são ativos diferentes. Criar uma conta empresarial não fornece automaticamente um número novo. Confira sempre qual número está sendo vinculado.</li>
       <li>Conclua a janela e volte à plataforma. Confira se aparece <strong>Conectado</strong> com o número esperado. Analise também os indicadores de diagnóstico: conexão registrada, sozinha, não comprova recebimento e envio.</li>
       <li>Resolva as pendências específicas informadas pela Meta, como permissões, registro do número ou verificação. Cobrança de anúncios e cobrança do WhatsApp são configurações distintas; siga as exigências exibidas para sua operação.</li>`, "O número correto está conectado e não há pendência impeditiva no diagnóstico. O teste real será feito na etapa 17."],
     ["Configure o roteiro, se quiser atendimento automático", "Nicho e bot", `
@@ -91,7 +92,7 @@
       <li>Ao substituir um roteiro que já atende pessoas, prefira criar outro roteiro e revisar a troca, em vez de reordenar perguntas do roteiro que está em andamento. Confira o comportamento com um contato de teste.</li>`, "O nicho da campanha e o do roteiro são iguais, e o roteiro desejado está ativo — ou você decidiu atender manualmente."],
     ["Prepare e publique o anúncio nos dois canais", "Facebook + Instagram", `
       <li>Abra a criação de campanha na plataforma, informe um nome e selecione o nicho. Marque <strong>Facebook e Instagram</strong> como canais desejados.</li>
-      <li>Selecione a Página da empresa e confira o Instagram profissional correto. Você pode usar a mesma conta de anúncios para os dois canais.</li>
+      <li>Revise as abas de <strong>Facebook</strong> e <strong>Instagram</strong> separadamente: a plataforma mantém configurações próprias para cada rede. Em cada uma, confira Página, destino, criativo, público e orçamento. No Instagram, confira também o perfil profissional correto. A mesma conta de anúncios pode atender aos dois canais, mas revise o gasto total das publicações.</li>
       <li>Escolha <strong>WhatsApp</strong> como destino. Confira o número conectado e escreva a mensagem inicial sugerida ao cliente. Não selecione formulário se a intenção é iniciar uma conversa.</li>
       <li>Adicione imagem ou vídeo, texto e chamada para ação. Confira a prévia e a adequação do criativo aos posicionamentos que pretende usar.</li>
       <li>Revise público, localização, orçamento, datas e categoria especial quando aplicável. Confirme a conta que pagará pelos anúncios.</li>
@@ -99,8 +100,9 @@
     ["Faça o teste completo antes de considerar pronto", "Teste de ponta a ponta", `
       <li>Use um contato de teste diferente do número comercial. Abra a prévia compartilhável ou o anúncio, quando disponível, no Facebook e no Instagram e confira o botão para WhatsApp.</li>
       <li>Verifique qual número abre e <strong>envie uma mensagem</strong>. Abrir a conversa sem enviar nada não testa o recebimento.</li>
-      <li>Volte à plataforma: confirme a chegada da mensagem, o número do contato e a criação ou associação ao lead correto.</li>
-      <li>Confira a origem e a campanha quando a Meta fornecer a referência do anúncio. Um teste por link direto ou certas prévias pode validar mensagens sem trazer atribuição; confira a atribuição também com uma entrada real pelo anúncio.</li>
+      <li>Volte à plataforma e confirme a chegada da mensagem e o número do contato. Se já existir um lead com esse telefone, a conversa pode ser associada a ele.</li>
+      <li>Para testar a <strong>criação de um lead novo pela Meta</strong>, use um contato ainda não cadastrado e uma entrada real pelo anúncio. Esse fluxo depende da referência de anúncio enviada pela Meta. Uma mensagem comum por link direto ou certas prévias pode aparecer na conversa sem criar um lead novo; isso, sozinho, não comprova falha na conexão.</li>
+      <li>No teste real pelo anúncio, confira o lead, a origem e a campanha identificada. Repita para Facebook e Instagram. Se a referência não chegar ou a campanha não for reconhecida, registre o caso para o suporte antes de considerar a atribuição validada.</li>
       <li>Se ativou o bot, responda às perguntas e confira o roteiro do nicho, a captura do nome e a passagem para atendimento humano.</li>
       <li>Assuma o atendimento e envie uma resposta de teste. Confirme a chegada no outro aparelho. Se usa coexistência, confira também o funcionamento esperado no aplicativo.</li>
       <li>Se alguma etapa falhar, registre o nome e ID da conta/campanha, horário do teste e mensagem de erro e consulte o suporte. Não considere concluído só porque o painel mostra “Conectado”.</li>`, "Você confirmou anúncio → mensagem → conversa na plataforma → lead → bot ou atendente → resposta recebida, incluindo Facebook e Instagram."]

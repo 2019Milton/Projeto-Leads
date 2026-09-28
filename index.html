@@ -12057,6 +12057,52 @@ body.tema-claro .integ-ranking-selo {
   box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 5px 14px rgba(146,64,14,.22);
 }
 .integ-ranking-detalhes { color: #cbd5e1; }
+.integ-ranking-nicho-aviso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 2px;
+  padding: 8px 10px;
+  background: rgba(148,163,184,.06);
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 8px;
+}
+.integ-ranking-nicho-aviso-texto {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+.integ-ranking-abas-nicho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.integ-ranking-abas-nicho.carregando { opacity: .55; pointer-events: none; }
+.integ-ranking-aba-nicho {
+  border: 1px solid rgba(148,163,184,.35);
+  background: rgba(148,163,184,.08);
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.integ-ranking-aba-nicho:hover { background: rgba(148,163,184,.16); }
+.integ-ranking-aba-nicho.ativa {
+  background: rgba(251,191,36,.16);
+  border-color: rgba(251,191,36,.55);
+  color: #fde68a;
+}
+body.tema-claro .integ-ranking-nicho-aviso {
+  background: rgba(100,116,139,.06);
+  border-color: rgba(100,116,139,.2);
+}
+body.tema-claro .integ-ranking-nicho-aviso-texto { color: #475569; }
+body.tema-claro .integ-ranking-aba-nicho { color: #334155; }
+body.tema-claro .integ-ranking-aba-nicho.ativa { color: #78350f; }
 .integ-ranking-detalhes-topo {
   display: flex;
   align-items: center;
@@ -17882,6 +17928,10 @@ body.tema-claro .criar-campanha-descricao {
               🔄 Atualizar plataformas
             </button>
           </div>
+        </div>
+        <div id="hub_ranking_nicho_aviso" class="integ-ranking-nicho-aviso" style="display:none;">
+          <span class="integ-ranking-nicho-aviso-texto">Selos calculados para o nicho:</span>
+          <div class="integ-ranking-abas-nicho" id="integ-ranking-abas-nicho"></div>
         </div>
         <div id="hub_conexoes_grid">
           <div style="color:#64748b;font-size:13px;">Carregando...</div>
@@ -41399,11 +41449,21 @@ let hubRankingEstado = {
   nicho: { slug: "geral", nome: "Todos os nichos", origem: "referencia_geral" },
   web: null,
   rede: null,
+  nichosAtivos: [],
   atualizadoEm: null,
   carregadoEmMs: 0,
   assinaturaConexoes: ""
 };
 let hubRankingPromise = null;
+// Mercado (pesquisa web) e rede de clientes já vêm com todos os nichos de uma
+// vez (ver /plataformas/ranking-mercado e /plataformas/ranking-rede) — não
+// precisam ser rebuscados ao trocar de nicho, só reaplicados a calcularRankingHub.
+let hubRankingExtrasAtuais = { mercadoWeb: null, rede: null };
+let hubRankingMapaConexoesAtual = {};
+// Cache dos rankings já calculados por nicho (conta + performance filtradas),
+// para não rebuscar performance-diária a cada troca de aba na mesma tela.
+let hubRankingCachePorNicho = {};
+let hubRankingTrocandoNicho = false;
 
 function normalizarNichoRanking(slug) {
   const chave = String(slug || "geral")
@@ -41698,6 +41758,8 @@ function abrirDetalhesRankingHub(plataformaId) {
     ? "Nicho predominante no histórico recente da conta"
     : hubRankingEstado.nicho?.origem === "nicho_habilitado"
     ? "Único nicho habilitado na conta"
+    : hubRankingEstado.nicho?.origem === "solicitado"
+    ? "Nicho escolhido no seletor acima do painel de Integrações"
     : "Referência geral, pois ainda não há um nicho predominante";
 
   const metricasConta = ranking.usaDadosConta
@@ -41784,9 +41846,112 @@ async function buscarJsonRanking(url, token) {
   return data;
 }
 
+// Quando a conta anuncia em mais de um nicho ao mesmo tempo (abas de "Criar
+// Campanha"), um selo só por plataforma não basta — a mesma rede pode ser boa
+// para Imóveis e ruim para SaaS. Em vez de repetir um rótulo em cada um dos 8
+// cards, um único seletor acima do grid troca o nicho de referência de todos
+// os selos de uma vez; o modal de detalhe de cada plataforma já reflete o
+// nicho selecionado aqui, porque ambos leem do mesmo hubRankingEstado.
+function renderAvisoNichoRankingHub() {
+  const container = document.getElementById("hub_ranking_nicho_aviso");
+  const abasContainer = document.getElementById("integ-ranking-abas-nicho");
+  if (!container || !abasContainer) return;
+
+  const nichosAtivos = hubRankingEstado.nichosAtivos || [];
+  if (nichosAtivos.length < 2) {
+    container.style.display = "none";
+    return;
+  }
+
+  container.style.display = "";
+  const slugAtual = hubRankingEstado.nicho?.slug;
+  abasContainer.innerHTML = nichosAtivos.map(n => {
+    const ativa = normalizarNichoRanking(n.slug) === normalizarNichoRanking(slugAtual) ? " ativa" : "";
+    return `<button type="button" class="integ-ranking-aba-nicho${ativa}" onclick="trocarNichoRankingHub(${Number(n.id)})">${escaparHtml(n.nome)}</button>`;
+  }).join("");
+}
+
+// Busca a base local (conta) e a performance filtradas por um nicho específico
+// e recalcula o ranking. mercadoWeb e rede não entram aqui: já foram buscados
+// uma vez na carga da tela (trazem todos os nichos) e são reaproveitados via
+// hubRankingExtrasAtuais em vez de rebuscados a cada troca de aba.
+async function buscarRankingParaNicho(nichoId, mapaConexoes) {
+  const token = localStorage.getItem("token");
+  const filtroNichoBase = nichoId ? `&nicho_id=${encodeURIComponent(nichoId)}` : "";
+  const baseLocal = await buscarJsonRanking(
+    `${API}/plataformas/ranking-base?periodo_dias=${HUB_RANKING_CONFIG.periodoDias}${filtroNichoBase}`,
+    token
+  ).catch(err => {
+    console.warn("BASE LOCAL DO RANKING:", err);
+    return {};
+  });
+
+  const plataformasComPerformance = ["meta", "google", "tiktok", "linkedin"]
+    .filter(id => mapaConexoes[id]?.status === "conectado");
+  const nichoIdEfetivo = Number(baseLocal?.nicho_efetivo?.id || 0) || null;
+  const filtroNichoPerf = nichoIdEfetivo ? `&nicho_id=${encodeURIComponent(nichoIdEfetivo)}` : "";
+  const resultados = await Promise.allSettled(
+    plataformasComPerformance.map(id =>
+      buscarJsonRanking(`${API}/${id}/performance-diaria?periodo=mensal${filtroNichoPerf}`, token)
+    )
+  );
+  const performance = {};
+  plataformasComPerformance.forEach((id, indice) => {
+    const resultado = resultados[indice];
+    if (resultado?.status === "fulfilled") {
+      const resumo = resumirPerformanceRanking(resultado.value);
+      if (resumo) performance[id] = resumo;
+    }
+  });
+
+  const calculado = calcularRankingHub(
+    baseLocal,
+    performance,
+    baseLocal?.nicho_efetivo || baseLocal?.nicho_referencia,
+    hubRankingExtrasAtuais
+  );
+  return {
+    ...calculado,
+    nichosAtivos: baseLocal?.nichos_ativos || hubRankingEstado.nichosAtivos || [],
+    atualizadoEm: baseLocal?.atualizado_em || new Date().toISOString(),
+    carregadoEmMs: Date.now()
+  };
+}
+
+async function trocarNichoRankingHub(nichoId) {
+  const nichoInfo = (hubRankingEstado.nichosAtivos || []).find(n => Number(n.id) === Number(nichoId));
+  if (!nichoInfo || hubRankingTrocandoNicho) return;
+  const slugNorm = normalizarNichoRanking(nichoInfo.slug);
+
+  const cache = hubRankingCachePorNicho[slugNorm];
+  if (cache) {
+    hubRankingEstado = { ...cache, assinaturaConexoes: hubRankingEstado.assinaturaConexoes };
+    aplicarSelosRankingHub();
+    renderAvisoNichoRankingHub();
+    return;
+  }
+
+  hubRankingTrocandoNicho = true;
+  const abasContainer = document.getElementById("integ-ranking-abas-nicho");
+  if (abasContainer) abasContainer.classList.add("carregando");
+  try {
+    const calculado = await buscarRankingParaNicho(nichoId, hubRankingMapaConexoesAtual);
+    hubRankingEstado = { ...calculado, assinaturaConexoes: hubRankingEstado.assinaturaConexoes };
+    hubRankingCachePorNicho[slugNorm] = hubRankingEstado;
+  } catch (err) {
+    console.warn("TROCA DE NICHO NO RANKING:", err);
+  } finally {
+    hubRankingTrocandoNicho = false;
+    if (abasContainer) abasContainer.classList.remove("carregando");
+    aplicarSelosRankingHub();
+    renderAvisoNichoRankingHub();
+  }
+}
+
 async function carregarRankingHub(mapaConexoes = {}, opcoes = {}) {
   const token = localStorage.getItem("token");
   if (!token) return;
+  hubRankingMapaConexoesAtual = mapaConexoes;
   const forcar = opcoes?.forcar === true;
   const assinaturaConexoes = HUB_PLATAFORMAS
     .filter(p => mapaConexoes[p.id]?.status === "conectado")
@@ -41800,9 +41965,15 @@ async function carregarRankingHub(mapaConexoes = {}, opcoes = {}) {
 
   if (cacheValido) {
     aplicarSelosRankingHub();
+    renderAvisoNichoRankingHub();
     return hubRankingEstado;
   }
   if (hubRankingPromise) return hubRankingPromise;
+
+  // As conexões podem ter mudado desde a última carga (nova plataforma
+  // conectada, por exemplo); o cache por nicho de uma sessão de tela anterior
+  // não reflete mais isso, então é descartado numa recarga forçada.
+  if (forcar) hubRankingCachePorNicho = {};
 
   hubRankingPromise = (async () => {
     const plataformasComPerformance = ["meta", "google", "tiktok", "linkedin"]
@@ -41826,6 +41997,7 @@ async function carregarRankingHub(mapaConexoes = {}, opcoes = {}) {
         return null;
       })
     ]);
+    hubRankingExtrasAtuais = { mercadoWeb, rede };
 
     // Primeiro identificamos o nicho predominante; só então buscamos gasto,
     // cliques e impressões das campanhas pertencentes a esse mesmo nicho.
@@ -41850,22 +42022,27 @@ async function carregarRankingHub(mapaConexoes = {}, opcoes = {}) {
     const calculado = calcularRankingHub(baseLocal, performance, baseLocal?.nicho_referencia, { mercadoWeb, rede });
     hubRankingEstado = {
       ...calculado,
+      nichosAtivos: baseLocal?.nichos_ativos || [],
       atualizadoEm: baseLocal?.atualizado_em || new Date().toISOString(),
       carregadoEmMs: Date.now(),
       assinaturaConexoes
     };
+    hubRankingCachePorNicho[normalizarNichoRanking(calculado?.nicho?.slug)] = hubRankingEstado;
     aplicarSelosRankingHub();
+    renderAvisoNichoRankingHub();
     return hubRankingEstado;
   })().catch(err => {
     console.warn("RANKING DE PLATAFORMAS:", err);
     const calculado = calcularRankingHub({}, {}, hubRankingEstado.nicho);
     hubRankingEstado = {
       ...calculado,
+      nichosAtivos: hubRankingEstado.nichosAtivos,
       atualizadoEm: new Date().toISOString(),
       carregadoEmMs: Date.now(),
       assinaturaConexoes
     };
     aplicarSelosRankingHub();
+    renderAvisoNichoRankingHub();
     return hubRankingEstado;
   }).finally(() => {
     hubRankingPromise = null;

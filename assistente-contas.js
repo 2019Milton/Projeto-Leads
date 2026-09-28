@@ -906,7 +906,7 @@
 
   window.assistenteAbrirTutorial = function (plataforma) {
     window.fecharAssistenteContasAnuncios();
-    if (plataforma === "meta") window.abrirPassoMetaAnuncios?.();
+    if (plataforma === "meta") window.abrirPassoMetaConta?.();
     else if (plataforma === "google") window.abrirPassoGoogleConta?.();
     else if (plataforma === "tiktok") window.abrirPassoTikTokConta?.();
   };

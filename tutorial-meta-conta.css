@@ -1,0 +1,30 @@
+.tutorial-meta-conta[hidden]{display:none}
+.tutorial-meta-conta{position:fixed;inset:0;z-index:9700;display:flex;align-items:center;justify-content:center;padding:18px;color:#172033;font:14px/1.65 Arial,sans-serif}
+.tutorial-meta-fundo{position:absolute;inset:0;background:rgba(2,6,23,.8);backdrop-filter:blur(5px)}
+.tutorial-meta-dialog{position:relative;width:min(900px,100%);max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid #cbd5e1;border-radius:16px;box-shadow:0 24px 70px #02061780}
+#tutorial_meta_conta .tutorial-meta-dialog *{box-sizing:border-box;color:#172033!important}
+#tutorial_meta_conta header{display:flex;gap:16px;justify-content:space-between;align-items:flex-start;padding:22px 26px;background:#eff6ff;border-bottom:1px solid #cbd5e1;flex-shrink:0}
+#tutorial_meta_conta header small{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#1d4ed8}
+#tutorial_meta_conta h2{font-size:23px;line-height:1.25;margin:5px 0 8px}
+#tutorial_meta_conta h3{font-size:18px;margin:0 0 12px}
+#tutorial_meta_conta p{margin:8px 0;line-height:1.65}
+#tutorial_meta_conta button{width:auto;background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:9px 13px;color:#1e40af!important;font:600 13px/1.4 Arial,sans-serif;cursor:pointer;white-space:normal}
+#tutorial_meta_conta header button{min-width:38px;flex-shrink:0}
+.tutorial-meta-conteudo{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:24px 26px;background:#fff}
+.tutorial-meta-intro{padding:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px}
+#tutorial_meta_conta nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:18px 0}
+#tutorial_meta_conta a{color:#1d4ed8!important;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+#tutorial_meta_conta nav a{display:block;padding:8px 10px;background:#eff6ff;border-radius:7px;font-size:12px;text-decoration:none}
+#tutorial_meta_conta details{border:1px solid #cbd5e1;border-radius:10px;margin:10px 0;background:#fff;scroll-margin-top:10px}
+#tutorial_meta_conta summary{padding:14px;cursor:pointer;font-weight:700;font-size:15px;line-height:1.5}
+#tutorial_meta_conta details[open]>summary{border-bottom:1px solid #e2e8f0;background:#f8fafc;border-radius:10px 10px 0 0}
+.tutorial-meta-numero{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin-right:8px;border-radius:50%;background:#dbeafe;font-weight:700}
+.tutorial-meta-etapa{padding:6px 18px 18px}
+#tutorial_meta_conta ol{padding-left:23px;margin:12px 0}
+#tutorial_meta_conta li{padding-left:4px;margin-bottom:12px;line-height:1.7}
+#tutorial_meta_conta .tutorial-meta-resultado{padding:12px 14px;background:#ecfdf5;border-left:3px solid #059669;border-radius:5px;margin:16px 0}
+.tutorial-meta-ajuda{margin-top:26px}
+.tutorial-meta-ajuda details p{padding:6px 16px 12px}
+#tutorial_meta_conta .tutorial-meta-fontes{font-size:12px;margin:20px 0}
+#tutorial_meta_conta :focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+@media(max-width:600px){.tutorial-meta-conta{padding:8px}.tutorial-meta-dialog{max-height:96vh;max-height:96dvh}#tutorial_meta_conta header{padding:16px}#tutorial_meta_conta h2{font-size:19px}.tutorial-meta-conteudo{padding:16px}#tutorial_meta_conta nav{grid-template-columns:repeat(2,minmax(0,1fr))}.tutorial-meta-etapa{padding:4px 12px 14px}#tutorial_meta_conta summary{padding:12px;font-size:14px}}

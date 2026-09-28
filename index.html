@@ -18059,7 +18059,7 @@ body.tema-claro .criar-campanha-descricao {
             <li>Confirme os dados na tela seguinte e clique em "Avançar" e depois "Concluir".</li>
           </ol>
           <div class="wpp-guia-aviso">
-            Seu número continua funcionando normalmente no aplicativo depois de conectar — nada é perdido. Se o seu portfólio empresarial na Meta ainda não tiver forma de pagamento cadastrada e verificação de empresa concluída (Gerenciador do WhatsApp → Configurações de pagamento / Verificação da empresa), o recebimento de mensagens pode demorar a funcionar 100%.
+            Quando a Meta disponibiliza o fluxo de coexistência para sua conta, você pode manter o uso do aplicativo. Confira o número, conclua as confirmações solicitadas e teste o recebimento e o envio pela plataforma e pelo celular. Se houver pendências, siga o diagnóstico exibido; não exclua nem migre o número sem conferir o fluxo disponível.
           </div>
         </details>
 
@@ -41925,10 +41925,12 @@ function hubResumoPagamento(conta) {
 
 function renderResumoMeta(conn, metaStatus) {
   const conectado = conn?.status === "conectado";
+  const tutorial = `<div style="margin:6px 0;">${botaoAcaoRapida("📘", conectado ? "Tutorial: criar conta de anúncios" : "Ainda não tem conta? Ver tutorial", "abrirPassoMetaConta()", "indigo")}</div>`;
 
   if (!conectado) {
     return `
       <div class="integ-card-resumo">
+        ${tutorial}
         ${hubResumoAlerta("Conecte a Meta para importar leads, páginas, campanhas e status de pagamento.")}
         <div class="integ-resumo-grid">
           ${hubResumoItem("Leads", "Pausados")}
@@ -41946,6 +41948,7 @@ function renderResumoMeta(conn, metaStatus) {
     const conectadoEm = conn?.conectado_em || conn?.created_at || conn?.atualizado_em;
     return `
       <div class="integ-card-resumo">
+        ${tutorial}
         ${hubResumoAlerta("Conexão registrada. Abra os detalhes para validar permissões, conta de anúncios e pagamento.", "warn")}
         <div class="integ-resumo-grid">
           ${hubResumoItem("Conta", nomeConta, "sucesso")}
@@ -41980,6 +41983,7 @@ function renderResumoMeta(conn, metaStatus) {
 
   return `
     <div class="integ-card-resumo">
+        ${tutorial}
       ${hubResumoAlerta(alertaTexto, pronta ? "ok" : "warn")}
       <div class="integ-resumo-grid">
         ${hubResumoItem("Página", pagina?.name || "Não vinculada", pagina?.name ? "sucesso" : "erro")}
@@ -44906,6 +44910,7 @@ async function carregarStatusMeta() {
                         <a href="https://business.facebook.com/settings/ad-accounts" target="_blank"
                           style="display:inline-flex;align-items:center;padding:3px 8px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#4ade80;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;"
                         >+ Criar conta →</a>
+                        ${botaoAcaoRapida("📘", "Tutorial: criar conta", "abrirPassoMetaConta()", "indigo")}
                       </div>
                       <div style="margin-top:8px;">${seletorContaAnuncios}</div>
                     </div>
@@ -54248,7 +54253,7 @@ async function enviarFeedback() {
     <div class="passo-meta-header" style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
       <div>
         <h2 id="passo_meta_titulo" style="color:#111827!important;margin:0;font-size:20px;">
-          Passo a passo para criar uma conta de anúncio
+          Passo a passo para criar uma Página do Facebook
         </h2>
         <p style="color:#374151!important;margin:6px 0 0;font-size:14px;font-weight:500;">
           Abra o link em outra guia, execute a etapa no Facebook/Meta e volte
@@ -57821,6 +57826,8 @@ async function criarLookalike() {
 }
 </script>
 
+<link rel="stylesheet" href="tutorial-meta-conta.css">
+<script src="tutorial-meta-conta.js"></script>
 <link rel="stylesheet" href="assistente-contas.css">
 <script src="recursos-corretor.js"></script>
 <script src="assistente-contas.js"></script>

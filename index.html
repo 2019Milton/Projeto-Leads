@@ -564,6 +564,14 @@ button {
   cursor: pointer;
 }
 
+.login-senha-campo { display: flex; align-items: center; gap: 8px; }
+.login-senha-campo input { flex: 1; min-width: 0; }
+.login-ver-senha { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 10px; background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+.login-ver-senha:hover { color: #fff; border-color: #64748b; }
+.login-ver-senha:focus-visible { outline: 2px solid #22c55e; outline-offset: 2px; }
+.login-ver-senha .login-olho-risco { display: none; }
+.login-ver-senha[aria-pressed="true"] .login-olho-risco { display: block; }
+
 .login-link {
   margin-top: 12px;
   padding: 0;
@@ -17400,9 +17408,19 @@ body.tema-claro .criar-campanha-descricao {
     <div id="painel_cliente_login_aviso" style="display:none;margin:0 0 16px;padding:12px 14px;border:1px solid rgba(249,115,22,.45);border-radius:12px;background:rgba(249,115,22,.09);color:#fed7aa;font-size:13px;line-height:1.5;">
       Acesse o painel de acompanhamento com o mesmo email e senha informados pelo seu gestor.
     </div>
-    <input id="email" placeholder="Email">
-    <input id="senha" type="password" placeholder="Senha">
-    <button class="btn" onclick="login()">Entrar</button>
+    <form id="formLogin" onsubmit="event.preventDefault(); login()">
+      <input id="email" name="email" type="email" placeholder="Email" aria-label="Email" autocomplete="username" required>
+      <div class="login-senha-campo">
+        <input id="senha" name="senha" type="password" placeholder="Senha" aria-label="Senha" autocomplete="current-password" required>
+        <button type="button" id="btn_ver_senha" class="login-ver-senha" onclick="alternarSenhaLogin()" aria-label="Mostrar senha" title="Mostrar senha" aria-controls="senha" aria-pressed="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>
+            <path class="login-olho-risco" d="M3 3l18 18"/>
+          </svg>
+        </button>
+      </div>
+      <button id="btn_entrar_login" type="submit" class="btn">Entrar</button>
+    </form>
     <button
       id="btn_solicitar_reset"
       class="login-link"
@@ -22263,7 +22281,25 @@ async function confirmarResetSenha() {
 }
 
 // LOGIN
+function alternarSenhaLogin() {
+  const campo = document.getElementById("senha");
+  const botao = document.getElementById("btn_ver_senha");
+  const mostrar = campo.type === "password";
+  campo.type = mostrar ? "text" : "password";
+  botao.setAttribute("aria-pressed", String(mostrar));
+  botao.setAttribute("aria-label", mostrar ? "Ocultar senha" : "Mostrar senha");
+  botao.title = mostrar ? "Ocultar senha" : "Mostrar senha";
+  campo.focus();
+}
+
+let loginEmAndamento = false;
 async function login() {
+  if (loginEmAndamento) return;
+  loginEmAndamento = true;
+  const botao = document.getElementById("btn_entrar_login");
+  botao.disabled = true;
+  botao.textContent = "Entrando...";
+  try {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
 
@@ -22288,6 +22324,13 @@ async function login() {
     await iniciarAplicacaoAutenticada();
   } else {
     alert("Login inválido");
+  }
+  } catch {
+    alert("Não foi possível entrar. Tente novamente.");
+  } finally {
+    loginEmAndamento = false;
+    botao.disabled = false;
+    botao.textContent = "Entrar";
   }
 }
 

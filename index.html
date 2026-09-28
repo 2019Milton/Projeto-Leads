@@ -12262,6 +12262,203 @@ body.tema-claro .integ-ranking-aba-nicho.ativa { color: #78350f; }
 .integ-modal-corpo .integ-card-detalhes { border-top: none; padding-top: 0; margin-top: 0; }
 .integ-modal-box.integ-modal-largo { max-width: 960px; }
 
+.assistente-contas-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9450;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(2, 6, 23, .78);
+  backdrop-filter: blur(7px);
+}
+.assistente-contas-box {
+  width: min(980px, 100%);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(99, 102, 241, .42);
+  border-radius: 20px;
+  background: linear-gradient(150deg, #111a31 0%, #081225 100%);
+  box-shadow: 0 34px 100px rgba(0, 0, 0, .72), 0 0 40px rgba(79, 70, 229, .12);
+}
+.assistente-contas-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, .13);
+}
+.assistente-contas-header h2 { margin: 0; color: #f8fafc; font-size: 20px; }
+.assistente-contas-header p { margin: 5px 0 0; color: #94a3b8; font-size: 12px; line-height: 1.5; }
+.assistente-contas-fechar {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(148, 163, 184, .2) !important;
+  border-radius: 10px !important;
+  background: rgba(15, 23, 42, .72) !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+}
+.assistente-contas-fechar:hover { color: #f8fafc !important; background: rgba(51, 65, 85, .7) !important; }
+.assistente-contas-etapas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 14px 22px 0;
+}
+.assistente-contas-etapa {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid rgba(148, 163, 184, .13);
+  border-radius: 10px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+.assistente-contas-etapa span {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 22px;
+  border-radius: 999px;
+  background: #1e293b;
+  color: #94a3b8;
+}
+.assistente-contas-etapa.ativa { border-color: rgba(96, 165, 250, .55); color: #dbeafe; background: rgba(37, 99, 235, .11); }
+.assistente-contas-etapa.ativa span { background: #2563eb; color: white; }
+.assistente-contas-etapa.concluida { color: #86efac; border-color: rgba(34, 197, 94, .25); }
+.assistente-contas-etapa.concluida span { background: #15803d; color: white; }
+.assistente-contas-corpo { flex: 1; overflow-y: auto; padding: 20px 22px; }
+.assistente-contas-intro { margin: 0 0 16px; color: #cbd5e1; font-size: 13px; line-height: 1.55; }
+.assistente-plataformas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.assistente-plataforma-opcao {
+  position: relative;
+  min-height: 158px;
+  padding: 17px;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 15px;
+  background: rgba(15, 23, 42, .72);
+  cursor: pointer;
+  transition: transform .16s, border-color .16s, background .16s, box-shadow .16s;
+}
+.assistente-plataforma-opcao:hover { transform: translateY(-2px); border-color: rgba(96, 165, 250, .52); }
+.assistente-plataforma-opcao.selecionada { border-color: #22c55e; background: rgba(20, 83, 45, .22); box-shadow: inset 0 0 0 1px rgba(34, 197, 94, .18); }
+.assistente-plataforma-opcao input { position: absolute; opacity: 0; pointer-events: none; }
+.assistente-plataforma-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.assistente-plataforma-icone { font-size: 25px; }
+.assistente-plataforma-check {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #475569;
+  border-radius: 999px;
+  color: transparent;
+  font-size: 13px;
+}
+.assistente-plataforma-opcao.selecionada .assistente-plataforma-check { color: white; border-color: #22c55e; background: #16a34a; }
+.assistente-plataforma-opcao h3 { margin: 13px 0 5px; color: #e2e8f0; font-size: 15px; }
+.assistente-plataforma-opcao p { margin: 0; color: #94a3b8; font-size: 11px; line-height: 1.45; }
+.assistente-plataforma-opcao small { display: block; margin-top: 10px; color: #64748b; font-size: 10px; }
+.assistente-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.assistente-campo { display: flex; flex-direction: column; gap: 6px; }
+.assistente-campo.largo { grid-column: 1 / -1; }
+.assistente-campo label { color: #cbd5e1; font-size: 11px; font-weight: 700; }
+.assistente-campo input,
+.assistente-campo select {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 9px 11px;
+  border: 1px solid #334155;
+  border-radius: 9px;
+  outline: none;
+  background: #0b1428;
+  color: #e2e8f0;
+}
+.assistente-campo input:focus,
+.assistente-campo select:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+.assistente-contas-aviso {
+  margin-top: 15px;
+  padding: 11px 13px;
+  border: 1px solid rgba(96, 165, 250, .24);
+  border-radius: 10px;
+  background: rgba(30, 64, 175, .09);
+  color: #bfdbfe;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.assistente-status-lista { display: flex; flex-direction: column; gap: 12px; }
+.assistente-status-card {
+  display: grid;
+  grid-template-columns: minmax(175px, .8fr) minmax(230px, 1.5fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid rgba(148, 163, 184, .17);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, .72);
+}
+.assistente-status-identidade { display: flex; align-items: center; gap: 10px; color: #e2e8f0; font-size: 13px; font-weight: 800; }
+.assistente-status-identidade span { font-size: 22px; }
+.assistente-status-texto strong { display: block; margin-bottom: 3px; color: #e2e8f0; font-size: 12px; }
+.assistente-status-texto small { display: block; color: #94a3b8; font-size: 10px; line-height: 1.45; }
+.assistente-status-selo { display: inline-flex; align-items: center; gap: 5px; margin-top: 7px; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; }
+.assistente-status-selo.ok { color: #86efac; background: rgba(22, 101, 52, .3); }
+.assistente-status-selo.warn { color: #fde68a; background: rgba(133, 77, 14, .28); }
+.assistente-status-selo.pendente { color: #bfdbfe; background: rgba(30, 64, 175, .28); }
+.assistente-status-acoes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.assistente-status-acoes button,
+.assistente-contas-footer button {
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 9px 13px !important;
+  border-radius: 9px !important;
+  font-size: 11px !important;
+  box-shadow: none !important;
+}
+.assistente-btn-secundario { border: 1px solid #475569 !important; background: transparent !important; color: #cbd5e1 !important; }
+.assistente-btn-primario { border: 1px solid #2563eb !important; background: linear-gradient(135deg, #7c3aed, #2563eb) !important; color: white !important; }
+.assistente-btn-sucesso { border: 1px solid #16a34a !important; background: #15803d !important; color: white !important; }
+.assistente-contas-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 22px 18px;
+  border-top: 1px solid rgba(148, 163, 184, .13);
+}
+.assistente-contas-footer-esq,
+.assistente-contas-footer-dir { display: flex; gap: 8px; }
+@media (max-width: 760px) {
+  .assistente-contas-overlay { padding: 0; align-items: stretch; }
+  .assistente-contas-box { max-height: 100vh; border-radius: 0; }
+  .assistente-contas-header, .assistente-contas-corpo { padding-left: 15px; padding-right: 15px; }
+  .assistente-contas-etapas { padding-left: 15px; padding-right: 15px; }
+  .assistente-contas-etapa { justify-content: center; }
+  .assistente-contas-etapa b { display: none; }
+  .assistente-plataformas-grid, .assistente-form-grid { grid-template-columns: 1fr; }
+  .assistente-campo.largo { grid-column: auto; }
+  .assistente-status-card { grid-template-columns: 1fr; }
+  .assistente-status-acoes { justify-content: flex-start; }
+  .assistente-contas-footer { padding-left: 15px; padding-right: 15px; flex-wrap: wrap; }
+}
+
+
 /* 🟢 CONECTAR META — verde */
 .meta-card {
   background: #06251a !important;
@@ -42561,6 +42758,354 @@ async function carregarHub(opcoes = {}) {
   });
   if (opcoes?.aguardarRanking) await rankingPromise;
 }
+
+/* ✨ ASSISTENTE "CRIAR MINHAS CONTAS DE ANÚNCIOS" — 3 etapas: escolher plataforma, dados
+   da empresa (reaproveitados nas 3), conectar e acompanhar. O CSS (.assistente-contas-*)
+   já existia; só faltava esta lógica — o botão no Hub e o modal chamavam funções que nunca
+   tinham sido escritas.
+   Importante: este assistente NUNCA cria a conta na Meta/Google/TikTok por conta própria —
+   ele só reúne os dados uma vez, manda o usuário para o cadastro oficial de cada
+   plataforma (link em nova aba) e, depois de criada, usa o OAuth que já existe
+   (conectarPlataforma) para vincular aqui. Nunca pede nem guarda senha, CAPTCHA ou cartão. */
+
+const ASSISTENTE_CONTAS_RASCUNHO_KEY = "assistente_contas_rascunho_v1";
+let assistenteContasEstado = null;
+
+const ASSISTENTE_CONTAS_ETAPAS_META = [
+  { n: 1, label: "Escolher plataforma" },
+  { n: 2, label: "Dados da empresa" },
+  { n: 3, label: "Conectar e acompanhar" }
+];
+
+// Só as 3 com conexão OAuth pronta hoje (ver PLATAFORMAS_OAUTH_GENERICO e conectarMeta) —
+// as demais (LinkedIn, Kwai...) ainda estão "em configuração" no Hub.
+const ASSISTENTE_CONTAS_PLATAFORMAS = [
+  {
+    id: "meta", nome: "Meta Ads", icone: PLATAFORMA_META.meta.icone,
+    desc: "Facebook e Instagram — leads direto pelo formulário do anúncio.",
+    nota: "Precisa de uma Página do Facebook e um Business Manager.",
+    linkCriar: "https://business.facebook.com/"
+  },
+  {
+    id: "google", nome: "Google Ads", icone: PLATAFORMA_META.google.icone,
+    desc: "Pesquisa, Display e extensões de formulário de lead.",
+    nota: "Precisa de um cartão de pagamento válido na conta.",
+    linkCriar: "https://ads.google.com/"
+  },
+  {
+    id: "tiktok", nome: "TikTok Ads", icone: PLATAFORMA_META.tiktok.icone,
+    desc: "Instant Form dentro do próprio app.",
+    nota: "A aprovação da conta pode levar até 24h.",
+    linkCriar: "https://ads.tiktok.com/"
+  }
+];
+
+function assistenteContasRascunhoPadrao() {
+  return {
+    etapa: 1,
+    plataformas: [],
+    empresa: {
+      razao_social: "", nome_comercial: "", cpf_cnpj: "", segmento: "",
+      email: "", telefone: "", site: "", endereco: "",
+      pais: "Brasil", moeda: "BRL", fuso_horario: "America/Sao_Paulo"
+    }
+  };
+}
+
+// O rascunho é só do navegador (localStorage) — não existe rota de backend pra isso hoje,
+// e não precisa: nenhum dado aqui é sensível o bastante pra justificar uma tabela nova só
+// pra guardar um formulário em andamento.
+function carregarRascunhoAssistenteContas() {
+  const padrao = assistenteContasRascunhoPadrao();
+  try {
+    const bruto = localStorage.getItem(ASSISTENTE_CONTAS_RASCUNHO_KEY);
+    if (!bruto) return padrao;
+    const salvo = JSON.parse(bruto);
+    return {
+      ...padrao,
+      ...salvo,
+      etapa: [1, 2, 3].includes(salvo.etapa) ? salvo.etapa : 1,
+      plataformas: Array.isArray(salvo.plataformas)
+        ? salvo.plataformas.filter((id) => ASSISTENTE_CONTAS_PLATAFORMAS.some((p) => p.id === id))
+        : [],
+      empresa: { ...padrao.empresa, ...(salvo.empresa || {}) }
+    };
+  } catch {
+    return padrao;
+  }
+}
+
+function salvarRascunhoAssistenteContas() {
+  try {
+    localStorage.setItem(ASSISTENTE_CONTAS_RASCUNHO_KEY, JSON.stringify(assistenteContasEstado));
+  } catch {
+    // localStorage indisponível (aba anônima, cota cheia etc.) — segue sem persistir
+  }
+}
+
+function abrirAssistenteContasAnuncios() {
+  assistenteContasEstado = carregarRascunhoAssistenteContas();
+  const modal = document.getElementById("assistente_contas_modal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+  renderAssistenteContas();
+}
+
+function fecharAssistenteContasAnuncios() {
+  const modal = document.getElementById("assistente_contas_modal");
+  if (modal) modal.style.display = "none";
+  document.body.style.overflow = "";
+}
+
+async function renderAssistenteContas() {
+  renderAssistenteContasEtapas();
+  const corpo = document.getElementById("assistente_contas_corpo");
+  if (!corpo) return;
+  if (assistenteContasEstado.etapa === 1) corpo.innerHTML = renderAssistenteContasEtapa1();
+  else if (assistenteContasEstado.etapa === 2) corpo.innerHTML = renderAssistenteContasEtapa2();
+  else await renderAssistenteContasEtapa3();
+  renderAssistenteContasFooter();
+}
+
+function renderAssistenteContasEtapas() {
+  const el = document.getElementById("assistente_contas_etapas");
+  if (!el) return;
+  el.innerHTML = ASSISTENTE_CONTAS_ETAPAS_META.map((e) => {
+    const classe = e.n < assistenteContasEstado.etapa ? "concluida" : e.n === assistenteContasEstado.etapa ? "ativa" : "";
+    const marcador = e.n < assistenteContasEstado.etapa ? "✓" : String(e.n);
+    return `<div class="assistente-contas-etapa ${classe}"><span>${marcador}</span><b>${escaparHtml(e.label)}</b></div>`;
+  }).join("");
+}
+
+// ── Etapa 1: escolher plataforma ─────────────────────────────────────────────
+function renderAssistenteContasEtapa1() {
+  return `
+    <p class="assistente-contas-intro">Escolha em quais plataformas você quer anunciar. Dá pra marcar mais de uma — os dados da próxima etapa são reaproveitados em todas.</p>
+    <div class="assistente-plataformas-grid">
+      ${ASSISTENTE_CONTAS_PLATAFORMAS.map((p) => {
+        const marcada = assistenteContasEstado.plataformas.includes(p.id);
+        return `
+          <div class="assistente-plataforma-opcao ${marcada ? "selecionada" : ""}" onclick="alternarPlataformaAssistenteContas('${p.id}')" role="checkbox" aria-checked="${marcada}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();alternarPlataformaAssistenteContas('${p.id}');}">
+            <input type="checkbox" tabindex="-1" ${marcada ? "checked" : ""} readonly>
+            <div class="assistente-plataforma-topo">
+              <span class="assistente-plataforma-icone">${p.icone}</span>
+              <span class="assistente-plataforma-check">✓</span>
+            </div>
+            <h3>${escaparHtml(p.nome)}</h3>
+            <p>${escaparHtml(p.desc)}</p>
+            <small>${escaparHtml(p.nota)}</small>
+          </div>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+function alternarPlataformaAssistenteContas(id) {
+  const idx = assistenteContasEstado.plataformas.indexOf(id);
+  if (idx >= 0) assistenteContasEstado.plataformas.splice(idx, 1);
+  else assistenteContasEstado.plataformas.push(id);
+  salvarRascunhoAssistenteContas();
+  renderAssistenteContas();
+}
+
+// ── Etapa 2: dados da empresa ─────────────────────────────────────────────────
+const ASSISTENTE_CONTAS_PAISES = ["Brasil", "Portugal", "Estados Unidos"];
+const ASSISTENTE_CONTAS_MOEDAS = [["BRL", "Real brasileiro (BRL)"], ["USD", "Dólar americano (USD)"], ["EUR", "Euro (EUR)"]];
+const ASSISTENTE_CONTAS_FUSOS = [
+  ["America/Sao_Paulo", "Brasília — America/Sao_Paulo"],
+  ["America/Manaus", "Manaus — America/Manaus"],
+  ["America/New_York", "Nova York — America/New_York"]
+];
+
+function renderAssistenteContasEtapa2() {
+  const e = assistenteContasEstado.empresa;
+  const campo = (label, chave, tipo, largo, obrigatorio, placeholder) => `
+    <div class="assistente-campo ${largo ? "largo" : ""}">
+      <label for="af_${chave}">${escaparHtml(label)}${obrigatorio ? " *" : ""}</label>
+      <input id="af_${chave}" type="${tipo}" value="${escaparHtml(e[chave] || "")}" placeholder="${escaparHtml(placeholder)}"
+        oninput="atualizarCampoEmpresaAssistenteContas('${chave}', this.value)">
+    </div>`;
+  const selecao = (label, chave, opcoes, largo) => `
+    <div class="assistente-campo ${largo ? "largo" : ""}">
+      <label for="af_${chave}">${escaparHtml(label)}</label>
+      <select id="af_${chave}" onchange="atualizarCampoEmpresaAssistenteContas('${chave}', this.value)">
+        ${opcoes.map(([valor, texto]) => `<option value="${escaparHtml(valor)}" ${e[chave] === valor ? "selected" : ""}>${escaparHtml(texto)}</option>`).join("")}
+      </select>
+    </div>`;
+
+  return `
+    <p class="assistente-contas-intro">Estes dados serão reutilizados durante a configuração. Revise tudo com atenção: moeda e fuso horário podem não ser alteráveis depois que a conta for criada.</p>
+    <div class="assistente-form-grid">
+      ${campo("Nome ou razão social", "razao_social", "text", false, true, "Ex.: Imobiliária Horizonte Ltda.")}
+      ${campo("Nome comercial", "nome_comercial", "text", false, false, "Ex.: Horizonte Imóveis")}
+      ${campo("CPF ou CNPJ", "cpf_cnpj", "text", false, false, "Do titular ou da empresa")}
+      ${campo("Segmento", "segmento", "text", false, false, "Ex.: Corretor de imóveis")}
+      ${campo("E-mail responsável", "email", "email", false, true, "contato@empresa.com.br")}
+      ${campo("Telefone / WhatsApp", "telefone", "tel", false, true, "(11) 99999-9999")}
+      ${campo("Site", "site", "url", false, false, "https://suaempresa.com.br")}
+      ${campo("Endereço comercial", "endereco", "text", true, false, "Rua, número, bairro, cidade, estado e CEP")}
+      ${selecao("País", "pais", ASSISTENTE_CONTAS_PAISES.map((p) => [p, p]), false)}
+      ${selecao("Moeda", "moeda", ASSISTENTE_CONTAS_MOEDAS, false)}
+      ${selecao("Fuso horário", "fuso_horario", ASSISTENTE_CONTAS_FUSOS, true)}
+    </div>
+    <div class="assistente-contas-aviso">
+      🔒 O rascunho fica salvo só neste navegador. Senha, código de segurança, CAPTCHA e cartão nunca são pedidos nem guardados pela Plataforma de Leads — isso acontece direto no site oficial de cada plataforma.
+    </div>
+    <div id="assistente_contas_erro_etapa2" style="display:none;margin-top:10px;color:#fca5a5;font-size:11px;"></div>
+  `;
+}
+
+function atualizarCampoEmpresaAssistenteContas(chave, valor) {
+  assistenteContasEstado.empresa[chave] = valor;
+  salvarRascunhoAssistenteContas();
+}
+
+function validarEtapa2AssistenteContas() {
+  const e = assistenteContasEstado.empresa;
+  const erros = [];
+  if (!String(e.razao_social || "").trim()) erros.push("Informe o nome ou razão social.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(e.email || "").trim())) erros.push("Informe um e-mail responsável válido.");
+  if (String(e.telefone || "").replace(/\D/g, "").length < 10) erros.push("Informe um telefone/WhatsApp válido, com DDD.");
+  return erros;
+}
+
+// ── Etapa 3: conectar e acompanhar ────────────────────────────────────────────
+async function renderAssistenteContasEtapa3() {
+  const corpo = document.getElementById("assistente_contas_corpo");
+  if (!corpo) return;
+  corpo.innerHTML = `<p class="assistente-contas-intro">Carregando o status de cada plataforma…</p>`;
+
+  const token = localStorage.getItem("token");
+  const mapa = {};
+  try {
+    const res = await fetch(`${API}/conexoes`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) {
+      const data = await res.json();
+      (data?.conexoes || (Array.isArray(data) ? data : [])).forEach((c) => {
+        if (c?.plataforma) mapa[c.plataforma] = c;
+      });
+    }
+  } catch (_) {
+    // sem conexão com o backend agora — a etapa 3 segue mostrando tudo como "não conectado"
+  }
+
+  if (document.getElementById("assistente_contas_corpo") !== corpo || assistenteContasEstado?.etapa !== 3) return; // modal fechado/mudou de etapa enquanto isso carregava
+  corpo.innerHTML = montarHtmlEtapa3AssistenteContas(mapa);
+}
+
+function montarHtmlEtapa3AssistenteContas(mapa) {
+  const e = assistenteContasEstado.empresa;
+  const resumoEmpresa = [e.razao_social, e.cpf_cnpj, e.email, e.telefone].filter(Boolean).join(" · ");
+
+  const cards = assistenteContasEstado.plataformas.map((id) => {
+    const p = ASSISTENTE_CONTAS_PLATAFORMAS.find((x) => x.id === id);
+    if (!p) return "";
+    const conectado = mapa[id]?.status === "conectado";
+    const selo = conectado
+      ? `<span class="assistente-status-selo ok">✓ Conectado</span>`
+      : `<span class="assistente-status-selo pendente">Ainda não conectado</span>`;
+    return `
+      <div class="assistente-status-card">
+        <div class="assistente-status-identidade"><span>${p.icone}</span> ${escaparHtml(p.nome)}</div>
+        <div class="assistente-status-texto">
+          <strong>${conectado ? "Conta conectada." : "Crie a conta no site oficial e depois conecte aqui."}</strong>
+          <small>${conectado ? "Já dá pra criar campanhas normalmente por aqui." : "Use os dados da etapa anterior pra preencher o cadastro."}</small>
+          ${selo}
+        </div>
+        <div class="assistente-status-acoes">
+          <a class="assistente-btn-secundario" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;" href="${p.linkCriar}" target="_blank" rel="noopener noreferrer">Criar conta ↗</a>
+          ${conectado ? "" : `<button type="button" class="assistente-btn-primario" onclick="conectarPlataforma('${id}', this)">Conectar</button>`}
+        </div>
+      </div>`;
+  }).join("");
+
+  return `
+    <p class="assistente-contas-intro">Para cada plataforma: abra o site oficial, crie a conta de anúncios com os dados abaixo e clique em "Conectar" pra vincular aqui.</p>
+    ${resumoEmpresa
+      ? `<div class="assistente-contas-aviso" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <span>📋 ${escaparHtml(resumoEmpresa)}</span>
+          <button type="button" class="assistente-btn-secundario" onclick="copiarDadosEmpresaAssistenteContas()">Copiar dados</button>
+        </div>`
+      : ""}
+    <div class="assistente-status-lista" style="margin-top:14px;">${cards}</div>
+  `;
+}
+
+function copiarDadosEmpresaAssistenteContas() {
+  const e = assistenteContasEstado.empresa;
+  const rotulos = [
+    ["Nome/razão social", e.razao_social], ["Nome comercial", e.nome_comercial],
+    ["CPF/CNPJ", e.cpf_cnpj], ["Segmento", e.segmento], ["E-mail", e.email],
+    ["Telefone/WhatsApp", e.telefone], ["Site", e.site], ["Endereço", e.endereco],
+    ["País", e.pais], ["Moeda", e.moeda], ["Fuso horário", e.fuso_horario]
+  ];
+  const texto = rotulos.map(([rotulo, valor]) => `${rotulo}: ${valor || "-"}`).join("\n");
+  const avisar = (ok) => alert(ok ? "Dados copiados! Cole no cadastro da plataforma escolhida." : "Não foi possível copiar automaticamente. Copie manualmente os dados da etapa anterior.");
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(texto).then(() => avisar(true)).catch(() => avisar(false));
+  } else {
+    avisar(false);
+  }
+}
+
+// Quando conectarPlataforma() detecta sucesso (fluxo já existente do Hub), a etapa 3 do
+// assistente também escuta pra atualizar sozinha, sem precisar que o usuário feche e abra
+// de novo. Mesmo evento (postMessage) que o Hub já escuta — não interfere com ele.
+window.addEventListener("message", (event) => {
+  if (event.data?.type === "plataforma_conectada" && assistenteContasEstado?.etapa === 3) {
+    const modal = document.getElementById("assistente_contas_modal");
+    if (modal && modal.style.display !== "none") renderAssistenteContasEtapa3();
+  }
+});
+
+// ── Navegação (rodapé) ────────────────────────────────────────────────────────
+function renderAssistenteContasFooter() {
+  const footer = document.getElementById("assistente_contas_footer");
+  if (!footer) return;
+  const podeVoltar = assistenteContasEstado.etapa > 1;
+  const ultimaEtapa = assistenteContasEstado.etapa === 3;
+  footer.innerHTML = `
+    <div class="assistente-contas-footer-esq">
+      ${podeVoltar ? `<button type="button" class="assistente-btn-secundario" onclick="voltarEtapaAssistenteContas()">← Voltar</button>` : ""}
+    </div>
+    <div class="assistente-contas-footer-dir" style="align-items:center;">
+      <span style="color:#4ade80;font-size:11px;font-weight:700;white-space:nowrap;">✓ Salvo neste navegador</span>
+      ${ultimaEtapa
+        ? `<button type="button" class="assistente-btn-sucesso" onclick="fecharAssistenteContasAnuncios()">Concluir</button>`
+        : `<button type="button" class="assistente-btn-primario" onclick="avancarEtapaAssistenteContas()">Continuar →</button>`}
+    </div>
+  `;
+}
+
+function voltarEtapaAssistenteContas() {
+  if (assistenteContasEstado.etapa <= 1) return;
+  assistenteContasEstado.etapa -= 1;
+  salvarRascunhoAssistenteContas();
+  renderAssistenteContas();
+}
+
+async function avancarEtapaAssistenteContas() {
+  if (assistenteContasEstado.etapa === 1 && !assistenteContasEstado.plataformas.length) {
+    alert("Escolha pelo menos uma plataforma para continuar.");
+    return;
+  }
+  if (assistenteContasEstado.etapa === 2) {
+    const erros = validarEtapa2AssistenteContas();
+    const caixaErro = document.getElementById("assistente_contas_erro_etapa2");
+    if (erros.length) {
+      if (caixaErro) {
+        caixaErro.style.display = "block";
+        caixaErro.innerText = erros.join(" ");
+      }
+      return;
+    }
+  }
+  assistenteContasEstado.etapa += 1;
+  salvarRascunhoAssistenteContas();
+  await renderAssistenteContas();
+}
+
 
 async function atualizarTodasPlataformas(btn) {
   if (btn) {

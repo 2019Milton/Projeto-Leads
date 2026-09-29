@@ -17379,6 +17379,7 @@ body.tema-claro .criar-campanha-descricao {
 <link rel="stylesheet" href="paineis-visuais.css">
 <link rel="stylesheet" href="central-leads-visual.css">
 <link rel="stylesheet" href="servicos-visuais.css">
+<link rel="stylesheet" href="configuracoes-visuais.css">
 </head>
 
 <body>
@@ -19504,6 +19505,7 @@ body.tema-claro .criar-campanha-descricao {
 
       <!-- ⚙️ CONFIGURAÇÕES -->
       <div id="card-configuracoes" class="cfg-panel" style="display:none;" aria-hidden="true">
+        <header class="cfg-visual-heading"><div><span>Conta e preferências</span><h2>Configurações</h2><p>Seus dados, avisos e preferências de uso.</p></div><button type="button" onclick="fecharConfiguracoes()" aria-label="Fechar configurações">✕</button></header>
         <div class="cfg-page">
 
           <!-- Perfil -->
@@ -19518,7 +19520,7 @@ body.tema-claro .criar-campanha-descricao {
               <div id="cfg-nome" class="cfg-value-static"></div>
             </div>
             <div class="cfg-field">
-              <label class="cfg-label">
+              <label class="cfg-label" for="cfg-whatsapp">
                 WhatsApp para lembretes
                 <span id="cfg-whatsapp-badge" class="cfg-whatsapp-badge" style="display:none;">✅ Já cadastrado</span>
               </label>
@@ -19526,7 +19528,7 @@ body.tema-claro .criar-campanha-descricao {
                 <input id="cfg-whatsapp" type="tel" placeholder="(11) 99999-9999" class="cfg-input">
                 <button id="cfg-wpp-btn" onclick="salvarWhatsAppPerfil('cfg-whatsapp','cfg-wpp-btn','cfg-wpp-msg')" class="cfg-btn-save">Salvar</button>
               </div>
-              <div id="cfg-wpp-msg" class="cfg-msg"></div>
+              <div id="cfg-wpp-msg" class="cfg-msg" role="status" aria-live="polite"></div>
             </div>
           </div>
 
@@ -19539,13 +19541,13 @@ body.tema-claro .criar-campanha-descricao {
                 <div class="cfg-toggle-desc">Receba uma mensagem quando um lead chegar</div>
               </div>
               <label class="switch">
-                <input type="checkbox" id="cfg-notif-lead" onchange="salvarNotifWhatsappLead(this.checked); document.getElementById('perfil-notif-lead-toggle').checked = this.checked;">
+                <input type="checkbox" id="cfg-notif-lead" aria-label="Notificar novo lead por WhatsApp" onchange="salvarNotifWhatsappLead(this.checked); document.getElementById('perfil-notif-lead-toggle').checked = this.checked;">
                 <span class="slider"></span>
               </label>
             </div>
             <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
               <button id="cfg-wpp-teste-btn" onclick="testarNotifWhatsapp()" class="cfg-btn-save" style="background:#16a34a;">Enviar mensagem de teste</button>
-              <span id="cfg-wpp-teste-msg" style="font-size:13px;"></span>
+              <span id="cfg-wpp-teste-msg" role="status" aria-live="polite" style="font-size:13px;"></span>
             </div>
           </div>
 
@@ -19558,7 +19560,7 @@ body.tema-claro .criar-campanha-descricao {
                 <div class="cfg-toggle-desc">Alterna entre o visual escuro e claro</div>
               </div>
               <label class="switch">
-                <input type="checkbox" id="cfg-tema-toggle" onchange="alterarTemaPlataforma(this.checked ? 'claro' : 'atual')">
+                <input type="checkbox" id="cfg-tema-toggle" aria-label="Tema claro" onchange="alterarTemaPlataforma(this.checked ? 'claro' : 'atual')">
                 <span class="slider"></span>
               </label>
             </div>

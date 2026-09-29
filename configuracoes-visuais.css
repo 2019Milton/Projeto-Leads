@@ -1,0 +1,39 @@
+#card-configuracoes {
+ --cf-bg:#0e1727;--cf-surface:#152136;--cf-border:#2b3b53;--cf-text:#edf3fb;--cf-muted:#a9b9cf;--cf-accent:#99bdff;
+ background:var(--cf-bg)!important;border:1px solid var(--cf-border);border-radius:18px;padding:22px;box-shadow:0 20px 55px #0005;box-sizing:border-box;
+ scrollbar-color:var(--cf-border) transparent;
+}
+body.tema-claro #card-configuracoes {--cf-bg:#f5f7fb;--cf-surface:#fff;--cf-border:#d6e0ed;--cf-text:#1b2b43;--cf-muted:#53657f;--cf-accent:#315b9b;}
+body.tema-claro #card-configuracoes .cfg-card {background:var(--cf-surface)!important;border-color:var(--cf-border)!important;box-shadow:none!important;}
+body.tema-claro #card-configuracoes .cfg-card-header {background:var(--cf-surface)!important;color:var(--cf-text)!important;border-color:var(--cf-border)!important;}
+#card-configuracoes .cfg-visual-heading {display:flex;justify-content:space-between;align-items:start;gap:16px;padding-bottom:22px;}
+#card-configuracoes .cfg-visual-heading span {font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cf-accent);}
+#card-configuracoes .cfg-visual-heading h2 {font-size:26px;letter-spacing:-.025em;line-height:1.3;margin:7px 0;color:var(--cf-text);}
+#card-configuracoes .cfg-visual-heading p {font-size:13px;color:var(--cf-muted);margin:0;line-height:1.6;}
+#card-configuracoes .cfg-visual-heading button {flex:none;width:36px;height:36px;border:1px solid var(--cf-border);border-radius:9px;color:var(--cf-muted);background:var(--cf-surface);cursor:pointer;}
+#card-configuracoes .cfg-page {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start;}
+#card-configuracoes .cfg-card {background:var(--cf-surface)!important;border:1px solid var(--cf-border)!important;border-radius:13px;box-shadow:none!important;min-width:0;}
+#card-configuracoes .cfg-card:nth-child(-n+2) {grid-column:1/-1;}
+#card-configuracoes .cfg-card-header {background:transparent!important;border-bottom:1px solid var(--cf-border)!important;color:var(--cf-text)!important;font-size:15px;font-weight:650;padding:18px 20px;}
+#card-configuracoes .cfg-field {padding:16px 20px;border-color:var(--cf-border);}
+#card-configuracoes .cfg-label {display:block;color:var(--cf-muted)!important;font-size:12px;font-weight:600;margin-bottom:8px;line-height:1.5;}
+#card-configuracoes .cfg-value-static {color:var(--cf-text)!important;font-size:14px;line-height:1.5;overflow-wrap:anywhere;}
+#card-configuracoes .cfg-input {min-width:0;height:42px;border:1px solid var(--cf-border)!important;background:var(--cf-bg)!important;color:var(--cf-text)!important;border-radius:8px;padding:10px 12px;box-sizing:border-box;font-size:14px;}
+#card-configuracoes .cfg-toggle-row {padding:18px 20px;gap:18px;align-items:center;}
+#card-configuracoes .cfg-toggle-row > div {min-width:0;}
+#card-configuracoes .cfg-toggle-label {color:var(--cf-text)!important;font-size:13px;line-height:1.55;}
+#card-configuracoes .cfg-toggle-desc {color:var(--cf-muted)!important;font-size:12px;line-height:1.65;margin-top:5px;}
+#card-configuracoes .switch {flex-shrink:0;}
+#card-configuracoes .cfg-card > div:has(> #cfg-wpp-teste-btn) {margin:0!important;padding:0 20px 20px;flex-wrap:wrap;}
+#card-configuracoes :is(.cfg-btn-save,.cfg-btn-danger) {background:#345fa5!important;border:1px solid #567ec0;border-radius:8px;padding:10px 14px;color:white!important;box-shadow:none;min-height:42px;font-size:12px;line-height:1.4;font-weight:600;}
+#card-configuracoes .cfg-btn-danger {background:var(--cf-bg)!important;color:var(--cf-text)!important;border-color:var(--cf-border);}
+#card-configuracoes .cfg-whatsapp-badge {font-size:10px;margin-left:6px;white-space:normal;}
+#card-configuracoes :is(button,input):focus-visible {outline:2px solid var(--cf-accent);outline-offset:3px;}
+#card-configuracoes .switch:has(input:focus-visible) {outline:2px solid var(--cf-accent);outline-offset:4px;border-radius:20px;}
+@media(max-width:600px) {
+ #card-configuracoes {padding:16px;}
+ #card-configuracoes .cfg-page {grid-template-columns:1fr;}
+ #card-configuracoes .cfg-card:nth-child(-n+2) {grid-column:auto;}
+ #card-configuracoes .cfg-field,#card-configuracoes .cfg-toggle-row {padding:16px;}
+ #card-configuracoes .cfg-card-header {padding:16px;}
+}

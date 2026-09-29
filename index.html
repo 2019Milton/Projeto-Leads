@@ -18088,6 +18088,25 @@ body.tema-claro .criar-campanha-descricao {
 
       <!-- 📊 DASHBOARD -->
       <div class="card dashboard-pro-card" id="card-dashboard" style="display:none;">
+        <details class="iapm-explain" style="margin:0 0 18px;">
+          <summary>Passo a passo: usar e conferir o Dashboard</summary>
+          <div class="iapm-explain-body">
+            <p>O Dashboard reúne cadastros e métricas de anúncios. Os blocos têm fontes e períodos diferentes; o seletor de período do relatório não filtra os cartões do topo.</p>
+            <ol>
+              <li><b>Confira a conta conectada.</b> Em Plataformas → Integrações, confira a rede, a conta de anúncios e o status da conexão. Volte ao Dashboard. Selecionar uma aba de performance apenas escolhe o relatório; não conecta uma conta.</li>
+              <li><b>Leia o resumo do topo.</b> Leads totais conta os registros retornados para o seu usuário e contexto de acesso, sem o filtro de período do relatório abaixo. Aguardando primeiro contato corresponde à coluna Novos. Campanhas mostra as classificadas como ativas sobre o total carregado.</li>
+              <li><b>Confira o recorte das métricas.</b> Investimento, CPL, CTR e a tabela de campanhas usam a consulta de métricas das campanhas, com janela de 30 dias quando disponível. Não divida esse investimento pelo total de cadastros para tentar reproduzir o CPL: são bases diferentes.</li>
+              <li><b>Verifique a situação das campanhas.</b> Ativa não comprova entrega ou aprovação de todos os anúncios. Se aparecer Sem veicular ou Atenção, abra a campanha e confira conjunto, anúncios, datas e pagamento. Orçamento diário soma os valores informados pelas campanhas carregadas, incluindo pausadas; não é gasto realizado nem previsão de cobrança.</li>
+              <li><b>Confira os cartões de status.</b> Os cartões Meta, Google Ads e TikTok apresentam indicadores de hoje e informações de sincronização. Use a sincronização manual quando necessário e aguarde a conclusão. Atualizar o relatório e sincronizar a importação são operações diferentes.</li>
+              <li><b>Escolha rede e período.</b> Em Campo de performance por plataforma, selecione Meta, Google Ads, TikTok ou LinkedIn e escolha semanal, mensal ou anual. As redes desabilitadas ainda não oferecem esse relatório. Confira o período apresentado antes de comparar resultados.</li>
+              <li><b>Leia os cálculos.</b> CPL é gasto dividido pelos leads da mesma base; CTR é cliques divididos por impressões, vezes 100. Leads por clique usa leads divididos por cliques, vezes 100. Essas taxas não medem lucro, vendas ou qualidade. Sem denominador válido, o indicador fica sem cálculo.</li>
+              <li><b>Compare as fontes.</b> Na Meta, Leads (Meta) e Leads (Plataforma) representam contagens diferentes: atribuição da rede e registros recebidos. Diferenças podem envolver datas, atribuição ou sincronização; investigue divergências persistentes. No Google, conversões da conta inteira não devem ser somadas aos leads como novos contatos.</li>
+              <li><b>Investigue dias e campanhas.</b> Melhor CPL e Ponto de atenção comparam dias ou meses com leads no período. Confira também gasto sem leads. Na Meta, expanda a linha do dia para consultar as campanhas. A tabela do topo mostra até 8 campanhas por volume de leads, usando gasto como desempate; não é um ranking de rentabilidade.</li>
+              <li><b>Atualize e exporte.</b> Clique em Atualizar para consultar novamente e em Exportar para baixar o relatório selecionado. O Dashboard também recarrega ao abrir a aba e a cada 30 minutos enquanto ela permanece aberta. O horário de atualização indica a consulta na plataforma, não garante que a rede já processou todos os eventos.</li>
+            </ol>
+            <p><b>Se os números não baterem:</b> confira conta, rede, período e fonte dos leads. Uma ausência de dados ou erro de integração não comprova gasto zero. Registre o horário, a campanha e a mensagem exibida para o suporte antes de tomar decisões de orçamento.</p>
+          </div>
+        </details>
         <div id="dashboard-conteudo">
           <div style="color:#64748b;font-size:13px;padding:8px 0;">Carregando...</div>
         </div>
@@ -18100,7 +18119,7 @@ body.tema-claro .criar-campanha-descricao {
               <h3>📈 Campo de performance por plataforma</h3>
               <p>Veja gasto, leads, CPL, cliques e campanhas com leitura por período.</p>
             </div>
-            <span class="dashboard-performance-badge" id="dashboard-performance-badge">Meta conectado ao painel</span>
+            <span class="dashboard-performance-badge" id="dashboard-performance-badge">Relatório selecionado: Meta</span>
           </div>
           <div class="desemp-tabs dashboard-platform-tabs">
             <button class="desemp-tab ativa" onclick="selecionarTabDesempenho('meta')" data-plat="meta"><span style="color:#0081FB;font-weight:900;">∞</span> Meta Ads</button>
@@ -23940,7 +23959,7 @@ function selecionarTabDesempenho(plataformaId) {
   });
   const painel = document.getElementById("painel_performance_meta");
   const badge = document.getElementById("dashboard-performance-badge");
-  if (badge) badge.textContent = `${platNome(plataformaId)} conectado ao painel`;
+  if (badge) badge.textContent = `Relatório selecionado: ${platNome(plataformaId)}`;
 
   if (PLATAFORMAS_PERFORMANCE_DISPONIVEIS.includes(plataformaId)) {
     performanceAtivaPlataforma = plataformaId;
@@ -32567,7 +32586,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
       <div class="performance-meta-card">
         <span>CPL hoje</span>
         <strong>${
-          hoje.custo_por_lead
+          valorPerformanceValido(hoje.custo_por_lead)
             ? formatarMoeda(hoje.custo_por_lead)
             : "-"
         }</strong>
@@ -32575,7 +32594,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
       <div class="performance-meta-card">
         <span>CPL medio ${tituloPeriodoPerformance(periodo).toLowerCase()}</span>
         <strong>${
-          resumo.custo_por_lead_medio
+          valorPerformanceValido(resumo.custo_por_lead_medio)
             ? formatarMoeda(resumo.custo_por_lead_medio)
             : "-"
         }</strong>
@@ -32657,7 +32676,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
         <br>
         Use a linha expandida para ver quais campanhas puxaram o gasto de cada dia.
         <br>
-        <strong>Leads (Meta)</strong> e o que a Meta contabilizou do lado dela; <strong>Leads (Plataforma)</strong> e o que realmente chegou e foi salvo na Central de Leads — pequenas diferenças entre os dois são normais e não significam lead perdido.
+        <strong>Leads (Meta)</strong> e o que a Meta contabilizou do lado dela; <strong>Leads (Plataforma)</strong> e o que realmente chegou e foi salvo na Central de Leads — as contagens podem divergir por atribuição, datas ou sincronização. Confira diferenças persistentes; este painel sozinho não comprova que todos os leads foram recebidos.
       ` : ""}
     </div>
   `;
@@ -33252,7 +33271,7 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
 
     if (!res.ok || data.error) {
       console.warn(`PERFORMANCE ${plataformaId.toUpperCase()}:`, data);
-      painel.innerHTML = `<div class="perf-vazio">Conecte o ${nomePlataforma} para ver a performance aqui.</div>`;
+      painel.innerHTML = `<div class="perf-vazio">Não foi possível carregar a performance de ${nomePlataforma}. Confira a conexão e a conta selecionada em Integrações e tente atualizar novamente.</div>`;
       return;
     }
 
@@ -40943,14 +40962,14 @@ function dashboardPercentual(valor) {
 }
 
 const DASHBOARD_AJUDA = {
-  leadsTotais: "Total de leads recentes.",
+  leadsTotais: "Leads cadastrados retornados para seu usuário e contexto de acesso, sem o filtro de período do relatório de performance.",
   campanhas: "Campanhas veiculando sobre o total. \"Ligadas sem veicular\" estão ativas, mas com o conjunto ou os anúncios pausados na Meta.",
-  investimento: "Gasto total das campanhas.",
-  cplMedio: "Custo medio por lead.",
-  ctrMedio: "Taxa media de cliques.",
+  investimento: "Soma do gasto retornado pela consulta de campanhas (janela de 30 dias quando disponível); não é o saldo nem o orçamento.",
+  cplMedio: "Gasto das campanhas dividido pelos leads retornados na mesma consulta; não usa o cartão Leads totais.",
+  ctrMedio: "Total de cliques dividido pelo total de impressões, vezes 100. Não é média simples das taxas por campanha.",
   plataformas: "Plataformas de anúncio conectadas (Meta, Google Ads, TikTok Ads etc.) — não conta o WhatsApp Bot, que é canal de atendimento, não de campanha.",
   saude: "Campanhas que pedem atencao.",
-  orcamento: "Soma dos orcamentos diarios.",
+  orcamento: "Soma dos orçamentos diários informados pelas campanhas carregadas, inclusive pausadas; não representa gasto realizado.",
   leadsPorClique: "Leads gerados por clique.",
   base: "Campanhas analisadas.",
   leadsPlataforma: "Origem dos leads.",
@@ -41165,7 +41184,7 @@ function dashboardRenderCampaignTable(campanhas) {
                 <td><span class="dashboard-status-chip ${status.classe}">${status.label}</span></td>
                 <td>${dashboardCompacto(leads)}</td>
                 <td>${formatarMoeda(gasto)}</td>
-                <td>${cplFinal ? formatarMoeda(cplFinal) : "-"}</td>
+                <td>${leads > 0 ? formatarMoeda(cplFinal) : "-"}</td>
                 <td>${dashboardPercentual(dashboardPrimeiroNumero(campanha, ["ctr"]))}</td>
                 <td>${dashboardCompacto(dashboardPrimeiroNumero(campanha, ["cliques", "clicks"]))}</td>
                 <td>${dashboardCompacto(dashboardPrimeiroNumero(campanha, ["impressoes", "impressions"]))}</td>
@@ -41323,9 +41342,9 @@ async function carregarDashboard() {
       (total, campanha) => total + (dashboardPrimeiroNumero(campanha, ["daily_budget"]) / 100),
       0
     );
-    const cplMedio = leadsCampanhas > 0 ? gastoTotal / leadsCampanhas : 0;
-    const ctrMedio = impressoesTotal > 0 ? (cliquesTotal / impressoesTotal) * 100 : 0;
-    const taxaLeadClique = cliquesTotal > 0 ? (leadsCampanhas / cliquesTotal) * 100 : 0;
+    const cplMedio = leadsCampanhas > 0 ? gastoTotal / leadsCampanhas : null;
+    const ctrMedio = impressoesTotal > 0 ? (cliquesTotal / impressoesTotal) * 100 : null;
+    const taxaLeadClique = cliquesTotal > 0 ? (leadsCampanhas / cliquesTotal) * 100 : null;
     // Só conta plataformas de anúncio de verdade (a mesma lista do Hub de Integrações) —
     // antes excluía só "formulario" e contava o WhatsApp Bot junto, então "Plataformas: 2"
     // podia aparecer com Meta + WhatsApp mesmo com nenhuma 2ª plataforma de anúncio conectada
@@ -41338,22 +41357,17 @@ async function carregarDashboard() {
 
     const topCampanhas = [...campanhas]
       .sort((a, b) => {
-        const scoreA =
-          dashboardPrimeiroNumero(a, ["leads", "leads_total", "total_leads"]) * 1000 +
-          dashboardPrimeiroNumero(a, ["gasto", "spend", "valor_gasto"]);
-        const scoreB =
-          dashboardPrimeiroNumero(b, ["leads", "leads_total", "total_leads"]) * 1000 +
-          dashboardPrimeiroNumero(b, ["gasto", "spend", "valor_gasto"]);
-        return scoreB - scoreA;
+        const diferencaLeads = dashboardPrimeiroNumero(b, ["leads", "leads_total", "total_leads"]) - dashboardPrimeiroNumero(a, ["leads", "leads_total", "total_leads"]);
+        return diferencaLeads || dashboardPrimeiroNumero(b, ["gasto", "spend", "valor_gasto"]) - dashboardPrimeiroNumero(a, ["gasto", "spend", "valor_gasto"]);
       })
       .slice(0, 8);
 
     const kpis = [
       { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto((leadsData?.novos || []).length)} aguardando primeiro contato`, cor: "#60a5fa", ajuda: "leadsTotais" },
       { label: "Campanhas", valor: `${campanhasAtivas}/${campanhasTotal || 0}`, detalhe: `${campanhasSemVeicular ? `${campanhasSemVeicular} ligada${campanhasSemVeicular > 1 ? "s" : ""} sem veicular · ` : ""}${campanhasPausadas} pausadas · ${campanhasAtencao} em atenção`, cor: "#22c55e", ajuda: "campanhas" },
-      { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Gasto consolidado das campanhas", cor: "#f59e0b", ajuda: "investimento" },
-      { label: "CPL médio", valor: cplMedio ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa", ajuda: "cplMedio" },
-      { label: "CTR médio", valor: ctrMedio ? `${ctrMedio.toFixed(1)}%` : "-", detalhe: `${dashboardCompacto(cliquesTotal)} cliques`, cor: "#38bdf8", ajuda: "ctrMedio" },
+      { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Campanhas · consulta de 30 dias", cor: "#f59e0b", ajuda: "investimento" },
+      { label: "CPL médio", valor: cplMedio !== null ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa", ajuda: "cplMedio" },
+      { label: "CTR médio", valor: ctrMedio !== null ? `${ctrMedio.toFixed(1)}%` : "-", detalhe: `${dashboardCompacto(cliquesTotal)} cliques`, cor: "#38bdf8", ajuda: "ctrMedio" },
       { label: "Plataformas", valor: dashboardCompacto(plataformasConectadas), detalhe: `${plataformasConectadas} de ${idsPlataformasAnuncio.length} conectadas`, cor: "#34d399", ajuda: "plataformas" }
     ];
 
@@ -41368,7 +41382,7 @@ async function carregarDashboard() {
     document.getElementById("dashboard-live-card").innerHTML = `
       <div class="dashboard-live-row" ${dashboardAjuda("saude")}><span>Saúde das campanhas</span><strong>${(campanhasAtencao + campanhasSemVeicular) ? `${campanhasAtencao + campanhasSemVeicular} revisar` : "Estável"}</strong></div>
       <div class="dashboard-live-row" ${dashboardAjuda("orcamento")}><span>Orçamento diário</span><strong>${budgetDiario ? formatarMoeda(budgetDiario) : "-"}</strong></div>
-      <div class="dashboard-live-row" ${dashboardAjuda("leadsPorClique")}><span>Leads por clique</span><strong>${taxaLeadClique ? `${taxaLeadClique.toFixed(1)}%` : "-"}</strong></div>
+      <div class="dashboard-live-row" ${dashboardAjuda("leadsPorClique")}><span>Leads por clique</span><strong>${taxaLeadClique !== null ? `${taxaLeadClique.toFixed(1)}%` : "-"}</strong></div>
       <div class="dashboard-live-row" ${dashboardAjuda("base")}><span>Base analisada</span><strong>${dashboardCompacto(campanhasTotal)} campanhas</strong></div>
     `;
 

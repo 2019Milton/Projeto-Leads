@@ -1,0 +1,110 @@
+/* Hierarquia visual das abas Dashboard e IA & Performance. */
+:is(#card-dashboard, #card-informacoes) {
+  --pv-bg: #0e1727;
+  --pv-surface: #131f32;
+  --pv-subtle: #17253a;
+  --pv-border: #2a384e;
+  --pv-text: #edf3fb;
+  --pv-muted: #a8b7cc;
+  --pv-accent: #93b9ff;
+  background: var(--pv-bg) !important;
+  border: 1px solid var(--pv-border) !important;
+  border-radius: 20px;
+  box-shadow: none !important;
+  min-width: 0;
+}
+body.tema-claro :is(#card-dashboard, #card-informacoes) {
+  --pv-bg: #f5f7fb;
+  --pv-surface: #ffffff;
+  --pv-subtle: #edf2f9;
+  --pv-border: #d8e1ed;
+  --pv-text: #1b2b43;
+  --pv-muted: #52647d;
+  --pv-accent: #315b9b;
+}
+#card-informacoes { padding: 26px; }
+#card-informacoes .info-painel-titulo { color: var(--pv-muted); font-size: 13px; margin-bottom: 20px; }
+#card-dashboard .dashboard-executive { padding: 26px; gap: 20px; }
+#card-informacoes .iapm-page { gap: 20px; }
+:is(#card-dashboard, #card-informacoes) .painel-section-heading {
+  display: flex; align-items: end; justify-content: space-between; gap: 16px;
+  padding-top: 14px; min-width: 0;
+}
+:is(#card-dashboard, #card-informacoes) .painel-section-heading span {
+  display: block; margin-bottom: 7px; color: var(--pv-accent);
+  text-transform: uppercase; letter-spacing: .12em; font-size: 10px; font-weight: 700;
+}
+:is(#card-dashboard, #card-informacoes) .painel-section-heading h3 {
+  color: var(--pv-text); font-size: 19px; font-weight: 650; margin: 0; line-height: 1.35;
+}
+:is(#card-dashboard, #card-informacoes) .painel-section-heading p {
+  color: var(--pv-muted); font-size: 12px; line-height: 1.5; margin: 0; max-width: 36ch;
+}
+#card-dashboard .dashboard-hero-pro, #card-informacoes .iapm-masthead {
+  background: var(--pv-surface); border: 1px solid var(--pv-border);
+  box-shadow: none; padding: 28px; border-radius: 16px;
+}
+#card-informacoes .iapm-masthead::after { display: none; }
+#card-informacoes .iapm-eyebrow { color: var(--pv-accent); background: var(--pv-subtle); border-color: var(--pv-border); }
+#card-informacoes .iapm-masthead h3 { color: var(--pv-text); font-size: clamp(23px, 2.2vw, 30px); line-height: 1.3; max-width: 32ch; }
+#card-informacoes .iapm-masthead p, #card-dashboard .dashboard-hero-copy p { color: var(--pv-muted); }
+#card-dashboard .dashboard-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+#card-dashboard .dashboard-stat-card { padding: 22px; border-color: var(--pv-border); background: var(--pv-surface); border-radius: 14px; }
+#card-dashboard .dashboard-stat-card::before { inset: 22px auto auto 0; width: 3px; height: 28px; border-radius: 0 3px 3px 0; }
+#card-dashboard .dashboard-stat-card strong { color: var(--pv-text); font-size: 32px; margin-top: 14px; font-variant-numeric: tabular-nums; }
+#card-dashboard .dashboard-stat-card small, #card-dashboard .dashboard-stat-card span { color: var(--pv-muted); }
+#card-dashboard .dashboard-panel, #card-informacoes .iapm-live {
+  background: var(--pv-surface); border: 1px solid var(--pv-border); border-radius: 16px; box-shadow: none; padding: 22px;
+}
+#card-dashboard #dashboard-status-plataformas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#card-dashboard #dashboard-analytics-grid { grid-template-columns: minmax(230px,.8fr) minmax(0,1.6fr); }
+#card-dashboard .dashboard-panel-head h3 { font-size: 16px; color: var(--pv-text); }
+#card-dashboard .dashboard-panel-head small { color: var(--pv-muted); line-height: 1.6; }
+#card-dashboard .dashboard-performance-field { margin: 0 26px 26px; padding: 22px; background: var(--pv-surface); border: 1px solid var(--pv-border); border-radius: 16px; }
+#card-dashboard .dashboard-performance-body { padding: 0; }
+#card-dashboard .dashboard-platform-tabs { flex-wrap: wrap; gap: 8px; padding: 12px 0; }
+#card-dashboard .dashboard-platform-tabs .desemp-tab { border-radius: 8px; padding: 9px 13px; }
+#card-informacoes .iapm-how { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+#card-informacoes .iapm-how-col { background: var(--pv-surface); border: 1px solid var(--pv-border); box-shadow: none; padding: 22px; border-radius: 16px; transform: none; }
+#card-informacoes .iapm-how-col::before { height: 2px; opacity: .65; }
+#card-informacoes .iapm-how-col h4 { color: var(--pv-text); font-size: 18px; }
+#card-informacoes .iapm-how-col > p { color: var(--pv-muted); min-height: 80px; line-height: 1.7; }
+#card-informacoes .iapm-how-step { display: none; }
+#card-informacoes .iapm-how-tag { font-size: 10px; letter-spacing: .07em; }
+#card-informacoes .painel-card-details { margin-top: 14px; border-top: 1px solid var(--pv-border); }
+#card-informacoes .painel-card-details > summary { cursor: pointer; color: var(--pv-accent); padding: 16px 0 5px; font-size: 13px; font-weight: 600; }
+#card-informacoes .painel-card-details[open] > summary { padding-bottom: 16px; }
+#card-informacoes .iapm-how-list { margin: 0; }
+#card-informacoes .iapm-how-list li, #card-informacoes .iapm-how-note { color: var(--pv-muted); }
+#card-informacoes .iapm-how-list b { white-space: normal; flex-shrink: 0; max-width: 100px; text-align: right; }
+#card-informacoes .painel-automation-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: start; }
+#card-informacoes .iapm-status { background: var(--pv-surface); border: 1px solid var(--pv-border); border-radius: 16px; padding: 22px; box-shadow: none; margin: 0; }
+#card-informacoes .iapm-status-copy { min-width: 0; }
+#card-informacoes .iapm-status-copy > b { color: var(--pv-text); font-size: 16px; line-height: 1.5; }
+#card-informacoes .iapm-status-copy > p, #card-informacoes .iapm-status-timing { color: var(--pv-muted); line-height: 1.7; }
+#card-informacoes .iapm-status-facts { display: grid; gap: 8px; }
+#card-informacoes .iapm-status-facts > span { border: none; background: var(--pv-subtle); border-radius: 8px; padding: 9px 12px; color: var(--pv-text); line-height: 1.5; }
+#card-informacoes .iapm-explain { border-color: var(--pv-border); background: transparent; margin-top: 16px; }
+#card-informacoes .iapm-explain summary { color: var(--pv-text); background: var(--pv-subtle); }
+#card-informacoes .iapm-explain-body { color: var(--pv-muted); line-height: 1.75; }
+#card-informacoes .iapm-live-head h3 { color: var(--pv-text); }
+#card-informacoes .iapm-live-head p { color: var(--pv-muted); }
+:is(#card-dashboard, #card-informacoes) summary:focus-visible { outline: 2px solid var(--pv-accent); outline-offset: 4px; border-radius: 6px; }
+@media(min-width:1600px) { #card-dashboard .dashboard-stat-grid { grid-template-columns: repeat(6,minmax(0,1fr)); } }
+@media(max-width:1100px) {
+  #card-dashboard #dashboard-status-plataformas, #card-informacoes .iapm-how { grid-template-columns: 1fr; }
+  #card-informacoes .iapm-how-col > p { min-height: 0; }
+  #card-dashboard #dashboard-analytics-grid { grid-template-columns: 1fr; }
+}
+@media(max-width:700px) {
+  #card-informacoes, #card-dashboard .dashboard-executive { padding: 16px; }
+  #card-dashboard .dashboard-stat-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+  #card-dashboard .dashboard-stat-card { padding: 16px; }
+  #card-dashboard .dashboard-stat-card strong { font-size: 26px; }
+  #card-dashboard .dashboard-hero-pro { grid-template-columns: 1fr; }
+  #card-dashboard .dashboard-live-card { border-left: 0; padding-left: 0; }
+  #card-dashboard .dashboard-performance-field { margin: 0 16px 16px; padding: 16px; }
+  #card-informacoes .painel-automation-grid { grid-template-columns: 1fr; }
+  :is(#card-dashboard, #card-informacoes) .painel-section-heading { align-items: start; flex-direction: column; gap: 7px; }
+  #card-informacoes .iapm-masthead, #card-dashboard .dashboard-hero-pro { padding: 20px; }
+}

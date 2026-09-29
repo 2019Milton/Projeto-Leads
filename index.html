@@ -17349,6 +17349,7 @@ body.tema-claro .criar-campanha-descricao {
 
 </style>
 <link rel="stylesheet" href="landing-public.css">
+<link rel="stylesheet" href="paineis-visuais.css">
 </head>
 
 <body>
@@ -18088,25 +18089,6 @@ body.tema-claro .criar-campanha-descricao {
 
       <!-- 📊 DASHBOARD -->
       <div class="card dashboard-pro-card" id="card-dashboard" style="display:none;">
-        <details class="iapm-explain" style="margin:0 0 18px;">
-          <summary>Passo a passo: usar e conferir o Dashboard</summary>
-          <div class="iapm-explain-body">
-            <p>O Dashboard reúne cadastros e métricas de anúncios. Os blocos têm fontes e períodos diferentes; o seletor de período do relatório não filtra os cartões do topo.</p>
-            <ol>
-              <li><b>Confira a conta conectada.</b> Em Plataformas → Integrações, confira a rede, a conta de anúncios e o status da conexão. Volte ao Dashboard. Selecionar uma aba de performance apenas escolhe o relatório; não conecta uma conta.</li>
-              <li><b>Leia o resumo do topo.</b> Leads totais conta os registros retornados para o seu usuário e contexto de acesso, sem o filtro de período do relatório abaixo. Aguardando primeiro contato corresponde à coluna Novos. Campanhas mostra as classificadas como ativas sobre o total carregado.</li>
-              <li><b>Confira o recorte das métricas.</b> Investimento, CPL, CTR e a tabela de campanhas usam a consulta de métricas das campanhas, com janela de 30 dias quando disponível. Não divida esse investimento pelo total de cadastros para tentar reproduzir o CPL: são bases diferentes.</li>
-              <li><b>Verifique a situação das campanhas.</b> Ativa não comprova entrega ou aprovação de todos os anúncios. Se aparecer Sem veicular ou Atenção, abra a campanha e confira conjunto, anúncios, datas e pagamento. Orçamento diário soma os valores informados pelas campanhas carregadas, incluindo pausadas; não é gasto realizado nem previsão de cobrança.</li>
-              <li><b>Confira os cartões de status.</b> Os cartões Meta, Google Ads e TikTok apresentam indicadores de hoje e informações de sincronização. Use a sincronização manual quando necessário e aguarde a conclusão. Atualizar o relatório e sincronizar a importação são operações diferentes.</li>
-              <li><b>Escolha rede e período.</b> Em Campo de performance por plataforma, selecione Meta, Google Ads, TikTok ou LinkedIn e escolha semanal, mensal ou anual. As redes desabilitadas ainda não oferecem esse relatório. Confira o período apresentado antes de comparar resultados.</li>
-              <li><b>Leia os cálculos.</b> CPL é gasto dividido pelos leads da mesma base; CTR é cliques divididos por impressões, vezes 100. Leads por clique usa leads divididos por cliques, vezes 100. Essas taxas não medem lucro, vendas ou qualidade. Sem denominador válido, o indicador fica sem cálculo.</li>
-              <li><b>Compare as fontes.</b> Na Meta, Leads (Meta) e Leads (Plataforma) representam contagens diferentes: atribuição da rede e registros recebidos. Diferenças podem envolver datas, atribuição ou sincronização; investigue divergências persistentes. No Google, conversões da conta inteira não devem ser somadas aos leads como novos contatos.</li>
-              <li><b>Investigue dias e campanhas.</b> Melhor CPL e Ponto de atenção comparam dias ou meses com leads no período. Confira também gasto sem leads. Na Meta, expanda a linha do dia para consultar as campanhas. A tabela do topo mostra até 8 campanhas por volume de leads, usando gasto como desempate; não é um ranking de rentabilidade.</li>
-              <li><b>Atualize e exporte.</b> Clique em Atualizar para consultar novamente e em Exportar para baixar o relatório selecionado. O Dashboard também recarrega ao abrir a aba e a cada 30 minutos enquanto ela permanece aberta. O horário de atualização indica a consulta na plataforma, não garante que a rede já processou todos os eventos.</li>
-            </ol>
-            <p><b>Se os números não baterem:</b> confira conta, rede, período e fonte dos leads. Uma ausência de dados ou erro de integração não comprova gasto zero. Registre o horário, a campanha e a mensagem exibida para o suporte antes de tomar decisões de orçamento.</p>
-          </div>
-        </details>
         <div id="dashboard-conteudo">
           <div style="color:#64748b;font-size:13px;padding:8px 0;">Carregando...</div>
         </div>
@@ -18116,7 +18098,7 @@ body.tema-claro .criar-campanha-descricao {
           <div class="dashboard-performance-top">
             <div>
               <span class="dashboard-section-kicker">Performance operacional</span>
-              <h3>📈 Campo de performance por plataforma</h3>
+              <h3>Desempenho por plataforma</h3>
               <p>Veja gasto, leads, CPL, cliques e campanhas com leitura por período.</p>
             </div>
             <span class="dashboard-performance-badge" id="dashboard-performance-badge">Relatório selecionado: Meta</span>
@@ -19574,7 +19556,7 @@ body.tema-claro .criar-campanha-descricao {
 
           <div class="iapm-masthead">
             <span class="iapm-eyebrow">Inteligência de leads</span>
-            <h3>Como acompanhar a qualificação dos leads e os sinais enviados à mídia paga</h3>
+            <h3>Inteligência para cada etapa do atendimento</h3>
             <p>
               Pontuação automática, previsão por Machine Learning e IA generativa funcionam juntas para
               toda a conta. Os sinais de qualidade e fechamento também podem voltar para Meta, Google Ads
@@ -19582,27 +19564,7 @@ body.tema-claro .criar-campanha-descricao {
             </p>
           </div>
 
-
-          <details class="iapm-explain" style="margin:16px 0;">
-            <summary>Passo a passo: configurar, usar e conferir IA &amp; Performance</summary>
-            <div class="iapm-explain-body">
-              <p>Esta aba explica a qualificação e mostra os envios registrados. Abrir a aba não ativa integrações nem muda a otimização das campanhas.</p>
-              <ol>
-                <li><b>Confira as conexões.</b> Abra Plataformas → Integrações, conecte a rede utilizada e confira a conta de anúncios selecionada. Volte à Central de Leads e confirme que os leads da campanha aparecem com a origem correta.</li>
-                <li><b>Prepare o contexto.</b> Confira telefone, respostas e observações do lead. Se utiliza WhatsApp, conecte o número em WhatsApp Bot e verifique se a conversa aparece vinculada ao lead correto. Mensagens não sincronizadas não entram na análise.</li>
-                <li><b>Confira a pontuação.</b> Leia as regras abaixo e os motivos disponíveis no lead. Frio, Morno e Quente indicam prioridade de atendimento; não são os estágios do Kanban. Corrija manualmente o rótulo quando o contexto justificar.</li>
-                <li><b>Registre os resultados reais.</b> Atualize o Kanban conforme o atendimento e marque Fechado ou Perdido somente quando esse for o resultado. O aprendizado exige pelo menos 10 resultados, com 4 fechados e 4 perdidos; antes disso, o modelo permanece aprendendo.</li>
-                <li><b>Use as sugestões de IA.</b> Confira o consumo de IA da conta, abra o lead e utilize as ações de IA disponíveis no atendimento. Revise nomes, valores e promessas antes de usar a mensagem sugerida. Se houver bloqueio de uso ou indisponibilidade, siga o aviso exibido.</li>
-                <li><b>Acompanhe o Kanban automático.</b> A conversa precisa estar vinculada ao lead e em atendimento humano. Após novas mensagens elegíveis, confira o estágio e as notificações no próximo ciclo. Ausência de mudança pode significar baixa confiança, falta de conteúdo novo ou indisponibilidade da IA.</li>
-                <li><b>Configure os avisos.</b> Em Configurações → Meu Perfil, preencha WhatsApp para lembretes. Confira também Configurações → Notificações. Use Agendar contato no lead para preencher Contato em e informe Data de término nas campanhas que devem gerar lembrete. O resumo semanal usa o número conectado no WhatsApp Bot, conforme explicado abaixo.</li>
-                <li><b>Confira os eventos enviados.</b> Volte a esta aba e aguarde a atualização do painel, a cada 30 segundos enquanto a aba está aberta. Compare os registros de qualificação e fechamento com os leads correspondentes. Não marque um lead real como fechado apenas para testar um envio.</li>
-                <li><b>Valide na rede de anúncios.</b> Confira o recebimento e os diagnósticos dos eventos na Meta, no Google Ads ou no TikTok. Um contador de envio não comprova que a campanha utiliza aquele evento como meta de otimização.</li>
-                <li><b>Compare resultados do mesmo período.</b> Analise gasto, leads, qualificados e fechados sem somá-los como pessoas diferentes: um lead pode aparecer em mais de uma etapa. Use o CPL e sua tendência como medidas observadas, não como promessa de economia.</li>
-              </ol>
-              <p><b>Se algo não aparecer:</b> confira conexão, conta selecionada, origem do lead, vínculo da conversa e os avisos de uso da IA. Para falhas de envio ou de lembretes, informe ao suporte o lead, a plataforma, o horário e o erro exibido; cadastrar o número sozinho não garante a entrega.</p>
-            </div>
-          </details>
-
+          <div class="painel-section-heading"><div><span>01 · Qualificação</span><h3>Três formas de entender cada lead</h3></div><p>Prioridade, histórico e contexto de atendimento.</p></div>
           <div class="iapm-how">
             <div class="iapm-how-col" style="--iapm-accent:#60a5fa;--iapm-accent-rgb:96,165,250;">
               <div class="iapm-how-card-head">
@@ -19614,7 +19576,7 @@ body.tema-claro .criar-campanha-descricao {
                 <span class="iapm-how-step">01</span>
               </div>
               <p>O cálculo soma dados cadastrais, estágio e palavras encontradas nos dados do lead. É uma classificação por regras; revise o contexto antes de tratar o interesse como confirmado.</p>
-              <ul class="iapm-how-list">
+              <details class="painel-card-details"><summary>Ver regras e pontuação</summary><div><ul class="iapm-how-list">
                 <li><span>Base aplicada a todo lead</span><b>+10</b></li>
                 <li><span>Telefone informado</span><b>+10</b></li>
                 <li><span>Em primeiro contato / em conversa / fechado (conforme o estágio atual)</span><b>+15 / +30 / +60</b></li>
@@ -19628,7 +19590,7 @@ body.tema-claro .criar-campanha-descricao {
                 <li><span>Lead marcado como perdido</span><b>−40</b></li>
                 <li><span>Conversa do WhatsApp entra nesses mesmos sinais</span></li>
               </ul>
-              <p class="iapm-how-note">Quente a partir de 70 pontos · morno de 35 a 69 · score manual sempre prevalece. A conversa do WhatsApp conta junto — a fala do cliente <b>e</b> a sua pelo app, não as perguntas fixas do roteiro do bot.</p>
+              <p class="iapm-how-note">Quente a partir de 70 pontos · morno de 35 a 69 · score manual sempre prevalece. A conversa do WhatsApp conta junto — a fala do cliente <b>e</b> a sua pelo app, não as perguntas fixas do roteiro do bot.</p></div></details>
               <details class="iapm-explain">
                 <summary>Como ler a pontuação e os rótulos?</summary>
                 <div class="iapm-explain-body">
@@ -19653,14 +19615,14 @@ body.tema-claro .criar-campanha-descricao {
                 <span class="iapm-how-step">02</span>
               </div>
               <p>Usa os leads fechados e perdidos da própria conta para calcular a estimativa de probabilidade de conversão.</p>
-              <ul class="iapm-how-list">
+              <details class="painel-card-details"><summary>Ver critérios do aprendizado</summary><div><ul class="iapm-how-list">
                 <li><span>Leads de histórico para sair do "aprendendo"</span><b>10</b></li>
                 <li><span>Mínimo de fechados / perdidos</span><b>4 / 4</b></li>
                 <li><span>Pode ajustar o rótulo do lead</span><b>Frio → Quente</b></li>
                 <li><span>Nicho do lead entra como sinal a mais na previsão</span></li>
                 <li><span>Conversa do WhatsApp também vira sinal pra previsão</span></li>
               </ul>
-              <p class="iapm-how-note">Mais histórico pode ajudar, mas não garante uma previsão mais precisa; a qualidade dos registros também importa. Um único modelo por conta — nicho e WhatsApp ajudam a previsão sem exigir histórico separado.</p>
+              <p class="iapm-how-note">Mais histórico pode ajudar, mas não garante uma previsão mais precisa; a qualidade dos registros também importa. Um único modelo por conta — nicho e WhatsApp ajudam a previsão sem exigir histórico separado.</p></div></details>
               <details class="iapm-explain">
                 <summary>Quando o aprendizado começa a ajudar?</summary>
                 <div class="iapm-explain-body">
@@ -19684,14 +19646,14 @@ body.tema-claro .criar-campanha-descricao {
                 <span class="iapm-how-step">03</span>
               </div>
               <p>Lê status, score, respostas, conversa do WhatsApp e histórico do lead para sugerir próximos passos que você deve revisar.</p>
-              <ul class="iapm-how-list">
+              <details class="painel-card-details"><summary>Ver recursos e disponibilidade</summary><div><ul class="iapm-how-list">
                 <li><span>Resumo, próxima ação e mensagem pronta</span></li>
                 <li><span>Perguntas de qualificação e sinais de risco</span></li>
                 <li><span>Reativação de perdidos e textos de campanha</span></li>
                 <li><span>Vocabulário, perguntas e mensagens adaptados ao nicho</span></li>
                 <li><span>Considera o que cliente e corretor já escreveram no WhatsApp</span></li>
               </ul>
-              <p class="iapm-how-note">Disponível nos planos atuais, sujeita à habilitação do serviço, aos limites de uso da conta e à disponibilidade do provedor. Confira o indicador de consumo de IA e os avisos apresentados ao solicitar uma análise.</p>
+              <p class="iapm-how-note">Disponível nos planos atuais, sujeita à habilitação do serviço, aos limites de uso da conta e à disponibilidade do provedor. Confira o indicador de consumo de IA e os avisos apresentados ao solicitar uma análise.</p></div></details>
               <details class="iapm-explain">
                 <summary>O que a IA entrega no dia a dia?</summary>
                 <div class="iapm-explain-body">
@@ -19702,6 +19664,8 @@ body.tema-claro .criar-campanha-descricao {
             </div>
           </div>
 
+          <div class="painel-section-heading"><div><span>02 · Automação</span><h3>O que acontece durante o atendimento</h3></div><p>Acompanhe mudanças e notificações.</p></div>
+          <div class="painel-automation-grid">
           <div class="iapm-status iapm-status-kanban">
             <span class="iapm-status-icon">💬</span>
             <div class="iapm-status-copy">
@@ -19756,6 +19720,8 @@ body.tema-claro .criar-campanha-descricao {
             </div>
           </div>
 
+          </div>
+          <div class="painel-section-heading"><div><span>03 · Resultados</span><h3>Sinais enviados às plataformas</h3></div><p>Consulte os registros e o desempenho de cada rede.</p></div>
           <div class="iapm-live">
             <div class="iapm-live-head">
               <div>
@@ -41225,10 +41191,12 @@ async function carregarDashboard() {
         </div>
       </div>
 
+      <div class="painel-section-heading"><div><span>Visão geral</span><h3>Os números da sua operação</h3></div><p>Cadastros e métricas das campanhas carregadas.</p></div>
       <div id="dashboard-kpis" class="dashboard-stat-grid">
         <div class="dashboard-empty-state">Carregando métricas executivas...</div>
       </div>
 
+      <div class="painel-section-heading"><div><span>Conexões e entrega</span><h3>Acompanhe suas plataformas</h3></div><p>Status e indicadores de hoje.</p></div>
       <div id="dashboard-status-plataformas" class="dashboard-intel-grid">
         <div class="dashboard-panel">
           <div class="dashboard-panel-head">
@@ -41265,6 +41233,7 @@ async function carregarDashboard() {
         </div>
       </div>
 
+      <div class="painel-section-heading"><div><span>Distribuição e campanhas</span><h3>De onde vêm os resultados</h3></div><p>Origem dos leads e comparação entre campanhas.</p></div>
       <div id="dashboard-analytics-grid" class="dashboard-intel-grid">
         <div class="dashboard-empty-state">Carregando inteligência por plataforma e campanha...</div>
       </div>

@@ -8221,6 +8221,28 @@ body.tema-claro .cal-nav span { color: #111827; }
   font-size: 14px;
 }
 
+#drawer_valor_negocio {
+
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  border: none;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  color: white;
+
+  margin-top: 10px;
+
+  font-size: 14px;
+}
+
 #drawer_motivo_perda option {
 
   background: #1e293b;
@@ -12974,6 +12996,7 @@ body.tema-claro #filtro_status,
 body.tema-claro #filtro_nicho,
 body.tema-claro #drawer_status,
 body.tema-claro #drawer_motivo_perda,
+body.tema-claro #drawer_valor_negocio,
 body.tema-claro .tema-seletor select,
 body.tema-claro .cal-picker-btn,
 body.tema-claro .cal-time-group select,
@@ -13002,6 +13025,7 @@ body.tema-claro #filtro_status:hover,
 body.tema-claro #filtro_nicho:hover,
 body.tema-claro #drawer_status:hover,
 body.tema-claro #drawer_motivo_perda:hover,
+body.tema-claro #drawer_valor_negocio:hover,
 body.tema-claro .tema-seletor select:hover,
 body.tema-claro .cal-picker-btn:hover,
 body.tema-claro .cal-time-group select:hover,
@@ -13023,6 +13047,7 @@ body.tema-claro #filtro_status:focus,
 body.tema-claro #filtro_nicho:focus,
 body.tema-claro #drawer_status:focus,
 body.tema-claro #drawer_motivo_perda:focus,
+body.tema-claro #drawer_valor_negocio:focus,
 body.tema-claro .tema-seletor select:focus,
 body.tema-claro .cal-picker-btn:focus,
 body.tema-claro .cal-time-group select:focus,
@@ -15088,6 +15113,7 @@ body:not(.tema-claro) #filtro_status,
 body:not(.tema-claro) #filtro_nicho,
 body:not(.tema-claro) #drawer_status,
 body:not(.tema-claro) #drawer_motivo_perda,
+body:not(.tema-claro) #drawer_valor_negocio,
 body:not(.tema-claro) .tema-seletor select,
 body:not(.tema-claro) .cal-picker-btn,
 body:not(.tema-claro) .cal-time-group select,
@@ -15320,6 +15346,7 @@ body.tema-claro #filtro_status,
 body.tema-claro #filtro_nicho,
 body.tema-claro #drawer_status,
 body.tema-claro #drawer_motivo_perda,
+body.tema-claro #drawer_valor_negocio,
 body.tema-claro .tema-seletor select,
 body.tema-claro .cal-picker-btn,
 body.tema-claro .cal-time-group select,
@@ -31085,6 +31112,9 @@ function abrirLeadDrawer(lead) {
   document.getElementById("drawer_motivo_perda")
     .value = lead.motivo_perda || "";
   
+  document.getElementById("drawer_valor_negocio")
+    .value = formatarValorNegocio(lead.valor_negocio);
+
   toggleMotivoPerda();
 
   document.getElementById("drawer_observacao")
@@ -31275,6 +31305,18 @@ async function atualizarStatusLead(lead, status) {
     return true;
   }
 
+  let valorFechamento;
+
+  if (status === "fechado") {
+
+    valorFechamento =
+      pedirValorNegocioFechamento(lead);
+
+    if (!valorFechamento) {
+      return false;
+    }
+  }
+
   const token =
     localStorage.getItem("token");
 
@@ -31302,7 +31344,10 @@ async function atualizarStatusLead(lead, status) {
           motivo_perda:
             lead.motivo_perda || "",
           score_manual:
-            lead.score_manual || null
+            lead.score_manual || null,
+          ...(valorFechamento
+            ? { valor_negocio: valorFechamento.valor }
+            : {})
         })
       }
     );
@@ -31316,6 +31361,10 @@ async function atualizarStatusLead(lead, status) {
     }
 
     lead.status = status;
+
+    if (valorFechamento) {
+      lead.valor_negocio = valorFechamento.valor;
+    }
     return true;
 
   } catch (err) {
@@ -31782,6 +31831,65 @@ function toggleMotivoPerda() {
 
     box.style.display = "none";
   }
+
+  const boxValor =
+    document.getElementById("box_valor_negocio");
+
+  if (boxValor) {
+    boxValor.style.display =
+      status === "fechado" ? "block" : "none";
+  }
+}
+
+// Valor do negócio fechado: vai pras plataformas de anúncio como valor da
+// venda (Purchase no WhatsApp da Meta). Aceita "2.500,50", "2500,50",
+// "2500.50", "R$ 1.200". Vazio = sem valor (null); inválido = undefined.
+function converterValorNegocio(texto) {
+  if (!String(texto ?? "").trim()) return null;
+
+  const limpo = String(texto).replace(/[^0-9.,]/g, "");
+  if (!limpo) return undefined;
+
+  let normalizado = limpo;
+  if (limpo.includes(",")) {
+    normalizado = limpo.replace(/\./g, "").replace(",", ".");
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(limpo)) {
+    normalizado = limpo.replace(/\./g, "");
+  }
+
+  const valor = Number(normalizado);
+  return Number.isFinite(valor) && valor >= 0 && valor <= 999999999999
+    ? Math.round(valor * 100) / 100
+    : undefined;
+}
+
+function formatarValorNegocio(valor) {
+  if (valor === null || valor === undefined || valor === "") return "";
+  const numero = Number(valor);
+  return Number.isFinite(numero)
+    ? numero.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : "";
+}
+
+// Pergunta o valor ao mover um lead pra "Fechado" (arrastar ou menu mover).
+// Cancelar desiste da mudança; OK em branco fecha sem valor.
+function pedirValorNegocioFechamento(lead) {
+  let sugestao = formatarValorNegocio(lead?.valor_negocio);
+
+  while (true) {
+    const resposta = prompt(
+      "Valor do negócio fechado (R$)\n\nEsse valor vai para as plataformas de anúncio como o valor da venda. Deixe em branco se não souber.",
+      sugestao
+    );
+
+    if (resposta === null) return undefined;
+
+    const valor = converterValorNegocio(resposta);
+    if (valor !== undefined) return { valor };
+
+    alert("Valor inválido. Use por exemplo 2.500,00");
+    sugestao = resposta;
+  }
 }
 
 // 🔥 SALVAR LEAD
@@ -31804,6 +31912,26 @@ async function salvarLeadDrawer() {
     document.getElementById("drawer_motivo_perda")
       .value;
 
+  const corpo = {
+    observacao,
+    status,
+    motivo_perda
+  };
+
+  if (status === "fechado") {
+
+    const valor = converterValorNegocio(
+      document.getElementById("drawer_valor_negocio").value
+    );
+
+    if (valor === undefined) {
+      alert("Valor do negócio inválido. Use por exemplo 2.500,00");
+      return;
+    }
+
+    corpo.valor_negocio = valor;
+  }
+
   const res = await fetch(
     `${API}/leads/${leadAtual.id}`,
     {
@@ -31814,11 +31942,7 @@ async function salvarLeadDrawer() {
         "Authorization": "Bearer " + token
       },
 
-      body: JSON.stringify({
-        observacao,
-        status,
-        motivo_perda
-      })
+      body: JSON.stringify(corpo)
     }
   );
 
@@ -54565,6 +54689,25 @@ async function enviarFeedback() {
       
         </select>
       
+      </div>
+
+      <!-- VALOR DO NEGÓCIO (vai pras plataformas como valor da venda) -->
+      <div
+        class="drawer-box"
+        id="box_valor_negocio"
+        style="display:none;"
+      >
+
+        <h4>Valor do negócio (R$)</h4>
+
+        <input
+          id="drawer_valor_negocio"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          placeholder="Ex.: 2.500,00 — deixe em branco se não souber"
+        >
+
       </div>
 
       <!-- OBS -->

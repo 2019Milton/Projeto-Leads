@@ -17350,6 +17350,7 @@ body.tema-claro .criar-campanha-descricao {
 </style>
 <link rel="stylesheet" href="landing-public.css">
 <link rel="stylesheet" href="paineis-visuais.css">
+<link rel="stylesheet" href="central-leads-visual.css">
 </head>
 
 <body>
@@ -19918,189 +19919,28 @@ body.tema-claro .criar-campanha-descricao {
 
     <div class="leads-central-header">
 
-      <h3>📥 Central de Leads</h3>
+      <div><span class="leads-eyebrow">Relacionamento e oportunidades</span><h3>Central de Leads</h3><p>Acompanhe cada contato, da chegada ao fechamento.</p></div>
 
     </div>
 
     <div class="leads-central-content">
 
-      <!-- IA RESUMO DIÁRIO -->
-      <div
-        class="ia-ouro-destaque ia-resumo-panel"
-        id="ia_resumo_diario_box"
-      >
-        <div class="ia-resumo-topo">
-          <div>
-            <h4>IA Ouro - Resumo do corretor</h4>
-            <p>
-              Escolha o periodo e a IA mostra prioridades, oportunidades e leads que merecem atencao.
-            </p>
-          </div>
-          <span class="ia-resumo-selo">Resumo inteligente</span>
-        </div>
-
-        <div class="ia-resumo-periodos">
-          <button
-            type="button"
-            id="ia_resumo_periodo_diario"
-            class="ia-resumo-periodo ativo"
-            onclick="selecionarPeriodoResumoIA('diario')"
-          >
-            <strong>Diario</strong>
-            <small>Foco nos leads e retornos de hoje.</small>
-          </button>
-
-          <button
-            type="button"
-            id="ia_resumo_periodo_semanal"
-            class="ia-resumo-periodo"
-            onclick="selecionarPeriodoResumoIA('semanal')"
-          >
-            <strong>Semanal</strong>
-            <small>Mostra padroes e prioridades dos ultimos 7 dias.</small>
-          </button>
-
-          <button
-            type="button"
-            id="ia_resumo_periodo_mensal"
-            class="ia-resumo-periodo"
-            onclick="selecionarPeriodoResumoIA('mensal')"
-          >
-            <strong>Mensal</strong>
-            <small>Resume desempenho e oportunidades dos ultimos 30 dias.</small>
-          </button>
-        </div>
-
-        <div class="ia-resumo-acao">
-          <button
-            id="btn_gerar_resumo_ia"
-            type="button"
-            class="btn-reanalisar-ia"
-            onclick="gerarResumoDiarioIA()"
-          >
-            Gerar resumo diario com IA
-          </button>
-          <span id="ia_resumo_periodo_ajuda" class="ia-resumo-ajuda">
-            Ideal para decidir quem atender primeiro hoje.
-          </span>
-        </div>
-        <div
-          id="ia_resumo_diario_resultado"
-          class="ia-resultado-box"
-          style="display:none;"
-        ></div>
-      </div>
-
-      <!-- RECUPERAÇÃO DE PERDIDOS -->
-      <div class="recuperacao-leads-panel">
-
-        <div class="recuperacao-leads-topo">
-
-          <div>
-            <div class="recuperacao-leads-titulo">
-              <strong>Recuperação de Perdidos</strong>
-              <span class="recuperacao-leads-badge">Fila inteligente</span>
-            </div>
-            <span id="recuperacao_leads_sumario">
-              Carregando leads perdidos...
-            </span>
-          </div>
-
-          <button
-            type="button"
-            class="recuperacao-leads-limpar"
-            onclick="limparFiltroRecuperacaoLeads()"
-            title="Volta a mostrar todos os perdidos e apaga o resultado gerado pela IA neste painel"
-          >
-            Limpar filtro
-          </button>
-
-        </div>
-
-        <div class="recuperacao-leads-passo">1. Escolha por onde começar</div>
-
-        <div class="recuperacao-leads-actions">
-
-          <button
-            type="button"
-            id="btn_recuperacao_recuperaveis"
-            class="recuperacao-card ia-filtro"
-            onclick="filtrarRecuperacaoLeads('recuperaveis')"
-            title="A IA Ouro analisa score, motivo da perda, tempo parado e telefone para ordenar quem tem mais chance de voltar."
-          >
-            <span class="recuperacao-card-topo">
-              <strong class="recuperacao-card-nome">Recuperáveis <span class="recuperacao-card-tagia">IA Ouro</span></strong>
-              <b id="count_recuperaveis">0</b>
-            </span>
-            <small>Sinais de que ainda podem voltar — já ordenados por prioridade.</small>
-          </button>
-
-          <button
-            type="button"
-            id="btn_recuperacao_nao_respondeu"
-            class="recuperacao-card"
-            onclick="filtrarRecuperacaoLeads('nao_respondeu')"
-          >
-            <span class="recuperacao-card-topo">
-              <strong>Não respondeu</strong>
-              <b id="count_rec_nao_respondeu">0</b>
-            </span>
-            <small>Contatos que sumiram e podem receber uma nova abordagem.</small>
-          </button>
-
-          <button
-            type="button"
-            id="btn_recuperacao_30dias"
-            class="recuperacao-card"
-            onclick="filtrarRecuperacaoLeads('30dias')"
-          >
-            <span class="recuperacao-card-topo">
-              <strong>30+ dias parado</strong>
-              <b id="count_rec_30dias">0</b>
-            </span>
-            <small>Leads antigos que merecem uma tentativa de reativação.</small>
-          </button>
-
-        </div>
-
-        <div class="recuperacao-leads-divisor"></div>
-
-        <div class="recuperacao-leads-passo">2. Gere as mensagens para quem está na lista</div>
-
-        <button
-          type="button"
-          class="recuperacao-gerar-btn"
-          onclick="gerarReativacaoLoteIA()"
-          title="IA Ouro: gera mensagens de reativação para os leads perdidos filtrados"
-        >
-          <span>✨ Gerar mensagens de WhatsApp com IA</span>
-          <small>Usa até 10 leads da lista filtrada acima (ou de todos os perdidos, se nenhum filtro estiver escolhido).</small>
-        </button>
-
-        <div
-          id="ia_reativacao_lote_resultado"
-          class="ia-resultado-box"
-          style="display:none;"
-        ></div>
-
-      </div>
-
       <!-- LEADS ÁREA (toolbar + KPIs + kanban) -->
-      <div class="leads-area-panel">
+      <div class="leads-area-panel"><div class="leads-board-heading"><div><span class="leads-eyebrow">Seu atendimento</span><h4>Organize as próximas conversas</h4></div><span class="leads-board-hint">5 etapas · da entrada ao resultado</span></div>
 
       <!-- 🔥 TOPO CENTRAL LEADS -->
       <div class="leads-toolbar">
       
         <!-- 🔍 BUSCA -->
-        <input
+        <label class="leads-filter-field leads-filter-search"><span>Buscar contato</span><input
           type="text"
           id="busca_lead"
-          placeholder="🔍 Buscar lead..."
+          placeholder="Buscar lead..."
           class="lead-search"
-        >
+        ></label>
       
         <!-- 📢 CAMPANHAS -->
-        <select
+        <label class="leads-filter-field "><span>Campanha</span><select
           class="lead-filter"
           id="filtro_campanha"
         >
@@ -20109,29 +19949,29 @@ body.tema-claro .criar-campanha-descricao {
             Todas campanhas
           </option>
 
-        </select>
+        </select></label>
 
         <!-- 📣 PLATAFORMA -->
-        <select
+        <label class="leads-filter-field "><span>Plataforma</span><select
           class="lead-filter"
           id="filtro_plataforma"
           onchange="aplicarFiltrosLeads()"
         >
           <option value="">Todas plataformas</option>
-        </select>
+        </select></label>
 
         <!-- 📷 FACEBOOK/INSTAGRAM (só do clique em Click-to-WhatsApp) -->
-        <select
+        <label class="leads-filter-field "><span>Rede de origem</span><select
           class="lead-filter"
           id="filtro_rede_origem"
           onchange="aplicarFiltrosLeads()"
           style="display:none;"
         >
           <option value="">Facebook/Instagram</option>
-        </select>
+        </select></label>
 
         <!-- 📅 PERÍODO -->
-        <select
+        <label class="leads-filter-field "><span>Período</span><select
           class="lead-filter"
           id="filtro_periodo"
         >
@@ -20172,7 +20012,7 @@ body.tema-claro .criar-campanha-descricao {
             Todo período
           </option>
       
-        </select>
+        </select></label>
       
         <!-- 🧹 LIMPAR FILTROS -->
         <button
@@ -20196,45 +20036,30 @@ body.tema-claro .criar-campanha-descricao {
       <!-- 📊 KPIs -->
       <div class="leads-kpis">
       
-        <div
-          class="kpi-card"
-          onclick="filtrarPorKPI('todos')"
-        >
+        <button type="button" class="kpi-card" onclick="filtrarPorKPI('todos')">
           <span id="kpi_total">0</span>
           <small>Leads</small>
-        </div>
+        </button>
       
-        <div
-          class="kpi-card quente"
-          onclick="filtrarPorKPI('quente')"
-        >
+        <button type="button" class="kpi-card quente" onclick="filtrarPorKPI('quente')">
           <span id="kpi_quentes">0</span>
           <small>Quentes</small>
-        </div>
+        </button>
       
-        <div
-          class="kpi-card alerta"
-          onclick="filtrarPorKPI('sem_resposta')"
-        >
+        <button type="button" class="kpi-card alerta" onclick="filtrarPorKPI('sem_resposta')">
           <span id="kpi_sem_resposta">0</span>
           <small>Sem resposta</small>
-        </div>
+        </button>
       
-        <div
-          class="kpi-card sucesso"
-          onclick="filtrarPorKPI('fechado')"
-        >
+        <button type="button" class="kpi-card sucesso" onclick="filtrarPorKPI('fechado')">
           <span id="kpi_fechados">0</span>
           <small>Fechados</small>
-        </div>
+        </button>
       
-        <div
-          class="kpi-card"
-          onclick="filtrarPorKPI('perdido')"
-        >
+        <button type="button" class="kpi-card" onclick="filtrarPorKPI('perdido')">
           <span id="kpi_perdidos">0</span>
           <small>Perdidos</small>
-        </div>
+        </button>
       
       </div>
 
@@ -20349,6 +20174,168 @@ body.tema-claro .criar-campanha-descricao {
       </div><!-- /kanban-scroll-outer -->
 
       </div><!-- /leads-area-panel -->
+<div class="leads-tools-grid"><details class="leads-tool-details"><summary><span>Resumo inteligente<small>Prioridades e oportunidades com IA</small></span></summary>      <!-- IA RESUMO DIÁRIO -->
+      <div
+        class="ia-ouro-destaque ia-resumo-panel"
+        id="ia_resumo_diario_box"
+      >
+        <div class="ia-resumo-topo">
+          <div>
+            <h4>IA Ouro - Resumo do corretor</h4>
+            <p>
+              Escolha o periodo e a IA mostra prioridades, oportunidades e leads que merecem atencao.
+            </p>
+          </div>
+          <span class="ia-resumo-selo">Resumo inteligente</span>
+        </div>
+
+        <div class="ia-resumo-periodos">
+          <button
+            type="button"
+            id="ia_resumo_periodo_diario"
+            class="ia-resumo-periodo ativo"
+            onclick="selecionarPeriodoResumoIA('diario')"
+          >
+            <strong>Diario</strong>
+            <small>Foco nos leads e retornos de hoje.</small>
+          </button>
+
+          <button
+            type="button"
+            id="ia_resumo_periodo_semanal"
+            class="ia-resumo-periodo"
+            onclick="selecionarPeriodoResumoIA('semanal')"
+          >
+            <strong>Semanal</strong>
+            <small>Mostra padroes e prioridades dos ultimos 7 dias.</small>
+          </button>
+
+          <button
+            type="button"
+            id="ia_resumo_periodo_mensal"
+            class="ia-resumo-periodo"
+            onclick="selecionarPeriodoResumoIA('mensal')"
+          >
+            <strong>Mensal</strong>
+            <small>Resume desempenho e oportunidades dos ultimos 30 dias.</small>
+          </button>
+        </div>
+
+        <div class="ia-resumo-acao">
+          <button
+            id="btn_gerar_resumo_ia"
+            type="button"
+            class="btn-reanalisar-ia"
+            onclick="gerarResumoDiarioIA()"
+          >
+            Gerar resumo diario com IA
+          </button>
+          <span id="ia_resumo_periodo_ajuda" class="ia-resumo-ajuda">
+            Ideal para decidir quem atender primeiro hoje.
+          </span>
+        </div>
+        <div
+          id="ia_resumo_diario_resultado"
+          class="ia-resultado-box"
+          style="display:none;"
+        ></div>
+      </div>
+
+</details><details class="leads-tool-details"><summary><span>Recuperação de perdidos<small>Filtros e mensagens para retomar contatos</small></span></summary>      <!-- RECUPERAÇÃO DE PERDIDOS -->
+      <div class="recuperacao-leads-panel">
+
+        <div class="recuperacao-leads-topo">
+
+          <div>
+            <div class="recuperacao-leads-titulo">
+              <strong>Recuperação de Perdidos</strong>
+              <span class="recuperacao-leads-badge">Fila inteligente</span>
+            </div>
+            <span id="recuperacao_leads_sumario">
+              Carregando leads perdidos...
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="recuperacao-leads-limpar"
+            onclick="limparFiltroRecuperacaoLeads()"
+            title="Volta a mostrar todos os perdidos e apaga o resultado gerado pela IA neste painel"
+          >
+            Limpar filtro
+          </button>
+
+        </div>
+
+        <div class="recuperacao-leads-passo">1. Escolha por onde começar</div>
+
+        <div class="recuperacao-leads-actions">
+
+          <button
+            type="button"
+            id="btn_recuperacao_recuperaveis"
+            class="recuperacao-card ia-filtro"
+            onclick="filtrarRecuperacaoLeads('recuperaveis')"
+            title="A IA Ouro analisa score, motivo da perda, tempo parado e telefone para ordenar quem tem mais chance de voltar."
+          >
+            <span class="recuperacao-card-topo">
+              <strong class="recuperacao-card-nome">Recuperáveis <span class="recuperacao-card-tagia">IA Ouro</span></strong>
+              <b id="count_recuperaveis">0</b>
+            </span>
+            <small>Sinais de que ainda podem voltar — já ordenados por prioridade.</small>
+          </button>
+
+          <button
+            type="button"
+            id="btn_recuperacao_nao_respondeu"
+            class="recuperacao-card"
+            onclick="filtrarRecuperacaoLeads('nao_respondeu')"
+          >
+            <span class="recuperacao-card-topo">
+              <strong>Não respondeu</strong>
+              <b id="count_rec_nao_respondeu">0</b>
+            </span>
+            <small>Contatos que sumiram e podem receber uma nova abordagem.</small>
+          </button>
+
+          <button
+            type="button"
+            id="btn_recuperacao_30dias"
+            class="recuperacao-card"
+            onclick="filtrarRecuperacaoLeads('30dias')"
+          >
+            <span class="recuperacao-card-topo">
+              <strong>30+ dias parado</strong>
+              <b id="count_rec_30dias">0</b>
+            </span>
+            <small>Leads antigos que merecem uma tentativa de reativação.</small>
+          </button>
+
+        </div>
+
+        <div class="recuperacao-leads-divisor"></div>
+
+        <div class="recuperacao-leads-passo">2. Gere as mensagens para quem está na lista</div>
+
+        <button
+          type="button"
+          class="recuperacao-gerar-btn"
+          onclick="gerarReativacaoLoteIA()"
+          title="IA Ouro: gera mensagens de reativação para os leads perdidos filtrados"
+        >
+          <span>✨ Gerar mensagens de WhatsApp com IA</span>
+          <small>Usa até 10 leads da lista filtrada acima (ou de todos os perdidos, se nenhum filtro estiver escolhido).</small>
+        </button>
+
+        <div
+          id="ia_reativacao_lote_resultado"
+          class="ia-resultado-box"
+          style="display:none;"
+        ></div>
+
+      </div>
+
+</details></div>
 
     </div>
 

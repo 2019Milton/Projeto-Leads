@@ -18186,6 +18186,30 @@ body.tema-claro .criar-campanha-descricao {
         <div class="meta-card" id="card-google" style="display:none;">
           <div id="google_info">Carregando conexão...</div>
         </div>
+
+        <!-- 🌐 FORMULÁRIO DO SITE — conteúdo gerenciado por carregarFormularioSite() -->
+        <style>
+          #site_formulario_painel { margin-top:18px; padding:18px 20px; border:1px solid rgba(255,255,255,.1); border-radius:14px; background:rgba(255,255,255,.03); }
+          #site_formulario_painel h4 { margin:0 0 6px; font-size:15px; }
+          #site_formulario_painel p { margin:0 0 12px; font-size:13px; line-height:1.6; color:#a8b7cc; }
+          #site_formulario_painel textarea { width:100%; box-sizing:border-box; font-family:monospace; font-size:12px; line-height:1.5; min-height:72px; resize:vertical; background:#0a1323; color:#e2e8f0; border:1px solid #334155; border-radius:10px; padding:10px 12px; }
+          #site_formulario_painel .site-form-acoes { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+          #site_formulario_painel .site-form-acoes button { width:auto; margin:0; padding:8px 14px; font-size:13px; }
+          #site_formulario_painel details { margin-top:12px; font-size:13px; }
+          #site_formulario_painel summary { cursor:pointer; color:#cbd5e1; }
+          #site_formulario_painel details p, #site_formulario_painel details li { color:#a8b7cc; }
+          #site_formulario_painel code { font-size:12px; }
+          #site_formulario_painel .site-form-stats { font-size:12px; color:#94a3b8; margin-top:12px; }
+          body.tema-claro #site_formulario_painel { border-color:#cbd5e1; background:#f8fafc; }
+          body.tema-claro #site_formulario_painel p, body.tema-claro #site_formulario_painel details p, body.tema-claro #site_formulario_painel details li, body.tema-claro #site_formulario_painel .site-form-stats { color:#475569; }
+          body.tema-claro #site_formulario_painel summary { color:#1e293b; }
+          body.tema-claro #site_formulario_painel textarea { background:#fff; color:#0f172a; border-color:#94a3b8; }
+        </style>
+        <div id="site_formulario_painel">
+          <h4>🌐 Formulário do seu site</h4>
+          <p>Para campanhas com destino <b>site</b>: cole o código abaixo na página onde o formulário deve aparecer. O lead entra na Central de Leads com a origem do anúncio (Meta, Google, TikTok ou LinkedIn), e os sinais de lead, qualificação e venda voltam para a rede certa.</p>
+          <div id="site_formulario_conteudo"><div style="color:#64748b;font-size:13px;">Carregando...</div></div>
+        </div>
       </div>
 
       <!-- Assistente unificado: prepara os dados e conduz pelas autorizações oficiais. -->
@@ -19803,7 +19827,7 @@ body.tema-claro .criar-campanha-descricao {
                       <h4>∞ Meta Ads</h4>
                       <span class="iapm-platform-state">Otimização depende do destino</span>
                     </div>
-                    <p><b>Formulário:</b> a plataforma envia cada etapa do funil no formato de CRM exigido pela Meta — primeiro contato (<i>Contacted</i>), em conversa (<i>In Conversation</i>), <b>lead qualificado</b>, <b>negócio fechado</b> com o valor da venda e perdido (<i>Lost</i>). <b>WhatsApp:</b> envia <i>QualifiedLead</i> e, no fechamento, <i>Purchase</i> com o valor — os nomes que a Meta aceita para conversas de anúncio. Para novos conjuntos de formulário instantâneo, tenta configurar a otimização por lead qualificado; se a Meta rejeitar, usa a configuração padrão. Campanhas com destino WhatsApp ou site seguem outro fluxo e não recebem essa configuração automaticamente.</p>
+                    <p><b>Formulário:</b> a plataforma envia cada etapa do funil no formato de CRM exigido pela Meta — primeiro contato (<i>Contacted</i>), em conversa (<i>In Conversation</i>), <b>lead qualificado</b>, <b>negócio fechado</b> com o valor da venda e perdido (<i>Lost</i>). <b>WhatsApp:</b> envia <i>QualifiedLead</i> e, no fechamento, <i>Purchase</i> com o valor — os nomes que a Meta aceita para conversas de anúncio. <b>Site:</b> com o formulário do site (em Integrações), envia <i>Lead</i> na chegada, <b>lead qualificado</b> e <i>Purchase</i> com o valor da venda, identificando a pessoa pelo clique do anúncio. Para novos conjuntos de formulário instantâneo, tenta configurar a otimização por lead qualificado; se a Meta rejeitar, usa a configuração padrão. Campanhas com destino WhatsApp ou site seguem outro fluxo e não recebem essa configuração automaticamente.</p>
                     <p>O envio dos eventos não altera a otimização de conjuntos existentes. Confira a meta de desempenho efetivamente aplicada no Gerenciador de Anúncios antes de concluir que a campanha está otimizando por qualidade.</p>
                   </article>
 
@@ -42913,11 +42937,90 @@ function renderResumoGoogle(conn, googleStatusCompleto) {
     </div>`;
 }
 
+// ── Formulário do site do corretor (backend: /site-formulario/*, /site/*) ──
+function codigoFormularioSite(chave, semFormulario) {
+  const src = `${API}/site/form.js?k=${encodeURIComponent(chave)}`;
+  return semFormulario
+    ? `<script src="${src}" data-sem-formulario async><\/script>`
+    : `<div id="plataforma-leads-form"></div>\n<script src="${src}" async><\/script>`;
+}
+
+async function carregarFormularioSite() {
+  const conteudo = document.getElementById("site_formulario_conteudo");
+  if (!conteudo) return;
+  try {
+    const res = await fetch(`${API}/site-formulario/configuracao`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.chave) throw new Error(data.error || "Erro ao carregar");
+    const stats = data.estatisticas || {};
+    const redes = (data.por_rede || []).map(r => `${escaparHtml(r.rede)}: ${Number(r.total)}`).join(" · ");
+    conteudo.innerHTML = `
+      <textarea id="site_formulario_codigo" readonly aria-label="Código do formulário do site">${escaparHtml(codigoFormularioSite(data.chave, false))}</textarea>
+      <div class="site-form-acoes">
+        <button type="button" class="btn" onclick="copiarCodigoFormularioSite(this, 'site_formulario_codigo')">Copiar código</button>
+        <span id="site_formulario_status" style="font-size:12px;color:#94a3b8;"></span>
+      </div>
+      <details>
+        <summary>Já tenho um formulário no meu site</summary>
+        <p style="margin-top:8px;">Cole este código no site (ele só guarda a origem do anúncio, sem desenhar formulário) e, no envio do seu formulário, chame <code>PlataformaLeads.enviar({ nome, telefone, email, mensagem })</code>.</p>
+        <textarea id="site_formulario_codigo_proprio" readonly aria-label="Código para formulário próprio">${escaparHtml(codigoFormularioSite(data.chave, true))}</textarea>
+        <div class="site-form-acoes"><button type="button" class="btn" onclick="copiarCodigoFormularioSite(this, 'site_formulario_codigo_proprio')">Copiar código</button></div>
+      </details>
+      <details>
+        <summary>Como o lead chega com a campanha certa?</summary>
+        <ul style="margin:8px 0 0;padding-left:18px;line-height:1.7;">
+          <li><b>Google Ads e TikTok:</b> a identificação do clique é automática (gclid / ttclid).</li>
+          <li><b>Meta:</b> o identificador do clique (fbclid) também é automático. Para vincular à campanha, use nos parâmetros de URL do anúncio: <code>utm_source=facebook&amp;utm_campaign={{campaign.id}}</code>.</li>
+          <li>Sem identificação, o lead entra como origem "site".</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Trocar a chave do formulário</summary>
+        <p style="margin-top:8px;">Use só se o código foi parar em um site que não é seu. O código antigo para de funcionar e você precisa colar o novo.</p>
+        <div class="site-form-acoes"><button type="button" class="btn" onclick="gerarNovaChaveFormularioSite(this)">Gerar nova chave</button></div>
+      </details>
+      <div class="site-form-stats">Últimos 30 dias: ${Number(stats.leads_30d || 0)} lead(s) pelo site · ${Number(stats.com_origem_30d || 0)} com origem de anúncio identificada${redes ? ` (${redes})` : ""}</div>
+    `;
+  } catch (e) {
+    conteudo.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar o formulário do site: ${escaparHtml(e.message || "")}</div>`;
+  }
+}
+
+async function copiarCodigoFormularioSite(botao, idCampo) {
+  const campo = document.getElementById(idCampo);
+  if (!campo) return;
+  try {
+    await navigator.clipboard.writeText(campo.value);
+  } catch (_) {
+    campo.select();
+    document.execCommand("copy");
+  }
+  const textoOriginal = botao.textContent;
+  botao.textContent = "Copiado ✅";
+  setTimeout(() => { botao.textContent = textoOriginal; }, 2000);
+}
+
+async function gerarNovaChaveFormularioSite(botao) {
+  if (!confirm("Gerar uma nova chave? O código colado hoje no seu site vai parar de funcionar até você colar o novo.")) return;
+  botao.disabled = true;
+  try {
+    const res = await fetch(`${API}/site-formulario/nova-chave`, { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Erro ao gerar nova chave");
+    await carregarFormularioSite();
+  } catch (e) {
+    alert(e.message || "Erro ao gerar nova chave");
+    botao.disabled = false;
+  }
+}
+
 async function carregarHub(opcoes = {}) {
   const token = localStorage.getItem("token");
   if (!token) return;
   const grid = document.getElementById("hub_conexoes_grid");
   if (!grid) return;
+
+  carregarFormularioSite();
 
   let mapa = {};
   let metaStatusCompleto = null;

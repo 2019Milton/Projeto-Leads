@@ -17351,6 +17351,7 @@ body.tema-claro .criar-campanha-descricao {
 <link rel="stylesheet" href="landing-public.css">
 <link rel="stylesheet" href="paineis-visuais.css">
 <link rel="stylesheet" href="central-leads-visual.css">
+<link rel="stylesheet" href="servicos-visuais.css">
 </head>
 
 <body>
@@ -19820,8 +19821,9 @@ body.tema-claro .criar-campanha-descricao {
 
       <!-- 💰 FINANCEIRO — cobrança mensal, comprovante e nota fiscal -->
       <div id="card-financeiro" style="padding:14px;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
-        <h3 style="margin:0 0 4px;">💰 Financeiro</h3>
+        <header class="servicos-heading"><span>Conta e documentos</span><h3>Financeiro</h3></header>
         <p style="margin:0 0 14px;color:#94a3b8;font-size:13px;">Seus lançamentos mensais, comprovantes de pagamento e notas fiscais.</p>
+        <div class="financeiro-section-title"><h4>Seus lançamentos</h4><span>Valores, situação e documentos de cada mês</span></div>
         <div id="financeiro_lista">
           <div class="dashboard-empty-state">Carregando lançamentos...</div>
         </div>
@@ -19829,11 +19831,12 @@ body.tema-claro .criar-campanha-descricao {
 
       <!-- 💬 SUPORTE + FEEDBACK — seções abertas por padrão -->
       <div id="suporte-page-wrap" class="suporte-page-wrap">
+        <header class="servicos-heading"><span>Atendimento e feedback</span><h3>Como podemos ajudar?</h3><p>Converse com o suporte ou compartilhe sua experiência com a plataforma.</p></header>
 
         <!-- Chat com suporte inline -->
         <div class="suporte-page-card" id="card-suporte">
           <div class="suporte-page-hdr suporte-page-hdr--chat">
-            <span>💬 Falar com Suporte</span>
+            <div><strong>Conversa com o suporte</strong><small>Mensagens e arquivos em um só lugar</small></div>
             <span id="chat_badge_btn" class="chat-badge-btn" style="display:none;">0</span>
           </div>
           <div id="chat_page_msgs" class="chat-page-msgs">
@@ -19843,7 +19846,7 @@ body.tema-claro .criar-campanha-descricao {
           <div class="chat-input-area chat-page-input-area">
             <input type="file" id="chat_page_file" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf" style="display:none;" onchange="selecionarAnexoChatPage(this.files[0])">
             <button type="button" class="chat-anexo-btn" title="Enviar print ou arquivo" onclick="document.getElementById('chat_page_file').click()">📎</button>
-            <textarea id="chat_page_input" class="chat-input" placeholder="Digite sua mensagem…" onkeydown="chatPageKeydown(event)"></textarea>
+            <textarea id="chat_page_input" aria-label="Mensagem para o suporte" class="chat-input" placeholder="Digite sua mensagem…" onkeydown="chatPageKeydown(event)"></textarea>
             <button class="chat-enviar" onclick="enviarMensagemChatPage()">Enviar</button>
           </div>
         </div>
@@ -19851,15 +19854,15 @@ body.tema-claro .criar-campanha-descricao {
         <!-- Formulário de feedback inline -->
         <div class="suporte-page-card suporte-page-card--feedback" id="card-feedback">
           <div class="suporte-page-hdr suporte-page-hdr--feedback">
-            <span>📝 Elogios, Sugestões e Reclamações</span>
+            <div><strong>Sua opinião</strong><small>Elogios, sugestões e reclamações</small></div>
           </div>
           <div class="suporte-page-feedback-body">
-            <select id="feedback_tipo" class="feedback-select">
+            <label for="feedback_tipo" class="servicos-label">Tipo de feedback</label><select id="feedback_tipo" class="feedback-select">
               <option value="elogio">⭐ Elogio</option>
               <option value="sugestao">💡 Sugestão</option>
               <option value="reclamacao">⚠️ Reclamação</option>
             </select>
-            <textarea id="feedback_msg" class="feedback-textarea" placeholder="Descreva aqui sua mensagem…"></textarea>
+            <label for="feedback_msg" class="servicos-label">Sua mensagem</label><textarea id="feedback_msg" class="feedback-textarea" placeholder="Descreva aqui sua mensagem…"></textarea>
             <button class="feedback-enviar-btn" onclick="enviarFeedback()">Enviar</button>
             <div id="feedback_sucesso" class="feedback-sucesso" style="display:none;">✅ Enviado! Obrigado pelo seu retorno.</div>
           </div>
@@ -23460,16 +23463,16 @@ async function carregarFinanceiro() {
     container.innerHTML = lancamentos.map(l => {
       const statusInfo = FINANCEIRO_STATUS_LABEL[l.status] || { texto: l.status, cor: "#94a3b8" };
       return `
-        <div style="padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.07);">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div class="financeiro-entry" style="padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.07);">
+          <div class="financeiro-entry-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
             <div>
               <strong style="font-size:14px;">${escaparHtml(formatarMesReferencia(l.mes_referencia))}</strong>
-              <div style="font-size:18px;font-weight:800;color:#e2e8f0;margin-top:2px;">${formatarMoeda(l.valor)}</div>
+              <div class="financeiro-value" style="font-size:18px;font-weight:800;color:#e2e8f0;margin-top:2px;">${formatarMoeda(l.valor)}</div>
             </div>
-            <span style="font-size:12px;font-weight:600;color:${statusInfo.cor};">● ${statusInfo.texto}</span>
+            <span class="financeiro-status" style="font-size:12px;font-weight:600;color:${statusInfo.cor};">● ${escaparHtml(statusInfo.texto)}</span>
           </div>
           ${(l.pix_chave && l.status !== "pago") ? `
-            <div style="margin-top:10px;padding:8px 10px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3);border-radius:8px;">
+            <div class="financeiro-pix" style="margin-top:10px;padding:8px 10px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3);border-radius:8px;">
               <div style="font-size:11px;color:#94a3b8;">Pague via PIX${l.pix_tipo_label ? ` (${escaparHtml(l.pix_tipo_label)})` : ""}</div>
               <div style="display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap;">
                 <strong style="color:#4ade80;font-size:14px;word-break:break-all;">${escaparHtml(l.pix_chave)}</strong>
@@ -23478,7 +23481,7 @@ async function carregarFinanceiro() {
             </div>
           ` : ""}
           ${l.observacao ? `<div style="font-size:12px;color:#94a3b8;margin-top:8px;">${escaparHtml(l.observacao)}</div>` : ""}
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <div class="financeiro-documents" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
             ${l.tem_comprovante
               ? `<button type="button" class="btn-video-anuncio" onclick="abrirArquivoFinanceiro(${l.id}, 'comprovante')">📎 Ver comprovante enviado</button>`
               : `<label class="btn-video-anuncio" style="cursor:pointer;">📎 Enviar comprovante<input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="display:none;" onchange="enviarComprovanteFinanceiro(${l.id}, this)"></label>`

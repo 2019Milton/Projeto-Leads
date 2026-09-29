@@ -1,0 +1,55 @@
+:is(#card-financeiro,#suporte-page-wrap) {
+  --sv-bg:#0e1727;--sv-surface:#142034;--sv-subtle:#1b2a40;--sv-border:#2b3b52;--sv-text:#edf3fb;--sv-muted:#a9b8ce;--sv-accent:#9abdff;
+  background:var(--sv-bg)!important;border:1px solid var(--sv-border)!important;border-radius:20px!important;padding:26px!important;box-sizing:border-box;min-width:0;
+}
+body.tema-claro :is(#card-financeiro,#suporte-page-wrap) {
+  --sv-bg:#f5f7fb;--sv-surface:#fff;--sv-subtle:#edf2f9;--sv-border:#d7e1ed;--sv-text:#1b2b43;--sv-muted:#536680;--sv-accent:#315b9b;
+}
+:is(#card-financeiro,#suporte-page-wrap) .servicos-heading {grid-column:1/-1;padding-bottom:20px;border-bottom:1px solid var(--sv-border);}
+:is(#card-financeiro,#suporte-page-wrap) .servicos-heading > span {font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--sv-accent);}
+:is(#card-financeiro,#suporte-page-wrap) .servicos-heading h3 {font-size:28px;line-height:1.3;letter-spacing:-.025em;color:var(--sv-text)!important;margin:8px 0;}
+:is(#card-financeiro,#suporte-page-wrap) .servicos-heading p {color:var(--sv-muted);font-size:13px;line-height:1.6;margin:0;}
+#card-financeiro > p {color:var(--sv-muted)!important;margin:16px 0 24px!important;line-height:1.6;}
+#card-financeiro .financeiro-section-title {display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px;}
+#card-financeiro .financeiro-section-title h4 {margin:0;font-size:18px;color:var(--sv-text);}
+#card-financeiro .financeiro-section-title span {color:var(--sv-muted);font-size:12px;}
+#financeiro_lista {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start;}
+#card-financeiro .financeiro-entry {background:var(--sv-surface)!important;border:1px solid var(--sv-border)!important;border-radius:16px!important;padding:22px!important;margin:0!important;min-width:0;}
+#card-financeiro .financeiro-entry-head {gap:16px!important;align-items:start!important;padding-bottom:18px;border-bottom:1px solid var(--sv-border);}
+#card-financeiro .financeiro-entry-head strong {color:var(--sv-muted);font-size:13px!important;font-weight:600;}
+#card-financeiro .financeiro-value {font-size:30px!important;font-weight:700!important;letter-spacing:-.025em;color:var(--sv-text)!important;margin-top:8px!important;font-variant-numeric:tabular-nums;}
+#card-financeiro .financeiro-status {padding:6px 10px;background:var(--sv-subtle);border:1px solid var(--sv-border);border-radius:999px;line-height:1.4;}
+body.tema-claro #card-financeiro .financeiro-status {color:#374c68!important;}
+#card-financeiro .financeiro-pix {background:var(--sv-subtle)!important;border:1px solid var(--sv-border)!important;padding:14px!important;margin-top:16px!important;border-radius:10px!important;}
+#card-financeiro .financeiro-pix strong {color:var(--sv-text)!important;font-size:13px!important;}
+#card-financeiro .financeiro-pix > div:first-child {color:var(--sv-muted)!important;margin-bottom:6px;}
+#card-financeiro .financeiro-documents {margin-top:18px!important;gap:10px!important;}
+#card-financeiro .btn-video-anuncio {background:var(--sv-subtle)!important;color:var(--sv-text)!important;border:1px solid var(--sv-border)!important;border-radius:8px;padding:10px 12px;font-size:12px;box-shadow:none;white-space:normal;line-height:1.5;}
+#card-financeiro .dashboard-empty-state {grid-column:1/-1;background:var(--sv-surface);border:1px dashed var(--sv-border);border-radius:14px;padding:40px 24px;color:var(--sv-muted);}
+#suporte-page-wrap {grid-template-columns:minmax(0,1.65fr) minmax(260px,1fr);grid-template-rows:auto minmax(0,1fr);gap:22px;}
+#suporte-page-wrap.secao-visivel {height:calc(100dvh - 88px);min-height:520px;}
+#suporte-page-wrap .suporte-page-card {background:var(--sv-surface)!important;border:1px solid var(--sv-border)!important;border-radius:16px;box-shadow:none;min-width:0;}
+#suporte-page-wrap .suporte-page-hdr {background:var(--sv-surface)!important;border-bottom:1px solid var(--sv-border);padding:20px;color:var(--sv-text)!important;}
+#suporte-page-wrap .suporte-page-hdr strong {font-size:16px;color:var(--sv-text);}
+#suporte-page-wrap .suporte-page-hdr small {display:block;font-size:12px;font-weight:400;color:var(--sv-muted);margin-top:6px;line-height:1.5;}
+#suporte-page-wrap .chat-page-msgs {background:var(--sv-bg);padding:20px;gap:14px;min-height:220px;}
+#suporte-page-wrap .chat-sem-msgs {color:var(--sv-muted);font-size:13px;line-height:1.6;margin:auto;text-align:center;}
+#suporte-page-wrap .chat-msg {max-width:88%;line-height:1.65;border-radius:12px;padding:12px 16px;overflow-wrap:anywhere;}
+#suporte-page-wrap .chat-input-area {background:var(--sv-surface);padding:16px;border-top:1px solid var(--sv-border);align-items:end;gap:10px;}
+#suporte-page-wrap .chat-input {background:var(--sv-bg)!important;color:var(--sv-text)!important;border:1px solid var(--sv-border)!important;border-radius:10px;min-width:0;min-height:48px;line-height:1.5;padding:12px;}
+#suporte-page-wrap .chat-enviar,#suporte-page-wrap .feedback-enviar-btn {background:#345fa5;color:white;border:1px solid #527dc2;box-shadow:none;border-radius:9px;padding:12px 18px;font-weight:600;}
+#suporte-page-wrap .suporte-page-feedback-body {padding:22px;gap:12px;overflow:auto;}
+#suporte-page-wrap .servicos-label {font-size:12px;font-weight:600;color:var(--sv-muted);margin:0;}
+#suporte-page-wrap :is(.feedback-select,.feedback-textarea) {background:var(--sv-bg)!important;color:var(--sv-text)!important;border:1px solid var(--sv-border)!important;border-radius:9px;padding:12px;width:100%;box-sizing:border-box;font-size:13px;}
+#suporte-page-wrap .feedback-textarea {min-height:180px;resize:vertical;line-height:1.7;}
+#suporte-page-wrap .feedback-enviar-btn {align-self:start;margin-top:4px;}
+:is(#card-financeiro,#suporte-page-wrap) :is(button,a,input,textarea,select,label.btn-video-anuncio):focus-visible {outline:2px solid var(--sv-accent);outline-offset:3px;}
+@media(max-width:860px) {
+  :is(#card-financeiro,#suporte-page-wrap) {padding:16px!important;}
+  #financeiro_lista {grid-template-columns:1fr;}
+  #suporte-page-wrap,#suporte-page-wrap.secao-visivel {grid-template-columns:1fr;grid-template-rows:auto auto auto;height:auto;min-height:0;}
+  #suporte-page-wrap .chat-page-msgs {height:350px;max-height:55dvh;flex:none;}
+  #card-financeiro .financeiro-section-title {align-items:start;flex-direction:column;}
+  #suporte-page-wrap .chat-input-area {padding:12px;gap:8px;}
+  #suporte-page-wrap .chat-enviar {padding:12px;}
+}

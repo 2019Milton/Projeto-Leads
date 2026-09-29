@@ -18375,6 +18375,17 @@ body.tema-claro .criar-campanha-descricao {
         body.tema-claro #card-whatsapp-bot .wpp-help-intro, body.tema-claro #card-whatsapp-bot .wpp-guide-text, body.tema-claro #card-whatsapp-bot .wpp-guia ol, body.tema-claro #card-whatsapp-bot .wpp-guia-aviso, body.tema-claro #card-whatsapp-bot .wpp-legenda { color:#475569; }
         body.tema-claro #card-whatsapp-bot #whatsapp_conexao_status > div > div + div, body.tema-claro #card-whatsapp-bot .wpp-diag-chip { color:#334155 !important; }
         body.tema-claro #card-whatsapp-bot .wpp-panel-heading a { color:#5b21b6; }
+        #card-whatsapp-bot .wpp-contato-panel { margin-bottom:22px; padding:18px 22px; }
+        #card-whatsapp-bot .wpp-contato-toggle { display:flex !important; align-items:center; gap:10px; font-size:14px !important; cursor:pointer; margin:4px 0 16px; }
+        #card-whatsapp-bot .wpp-contato-toggle input { width:18px; height:18px; accent-color:#25d366; }
+        #card-whatsapp-bot .wpp-contato-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(220px,.8fr); gap:18px; align-items:start; }
+        #card-whatsapp-bot .wpp-contato-balao { background:#0b3d2e; color:#e7fff4; border-radius:12px 12px 12px 2px; padding:12px 14px; font-size:13px; line-height:1.6; white-space:pre-wrap; margin-top:10px; }
+        #card-whatsapp-bot .wpp-contato-aviso { font-size:12px; line-height:1.6; color:#a8b7cc; margin:12px 0 0; }
+        #card-whatsapp-bot .wpp-contato-stats { font-size:12px; color:#94a3b8; margin-top:14px; border-top:1px solid #304157; padding-top:12px; }
+        #card-whatsapp-bot .wpp-contato-vazio { border:1px dashed #58708f; border-radius:12px; padding:14px; font-size:13px; line-height:1.6; color:#cbd5e1; }
+        body.tema-claro #card-whatsapp-bot .wpp-contato-balao { background:#dcf8c6; color:#14301f; }
+        body.tema-claro #card-whatsapp-bot .wpp-contato-aviso, body.tema-claro #card-whatsapp-bot .wpp-contato-stats, body.tema-claro #card-whatsapp-bot .wpp-contato-vazio { color:#475569; }
+        @media(max-width:640px) { #card-whatsapp-bot .wpp-contato-grid { grid-template-columns:minmax(0,1fr); } }
         @media(max-width:1180px) { #card-whatsapp-bot .wpp-workspace { grid-template-columns:minmax(0,1fr); } #card-whatsapp-bot .wpp-help-panel { order:2; } }
         @media(max-width:640px) { #card-whatsapp-bot { padding:14px; } #card-whatsapp-bot .wpp-panel { padding:16px; } #card-whatsapp-bot .wpp-fields-row, #card-whatsapp-bot .wpp-editor-grid { grid-template-columns:minmax(0,1fr); } #card-whatsapp-bot .wpp-save-actions .wpp-btn { flex:1; } }
       </style>
@@ -18397,6 +18408,11 @@ body.tema-claro .criar-campanha-descricao {
 
         <div id="whatsapp_diagnostico" class="wpp-diag" style="display:none;"></div>
 
+        </section>
+        <section class="wpp-panel wpp-contato-panel" id="wpp_contato_formulario" aria-labelledby="wpp_contato_titulo" style="display:none;">
+          <div class="wpp-panel-heading"><h4 id="wpp_contato_titulo">Primeiro contato com leads de formulário</h4></div>
+          <p class="wpp-help-intro" style="margin:10px 0 14px;">Quando chega um lead de formulário (Meta, Google, TikTok ou LinkedIn), a plataforma manda na hora uma mensagem pelo seu WhatsApp. Quando ele responder, a conversa segue o roteiro do nicho dele (ou vai direto pra você, se não houver roteiro) e a IA passa a acompanhar o status — é isso que devolve às plataformas de anúncio quais leads são bons.</p>
+          <div id="wpp_contato_conteudo"><div style="color:#94a3b8;font-size:13px;">Carregando...</div></div>
         </section>
         <div class="wpp-workspace">
           <div id="whatsapp_bot_editor" style="display:none;">
@@ -31106,6 +31122,21 @@ function abrirLeadDrawer(lead) {
 
   document.getElementById("drawer_score")
     .innerText = lead.score || "-";
+
+  // Primeiro contato automático por WhatsApp (leads de formulário).
+  const linhaContato = document.getElementById("drawer_contato_whatsapp_linha");
+  const textoContato = document.getElementById("drawer_contato_whatsapp");
+  if (linhaContato && textoContato) {
+    if (lead.whatsapp_contato_enviado_em) {
+      textoContato.innerText = "Contato automático enviado em " + new Date(lead.whatsapp_contato_enviado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+      linhaContato.style.display = "";
+    } else if (lead.whatsapp_contato_erro) {
+      textoContato.innerText = "Contato automático não enviado: " + lead.whatsapp_contato_erro;
+      linhaContato.style.display = "";
+    } else {
+      linhaContato.style.display = "none";
+    }
+  }
 
   document.getElementById("drawer_status")
     .value = lead.status || "novo";
@@ -45450,7 +45481,10 @@ async function carregarWhatsappBot() {
         <button class="btn wpp-btn wpp-btn-danger" onclick="desconectarPlataforma('whatsapp', this)">Desconectar</button>
       `;
       carregarDiagnosticoWhatsapp(token);
+      carregarContatoFormularioWhatsapp();
     } else {
+      const painelContato = document.getElementById("wpp_contato_formulario");
+      if (painelContato) painelContato.style.display = "none";
       statusEl.innerHTML = `
         <div>
           <button class="btn wpp-btn wpp-btn-success" onclick="conectarWhatsapp(this)">📱 Conectar meu WhatsApp</button>
@@ -45472,6 +45506,133 @@ async function carregarWhatsappBot() {
     renderWhatsappBotPreview();
   } catch (e) {
     statusEl.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar a conexão do WhatsApp.</div>`;
+  }
+}
+
+// ── Primeiro contato automático com lead de formulário ─────────────────────
+let _wppContatoDados = null;
+
+async function carregarContatoFormularioWhatsapp() {
+  const painel = document.getElementById("wpp_contato_formulario");
+  const conteudo = document.getElementById("wpp_contato_conteudo");
+  if (!painel || !conteudo) return;
+  painel.style.display = "";
+  try {
+    const res = await fetch(`${API}/whatsapp/contato-formulario`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Erro ao carregar");
+    _wppContatoDados = data;
+    renderContatoFormularioWhatsapp();
+  } catch (e) {
+    conteudo.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar o contato automático: ${escaparHtml(e.message || "")}</div>`;
+  }
+}
+
+function renderContatoFormularioWhatsapp() {
+  const conteudo = document.getElementById("wpp_contato_conteudo");
+  const data = _wppContatoDados;
+  if (!conteudo || !data) return;
+
+  const config = data.config || {};
+  const modelos = Array.isArray(data.modelos) ? data.modelos : [];
+  const compativeis = modelos.filter(m => m.compativel);
+  const chaveAtual = config.template_nome ? `${config.template_nome}|${config.template_idioma}` : "";
+  const sugerido = data.modelo_sugerido || {};
+  const sugeridoExiste = modelos.some(m => m.nome === sugerido.nome);
+  const stats = data.estatisticas || {};
+
+  const opcoes = [
+    `<option value="">Escolha um modelo aprovado</option>`,
+    ...modelos.map(m => {
+      const chave = `${m.nome}|${m.idioma}`;
+      const rotulo = `${m.nome} (${m.idioma})${m.compativel ? "" : ` — ${m.motivo}`}`;
+      return `<option value="${escaparHtml(chave)}" ${m.compativel ? "" : "disabled"} ${chave === chaveAtual ? "selected" : ""}>${escaparHtml(rotulo)}</option>`;
+    })
+  ].join("");
+
+  const semModelo = !compativeis.length
+    ? `<div class="wpp-contato-vazio" style="margin-top:12px;">
+        ${sugeridoExiste
+          ? "O modelo sugerido já foi enviado para a Meta e ainda está em análise (costuma levar de minutos a algumas horas). Volte aqui depois para escolhê-lo."
+          : `Você ainda não tem um modelo de mensagem aprovado. A plataforma pode criar este na sua conta e enviar para a análise da Meta:
+             <div class="wpp-contato-balao">${escaparHtml(String(sugerido.corpo || "").replace("{{1}}", "Maria"))}</div>
+             <button type="button" class="btn wpp-btn" style="margin-top:12px;" onclick="criarModeloSugeridoWhatsapp(this)">Criar modelo sugerido</button>`}
+      </div>`
+    : "";
+
+  conteudo.innerHTML = `
+    <label class="wpp-contato-toggle"><input type="checkbox" id="wpp_contato_ativo" ${config.ativo ? "checked" : ""} ${compativeis.length ? "" : "disabled"}> Mandar mensagem automática para cada lead de formulário novo</label>
+    <div class="wpp-contato-grid">
+      <div>
+        <label for="wpp_contato_modelo">Modelo de mensagem</label>
+        <select id="wpp_contato_modelo" style="width:100%;margin-top:6px;" onchange="renderPreviewContatoFormulario()" ${modelos.length ? "" : "disabled"}>${opcoes}</select>
+        ${data.erro_modelos ? `<div style="color:#f87171;font-size:12px;margin-top:6px;">Não foi possível listar seus modelos: ${escaparHtml(data.erro_modelos)}</div>` : ""}
+        ${semModelo}
+        <p class="wpp-contato-aviso">A Meta só permite iniciar conversa com um modelo aprovado, e cobra cada mensagem de modelo na sua conta do WhatsApp. O envio vale para leads que chegaram nas últimas 24 horas e têm telefone. Garanta que o seu formulário informa que o contato será feito pelo WhatsApp.</p>
+      </div>
+      <div>
+        <div class="wpp-preview-title">Prévia <span>Com o nome do lead no lugar de {{1}}</span></div>
+        <div id="wpp_contato_preview" class="wpp-contato-balao">—</div>
+      </div>
+    </div>
+    <div class="wpp-save-actions">
+      <button class="btn wpp-btn" onclick="salvarContatoFormularioWhatsapp(this)">Salvar</button>
+      <span id="wpp_contato_status" style="font-size:12px;color:#94a3b8;"></span>
+    </div>
+    <div class="wpp-contato-stats">Últimos 30 dias: ${Number(stats.enviados_30d || 0)} lead(s) contatado(s) · ${Number(stats.falhas_30d || 0)} sem envio${stats.ultima_falha ? ` (último motivo: ${escaparHtml(stats.ultima_falha)})` : ""}</div>
+  `;
+  renderPreviewContatoFormulario();
+}
+
+function renderPreviewContatoFormulario() {
+  const preview = document.getElementById("wpp_contato_preview");
+  const select = document.getElementById("wpp_contato_modelo");
+  if (!preview || !select || !_wppContatoDados) return;
+  const [nome, idioma] = String(select.value || "").split("|");
+  const modelo = (_wppContatoDados.modelos || []).find(m => m.nome === nome && m.idioma === idioma);
+  preview.textContent = modelo?.corpo ? modelo.corpo.replace(/\{\{\s*1\s*\}\}/g, "Maria") : "—";
+}
+
+async function salvarContatoFormularioWhatsapp(botao) {
+  const status = document.getElementById("wpp_contato_status");
+  const ativo = Boolean(document.getElementById("wpp_contato_ativo")?.checked);
+  const [template_nome, template_idioma] = String(document.getElementById("wpp_contato_modelo")?.value || "").split("|");
+  if (ativo && !template_nome) {
+    if (status) status.textContent = "Escolha um modelo para ativar.";
+    return;
+  }
+  if (botao) botao.disabled = true;
+  if (status) status.textContent = "Salvando...";
+  try {
+    const res = await fetch(`${API}/whatsapp/contato-formulario`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
+      body: JSON.stringify({ ativo, template_nome: template_nome || null, template_idioma: template_idioma || null })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Erro ao salvar");
+    if (_wppContatoDados) _wppContatoDados.config = data.config;
+    if (status) status.textContent = ativo ? "Ativado ✅ — os próximos leads de formulário vão receber a mensagem." : "Salvo. Contato automático desligado.";
+  } catch (e) {
+    if (status) status.textContent = e.message || "Erro ao salvar";
+  } finally {
+    if (botao) botao.disabled = false;
+  }
+}
+
+async function criarModeloSugeridoWhatsapp(botao) {
+  if (botao) { botao.disabled = true; botao.textContent = "Enviando para a Meta..."; }
+  try {
+    const res = await fetch(`${API}/whatsapp/contato-formulario/modelo-sugerido`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Erro ao criar o modelo");
+    await carregarContatoFormularioWhatsapp();
+  } catch (e) {
+    alert(e.message || "Erro ao criar o modelo");
+    if (botao) { botao.disabled = false; botao.textContent = "Criar modelo sugerido"; }
   }
 }
 
@@ -54504,6 +54665,11 @@ async function enviarFeedback() {
           <span id="drawer_score">
             -
           </span>
+        </p>
+
+        <p id="drawer_contato_whatsapp_linha" style="display:none;">
+          💬
+          <span id="drawer_contato_whatsapp"></span>
         </p>
 
       </div>

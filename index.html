@@ -18695,6 +18695,21 @@ body.tema-claro .criar-campanha-descricao {
             </div>
           </section>
 
+          <style>
+            .destino-site-modo { margin-top:10px; padding:12px; border:1px solid rgba(148,163,184,.3); border-radius:10px; }
+            .destino-site-modo-titulo { font-size:13px; font-weight:700; margin:0 0 8px; }
+            .destino-site-modo .advanced-checks { margin-bottom:8px; }
+            .site-codigo-inline { margin-top:10px; }
+            .site-codigo-inline textarea { width:100%; box-sizing:border-box; font-family:monospace; font-size:12px; line-height:1.5; min-height:64px; resize:vertical; background:#0a1323; color:#e2e8f0; border:1px solid #334155; border-radius:8px; padding:8px 10px; }
+            .site-codigo-inline .site-codigo-acoes { display:flex; gap:8px; align-items:center; margin:8px 0; }
+            .site-codigo-inline .site-codigo-acoes button { width:auto; margin:0; padding:7px 12px; font-size:12px; }
+            .site-instalacao { font-size:12px; line-height:1.65; }
+            .site-instalacao summary { cursor:pointer; font-weight:700; margin-top:6px; }
+            .site-instalacao ol, .site-instalacao ul { margin:6px 0 0; padding-left:18px; }
+            .site-instalacao li { margin-bottom:4px; }
+            body.tema-claro .site-codigo-inline textarea { background:#fff; color:#0f172a; border-color:#94a3b8; }
+            .destino-site-recomendado { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(34,197,94,.16); color:#22c55e; }
+          </style>
           <section class="campaign-setup-section" id="bloco_destino_campanha" data-plat-only="facebook,instagram,linkedin,kwai">
             <h4>Destino da campanha <button type="button" class="info-icone" onclick="mostrarInfoCampo('Formulário de Leads: a pessoa preenche um formulário dentro da própria rede (Facebook/Instagram, LinkedIn ou Kwai). Endereço do site (só Facebook/Instagram): o clique abre a página informada. WhatsApp: a pessoa clica e cai direto numa conversa de WhatsApp com o bot da plataforma — no LinkedIn isso abre um link wa.me pré-preenchido, já que o LinkedIn não tem um botão nativo de WhatsApp como a Meta.', event)">i</button></h4>
             <div class="advanced-checks">
@@ -18710,6 +18725,21 @@ body.tema-claro .criar-campanha-descricao {
                 <input type="radio" name="campanha_destino" id="destino_whatsapp" value="whatsapp" onchange="aplicarDestinoCampanha()">
                 WhatsApp (clique para conversar)
               </label>
+            </div>
+            <div id="destino_site_modo" class="destino-site-modo" style="display:none;">
+              <p class="destino-site-modo-titulo">Como levar a pessoa ao seu site?</p>
+              <div class="advanced-checks">
+                <label>
+                  <input type="radio" name="campanha_site_modo" value="formulario" checked onchange="aplicarDestinoCampanha()">
+                  Formulário + botão para o seu site <span class="destino-site-recomendado">recomendado</span>
+                </label>
+                <label>
+                  <input type="radio" name="campanha_site_modo" value="direto" onchange="aplicarDestinoCampanha()">
+                  Direto para o site
+                </label>
+              </div>
+              <div id="destino_site_modo_formulario_info" class="channel-picker-status">O anúncio abre o formulário da própria rede: a plataforma recebe nome e telefone, acompanha o lead e devolve os sinais de qualidade e venda. No final, o botão <b>Visitar site</b> leva ao endereço informado. Você não precisa instalar nada no site.</div>
+              <div id="destino_site_modo_direto_info" class="channel-picker-status alerta" style="display:none;" data-site-codigo-pai>O clique abre direto o seu site. A plataforma <b>não recebe</b> nome e telefone de quem preencher o formulário do site: as conversões aparecem só como números nos resultados da campanha (se o site tiver o pixel da rede). Para receber os leads aqui, cole o código de <b>Integrações → Formulário do seu site</b>.</div>
             </div>
             <div id="destino_whatsapp_aviso" class="channel-picker-status alerta" style="display:none;">
               Conecte o WhatsApp da plataforma (aba Whatsapp Bot) antes de publicar uma campanha com esse destino.
@@ -18728,8 +18758,8 @@ body.tema-claro .criar-campanha-descricao {
             </div>
           </section>
 
-          <div class="advanced-full" data-plat-only="facebook,instagram" data-destino-only="site" style="display:none;">
-            <label>Endereço do site <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o link completo, começando com https://, para onde a pessoa será direcionada ao tocar no anúncio.', event)">i</button></label>
+          <div class="advanced-full" data-plat-only="facebook,instagram" data-destino-only="site,site_formulario" style="display:none;">
+            <label>Endereço do site <button type="button" class="info-icone" onclick="mostrarInfoCampo('Informe o link completo, começando com https://. Em &quot;Formulário + botão para o seu site&quot;, é para onde o botão do final do formulário leva; em &quot;Direto para o site&quot;, é a página aberta ao tocar no anúncio.', event)">i</button></label>
             <input type="url" id="adv_link" placeholder="https://seusite.com.br" autocomplete="url">
             <small style="display:block;margin-top:5px;opacity:.65;">Use uma página que funcione bem no celular.</small>
           </div>
@@ -19413,6 +19443,21 @@ body.tema-claro .criar-campanha-descricao {
                   <input type="radio" name="campanha_google_destino" id="google_destino_whatsapp" value="whatsapp" onchange="aplicarDestinoCampanhaGoogle()">
                   WhatsApp
                 </label>
+              </div>
+              <div id="destino_google_site_modo" class="destino-site-modo" style="display:none;">
+                <p class="destino-site-modo-titulo">Como levar a pessoa ao seu site?</p>
+                <div class="advanced-checks">
+                  <label>
+                    <input type="radio" name="campanha_google_site_modo" value="formulario" checked onchange="aplicarDestinoCampanhaGoogle()">
+                    Formulário + botão para o seu site <span class="destino-site-recomendado">recomendado</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="campanha_google_site_modo" value="direto" onchange="aplicarDestinoCampanhaGoogle()">
+                    Direto para o site
+                  </label>
+                </div>
+                <div id="destino_google_site_modo_formulario_info" class="channel-picker-status">O anúncio abre o formulário da própria rede: a plataforma recebe nome e telefone, acompanha o lead e devolve os sinais de qualidade e venda. No final, o botão <b>Visitar site</b> leva aa URL de destino preenchida abaixo. Você não precisa instalar nada no site.</div>
+                <div id="destino_google_site_modo_direto_info" class="channel-picker-status alerta" style="display:none;" data-site-codigo-pai>O clique abre direto o seu site. A plataforma <b>não recebe</b> nome e telefone de quem preencher o formulário do site: as conversões aparecem só como números nos resultados da campanha (se o site tiver o tag do Google). Para receber os leads aqui, cole o código de <b>Integrações → Formulário do seu site</b>.</div>
               </div>
               <div id="destino_google_site_info" class="channel-picker-status" style="display:none;">
                 O clique principal será direcionado para a URL de destino preenchida abaixo.
@@ -29715,10 +29760,16 @@ async function verificarElegibilidadeLeadFormGoogle(forcar = false) {
 // com Meta/TikTok, cujos destinos e formulários são independentes nesta tela.
 async function aplicarDestinoCampanhaGoogle() {
   const radioChecado = document.querySelector('input[name="campanha_google_destino"]:checked');
-  const valor = radioChecado?.value;
-  destinoCampanhaGoogleSelecionado = ["lead_ads", "site", "whatsapp"].includes(valor)
-    ? valor
-    : "lead_ads";
+  const valor = ["lead_ads", "site", "whatsapp"].includes(radioChecado?.value) ? radioChecado.value : "lead_ads";
+  // "Endereço do site" + "Formulário + botão para o seu site" = Formulário de
+  // Leads do Google, que já termina com o botão "Visitar site" pra URL de
+  // destino. Só em Pesquisa: Display aceita somente o site.
+  const modoSiteGoogle =
+    tipoCampanhaGoogleSelecionado === "display" ||
+    document.querySelector('input[name="campanha_google_site_modo"]:checked')?.value === "direto"
+      ? "direto"
+      : "formulario";
+  destinoCampanhaGoogleSelecionado = valor === "site" && modoSiteGoogle === "formulario" ? "lead_ads" : valor;
 
   const googleSelecionado = redesSelecionadasCampanha.has("google");
   const redeEmFoco = plataformaMidiaCampanhaEmFoco();
@@ -29727,7 +29778,7 @@ async function aplicarDestinoCampanhaGoogle() {
   document.querySelectorAll('input[name="campanha_google_destino"]').forEach(input => {
     const label = input.closest("label");
     if (!label) return;
-    const ehAtual = input.value === destinoCampanhaGoogleSelecionado;
+    const ehAtual = input.value === valor;
     label.style.borderColor = ehAtual ? "#22c55e" : "";
     label.style.background = ehAtual ? "rgba(34,197,94,0.12)" : "";
   });
@@ -29754,6 +29805,17 @@ async function aplicarDestinoCampanhaGoogle() {
       el.style.display = "none";
     }
   });
+
+  const blocoModoSiteGoogle = document.getElementById("destino_google_site_modo");
+  if (blocoModoSiteGoogle) {
+    blocoModoSiteGoogle.style.display =
+      googleEmFoco && valor === "site" && tipoCampanhaGoogleSelecionado !== "display" ? "" : "none";
+  }
+  const infoModoFormularioGoogle = document.getElementById("destino_google_site_modo_formulario_info");
+  const infoModoDiretoGoogle = document.getElementById("destino_google_site_modo_direto_info");
+  if (infoModoFormularioGoogle) infoModoFormularioGoogle.style.display = modoSiteGoogle === "formulario" ? "" : "none";
+  if (infoModoDiretoGoogle) infoModoDiretoGoogle.style.display = modoSiteGoogle === "direto" ? "" : "none";
+  if (googleEmFoco && valor === "site" && modoSiteGoogle === "direto") carregarCodigoSiteNaCriacao();
 
   const infoSite = document.getElementById("destino_google_site_info");
   const avisoLeadForm = document.getElementById("destino_google_leadform_aviso");
@@ -29978,15 +30040,33 @@ function selecionarAbaCampanha(plat) {
 }
 
 let destinoCampanhaSelecionado = "lead_ads";
+// "Endereço do site" + "Formulário + botão para o seu site": a campanha é de
+// formulário (destinoCampanhaSelecionado = "lead_ads", então publicação,
+// rascunho, IA e validações tratam como formulário) e o endereço do site vai
+// no botão final do formulário (configuracoes_avancadas.site_via_formulario).
+let siteViaFormularioMeta = false;
 
 // Formulário de Leads vs WhatsApp (Click-to-WhatsApp) — mesmo padrão de
 // aplicarRedesCampanha, mas via [data-destino-only] em vez de [data-plat-only].
 // Campos de formulário/tela de obrigado só fazem sentido pra Lead Ads.
 async function aplicarDestinoCampanha() {
   const radioChecado = document.querySelector('input[name="campanha_destino"]:checked');
-  destinoCampanhaSelecionado = ["lead_ads", "site", "whatsapp"].includes(radioChecado?.value)
+  const destinoRadio = ["lead_ads", "site", "whatsapp"].includes(radioChecado?.value)
     ? radioChecado.value
     : "lead_ads";
+  const modoSite = document.querySelector('input[name="campanha_site_modo"]:checked')?.value === "direto"
+    ? "direto"
+    : "formulario";
+  siteViaFormularioMeta = destinoRadio === "site" && modoSite === "formulario";
+  destinoCampanhaSelecionado = siteViaFormularioMeta ? "lead_ads" : destinoRadio;
+
+  const blocoModoSite = document.getElementById("destino_site_modo");
+  if (blocoModoSite) blocoModoSite.style.display = destinoRadio === "site" ? "" : "none";
+  const infoModoFormulario = document.getElementById("destino_site_modo_formulario_info");
+  const infoModoDireto = document.getElementById("destino_site_modo_direto_info");
+  if (infoModoFormulario) infoModoFormulario.style.display = modoSite === "formulario" ? "" : "none";
+  if (infoModoDireto) infoModoDireto.style.display = modoSite === "direto" ? "" : "none";
+  if (destinoRadio === "site" && modoSite === "direto") carregarCodigoSiteNaCriacao();
 
   // Destaque visual explícito da opção atual — o ponto nativo do rádio fica
   // pouco visível quando desabilitado (campanha já publicada), então não dá
@@ -29994,7 +30074,7 @@ async function aplicarDestinoCampanha() {
   document.querySelectorAll('input[name="campanha_destino"]').forEach(input => {
     const label = input.closest("label");
     if (!label) return;
-    const ehAtual = input.value === destinoCampanhaSelecionado;
+    const ehAtual = input.value === destinoRadio;
     label.style.borderColor = ehAtual ? "#22c55e" : "";
     label.style.background = ehAtual ? "rgba(34,197,94,0.12)" : "";
   });
@@ -30021,7 +30101,9 @@ async function aplicarDestinoCampanha() {
       todasAbasEdicao.length >= 1 && redes.some(rede => todasAbasEdicao.includes(rede));
     const mostrarPorAbaAddEdicao =
       !tocaAbaAddEdicao || !abaAtivaAddPlataformaEdicao || redes.includes(abaAtivaAddPlataformaEdicao);
-    const mostrarPorDestino = destinos.includes(destinoCampanhaSelecionado);
+    const mostrarPorDestino =
+      destinos.includes(destinoCampanhaSelecionado) ||
+      (siteViaFormularioMeta && destinos.includes("site_formulario"));
 
     el.style.display =
       mostrarPorPlataforma && mostrarPorAba && mostrarPorAbaAddEdicao && mostrarPorDestino
@@ -35489,7 +35571,10 @@ function coletarConfiguracoesAvancadas() {
     obrigado_titulo: valorCampo("adv_obrigado_titulo"),
     obrigado_texto: valorCampo("adv_obrigado_texto"),
     obrigado_botao: valorCampo("adv_obrigado_botao"),
-    obrigado_url: valorCampo("adv_obrigado_url"),
+    // Em "Formulário + botão para o seu site", o endereço do site é o destino
+    // do botão final do formulário (ver botaoFinalFormularioMeta no backend).
+    obrigado_url: siteViaFormularioMeta ? valorCampo("adv_link") : valorCampo("adv_obrigado_url"),
+    site_via_formulario: siteViaFormularioMeta,
     privacidade_url: valorCampo("adv_privacidade_url"),
     privacidade_texto: valorCampo("adv_privacidade_texto"),
     perguntas,
@@ -36101,17 +36186,24 @@ function configurarEdicaoDestinoCampanha(campanha = null) {
   // o valor deixado pela ultima campanha criada/editada, nao o desta.
   const cfgDestino = obterConfiguracoesCampanha(campanha) || {};
   const destinoReal = ["lead_ads", "site", "whatsapp"].includes(cfgDestino.destino) ? cfgDestino.destino : "lead_ads";
+  const viaFormulario = destinoReal === "lead_ads" && Boolean(cfgDestino.site_via_formulario);
   const radioDestino = document.querySelector(
-    `input[name="campanha_destino"][value="${destinoReal}"]`
+    `input[name="campanha_destino"][value="${viaFormulario ? "site" : destinoReal}"]`
   );
   if (radioDestino) {
     radioDestino.checked = true;
+  }
+  const radioModoSite = document.querySelector(
+    `input[name="campanha_site_modo"][value="${destinoReal === "site" && !viaFormulario ? "direto" : "formulario"}"]`
+  );
+  if (radioModoSite) {
+    radioModoSite.checked = true;
   }
   destinoCampanhaSelecionado = destinoReal;
   aplicarDestinoCampanha();
 
   document
-    .querySelectorAll('input[name="campanha_destino"]')
+    .querySelectorAll('input[name="campanha_destino"], input[name="campanha_site_modo"]')
     .forEach(input => {
       input.disabled = campanhaMetaPublicada;
       input.title = campanhaMetaPublicada
@@ -39024,7 +39116,7 @@ function validarPublicacaoCampanha({
     return false;
   }
 
-  if (configuracoes_avancadas.destino === "site") {
+  if (configuracoes_avancadas.destino === "site" || configuracoes_avancadas.site_via_formulario) {
     const url = (configuracoes_avancadas.link || "").trim();
     try {
       const destinoUrl = new URL(url);
@@ -42945,6 +43037,73 @@ function codigoFormularioSite(chave, semFormulario) {
     : `<div id="plataforma-leads-form"></div>\n<script src="${src}" async><\/script>`;
 }
 
+// Passo a passo de onde colar o código, por tipo de site. Usado no painel
+// de Integrações e na opção "Direto para o site" da criação de campanha.
+function instrucoesInstalacaoSiteHtml() {
+  return `
+    <div class="site-instalacao">
+      <details open>
+        <summary>Onde colar no seu site</summary>
+        <ul>
+          <li><b>WordPress com Elementor:</b> edite a página de destino do anúncio, arraste o widget <b>HTML</b> para o lugar onde o formulário deve aparecer, cole o código e clique em <b>Atualizar</b>.</li>
+          <li><b>WordPress (editor padrão):</b> na página, clique em <b>+</b>, escolha o bloco <b>HTML personalizado</b>, cole o código e clique em <b>Atualizar</b>.</li>
+          <li><b>Wix:</b> vá em <b>Configurações → Código personalizado → + Adicionar código</b>, cole, escolha <b>Carregar código em: página específica</b> (a página do anúncio) e <b>Posição: Corpo - fim</b>. Não use "Incorporar HTML": ele coloca o código dentro de uma moldura e perde a informação de qual anúncio trouxe a pessoa.</li>
+          <li><b>Site feito por programador (HTML):</b> peça para colar o código no ponto da página onde o formulário deve aparecer.</li>
+          <li><b>Outras plataformas</b> (Hostinger, Nuvemshop, Webflow...): procure um bloco chamado <b>HTML personalizado</b>, <b>Código</b> ou <b>Incorporar código</b> e cole ali.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Depois de colar: como testar</summary>
+        <ol>
+          <li>Abra a página do site no celular ou no computador.</li>
+          <li>Preencha o formulário com seu próprio nome e telefone e envie.</li>
+          <li>Em até 1 minuto o lead aparece na <b>Central de Leads</b>, com origem "site".</li>
+          <li>Cole o código em <b>todas</b> as páginas usadas como destino dos anúncios.</li>
+        </ol>
+      </details>
+    </div>`;
+}
+
+let _chaveFormularioSiteCache = null;
+
+async function obterChaveFormularioSite() {
+  if (_chaveFormularioSiteCache) return _chaveFormularioSiteCache;
+  const res = await fetch(`${API}/site-formulario/configuracao`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.chave) throw new Error(data.error || "Erro ao carregar o código");
+  _chaveFormularioSiteCache = data;
+  return data;
+}
+
+// Mostra o código pronto dentro da explicação de "Direto para o site" (Meta e
+// Google) — a pessoa copia ali mesmo, sem ir até Integrações.
+async function carregarCodigoSiteNaCriacao() {
+  const pais = document.querySelectorAll("[data-site-codigo-pai]");
+  if (!pais.length) return;
+  let data = null;
+  let erro = "";
+  try { data = await obterChaveFormularioSite(); } catch (e) { erro = e.message || "Erro ao carregar o código"; }
+  pais.forEach((pai, i) => {
+    let alvo = pai.querySelector(".site-codigo-inline");
+    if (!alvo) {
+      alvo = document.createElement("div");
+      alvo.className = "site-codigo-inline";
+      pai.appendChild(alvo);
+    }
+    if (!data) {
+      alvo.innerHTML = `<div>Não foi possível carregar o código agora (${escaparHtml(erro)}). Ele também fica em <b>Integrações → Formulário do seu site</b>.</div>`;
+      return;
+    }
+    const idCampo = `site_codigo_inline_${i}`;
+    alvo.innerHTML = `
+      <textarea id="${idCampo}" readonly aria-label="Código do formulário do site">${escaparHtml(codigoFormularioSite(data.chave, false))}</textarea>
+      <div class="site-codigo-acoes">
+        <button type="button" class="btn" onclick="copiarCodigoFormularioSite(this, '${idCampo}')">Copiar código</button>
+      </div>
+      ${instrucoesInstalacaoSiteHtml()}`;
+  });
+}
+
 async function carregarFormularioSite() {
   const conteudo = document.getElementById("site_formulario_conteudo");
   if (!conteudo) return;
@@ -42960,6 +43119,7 @@ async function carregarFormularioSite() {
         <button type="button" class="btn" onclick="copiarCodigoFormularioSite(this, 'site_formulario_codigo')">Copiar código</button>
         <span id="site_formulario_status" style="font-size:12px;color:#94a3b8;"></span>
       </div>
+      ${instrucoesInstalacaoSiteHtml()}
       <details>
         <summary>Já tenho um formulário no meu site</summary>
         <p style="margin-top:8px;">Cole este código no site (ele só guarda a origem do anúncio, sem desenhar formulário) e, no envio do seu formulário, chame <code>PlataformaLeads.enviar({ nome, telefone, email, mensagem })</code>.</p>
@@ -43007,6 +43167,7 @@ async function gerarNovaChaveFormularioSite(botao) {
     const res = await fetch(`${API}/site-formulario/nova-chave`, { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Erro ao gerar nova chave");
+    _chaveFormularioSiteCache = null;
     await carregarFormularioSite();
   } catch (e) {
     alert(e.message || "Erro ao gerar nova chave");

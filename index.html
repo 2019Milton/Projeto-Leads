@@ -19447,17 +19447,18 @@ body.tema-claro .criar-campanha-descricao {
               <div id="destino_google_site_modo" class="destino-site-modo" style="display:none;">
                 <p class="destino-site-modo-titulo">Como levar a pessoa ao seu site?</p>
                 <div class="advanced-checks">
-                  <label>
-                    <input type="radio" name="campanha_google_site_modo" value="formulario" checked onchange="aplicarDestinoCampanhaGoogle()">
-                    Formulário + botão para o seu site <span class="destino-site-recomendado">recomendado</span>
+                  <label id="google_site_modo_formulario_label">
+                    <input type="radio" name="campanha_google_site_modo" id="google_site_modo_formulario" value="formulario" checked onchange="aplicarDestinoCampanhaGoogle()">
+                    Formulário + botão para o seu site <span class="destino-site-recomendado" id="google_site_modo_formulario_selo">recomendado</span>
                   </label>
                   <label>
                     <input type="radio" name="campanha_google_site_modo" value="direto" onchange="aplicarDestinoCampanhaGoogle()">
                     Direto para o site
                   </label>
                 </div>
-                <div id="destino_google_site_modo_formulario_info" class="channel-picker-status">O anúncio abre o formulário da própria rede: a plataforma recebe nome e telefone, acompanha o lead e devolve os sinais de qualidade e venda. No final, o botão <b>Visitar site</b> leva aa URL de destino preenchida abaixo. Você não precisa instalar nada no site.</div>
-                <div id="destino_google_site_modo_direto_info" class="channel-picker-status alerta" style="display:none;" data-site-codigo-pai>O clique abre direto o seu site. A plataforma <b>não recebe</b> nome e telefone de quem preencher o formulário do site: as conversões aparecem só como números nos resultados da campanha (se o site tiver o tag do Google). Para receber os leads aqui, cole o código de <b>Integrações → Formulário do seu site</b>.</div>
+                <div id="destino_google_site_modo_display_info" class="channel-picker-status" style="display:none;">No Display o Google não oferece formulário de leads — ele existe só em anúncios de <b>Pesquisa</b>. Para usar "Formulário + botão para o seu site", selecione Pesquisa em "Tipo de campanha".</div>
+                <div id="destino_google_site_modo_formulario_info" class="channel-picker-status">O anúncio abre o formulário da própria rede: a plataforma recebe nome e telefone, acompanha o lead e devolve os sinais de qualidade e venda. No final, o botão <b>Visitar site</b> leva à URL de destino preenchida abaixo. Você não precisa instalar nada no site.</div>
+                <div id="destino_google_site_modo_direto_info" class="channel-picker-status alerta" style="display:none;" data-site-codigo-pai>O clique abre direto o seu site. A plataforma <b>não recebe</b> nome e telefone de quem preencher o formulário do site: as conversões aparecem só como números nos resultados da campanha (se o site tiver a tag do Google). Para receber os leads aqui, cole o código de <b>Integrações → Formulário do seu site</b>.</div>
               </div>
               <div id="destino_google_site_info" class="channel-picker-status" style="display:none;">
                 O clique principal será direcionado para a URL de destino preenchida abaixo.
@@ -29808,9 +29809,26 @@ async function aplicarDestinoCampanhaGoogle() {
 
   const blocoModoSiteGoogle = document.getElementById("destino_google_site_modo");
   if (blocoModoSiteGoogle) {
-    blocoModoSiteGoogle.style.display =
-      googleEmFoco && valor === "site" && tipoCampanhaGoogleSelecionado !== "display" ? "" : "none";
+    blocoModoSiteGoogle.style.display = googleEmFoco && valor === "site" ? "" : "none";
   }
+  // No Display a opção de formulário aparece desabilitada, com o motivo: o
+  // formulário de leads do Google só existe em anúncios de Pesquisa.
+  const emDisplay = tipoCampanhaGoogleSelecionado === "display";
+  const radioFormularioGoogle = document.getElementById("google_site_modo_formulario");
+  const labelFormularioGoogle = document.getElementById("google_site_modo_formulario_label");
+  const seloFormularioGoogle = document.getElementById("google_site_modo_formulario_selo");
+  if (radioFormularioGoogle) radioFormularioGoogle.disabled = emDisplay;
+  if (emDisplay) {
+    const radioDiretoGoogle = document.querySelector('input[name="campanha_google_site_modo"][value="direto"]');
+    if (radioDiretoGoogle) radioDiretoGoogle.checked = true;
+  }
+  if (labelFormularioGoogle) {
+    labelFormularioGoogle.classList.toggle("google-destino-indisponivel", emDisplay);
+    labelFormularioGoogle.title = emDisplay ? "Disponível somente em campanhas de Pesquisa." : "";
+  }
+  if (seloFormularioGoogle) seloFormularioGoogle.textContent = emDisplay ? "só em Pesquisa" : "recomendado";
+  const infoModoDisplayGoogle = document.getElementById("destino_google_site_modo_display_info");
+  if (infoModoDisplayGoogle) infoModoDisplayGoogle.style.display = emDisplay ? "" : "none";
   const infoModoFormularioGoogle = document.getElementById("destino_google_site_modo_formulario_info");
   const infoModoDiretoGoogle = document.getElementById("destino_google_site_modo_direto_info");
   if (infoModoFormularioGoogle) infoModoFormularioGoogle.style.display = modoSiteGoogle === "formulario" ? "" : "none";

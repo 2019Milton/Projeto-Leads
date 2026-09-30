@@ -18700,6 +18700,11 @@ body.tema-claro .criar-campanha-descricao {
             .destino-site-modo-titulo { font-size:13px; font-weight:700; margin:0 0 8px; }
             .destino-site-modo .advanced-checks { margin-bottom:8px; }
             .site-codigo-inline { margin-top:10px; }
+            .site-codigo-status { font-size:12px; line-height:1.6; padding:8px 10px; border-radius:8px; margin-bottom:8px; }
+            .site-codigo-status.ok { background:rgba(34,197,94,.12); color:#bbf7d0; }
+            .site-codigo-status.alerta { background:rgba(245,158,11,.12); color:#fde68a; }
+            body.tema-claro .site-codigo-status.ok { color:#166534; }
+            body.tema-claro .site-codigo-status.alerta { color:#92400e; }
             .site-codigo-inline textarea { width:100%; box-sizing:border-box; font-family:monospace; font-size:12px; line-height:1.5; min-height:64px; resize:vertical; background:#0a1323; color:#e2e8f0; border:1px solid #334155; border-radius:8px; padding:8px 10px; }
             .site-codigo-inline .site-codigo-acoes { display:flex; gap:8px; align-items:center; margin:8px 0; }
             .site-codigo-inline .site-codigo-acoes button { width:auto; margin:0; padding:7px 12px; font-size:12px; }
@@ -19873,7 +19878,7 @@ body.tema-claro .criar-campanha-descricao {
                       <h4>∞ Meta Ads</h4>
                       <span class="iapm-platform-state">Otimização depende do destino</span>
                     </div>
-                    <p><b>Formulário:</b> a plataforma envia cada etapa do funil no formato de CRM exigido pela Meta — primeiro contato (<i>Contacted</i>), em conversa (<i>In Conversation</i>), <b>lead qualificado</b>, <b>negócio fechado</b> com o valor da venda e perdido (<i>Lost</i>). <b>WhatsApp:</b> envia <i>QualifiedLead</i> e, no fechamento, <i>Purchase</i> com o valor — os nomes que a Meta aceita para conversas de anúncio. <b>Site:</b> com o formulário do site (em Integrações), envia <i>Lead</i> na chegada, <b>lead qualificado</b> e <i>Purchase</i> com o valor da venda, identificando a pessoa pelo clique do anúncio. Para novos conjuntos de formulário instantâneo, tenta configurar a otimização por lead qualificado; se a Meta rejeitar, usa a configuração padrão. Campanhas com destino WhatsApp ou site seguem outro fluxo e não recebem essa configuração automaticamente.</p>
+                    <p><b>Formulário:</b> a plataforma envia cada etapa do funil no formato de CRM exigido pela Meta — primeiro contato (<i>Contacted</i>), em conversa (<i>In Conversation</i>), <b>lead qualificado</b>, <b>negócio fechado</b> com o valor da venda e perdido (<i>Lost</i>). <b>WhatsApp:</b> envia <i>QualifiedLead</i> e, no fechamento, <i>Purchase</i> com o valor — os nomes que a Meta aceita para conversas de anúncio. <b>Site:</b> com o formulário do site (em Integrações), envia <i>Lead</i> na chegada, <b>lead qualificado</b> e <i>Purchase</i> com o valor da venda, identificando a pessoa pelo clique do anúncio. Para novos conjuntos de formulário instantâneo, tenta configurar a otimização por lead qualificado; se a Meta rejeitar, usa a configuração padrão. Campanhas <b>direto para o site</b> passam a otimizar por quem preenche o formulário quando o código do formulário está instalado no site (sem ele, otimizam por visitas). Campanhas com destino WhatsApp seguem outro fluxo.</p>
                     <p>O envio dos eventos não altera a otimização de conjuntos existentes. Confira a meta de desempenho efetivamente aplicada no Gerenciador de Anúncios antes de concluir que a campanha está otimizando por qualidade.</p>
                   </article>
 
@@ -43082,6 +43087,25 @@ function instrucoesInstalacaoSiteHtml() {
     </div>`;
 }
 
+// Código instalado no site? (backend registra quando uma página do site
+// carrega o script). Decide se a campanha Meta "Direto para o site" otimiza
+// por quem preenche o formulário (lead) ou só por visitas à página.
+function statusCodigoSiteHtml(data) {
+  if (!data) return "";
+  if (data.codigo_visto_em) {
+    const quando = new Date(data.codigo_visto_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+    const onde = data.codigo_dominio ? ` em <b>${escaparHtml(data.codigo_dominio)}</b>` : "";
+    const otimizacao = data.otimizacao_meta === "lead"
+      ? "Campanhas da Meta com <b>Direto para o site</b> vão otimizar por quem <b>preenche o formulário</b>, não só por quem abre a página."
+      : `Campanhas da Meta com <b>Direto para o site</b> otimizam por visitas (${escaparHtml(data.otimizacao_meta_motivo || "")}).`;
+    return `<div class="site-codigo-status ok">✅ Código detectado${onde} (último acesso ${escaparHtml(quando)}). ${otimizacao}</div>`;
+  }
+  if (data.otimizacao_meta === "lead") {
+    return `<div class="site-codigo-status ok">✅ Já chegaram leads pelo formulário do seu site. Campanhas da Meta com <b>Direto para o site</b> vão otimizar por quem <b>preenche o formulário</b>.</div>`;
+  }
+  return `<div class="site-codigo-status alerta">⚠️ Ainda não detectamos o código no seu site. Enquanto isso, campanhas da Meta com <b>Direto para o site</b> otimizam só por visitas à página. Depois de colar o código, abra a página do site uma vez para a plataforma detectar.</div>`;
+}
+
 let _chaveFormularioSiteCache = null;
 
 async function obterChaveFormularioSite() {
@@ -43114,6 +43138,7 @@ async function carregarCodigoSiteNaCriacao() {
     }
     const idCampo = `site_codigo_inline_${i}`;
     alvo.innerHTML = `
+      ${statusCodigoSiteHtml(data)}
       <textarea id="${idCampo}" readonly aria-label="Código do formulário do site">${escaparHtml(codigoFormularioSite(data.chave, false))}</textarea>
       <div class="site-codigo-acoes">
         <button type="button" class="btn" onclick="copiarCodigoFormularioSite(this, '${idCampo}')">Copiar código</button>
@@ -43132,6 +43157,7 @@ async function carregarFormularioSite() {
     const stats = data.estatisticas || {};
     const redes = (data.por_rede || []).map(r => `${escaparHtml(r.rede)}: ${Number(r.total)}`).join(" · ");
     conteudo.innerHTML = `
+      ${statusCodigoSiteHtml(data)}
       <textarea id="site_formulario_codigo" readonly aria-label="Código do formulário do site">${escaparHtml(codigoFormularioSite(data.chave, false))}</textarea>
       <div class="site-form-acoes">
         <button type="button" class="btn" onclick="copiarCodigoFormularioSite(this, 'site_formulario_codigo')">Copiar código</button>

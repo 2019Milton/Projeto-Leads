@@ -414,7 +414,7 @@
   }
 
   function labelStatusFinanceiro(status) {
-    return ({ aguardando_pagamento: "Aguardando pagamento", comprovante_enviado: "Em conferência", pago: "Pago", ativo: "Ativo", desativado: "Desativado", aguardando_configuracao: "Aguardando ativação", nao_cobrado: "Não cobrado" })[String(status || "").toLowerCase()] || String(status || "—").replace(/_/g, " ");
+    return ({ aguardando_pagamento: "Aguardando pagamento", comprovante_enviado: "Em conferência", pago: "Pago", ativo: "Ativo", desativado: "Desativado", aguardando_configuracao: "Aguardando ativação", pronto_para_ativar: "Preparado · sem linha", provisionando: "Ativando linha", erro: "Erro de ativação", nao_cobrado: "Não cobrado" })[String(status || "").toLowerCase()] || String(status || "—").replace(/_/g, " ");
   }
 
   async function carregarStatusWhatsapp(forcar = false) {

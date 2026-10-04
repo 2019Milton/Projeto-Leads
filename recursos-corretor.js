@@ -3,6 +3,11 @@
 
   let conversaSelecionadaId = null;
   let atualizacaoConversas = null;
+  let whatsappPainelPronto = false;
+  let whatsappDiagnosticoCarregado = false;
+  let modelosWhatsappPainel = [];
+  let modelosWhatsappCarregados = false;
+  let envioMidiaPainel = false;
 
   const htmlSeguro = (valor) => escaparHtml(String(valor ?? ""));
 
@@ -36,7 +41,8 @@
       #app.sidebar-ativa.campanhas-layout-ativo #app-content-area>#gt_barra_contexto{grid-column:1/-1;grid-row:2;width:auto;max-width:none;margin:0 12px 16px}
       #app.sidebar-ativa.campanhas-layout-ativo #app-content-area>#card-campanhas.secao-visivel{grid-row:3}
       .gt-recursos-resumo{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 13px}.gt-recurso-status{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #334155;border-radius:999px;background:#101b2d;color:#94a3b8;font-size:10px;font-weight:800}.gt-recurso-status.ativo{border-color:rgba(34,197,94,.34);background:rgba(34,197,94,.08);color:#86efac}.gt-recurso-status.espera{border-color:rgba(245,158,11,.34);background:rgba(245,158,11,.08);color:#fbbf24}.gt-recurso-linha{display:flex;align-items:flex-start;gap:14px;padding:15px 0;border-bottom:1px solid #223149}.gt-recurso-linha:last-of-type{border-bottom:0}.gt-recurso-texto{min-width:0;flex:1}.gt-recurso-texto strong{display:block;color:#f8fafc;font-size:14px}.gt-recurso-texto p{margin:5px 0 0;color:#8494aa;font-size:11px;line-height:1.5}.gt-switch{position:relative;width:48px;height:26px;flex:0 0 48px}.gt-switch input{position:absolute;opacity:0;pointer-events:none}.gt-switch span{position:absolute;inset:0;border:1px solid #475569;border-radius:999px;background:#1e293b;cursor:pointer;transition:.18s}.gt-switch span:after{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#94a3b8;transition:.18s}.gt-switch input:checked+span{border-color:#22c55e;background:#15803d}.gt-switch input:checked+span:after{left:25px;background:#fff}.gt-switch input:disabled+span{opacity:.55;cursor:wait}.gt-sem-custo{margin-top:15px;padding:12px 14px;border:1px solid rgba(59,130,246,.24);border-radius:11px;background:rgba(37,99,235,.08);color:#a7c7ff;font-size:11px;line-height:1.55}.gt-sem-custo b{color:#dbeafe}.gt-fin-box{width:min(780px,100%)}.gt-fin-secao{margin-top:16px;padding-top:15px;border-top:1px solid #26364d}.gt-fin-secao h4{margin:0 0 5px;color:#fff}.gt-fin-secao>p{margin:0 0 12px;color:#8090a7;font-size:11px;line-height:1.45}.gt-fin-box textarea{width:100%;min-height:68px;box-sizing:border-box;border:1px solid #34445d;border-radius:9px;background:#111f33;color:#fff;padding:10px}
-      .pc-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.pc-nav-btn{border:1px solid #2a3c55;border-radius:10px;padding:9px 13px;background:#101d31;color:#94a3b8;font-weight:800;cursor:pointer}.pc-nav-btn.ativo{border-color:#3b82f6;background:rgba(37,99,235,.16);color:#dbeafe}.pc-area[hidden]{display:none!important}.pc-whatsapp{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.7fr);min-height:610px;border:1px solid #20314a;border-radius:16px;overflow:hidden;background:#0b1728}.pc-conversas-coluna{border-right:1px solid #20314a;background:#0d1a2c}.pc-recurso-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px;border-bottom:1px solid #20314a}.pc-recurso-topo h2{margin:0;color:#fff;font-size:17px}.pc-recurso-topo p{margin:4px 0 0;color:#7889a2;font-size:11px}.pc-filtro{margin:0!important;width:auto!important;min-width:145px;border:1px solid #31445f!important;background:#101f34!important;color:#dbeafe!important}.pc-conversas-lista{max-height:545px;overflow:auto}.pc-conversa-item{display:block;width:100%;padding:14px 16px;border:0;border-bottom:1px solid #1c2d43;background:transparent;color:inherit;text-align:left;cursor:pointer}.pc-conversa-item:hover,.pc-conversa-item.ativo{background:#13233a}.pc-conversa-linha{display:flex;align-items:center;justify-content:space-between;gap:10px}.pc-conversa-item strong{overflow:hidden;color:#edf3fb;font-size:13px;text-overflow:ellipsis;white-space:nowrap}.pc-conversa-item small{color:#71829a;font-size:10px}.pc-conversa-item p{overflow:hidden;margin:7px 0 0;color:#91a1b6;font-size:11px;text-overflow:ellipsis;white-space:nowrap}.pc-nao-lidas{min-width:18px;padding:3px 5px;border-radius:999px;background:#22c55e;color:#052e16;font-size:9px;font-weight:900;text-align:center}.pc-chat{display:flex;min-width:0;flex-direction:column}.pc-chat-cabecalho{min-height:72px}.pc-chat-acoes{display:flex;gap:7px;flex-wrap:wrap}.pc-chat-acoes button{border:1px solid #334155;border-radius:8px;padding:7px 9px;background:#142238;color:#cbd5e1;font-size:10px;cursor:pointer}.pc-mensagens{display:flex;min-height:420px;max-height:470px;flex:1;flex-direction:column;gap:9px;overflow:auto;padding:18px;background:radial-gradient(circle at 100% 0,rgba(37,99,235,.08),transparent 35%)}.pc-mensagem{align-self:flex-start;max-width:min(78%,620px);padding:10px 12px;border:1px solid #2b3d57;border-radius:5px 13px 13px 13px;background:#14233a;color:#e2e8f0;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.pc-mensagem.saida{align-self:flex-end;border-color:rgba(34,197,94,.25);border-radius:13px 5px 13px 13px;background:#123329}.pc-mensagem small{display:block;margin-top:5px;color:#728198;font-size:9px;text-align:right}.pc-compose{display:flex;gap:9px;padding:13px;border-top:1px solid #20314a}.pc-compose textarea{min-height:44px;max-height:120px;flex:1;resize:vertical;margin:0!important;border:1px solid #31445f!important;background:#101f34!important;color:#fff!important}.pc-compose button{border:0;border-radius:10px;padding:0 17px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-weight:850;cursor:pointer}.pc-compose button:disabled,.pc-compose textarea:disabled{opacity:.5;cursor:not-allowed}.pc-aviso-janela{padding:8px 13px;border-top:1px solid rgba(245,158,11,.2);background:rgba(245,158,11,.07);color:#fbbf24;font-size:10px}.pc-voip-grade{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px}.pc-voip-estado{display:grid;place-items:center;min-height:260px;text-align:center}.pc-voip-icone{display:grid;place-items:center;width:68px;height:68px;margin:0 auto 15px;border:1px solid rgba(59,130,246,.3);border-radius:22px;background:rgba(37,99,235,.12);font-size:30px}.pc-voip-estado h2{margin:0 0 8px;color:#fff}.pc-voip-estado p{max-width:470px;margin:0 auto;color:#91a1b6;line-height:1.55}.pc-sem-cobranca{display:inline-block;margin-top:14px;padding:7px 10px;border:1px solid rgba(34,197,94,.28);border-radius:999px;background:rgba(34,197,94,.08);color:#86efac;font-size:10px;font-weight:850}.pc-discador{margin-top:16px}.pc-discador input{margin:0 0 9px!important;background:#0e1b2d!important;color:#dbeafe!important}.pc-discador button{width:100%;border:0;border-radius:10px;padding:11px;background:#334155;color:#94a3b8;font-weight:850}.pc-chamada-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #1c2d43}.pc-chamada-item strong{display:block;color:#e8edf7;font-size:12px}.pc-chamada-item span{display:block;margin-top:4px;color:#77889f;font-size:10px}.pc-chamada-item b{color:#a5b4fc;font-size:10px}.pc-fin-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:16px}.pc-fin-total{border-color:rgba(34,197,94,.28);background:linear-gradient(145deg,rgba(21,128,61,.18),rgba(10,21,38,.98))}.pc-fin-itens{margin-top:7px}.pc-fin-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #1c2d43}.pc-fin-item strong{display:block;color:#e8edf7;font-size:13px}.pc-fin-item span{display:block;margin-top:4px;color:#77889f;font-size:10px}.pc-fin-item b{color:#fff;font-size:13px}.pc-fin-tag{display:inline-block!important;width:max-content;padding:3px 6px;border:1px solid #334155;border-radius:999px;color:#94a3b8!important}.pc-fin-tag.ativo{border-color:rgba(34,197,94,.3);color:#86efac!important}.pc-fin-alerta{margin-top:14px;padding:13px;border:1px solid rgba(245,158,11,.22);border-radius:11px;background:rgba(245,158,11,.07);color:#fcd34d;font-size:11px;line-height:1.55}.pc-fin-custos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.pc-fin-custo{padding:10px;border:1px solid #26374f;border-radius:9px;background:#0d1a2b;color:#91a1b6;font-size:10px}@media(max-width:820px){.pc-whatsapp,.pc-voip-grade{grid-template-columns:1fr}.pc-conversas-coluna{border-right:0;border-bottom:1px solid #20314a}.pc-conversas-lista{max-height:280px}.pc-mensagens{min-height:360px}.pc-recurso-topo{align-items:flex-start;flex-direction:column}.pc-fin-resumo,.pc-fin-custos{grid-template-columns:1fr}}
+      .pc-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}.pc-nav-btn{border:1px solid #2a3c55;border-radius:10px;padding:9px 13px;background:#101d31;color:#94a3b8;font-weight:800;cursor:pointer}.pc-nav-btn.ativo{border-color:#3b82f6;background:rgba(37,99,235,.16);color:#dbeafe}.pc-area[hidden]{display:none!important}.pc-whatsapp{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.7fr);min-height:610px;border:1px solid #20314a;border-radius:16px;overflow:hidden;background:#0b1728}.pc-conversas-coluna{border-right:1px solid #20314a;background:#0d1a2c}.pc-recurso-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px;border-bottom:1px solid #20314a}.pc-recurso-topo h2{margin:0;color:#fff;font-size:17px}.pc-recurso-topo p{margin:4px 0 0;color:#7889a2;font-size:11px}.pc-filtro{margin:0!important;width:auto!important;min-width:145px;border:1px solid #31445f!important;background:#101f34!important;color:#dbeafe!important}.pc-conversas-lista{max-height:545px;overflow:auto}.pc-conversa-item{display:block;width:100%;padding:14px 16px;border:0;border-bottom:1px solid #1c2d43;background:transparent;color:inherit;text-align:left;cursor:pointer}.pc-conversa-item:hover,.pc-conversa-item.ativo{background:#13233a}.pc-conversa-linha{display:flex;align-items:center;justify-content:space-between;gap:10px}.pc-conversa-item strong{overflow:hidden;color:#edf3fb;font-size:13px;text-overflow:ellipsis;white-space:nowrap}.pc-conversa-item small{color:#71829a;font-size:10px}.pc-conversa-item p{overflow:hidden;margin:7px 0 0;color:#91a1b6;font-size:11px;text-overflow:ellipsis;white-space:nowrap}.pc-nao-lidas{min-width:18px;padding:3px 5px;border-radius:999px;background:#22c55e;color:#052e16;font-size:9px;font-weight:900;text-align:center}.pc-chat{display:flex;min-width:0;flex-direction:column}.pc-chat-cabecalho{min-height:72px}.pc-chat-acoes{display:flex;gap:7px;flex-wrap:wrap}.pc-chat-acoes button{border:1px solid #334155;border-radius:8px;padding:7px 9px;background:#142238;color:#cbd5e1;font-size:10px;cursor:pointer}.pc-mensagens{display:flex;min-height:420px;max-height:470px;flex:1;flex-direction:column;gap:9px;overflow:auto;padding:18px;background:radial-gradient(circle at 100% 0,rgba(37,99,235,.08),transparent 35%)}.pc-mensagem{align-self:flex-start;max-width:min(78%,620px);padding:10px 12px;border:1px solid #2b3d57;border-radius:5px 13px 13px 13px;background:#14233a;color:#e2e8f0;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.pc-mensagem.saida{align-self:flex-end;border-color:rgba(34,197,94,.25);border-radius:13px 5px 13px 13px;background:#123329}.pc-mensagem small{display:block;margin-top:5px;color:#728198;font-size:9px;text-align:right}.pc-compose{display:flex;gap:9px;padding:13px;border-top:1px solid #20314a}.pc-compose textarea{min-height:44px;max-height:120px;flex:1;resize:vertical;margin:0!important;border:1px solid #31445f!important;background:#101f34!important;color:#fff!important}.pc-compose button{border:0;border-radius:10px;padding:0 17px;background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;font-weight:850;cursor:pointer}.pc-compose button:disabled,.pc-compose textarea:disabled{opacity:.5;cursor:not-allowed}.pc-aviso-janela{padding:8px 13px;border-top:1px solid rgba(245,158,11,.2);background:rgba(245,158,11,.07);color:#fbbf24;font-size:10px}.pc-voip-grade{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px}.pc-voip-estado{display:grid;place-items:center;min-height:260px;text-align:center}.pc-voip-icone{display:grid;place-items:center;width:68px;height:68px;margin:0 auto 15px;border:1px solid rgba(59,130,246,.3);border-radius:22px;background:rgba(37,99,235,.12);font-size:30px}.pc-voip-estado h2{margin:0 0 8px;color:#fff}.pc-voip-estado p{max-width:470px;margin:0 auto;color:#91a1b6;line-height:1.55}.pc-sem-cobranca{display:inline-block;margin-top:14px;padding:7px 10px;border:1px solid rgba(34,197,94,.28);border-radius:999px;background:rgba(34,197,94,.08);color:#86efac;font-size:10px;font-weight:850}.pc-discador{margin-top:16px}.pc-discador input{margin:0 0 9px!important;background:#0e1b2d!important;color:#dbeafe!important}.pc-discador button{width:100%;border:0;border-radius:10px;padding:11px;background:#334155;color:#94a3b8;font-weight:850}.pc-chamada-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #1c2d43}.pc-chamada-item strong{display:block;color:#e8edf7;font-size:12px}.pc-chamada-item span{display:block;margin-top:4px;color:#77889f;font-size:10px}.pc-chamada-item b{color:#a5b4fc;font-size:10px}.pc-fin-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:16px}.pc-fin-total{border-color:rgba(34,197,94,.28);background:linear-gradient(145deg,rgba(21,128,61,.18),rgba(10,21,38,.98))}.pc-fin-itens{margin-top:7px}.pc-fin-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #1c2d43}.pc-fin-item strong{display:block;color:#e8edf7;font-size:13px}.pc-fin-item span{display:block;margin-top:4px;color:#77889f;font-size:10px}.pc-fin-item b{color:#fff;font-size:13px}.pc-fin-tag{display:inline-block!important;width:max-content;padding:3px 6px;border:1px solid #334155;border-radius:999px;color:#94a3b8!important}.pc-fin-tag.ativo{border-color:rgba(34,197,94,.3);color:#86efac!important}.pc-fin-alerta{margin-top:14px;padding:13px;border:1px solid rgba(245,158,11,.22);border-radius:11px;background:rgba(245,158,11,.07);color:#fcd34d;font-size:11px;line-height:1.55}.pc-fin-custos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.pc-fin-custo{padding:10px;border:1px solid #26374f;border-radius:9px;background:#0d1a2b;color:#91a1b6;font-size:10px}.pc-whatsapp-status{display:inline-flex;align-items:center;gap:6px}.pc-whatsapp-status:before{content:"";width:7px;height:7px;border-radius:50%;background:#64748b;box-shadow:0 0 0 3px rgba(100,116,139,.12)}.pc-whatsapp-status.pronto{color:#86efac!important}.pc-whatsapp-status.pronto:before{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.13)}.pc-whatsapp-status.alerta{color:#fbbf24!important}.pc-whatsapp-status.alerta:before{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.13)}.pc-whatsapp-status.erro{color:#fca5a5!important}.pc-whatsapp-status.erro:before{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.13)}.pc-template-box{padding:12px 13px;border-top:1px solid rgba(59,130,246,.22);background:rgba(37,99,235,.08)}.pc-template-box[hidden]{display:none!important}.pc-template-box strong{display:block;color:#dbeafe;font-size:11px}.pc-template-box small{display:block;margin-top:4px;color:#8fa6c4;font-size:10px;line-height:1.4}.pc-template-acoes{display:flex;gap:8px;margin-top:9px}.pc-template-acoes select{min-width:0;flex:1;margin:0!important;border:1px solid #31445f!important;background:#101f34!important;color:#dbeafe!important}.pc-template-acoes button{border:0;border-radius:9px;padding:8px 12px;background:#2563eb;color:#fff;font-size:10px;font-weight:850;cursor:pointer}.pc-template-acoes button:disabled{opacity:.5;cursor:not-allowed}.pc-compose .pc-anexo-btn{flex:0 0 42px;width:42px;padding:0!important;border:1px solid #31445f!important;background:#142238!important;color:#cbd5e1!important;font-size:17px}.pc-compose .pc-anexo-btn:hover:not(:disabled){background:#1e3150!important}.pc-compose .pc-anexo-btn:disabled{opacity:.45}.pc-upload-status{padding:7px 13px;border-top:1px solid rgba(59,130,246,.16);background:rgba(37,99,235,.05);color:#93c5fd;font-size:10px}
+@media(max-width:820px){.pc-whatsapp,.pc-voip-grade{grid-template-columns:1fr}.pc-conversas-coluna{border-right:0;border-bottom:1px solid #20314a}.pc-conversas-lista{max-height:280px}.pc-mensagens{min-height:360px}.pc-recurso-topo{align-items:flex-start;flex-direction:column}.pc-fin-resumo,.pc-fin-custos{grid-template-columns:1fr}}
     `;
     document.head.appendChild(estilo);
   }
@@ -233,10 +239,109 @@
     return ({ aguardando_pagamento: "Aguardando pagamento", comprovante_enviado: "Em conferência", pago: "Pago", ativo: "Ativo", desativado: "Desativado", aguardando_configuracao: "Aguardando ativação", nao_cobrado: "Não cobrado" })[String(status || "").toLowerCase()] || String(status || "—").replace(/_/g, " ");
   }
 
-  window.navegarPainelCliente = function navegarPainelCliente(area) {
+  async function carregarStatusWhatsapp(forcar = false) {
+    const statusEl = document.getElementById("pc_whatsapp_status_texto");
+    if (!statusEl) return whatsappPainelPronto;
+
+    if (whatsappDiagnosticoCarregado && !forcar) {
+      return whatsappPainelPronto;
+    }
+
+    statusEl.className = "pc-whatsapp-status";
+    statusEl.textContent = "Verificando conexão oficial...";
+
+    try {
+      const diagnostico = await requisicaoPainel("/whatsapp/diagnostico");
+      whatsappDiagnosticoCarregado = true;
+      whatsappPainelPronto =
+        diagnostico.conectado === true &&
+        diagnostico.pronto_para_mensagens === true;
+
+      if (whatsappPainelPronto) {
+        statusEl.className = "pc-whatsapp-status pronto";
+        statusEl.textContent = "WhatsApp Business pronto para atendimento";
+      } else if (diagnostico.conectado === true) {
+        statusEl.className = "pc-whatsapp-status alerta";
+        const detalhes = [];
+        if (diagnostico.conta_aprovada === false) detalhes.push("conta em análise");
+        if (diagnostico.numero_status && diagnostico.numero_status !== "CONNECTED") detalhes.push("número não conectado");
+        if (diagnostico.webhook_inscrito === false) detalhes.push("webhook pendente");
+        if (Array.isArray(diagnostico.permissoes_ausentes) && diagnostico.permissoes_ausentes.length) detalhes.push("permissões incompletas");
+        statusEl.textContent = detalhes.length
+          ? `WhatsApp conectado, mas ainda não pronto: ${detalhes.join(", ")}`
+          : "WhatsApp conectado, mas ainda não está pronto para mensagens";
+      } else {
+        statusEl.className = "pc-whatsapp-status erro";
+        statusEl.textContent = "WhatsApp oficial ainda não conectado";
+      }
+    } catch (err) {
+      whatsappDiagnosticoCarregado = true;
+      whatsappPainelPronto = false;
+      statusEl.className = "pc-whatsapp-status erro";
+      statusEl.textContent = err?.message || "Não foi possível validar o WhatsApp";
+    }
+
+    return whatsappPainelPronto;
+  }
+
+  async function carregarModelosWhatsappPainel(forcar = false) {
+    if (modelosWhatsappCarregados && !forcar) return modelosWhatsappPainel;
+
+    try {
+      const data = await requisicaoPainel("/painel-cliente/whatsapp/modelos");
+      modelosWhatsappPainel = Array.isArray(data.modelos) ? data.modelos : [];
+      modelosWhatsappCarregados = true;
+    } catch (_) {
+      modelosWhatsappPainel = [];
+      modelosWhatsappCarregados = true;
+    }
+
+    return modelosWhatsappPainel;
+  }
+
+  async function atualizarRetomadaPorModelo(conversa = {}) {
+    const box = document.getElementById("pc_template_box");
+    const select = document.getElementById("pc_template_select");
+    const botao = document.getElementById("pc_template_enviar");
+    const ajuda = document.getElementById("pc_template_ajuda");
+    if (!box || !select || !botao || !ajuda) return;
+
+    const janelaAberta = conversa.janela_atendimento_aberta === true;
+    box.hidden = janelaAberta || !whatsappPainelPronto;
+    if (box.hidden) return;
+
+    ajuda.textContent = "A janela de 24 horas terminou. Escolha um modelo aprovado pela Meta para retomar o contato.";
+    botao.disabled = true;
+    select.disabled = true;
+    select.innerHTML = '<option value="">Carregando modelos aprovados...</option>';
+
+    const modelos = await carregarModelosWhatsappPainel();
+
+    if (!modelos.length) {
+      select.innerHTML = '<option value="">Nenhum modelo aprovado compatível</option>';
+      ajuda.textContent = "Não há modelo aprovado disponível. O gestor precisa configurar ou aprovar um modelo na conexão do WhatsApp.";
+      return;
+    }
+
+    select.innerHTML = '<option value="">Selecione um modelo...</option>' + modelos.map((modelo, indice) => {
+      const resumo = String(modelo.corpo || modelo.nome || "").replace(/\s+/g, " ").slice(0, 80);
+      return `<option value="${indice}">${htmlSeguro(modelo.nome)} · ${htmlSeguro(resumo)}</option>`;
+    }).join("");
+    select.disabled = false;
+    botao.disabled = false;
+  }
+
+  window.navegarPainelCliente = async function navegarPainelCliente(area) {
     document.querySelectorAll(".pc-area").forEach((elemento) => { elemento.hidden = elemento.id !== `pc_area_${area}`; });
     document.querySelectorAll(".pc-nav-btn").forEach((botao) => botao.classList.toggle("ativo", botao.dataset.area === area));
-    if (area === "whatsapp") carregarConversas(true);
+
+    if (area === "whatsapp") {
+      await carregarStatusWhatsapp();
+      carregarConversas(true);
+      if (conversaSelecionadaId) {
+        window.abrirConversaPainelCliente(conversaSelecionadaId, true);
+      }
+    }
     if (area === "voip") carregarVoip();
     if (area === "financeiro") carregarFinanceiroPainel();
   };
@@ -252,6 +357,7 @@
 
     const selo = app.querySelector(".pc-leitura");
     if (selo && whatsappAtivo) selo.textContent = "Acompanhamento + atendimento";
+
     const nav = document.createElement("nav");
     nav.className = "pc-nav";
     nav.setAttribute("aria-label", "Áreas do painel");
@@ -265,17 +371,26 @@
     visao.append(kpis, grid);
 
     let ultimo = visao;
+
     if (whatsappAtivo) {
       const area = document.createElement("section");
       area.id = "pc_area_whatsapp";
       area.className = "pc-area";
       area.hidden = true;
-      area.innerHTML = `<div class="pc-whatsapp"><aside class="pc-conversas-coluna"><div class="pc-recurso-topo"><div><h2>Conversas</h2><p>WhatsApp Business conectado</p></div><select id="pc_whatsapp_filtro" class="pc-filtro" onchange="carregarConversasPainelCliente()"><option value="">Todas</option><option value="humano">Atendimento humano</option><option value="bot">Bot atendendo</option><option value="aguardando_resposta">Aguardando resposta</option><option value="encerrada">Encerradas</option></select></div><div id="pc_conversas_lista" class="pc-conversas-lista"><div class="pc-vazio">Carregando conversas...</div></div></aside><div class="pc-chat"><div id="pc_chat_cabecalho" class="pc-recurso-topo pc-chat-cabecalho"><div><h2>Selecione uma conversa</h2><p>O histórico aparecerá aqui.</p></div></div><div id="pc_mensagens" class="pc-mensagens"><div class="pc-vazio">Escolha um contato para iniciar o atendimento.</div></div><div id="pc_aviso_janela" class="pc-aviso-janela" hidden></div><div class="pc-compose"><textarea id="pc_mensagem_texto" placeholder="Digite sua mensagem" disabled></textarea><button id="pc_enviar_mensagem" onclick="enviarMensagemPainelCliente()" disabled>Enviar</button></div></div></div>`;
+      area.innerHTML = `<div class="pc-whatsapp"><aside class="pc-conversas-coluna"><div class="pc-recurso-topo"><div><h2>Conversas</h2><p id="pc_whatsapp_status_texto" class="pc-whatsapp-status">Verificando conexão oficial...</p></div><select id="pc_whatsapp_filtro" class="pc-filtro" onchange="carregarConversasPainelCliente()"><option value="">Todas</option><option value="humano">Atendimento humano</option><option value="bot">Bot atendendo</option><option value="aguardando_resposta">Aguardando resposta</option><option value="encerrada">Encerradas</option></select></div><div id="pc_conversas_lista" class="pc-conversas-lista"><div class="pc-vazio">Carregando conversas...</div></div></aside><div class="pc-chat"><div id="pc_chat_cabecalho" class="pc-recurso-topo pc-chat-cabecalho"><div><h2>Selecione uma conversa</h2><p>O histórico aparecerá aqui.</p></div></div><div id="pc_mensagens" class="pc-mensagens"><div class="pc-vazio">Escolha um contato para iniciar o atendimento.</div></div><div id="pc_aviso_janela" class="pc-aviso-janela" hidden></div><div id="pc_template_box" class="pc-template-box" hidden><strong>Retomar conversa com modelo aprovado</strong><small id="pc_template_ajuda">Carregando...</small><div class="pc-template-acoes"><select id="pc_template_select"><option value="">Carregando...</option></select><button id="pc_template_enviar" onclick="enviarModeloPainelCliente()" disabled>Enviar modelo</button></div></div><div id="pc_upload_status" class="pc-upload-status" hidden></div><div class="pc-compose"><button id="pc_anexo_btn" class="pc-anexo-btn" type="button" title="Enviar imagem, áudio ou documento" onclick="document.getElementById('pc_midia_arquivo')?.click()" disabled>📎</button><input id="pc_midia_arquivo" type="file" hidden accept="image/jpeg,image/png,image/webp,audio/mpeg,audio/ogg,audio/mp4,audio/aac,audio/amr,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="enviarMidiaPainelCliente(this)"><textarea id="pc_mensagem_texto" placeholder="Digite sua mensagem" disabled></textarea><button id="pc_enviar_mensagem" onclick="enviarMensagemPainelCliente()" disabled>Enviar</button></div></div></div>`;
       ultimo.insertAdjacentElement("afterend", area);
       ultimo = area;
+
+      carregarStatusWhatsapp(true);
       carregarConversas();
+
       clearInterval(atualizacaoConversas);
-      atualizacaoConversas = setInterval(() => carregarConversas(true), 15000);
+      atualizacaoConversas = setInterval(() => {
+        carregarConversas(true);
+        if (conversaSelecionadaId) {
+          window.abrirConversaPainelCliente(conversaSelecionadaId, true);
+        }
+      }, 15000);
     }
 
     if (voipAtivo) {
@@ -300,10 +415,12 @@
     const lista = document.getElementById("pc_conversas_lista");
     if (!lista) return;
     if (!silencioso) lista.innerHTML = '<div class="pc-vazio">Carregando conversas...</div>';
+
     try {
       const filtro = document.getElementById("pc_whatsapp_filtro")?.value || "";
       const data = await requisicaoPainel(`/painel-cliente/whatsapp/conversas${filtro ? `?status=${encodeURIComponent(filtro)}` : ""}`);
       const conversas = Array.isArray(data.conversas) ? data.conversas : [];
+
       lista.innerHTML = conversas.length ? conversas.map((conversa) => {
         const nome = conversa.lead_nome || formatarTelefone(conversa.telefone_cliente);
         const naoLidas = Number(conversa.nao_lidas || 0);
@@ -316,34 +433,67 @@
 
   window.carregarConversasPainelCliente = () => carregarConversas(false);
 
-  window.abrirConversaPainelCliente = async function abrirConversaPainelCliente(id) {
+  window.abrirConversaPainelCliente = async function abrirConversaPainelCliente(id, silencioso = false) {
     conversaSelecionadaId = Number(id);
     const mensagensEl = document.getElementById("pc_mensagens");
-    if (mensagensEl) mensagensEl.innerHTML = '<div class="pc-vazio">Carregando histórico...</div>';
+    if (mensagensEl && !silencioso) {
+      mensagensEl.innerHTML = '<div class="pc-vazio">Carregando histórico...</div>';
+    }
+
     try {
+      if (!whatsappDiagnosticoCarregado) await carregarStatusWhatsapp();
+
       const data = await requisicaoPainel(`/painel-cliente/whatsapp/conversas/${conversaSelecionadaId}/mensagens`);
       const conversa = data.conversa || {};
       const nome = conversa.lead_nome || formatarTelefone(conversa.telefone_cliente);
+
       const cabecalho = document.getElementById("pc_chat_cabecalho");
-      if (cabecalho) cabecalho.innerHTML = `<div><h2>${htmlSeguro(nome)}</h2><p>${htmlSeguro(formatarTelefone(conversa.telefone_cliente))} · ${htmlSeguro(labelStatusConversa(conversa.status))}${conversa.campanha_nome ? ` · ${htmlSeguro(conversa.campanha_nome)}` : ""}</p></div><div class="pc-chat-acoes"><button onclick="atualizarStatusConversaPainel('humano')">Assumir</button><button onclick="atualizarStatusConversaPainel('bot')">Devolver ao bot</button><button onclick="atualizarStatusConversaPainel('encerrada')">Encerrar</button></div>`;
+      if (cabecalho) {
+        cabecalho.innerHTML = `<div><h2>${htmlSeguro(nome)}</h2><p>${htmlSeguro(formatarTelefone(conversa.telefone_cliente))} · ${htmlSeguro(labelStatusConversa(conversa.status))}${conversa.campanha_nome ? ` · ${htmlSeguro(conversa.campanha_nome)}` : ""}</p></div><div class="pc-chat-acoes"><button onclick="atualizarStatusConversaPainel('humano')">Assumir</button><button onclick="atualizarStatusConversaPainel('bot')">Devolver ao bot</button><button onclick="atualizarStatusConversaPainel('encerrada')">Encerrar</button></div>`;
+      }
+
       const mensagens = Array.isArray(data.mensagens) ? data.mensagens : [];
       if (mensagensEl) {
-        mensagensEl.innerHTML = mensagens.length ? mensagens.map((item) => `<div class="pc-mensagem ${item.direcao === "entrada" ? "" : "saida"}">${htmlSeguro(item.conteudo)}<small>${item.direcao === "entrada" ? "Contato" : "Você"} · ${formatarDataPainelCliente(item.criado_em, true)}</small></div>`).join("") : '<div class="pc-vazio">Ainda não há mensagens nesta conversa.</div>';
-        mensagensEl.scrollTop = mensagensEl.scrollHeight;
+        const estavaNoFim = mensagensEl.scrollHeight - mensagensEl.scrollTop - mensagensEl.clientHeight < 80;
+        mensagensEl.innerHTML = mensagens.length
+          ? mensagens.map((item) => `<div class="pc-mensagem ${item.direcao === "entrada" ? "" : "saida"}">${htmlSeguro(item.conteudo || "[mensagem sem texto]")}<small>${item.direcao === "entrada" ? "Contato" : "Você"} · ${formatarDataPainelCliente(item.criado_em, true)}</small></div>`).join("")
+          : '<div class="pc-vazio">Ainda não há mensagens nesta conversa.</div>';
+
+        if (!silencioso || estavaNoFim) mensagensEl.scrollTop = mensagensEl.scrollHeight;
       }
+
       const texto = document.getElementById("pc_mensagem_texto");
       const enviar = document.getElementById("pc_enviar_mensagem");
-      const podeResponder = conversa.janela_atendimento_aberta === true && conversa.status !== "encerrada";
+      const anexo = document.getElementById("pc_anexo_btn");
+      const podeResponder =
+        whatsappPainelPronto &&
+        conversa.janela_atendimento_aberta === true &&
+        conversa.status !== "encerrada";
+
       if (texto) texto.disabled = !podeResponder;
       if (enviar) enviar.disabled = !podeResponder;
+      if (anexo) anexo.disabled = !podeResponder || envioMidiaPainel;
+
       const aviso = document.getElementById("pc_aviso_janela");
       if (aviso) {
         aviso.hidden = podeResponder;
-        aviso.textContent = conversa.status === "encerrada" ? "Conversa encerrada. Assuma o atendimento para reabrir." : "A janela de 24 horas terminou. Para retomar o contato será necessário um modelo aprovado pela Meta.";
+        if (!whatsappPainelPronto) {
+          aviso.textContent = "O WhatsApp oficial desta conta não está pronto para enviar mensagens. Revise a conexão antes de atender.";
+        } else if (conversa.status === "encerrada" && conversa.janela_atendimento_aberta === true) {
+          aviso.textContent = "Conversa encerrada. Clique em Assumir para reabrir o atendimento.";
+        } else if (conversa.janela_atendimento_aberta !== true) {
+          aviso.textContent = "A janela de 24 horas terminou. Use um modelo aprovado abaixo para retomar o contato.";
+        } else {
+          aviso.textContent = "Atendimento temporariamente indisponível.";
+        }
       }
+
+      await atualizarRetomadaPorModelo(conversa);
       carregarConversas(true);
     } catch (err) {
-      if (mensagensEl) mensagensEl.innerHTML = `<div class="pc-vazio">${htmlSeguro(err.message)}</div>`;
+      if (mensagensEl && !silencioso) {
+        mensagensEl.innerHTML = `<div class="pc-vazio">${htmlSeguro(err.message)}</div>`;
+      }
     }
   };
 
@@ -352,9 +502,13 @@
     const botao = document.getElementById("pc_enviar_mensagem");
     const mensagem = String(texto?.value || "").trim();
     if (!conversaSelecionadaId || !mensagem) return;
+
     if (botao) botao.disabled = true;
     try {
-      await requisicaoPainel(`/painel-cliente/whatsapp/conversas/${conversaSelecionadaId}/mensagens`, { method: "POST", body: JSON.stringify({ mensagem }) });
+      await requisicaoPainel(`/painel-cliente/whatsapp/conversas/${conversaSelecionadaId}/mensagens`, {
+        method: "POST",
+        body: JSON.stringify({ mensagem })
+      });
       if (texto) texto.value = "";
       await window.abrirConversaPainelCliente(conversaSelecionadaId);
     } catch (err) {
@@ -364,10 +518,123 @@
     }
   };
 
+  async function uploadMidiaPainel(arquivo, tipo) {
+    const form = new FormData();
+    form.append("arquivo", arquivo);
+    form.append("tipo", tipo);
+
+    const res = await fetch(`${API}/painel-cliente/whatsapp/midia`, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + obterTokenSessaoAtual() },
+      body: form
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Não foi possível enviar o arquivo");
+    return data;
+  }
+
+  window.enviarMidiaPainelCliente = async function enviarMidiaPainelCliente(input) {
+    const arquivo = input?.files?.[0];
+    if (input) input.value = "";
+    if (!arquivo || !conversaSelecionadaId || envioMidiaPainel) return;
+
+    let tipo = "";
+    if (arquivo.type.startsWith("image/")) tipo = "imagem";
+    else if (arquivo.type.startsWith("audio/")) tipo = "audio";
+    else if (["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(arquivo.type)) tipo = "documento";
+
+    if (!tipo) {
+      alert("Formato não suportado. Envie imagem, áudio, PDF, DOC ou DOCX.");
+      return;
+    }
+    if (arquivo.size > 15 * 1024 * 1024) {
+      alert("Arquivo muito grande. O limite é 15 MB.");
+      return;
+    }
+
+    const anexo = document.getElementById("pc_anexo_btn");
+    const status = document.getElementById("pc_upload_status");
+    const texto = document.getElementById("pc_mensagem_texto");
+    envioMidiaPainel = true;
+    if (anexo) anexo.disabled = true;
+    if (status) {
+      status.hidden = false;
+      status.textContent = `Enviando ${arquivo.name || "arquivo"}...`;
+    }
+
+    try {
+      const midia = await uploadMidiaPainel(arquivo, tipo);
+      const legenda = tipo === "audio" ? "" : String(texto?.value || "").trim();
+
+      await requisicaoPainel(`/painel-cliente/whatsapp/conversas/${conversaSelecionadaId}/mensagens`, {
+        method: "POST",
+        body: JSON.stringify({
+          mensagem: legenda,
+          midia_id: midia.id,
+          midia_nome: arquivo.name || ""
+        })
+      });
+
+      if (texto && legenda) texto.value = "";
+      if (status) status.textContent = "Arquivo enviado.";
+      await window.abrirConversaPainelCliente(conversaSelecionadaId);
+    } catch (err) {
+      if (status) status.textContent = err.message || "Falha ao enviar o arquivo.";
+      alert(err.message);
+    } finally {
+      envioMidiaPainel = false;
+      if (anexo) anexo.disabled = !whatsappPainelPronto;
+      if (status) setTimeout(() => { status.hidden = true; }, 2200);
+    }
+  };
+
+  window.enviarModeloPainelCliente = async function enviarModeloPainelCliente() {
+    if (!conversaSelecionadaId) return;
+
+    const select = document.getElementById("pc_template_select");
+    const botao = document.getElementById("pc_template_enviar");
+    const indice = Number(select?.value);
+    const modelo = Number.isInteger(indice) ? modelosWhatsappPainel[indice] : null;
+
+    if (!modelo) {
+      alert("Selecione um modelo aprovado.");
+      return;
+    }
+
+    if (botao) {
+      botao.disabled = true;
+      botao.textContent = "Enviando...";
+    }
+
+    try {
+      await requisicaoPainel(`/painel-cliente/whatsapp/conversas/${conversaSelecionadaId}/modelo`, {
+        method: "POST",
+        body: JSON.stringify({ nome: modelo.nome, idioma: modelo.idioma })
+      });
+
+      await window.abrirConversaPainelCliente(conversaSelecionadaId);
+      const aviso = document.getElementById("pc_aviso_janela");
+      if (aviso) {
+        aviso.hidden = false;
+        aviso.textContent = "Modelo enviado. Aguarde a resposta do contato para a janela normal de atendimento ser reaberta.";
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      if (botao) {
+        botao.disabled = false;
+        botao.textContent = "Enviar modelo";
+      }
+    }
+  };
+
   window.atualizarStatusConversaPainel = async function atualizarStatusConversaPainel(status) {
     if (!conversaSelecionadaId) return;
     try {
-      await requisicaoPainel(`/painel-cliente/whatsapp/conversas/${conversaSelecionadaId}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+      await requisicaoPainel(`/painel-cliente/whatsapp/conversas/${conversaSelecionadaId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status })
+      });
       await window.abrirConversaPainelCliente(conversaSelecionadaId);
     } catch (err) {
       alert(err.message);
@@ -448,6 +715,11 @@
       iniciarPainelCliente = async function iniciarPainelComRecursos(perfil = {}) {
         clearInterval(atualizacaoConversas);
         conversaSelecionadaId = null;
+        whatsappPainelPronto = false;
+        whatsappDiagnosticoCarregado = false;
+        modelosWhatsappPainel = [];
+        modelosWhatsappCarregados = false;
+        envioMidiaPainel = false;
         removerControlesGestorDoPainelCliente();
         const retorno = await original.call(this, perfil);
         montarRecursosPainel(perfil);

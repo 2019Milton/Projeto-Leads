@@ -583,8 +583,12 @@
       alert(err.message);
     } finally {
       envioMidiaPainel = false;
-      if (anexo) anexo.disabled = !whatsappPainelPronto;
       if (status) setTimeout(() => { status.hidden = true; }, 2200);
+      if (conversaSelecionadaId) {
+        window.abrirConversaPainelCliente(conversaSelecionadaId, true);
+      } else if (anexo) {
+        anexo.disabled = true;
+      }
     }
   };
 
@@ -593,8 +597,9 @@
 
     const select = document.getElementById("pc_template_select");
     const botao = document.getElementById("pc_template_enviar");
-    const indice = Number(select?.value);
-    const modelo = Number.isInteger(indice) ? modelosWhatsappPainel[indice] : null;
+    const valorSelecionado = String(select?.value ?? "");
+    const indice = valorSelecionado === "" ? -1 : Number(valorSelecionado);
+    const modelo = Number.isInteger(indice) && indice >= 0 ? modelosWhatsappPainel[indice] : null;
 
     if (!modelo) {
       alert("Selecione um modelo aprovado.");

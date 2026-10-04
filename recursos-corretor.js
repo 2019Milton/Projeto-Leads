@@ -72,7 +72,8 @@
           <div class="gt-modal-topo"><div><h3>Recursos do painel do corretor</h3><p id="gt_recursos_cliente" class="gt-ajuda" style="margin-top:4px"></p></div><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_recursos')">✕</button></div>
           <input id="gt_recursos_id" type="hidden">
           <div class="gt-recurso-linha"><div class="gt-recurso-texto"><strong>💬 Conversas do WhatsApp</strong><p>Permite ao corretor visualizar e responder, no painel dele, as conversas do WhatsApp Business já conectado à conta.</p></div><label class="gt-switch" title="Habilitar conversas"><input id="gt_recurso_whatsapp" type="checkbox" onchange="alternarRecursoClienteGerenciado('atendimento_whatsapp_habilitado', this.checked, this)"><span></span></label></div>
-          <div class="gt-recurso-linha"><div class="gt-recurso-texto"><strong>📞 Telefonia VoIP</strong><p>Libera a área de ligações. Ela ficará aguardando configuração até você decidir contratar um provedor e um número para esse corretor.</p></div><label class="gt-switch" title="Habilitar telefonia"><input id="gt_recurso_voip" type="checkbox" onchange="alternarRecursoClienteGerenciado('voip_habilitado', this.checked, this)"><span></span></label></div>
+          <div class="gt-recurso-linha"><div class="gt-recurso-texto"><strong>📞 Telefonia VoIP</strong><p>Habilita o módulo no painel sem contratar nada. A linha real só é criada quando você usar a ação separada de ativação abaixo.</p></div><label class="gt-switch" title="Preparar módulo de telefonia"><input id="gt_recurso_voip" type="checkbox" onchange="alternarRecursoClienteGerenciado('voip_habilitado', this.checked, this)"><span></span></label></div>
+          <div id="gt_voip_ativacao" class="gt-voip-ativacao" hidden></div>
           <div id="gt_recursos_status" class="gt-recursos-resumo" style="margin-top:15px"></div>
           <div class="gt-sem-custo"><b>Sem cobrança agora:</b> habilitar estas opções apenas prepara e exibe os módulos. Nenhum número, operadora ou pacote de ligações será contratado automaticamente. Custos externos só começam depois de uma configuração futura e consciente.</div>
           <div class="gt-modal-acoes"><button class="gt-btn gt-btn-primary" onclick="fecharModalGestor('gt_modal_recursos')">Concluir</button></div>
@@ -111,12 +112,169 @@
     document.getElementById("gt_recursos_status").innerHTML = `<span class="gt-recurso-status ${whatsapp.classe}">${htmlSeguro(whatsapp.texto)}</span><span class="gt-recurso-status ${voip.classe}">${htmlSeguro(voip.texto)}</span>`;
   }
 
+
+  async function carregarEstadoVoipGestor(cliente = {}) {
+    const box = document.getElementById("gt_voip_ativacao");
+    if (!box) return;
+
+    if (!cliente.voip_habilitado) {
+      box.hidden = true;
+      box.innerHTML = "";
+      return;
+    }
+
+    box.hidden = false;
+    box.innerHTML = '<h4>Telefonia preparada</h4><p>Consultando a trava global de ativação...</p>';
+
+    try {
+      voipGlobalStatus = await requisicaoGestor("/gestor/voip/status");
+    } catch (err) {
+      voipGlobalStatus = null;
+      box.innerHTML = `<h4>Telefonia preparada</h4><p>${htmlSeguro(err.message || "Não foi possível consultar a configuração do provedor.")}</p><span class="gt-voip-lock alerta">Sem contratação automática</span>`;
+      return;
+    }
+
+    if (cliente.voip_status === "ativo" && cliente.voip_numero) {
+      box.innerHTML = `
+        <h4>☎️ Linha ativa: ${htmlSeguro(cliente.voip_numero)}</h4>
+        <p>Esta é uma linha real no provedor e pode gerar mensalidade e custo por uso. Para parar a cobrança recorrente do número, use a liberação abaixo — não apenas o interruptor do módulo.</p>
+        <div class="gt-voip-form" style="grid-template-columns:1fr">
+          <button class="gt-voip-acao perigo" onclick="liberarLinhaVoipClienteGerenciado()">Liberar linha e parar cobrança</button>
+        </div>
+      `;
+      return;
+    }
+
+    const configurado = voipGlobalStatus?.configurado === true;
+    const liberado = voipGlobalStatus?.provisionamento_habilitado === true;
+    const faltantes = Array.isArray(voipGlobalStatus?.faltantes) ? voipGlobalStatus.faltantes : [];
+    const avisos = Array.isArray(voipGlobalStatus?.avisos) ? voipGlobalStatus.avisos : [];
+    const ddd = cliente.voip_ddd || voipGlobalStatus?.ddd_padrao || "11";
+    const limite = Number(cliente.voip_limite_minutos_mensal || 100);
+
+    let explicacao = "O módulo está pronto no painel, mas ainda não existe número contratado — custo externo atual: zero.";
+    if (!configurado) {
+      explicacao += ` Antes da primeira ativação, configure no Railway: ${faltantes.join(", ") || "credenciais Twilio"}.`;
+    } else if (avisos.length) {
+      explicacao += ` Ainda faltam os dados regulatórios do Brasil: ${avisos.join(", ")}.`;
+    } else if (!liberado) {
+      explicacao += " A trava global VOIP_PROVISIONING_ENABLED continua desligada, então nem um clique acidental consegue contratar uma linha.";
+    } else {
+      explicacao += " O provisionamento está liberado; o botão abaixo fará a contratação real somente após confirmação.";
+    }
+
+    const podeAtivar = configurado && liberado && avisos.length === 0;
+    box.innerHTML = `
+      <h4>📞 Preparado para ativar quando precisar</h4>
+      <p>${htmlSeguro(explicacao)}</p>
+      <span class="gt-voip-lock ${podeAtivar ? "alerta" : ""}">${podeAtivar ? "Ativação real liberada" : "🔒 Sem cobrança / contratação bloqueada"}</span>
+      <div class="gt-voip-form">
+        <label>DDD do número<input id="gt_voip_ddd" inputmode="numeric" maxlength="2" value="${htmlSeguro(ddd)}"></label>
+        <label>Limite mensal (min)<input id="gt_voip_limite" type="number" min="10" max="10000" value="${limite}"></label>
+        <button id="gt_voip_ativar" class="gt-voip-acao" onclick="ativarLinhaVoipClienteGerenciado()" ${podeAtivar ? "" : "disabled"}>Ativar linha real</button>
+      </div>
+      <p style="margin-top:9px;color:#fbbf24">Para prospecção/telemarketing ativo no Brasil, confirme a exigência de numeração 0303 antes de contratar um número local comum.</p>
+    `;
+  }
+
+  function atualizarClienteVoipLocal(id, dados = {}) {
+    if (Array.isArray(clientesGerenciados)) {
+      const indice = clientesGerenciados.findIndex((item) => Number(item.id) === Number(id));
+      if (indice >= 0) clientesGerenciados[indice] = { ...clientesGerenciados[indice], ...dados };
+    }
+
+    const contexto = clientePorId(id);
+    if (contexto && localStorage.getItem("gestor_token_original")) {
+      localStorage.setItem("gestor_cliente_contexto", JSON.stringify({ ...contexto, ...dados }));
+    }
+  }
+
+  window.ativarLinhaVoipClienteGerenciado = async function ativarLinhaVoipClienteGerenciado() {
+    const id = Number(document.getElementById("gt_recursos_id")?.value);
+    const botao = document.getElementById("gt_voip_ativar");
+    const ddd = String(document.getElementById("gt_voip_ddd")?.value || "").replace(/\D/g, "");
+    const limite = Number(document.getElementById("gt_voip_limite")?.value || 100);
+
+    if (!id) return;
+    if (!/^\d{2}$/.test(ddd)) return alert("Informe um DDD válido com 2 dígitos.");
+
+    const confirmou = confirm(
+      "ATIVAÇÃO REAL DO VOIP\n\nEsta ação pode contratar um número no provedor e, a partir da confirmação, gerar mensalidade da linha e custos das chamadas.\n\nPara telemarketing/prospecção ativa, confirme também se sua operação precisa usar 0303.\n\nDeseja contratar a linha para este corretor agora?"
+    );
+    if (!confirmou) return;
+
+    if (botao) {
+      botao.disabled = true;
+      botao.textContent = "Ativando...";
+    }
+
+    try {
+      const data = await requisicaoGestor(`/gestor/clientes/${id}/voip/ativar`, {
+        method: "POST",
+        body: JSON.stringify({
+          ddd,
+          limite_minutos_mensal: limite,
+          confirmar_cobranca: true,
+          confirmar_uso_regulatorio: true
+        })
+      });
+
+      atualizarClienteVoipLocal(id, data.cliente || {});
+      await carregarClientesGerenciados(true);
+      const atualizado = clientePorId(id) || data.cliente || {};
+      atualizarModal(atualizado);
+      await carregarEstadoVoipGestor(atualizado);
+      alert(data.mensagem || "Linha VoIP ativada.");
+    } catch (err) {
+      alert(err.message);
+      const cliente = clientePorId(id);
+      if (cliente) await carregarEstadoVoipGestor(cliente);
+    } finally {
+      if (botao) {
+        botao.disabled = false;
+        botao.textContent = "Ativar linha real";
+      }
+    }
+  };
+
+  window.liberarLinhaVoipClienteGerenciado = async function liberarLinhaVoipClienteGerenciado() {
+    const id = Number(document.getElementById("gt_recursos_id")?.value);
+    if (!id) return;
+
+    const confirmou = confirm(
+      "LIBERAR LINHA VOIP\n\nA plataforma solicitará ao provedor a liberação do número. Só depois da confirmação do provedor a linha será removida localmente.\n\nDeseja liberar a linha e encerrar a mensalidade recorrente desse número?"
+    );
+    if (!confirmou) return;
+
+    const box = document.getElementById("gt_voip_ativacao");
+    if (box) box.innerHTML = '<h4>Liberando linha...</h4><p>Aguardando confirmação do provedor. Não feche esta janela.</p>';
+
+    try {
+      const data = await requisicaoGestor(`/gestor/clientes/${id}/voip/desativar`, {
+        method: "POST",
+        body: JSON.stringify({ confirmar_liberacao: true })
+      });
+
+      atualizarClienteVoipLocal(id, data.cliente || {});
+      await carregarClientesGerenciados(true);
+      const atualizado = clientePorId(id) || data.cliente || {};
+      atualizarModal(atualizado);
+      await carregarEstadoVoipGestor(atualizado);
+      alert(data.mensagem || "Linha liberada.");
+    } catch (err) {
+      alert(err.message);
+      const cliente = clientePorId(id);
+      if (cliente) await carregarEstadoVoipGestor(cliente);
+    }
+  };
+
   window.abrirRecursosClienteGerenciado = function abrirRecursosClienteGerenciado(id) {
     injetarModalGestor();
     const cliente = clientePorId(id);
     if (!cliente) return alert("Não foi possível localizar este corretor.");
     atualizarModal(cliente);
     document.getElementById("gt_modal_recursos").classList.add("aberto");
+    carregarEstadoVoipGestor(cliente);
   };
 
   window.alternarRecursoClienteGerenciado = async function alternarRecursoClienteGerenciado(campo, habilitar, controle) {
@@ -136,7 +294,10 @@
       }
       await carregarClientesGerenciados(true);
       const cliente = clientePorId(id);
-      if (cliente) atualizarModal(cliente);
+      if (cliente) {
+        atualizarModal(cliente);
+        if (campo === "voip_habilitado") await carregarEstadoVoipGestor(cliente);
+      }
     } catch (err) {
       if (controle) controle.checked = !habilitar;
       alert(err.message);

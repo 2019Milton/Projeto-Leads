@@ -576,9 +576,13 @@
       area.id = "pc_area_voip";
       area.className = "pc-area";
       area.hidden = true;
-      area.innerHTML = `<div class="pc-voip-grade"><article id="pc_voip_config" class="pc-card pc-voip-estado"><div><div class="pc-voip-icone">📞</div><h2>Preparando telefonia</h2><p>Consultando a configuração desta conta...</p></div></article><article class="pc-card"><h2>Histórico de ligações</h2><p class="pc-card-sub">As chamadas aparecerão aqui quando a telefonia estiver ativa.</p><div id="pc_voip_chamadas"><div class="pc-vazio">Carregando histórico...</div></div></article></div>`;
+      area.innerHTML = `<div class="pc-voip-grade"><article id="pc_voip_config" class="pc-card pc-voip-estado"><div><div class="pc-voip-icone">📞</div><h2>Preparando telefonia</h2><p>Consultando a configuração desta conta...</p></div></article><article class="pc-card"><h2>Histórico de ligações</h2><p class="pc-card-sub">Chamadas realizadas e recebidas nesta conta.</p><div id="pc_voip_chamadas"><div class="pc-vazio">Carregando histórico...</div></div></article></div>`;
       ultimo.insertAdjacentElement("afterend", area);
       ultimo = area;
+
+      if (perfil.voip_status === "ativo" && perfil.voip_numero) {
+        setTimeout(() => carregarVoip(true), 0);
+      }
     }
 
     const financeiro = document.createElement("section");
@@ -824,19 +828,352 @@
     }
   };
 
-  async function carregarVoip() {
+  function rotuloStatusChamadaVoip(status) {
+    const chave = String(status || "").toLowerCase();
+    const mapa = {
+      iniciando: "Iniciando",
+      initiated: "Iniciada",
+      queued: "Na fila",
+      ringing: "Chamando",
+      tocando: "Chamando",
+      answered: "Atendida",
+      "in-progress": "Em ligação",
+      completed: "Concluída",
+      busy: "Ocupado",
+      failed: "Falhou",
+      "no-answer": "Não atendida",
+      canceled: "Cancelada"
+    };
+    return mapa[chave] || status || "Registrada";
+  }
+
+  function formatarDuracaoVoip(segundos) {
+    const total = Math.max(Number(segundos || 0), 0);
+    const min = Math.floor(total / 60);
+    const seg = Math.floor(total % 60);
+    return `${String(min).padStart(2, "0")}:${String(seg).padStart(2, "0")}`;
+  }
+
+  function atualizarStatusSoftphoneVoip(texto, classe = "") {
+    const el = document.getElementById("pc_voip_chamada_status");
+    if (!el) return;
+    el.className = "pc-voip-chamada-status";
+    el.innerHTML = `<strong>${htmlSeguro(texto)}</strong>${classe ? ` · ${htmlSeguro(classe)}` : ""}`;
+  }
+
+  function pararTimerVoip() {
+    clearInterval(voipTimer);
+    voipTimer = null;
+    voipInicioChamada = null;
+  }
+
+  function iniciarTimerVoip() {
+    pararTimerVoip();
+    voipInicioChamada = Date.now();
+    voipTimer = setInterval(() => {
+      if (!voipInicioChamada) return;
+      const segundos = Math.floor((Date.now() - voipInicioChamada) / 1000);
+      atualizarStatusSoftphoneVoip("Em ligação", formatarDuracaoVoip(segundos));
+    }, 1000);
+  }
+
+  async function carregarSdkVoip() {
+    if (voipSdkPromise) return voipSdkPromise;
+
+    voipSdkPromise = import("https://esm.sh/@twilio/voice-sdk@2.18.5?bundle")
+      .then((modulo) => {
+        if (!modulo?.Device) throw new Error("Voice SDK não carregou corretamente.");
+        return modulo;
+      })
+      .catch((err) => {
+        voipSdkPromise = null;
+        throw err;
+      });
+
+    return voipSdkPromise;
+  }
+
+  async function novoTokenVoip() {
+    return requisicaoPainel("/painel-cliente/voip/token");
+  }
+
+  function ocultarChamadaRecebidaVoip() {
+    const box = document.getElementById("pc_voip_incoming");
+    if (box) box.hidden = true;
+    voipIncomingCall = null;
+  }
+
+  function atualizarBotoesVoip(emChamada = false) {
+    const ligar = document.getElementById("pc_voip_ligar");
+    const desligar = document.getElementById("pc_voip_desligar");
+    const mutar = document.getElementById("pc_voip_mutar");
+    const numero = document.getElementById("pc_voip_numero_destino");
+
+    if (ligar) ligar.disabled = emChamada || !voipDevice || !voipConfigAtual?.ativo;
+    if (numero) numero.disabled = emChamada || !voipConfigAtual?.ativo;
+    if (desligar) desligar.hidden = !emChamada;
+    if (mutar) mutar.hidden = !emChamada;
+  }
+
+  function vincularEventosChamadaVoip(chamada, direcao = "saida") {
+    if (!chamada) return;
+    voipCall = chamada;
+    atualizarBotoesVoip(true);
+
+    chamada.on("ringing", () => {
+      atualizarStatusSoftphoneVoip(direcao === "saida" ? "Chamando..." : "Recebendo chamada...");
+    });
+
+    chamada.on("accept", () => {
+      ocultarChamadaRecebidaVoip();
+      iniciarTimerVoip();
+      atualizarBotoesVoip(true);
+    });
+
+    const encerrar = () => {
+      pararTimerVoip();
+      voipCall = null;
+      ocultarChamadaRecebidaVoip();
+      atualizarStatusSoftphoneVoip("Telefone pronto");
+      atualizarBotoesVoip(false);
+      setTimeout(() => carregarVoip(true), 900);
+    };
+
+    chamada.on("disconnect", encerrar);
+    chamada.on("cancel", encerrar);
+    chamada.on("reject", encerrar);
+    chamada.on("error", (err) => {
+      pararTimerVoip();
+      voipCall = null;
+      atualizarStatusSoftphoneVoip(err?.message || "Falha na ligação");
+      atualizarBotoesVoip(false);
+      setTimeout(() => carregarVoip(true), 900);
+    });
+  }
+
+  async function destruirSoftphoneVoip() {
+    pararTimerVoip();
+    try { voipCall?.disconnect?.(); } catch (_) {}
+    try { voipIncomingCall?.reject?.(); } catch (_) {}
+    try { voipDevice?.destroy?.(); } catch (_) {}
+    voipCall = null;
+    voipIncomingCall = null;
+    voipDevice = null;
+    voipConfigAtual = null;
+  }
+
+  async function inicializarSoftphoneVoip() {
+    if (!voipConfigAtual?.ativo || !voipConfigAtual?.sdk_pronto) return null;
+    if (voipDevice) return voipDevice;
+
+    atualizarStatusSoftphoneVoip("Conectando telefone no navegador...");
+
+    const [{ Device }, tokenData] = await Promise.all([
+      carregarSdkVoip(),
+      novoTokenVoip()
+    ]);
+
+    const device = new Device(tokenData.token, {
+      logLevel: 1,
+      closeProtection: true
+    });
+
+    device.on("registered", () => {
+      atualizarStatusSoftphoneVoip("Telefone pronto para ligar e receber");
+      atualizarBotoesVoip(Boolean(voipCall));
+    });
+
+    device.on("unregistered", () => {
+      if (!voipCall) atualizarStatusSoftphoneVoip("Telefone desconectado. Reconectando...");
+    });
+
+    device.on("error", (err) => {
+      atualizarStatusSoftphoneVoip(err?.message || "Erro no telefone do navegador");
+    });
+
+    device.on("tokenWillExpire", async () => {
+      try {
+        const novo = await novoTokenVoip();
+        device.updateToken(novo.token);
+      } catch (err) {
+        console.error("VOIP token refresh:", err);
+      }
+    });
+
+    device.on("incoming", (call) => {
+      voipIncomingCall = call;
+      const origem =
+        call?.parameters?.From ||
+        call?.customParameters?.get?.("From") ||
+        "Número não identificado";
+
+      document.querySelectorAll(".pc-area").forEach((elemento) => {
+        elemento.hidden = elemento.id !== "pc_area_voip";
+      });
+      document.querySelectorAll(".pc-nav-btn").forEach((botao) => {
+        botao.classList.toggle("ativo", botao.dataset.area === "voip");
+      });
+
+      const box = document.getElementById("pc_voip_incoming");
+      const numeroEl = document.getElementById("pc_voip_incoming_numero");
+      if (numeroEl) numeroEl.textContent = formatarTelefone(origem);
+      if (box) box.hidden = false;
+
+      vincularEventosChamadaVoip(call, "entrada");
+      atualizarStatusSoftphoneVoip("Chamada recebida");
+    });
+
+    voipDevice = device;
+    await device.register();
+    return device;
+  }
+
+  window.aceitarChamadaVoipPainel = function aceitarChamadaVoipPainel() {
+    if (!voipIncomingCall) return;
+    try {
+      voipIncomingCall.accept();
+      atualizarStatusSoftphoneVoip("Conectando chamada...");
+    } catch (err) {
+      alert(err.message || "Não foi possível atender.");
+    }
+  };
+
+  window.rejeitarChamadaVoipPainel = function rejeitarChamadaVoipPainel() {
+    if (!voipIncomingCall) return;
+    try { voipIncomingCall.reject(); } catch (_) {}
+    ocultarChamadaRecebidaVoip();
+    voipCall = null;
+    atualizarBotoesVoip(false);
+    atualizarStatusSoftphoneVoip("Telefone pronto");
+  };
+
+  window.ligarVoipPainelCliente = async function ligarVoipPainelCliente() {
+    if (voipCall) return;
+
+    const input = document.getElementById("pc_voip_numero_destino");
+    let digitos = String(input?.value || "").replace(/\D/g, "");
+
+    if (digitos.startsWith("55") && (digitos.length === 12 || digitos.length === 13)) {
+      digitos = digitos.slice(2);
+    }
+
+    if (digitos.length !== 10 && digitos.length !== 11) {
+      return alert("Informe um telefone brasileiro com DDD.");
+    }
+
+    const destino = `+55${digitos}`;
+
+    try {
+      const device = await inicializarSoftphoneVoip();
+      if (!device) throw new Error("A telefonia ainda não está ativa.");
+
+      atualizarStatusSoftphoneVoip("Iniciando ligação...");
+      atualizarBotoesVoip(true);
+
+      const call = await device.connect({
+        params: { To: destino }
+      });
+
+      vincularEventosChamadaVoip(call, "saida");
+    } catch (err) {
+      voipCall = null;
+      atualizarBotoesVoip(false);
+      atualizarStatusSoftphoneVoip(err?.message || "Não foi possível iniciar a ligação");
+      alert(err?.message || "Não foi possível iniciar a ligação.");
+    }
+  };
+
+  window.desligarVoipPainelCliente = function desligarVoipPainelCliente() {
+    if (!voipCall) return;
+    try { voipCall.disconnect(); } catch (_) {}
+  };
+
+  window.mutarVoipPainelCliente = function mutarVoipPainelCliente() {
+    if (!voipCall) return;
+    const botao = document.getElementById("pc_voip_mutar");
+    const mutado = voipCall.isMuted?.() === true;
+    try {
+      voipCall.mute(!mutado);
+      if (botao) botao.textContent = mutado ? "🔇 Mutar" : "🔊 Ativar áudio";
+    } catch (err) {
+      alert(err?.message || "Não foi possível alterar o microfone.");
+    }
+  };
+
+  async function carregarVoip(silencioso = false) {
     const configEl = document.getElementById("pc_voip_config");
     const chamadasEl = document.getElementById("pc_voip_chamadas");
     if (!configEl || !chamadasEl) return;
+
+    if (!silencioso) {
+      configEl.innerHTML = '<div class="pc-vazio">Consultando a telefonia...</div>';
+    }
+
     try {
       const [config, historico] = await Promise.all([
         requisicaoPainel("/painel-cliente/voip/configuracao"),
         requisicaoPainel("/painel-cliente/voip/chamadas")
       ]);
-      const ativo = config.status === "ativo";
-      configEl.innerHTML = `<div><div class="pc-voip-icone">${ativo ? "☎️" : "📞"}</div><h2>${ativo ? "Telefonia pronta" : "Aguardando configuração"}</h2><p>${htmlSeguro(config.mensagem || "A telefonia ainda não foi configurada.")}</p><span class="pc-sem-cobranca">${config.gera_cobranca ? "Serviço ativo" : "Sem cobrança de telefonia agora"}</span><div class="pc-discador"><input placeholder="Número para ligar" ${ativo ? "" : "disabled"}><button disabled>${ativo ? "Ligação será liberada na integração final" : "Aguardando operadora e número"}</button></div></div>`;
+
+      voipConfigAtual = config;
+      const ativo = config.ativo === true;
+
+      if (!ativo && voipDevice) {
+        await destruirSoftphoneVoip();
+        voipConfigAtual = config;
+      }
+
+      const emChamada = Boolean(voipCall);
+      const minutos = Number(config.minutos_usados_mes || 0);
+      const limite = Number(config.limite_minutos_mensal || 0);
+      const restantes = Number(config.minutos_restantes_mes || 0);
+
+      configEl.innerHTML = `
+        <div style="width:100%">
+          <div class="pc-voip-icone">${ativo ? "☎️" : "📞"}</div>
+          <h2>${ativo ? "Telefonia ativa" : "VoIP preparado"}</h2>
+          <p>${htmlSeguro(config.mensagem || "Telefonia preparada.")}</p>
+          <span class="pc-voip-status ${ativo ? "ativo" : "preparado"}">${ativo ? `Linha ${htmlSeguro(config.numero || "")}` : "Sem linha contratada · custo externo zero"}</span>
+          ${ativo ? `
+            <div class="pc-voip-softphone">
+              <input id="pc_voip_numero_destino" inputmode="tel" placeholder="DDD + telefone, ex.: (11) 99999-9999" ${emChamada ? "disabled" : ""}>
+              <div class="pc-voip-botoes">
+                <button id="pc_voip_ligar" class="pc-voip-ligar" onclick="ligarVoipPainelCliente()" ${emChamada ? "disabled" : ""}>📞 Ligar</button>
+                <button id="pc_voip_desligar" class="pc-voip-desligar" onclick="desligarVoipPainelCliente()" ${emChamada ? "" : "hidden"}>Desligar</button>
+                <button id="pc_voip_mutar" class="pc-voip-desligar" style="background:#334155" onclick="mutarVoipPainelCliente()" ${emChamada ? "" : "hidden"}>🔇 Mutar</button>
+              </div>
+              <div id="pc_voip_chamada_status" class="pc-voip-chamada-status"><strong>${emChamada ? "Ligação em andamento" : "Preparando telefone no navegador..."}</strong></div>
+              <div id="pc_voip_incoming" class="pc-voip-incoming" hidden>
+                <b>📲 Chamada recebida</b>
+                <span id="pc_voip_incoming_numero">Número não identificado</span>
+                <div class="pc-voip-incoming-acoes">
+                  <button class="pc-voip-aceitar" onclick="aceitarChamadaVoipPainel()">Atender</button>
+                  <button class="pc-voip-rejeitar" onclick="rejeitarChamadaVoipPainel()">Recusar</button>
+                </div>
+              </div>
+              <div class="pc-voip-chamada-status"><strong>Uso mensal:</strong> ${minutos} de ${limite || "∞"} min${limite ? ` · ${restantes} min restantes` : ""}</div>
+            </div>
+          ` : `
+            <div class="pc-voip-chamada-status"><strong>Pronto, mas inativo:</strong> o gestor pode preparar toda a estrutura sem cobrança. A contratação real do número é uma ação separada e protegida por confirmação.</div>
+          `}
+        </div>
+      `;
+
       const chamadas = Array.isArray(historico.chamadas) ? historico.chamadas : [];
-      chamadasEl.innerHTML = chamadas.length ? chamadas.map((item) => `<div class="pc-chamada-item"><div><strong>${htmlSeguro(item.lead_nome || formatarTelefone(item.telefone))}</strong><span>${formatarDataPainelCliente(item.iniciada_em, true)} · ${Number(item.duracao_segundos || 0)}s</span></div><b>${htmlSeguro(item.status || "Registrada")}</b></div>`).join("") : '<div class="pc-vazio">Nenhuma ligação realizada. Não há consumo nem cobrança.</div>';
+      chamadasEl.innerHTML = chamadas.length
+        ? chamadas.map((item) => {
+            const direcao = item.direcao === "entrada" ? "⬇ Recebida" : "⬆ Realizada";
+            return `<div class="pc-chamada-item"><div><strong>${htmlSeguro(item.lead_nome || formatarTelefone(item.telefone))}</strong><span>${direcao} · ${formatarDataPainelCliente(item.iniciada_em, true)} · ${formatarDuracaoVoip(item.duracao_segundos)}</span></div><b>${htmlSeguro(rotuloStatusChamadaVoip(item.status))}</b></div>`;
+          }).join("")
+        : '<div class="pc-vazio">Nenhuma ligação realizada ou recebida.</div>';
+
+      if (ativo) {
+        try {
+          await inicializarSoftphoneVoip();
+        } catch (err) {
+          atualizarStatusSoftphoneVoip(err?.message || "Não foi possível conectar o telefone no navegador");
+        }
+      }
     } catch (err) {
       configEl.innerHTML = `<div class="pc-vazio">${htmlSeguro(err.message)}</div>`;
     }
@@ -897,6 +1234,7 @@
       const original = iniciarPainelCliente;
       iniciarPainelCliente = async function iniciarPainelComRecursos(perfil = {}) {
         clearInterval(atualizacaoConversas);
+        await destruirSoftphoneVoip();
         conversaSelecionadaId = null;
         whatsappPainelPronto = false;
         whatsappDiagnosticoCarregado = false;
@@ -914,6 +1252,7 @@
       const original = logout;
       logout = function logoutComRecursos(...args) {
         clearInterval(atualizacaoConversas);
+        destruirSoftphoneVoip();
         return original.apply(this, args);
       };
     }

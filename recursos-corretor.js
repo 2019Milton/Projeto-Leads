@@ -3,6 +3,7 @@
 
   let conversaSelecionadaId = null;
   let atualizacaoConversas = null;
+  let atualizacaoVoip = null;
   let whatsappPainelPronto = false;
   let whatsappDiagnosticoCarregado = false;
   let modelosWhatsappPainel = [];
@@ -509,6 +510,9 @@
     document.querySelectorAll(".pc-area").forEach((elemento) => { elemento.hidden = elemento.id !== `pc_area_${area}`; });
     document.querySelectorAll(".pc-nav-btn").forEach((botao) => botao.classList.toggle("ativo", botao.dataset.area === area));
 
+    clearInterval(atualizacaoVoip);
+    atualizacaoVoip = null;
+
     if (area === "whatsapp") {
       await carregarStatusWhatsapp();
       carregarConversas(true);
@@ -516,7 +520,14 @@
         window.abrirConversaPainelCliente(conversaSelecionadaId, true);
       }
     }
-    if (area === "voip") carregarVoip();
+
+    if (area === "voip") {
+      carregarVoip();
+      atualizacaoVoip = setInterval(() => {
+        if (!voipCall && !voipIncomingCall) carregarVoip(true);
+      }, 20000);
+    }
+
     if (area === "financeiro") carregarFinanceiroPainel();
   };
 
@@ -1136,7 +1147,7 @@
           <span class="pc-voip-status ${ativo ? "ativo" : "preparado"}">${ativo ? `Linha ${htmlSeguro(config.numero || "")}` : "Sem linha contratada · custo externo zero"}</span>
           <div class="pc-voip-chamada-status" style="margin-top:12px;border-color:rgba(59,130,246,.3);background:rgba(37,99,235,.08)">
             <strong>VoIP no mês: ${formatarMoeda(custoMes.valor_repassado_brl || 0)}</strong>
-            <div style="margin-top:5px;color:#93a4bb">Número: ${formatarMoeda(custoMes.numero_brl || 0)} · Ligações: ${formatarMoeda(custoMes.chamadas_brl || 0)} · ${Number(consumoMes.chamadas || 0)} chamada(s)</div>
+            <div style="margin-top:5px;color:#93a4bb">Número: ${formatarMoeda(custoMes.numero_brl || 0)} · Ligações: ${formatarMoeda(custoMes.chamadas_brl || 0)}${Number(custoMes.taxa_fixa_brl || 0) > 0 ? ` · Taxa fixa: ${formatarMoeda(custoMes.taxa_fixa_brl)}` : ""} · ${Number(consumoMes.chamadas || 0)} chamada(s)</div>
             <div style="margin-top:5px;color:${custoParcial ? "#fbbf24" : "#86efac"}">${custoParcial ? "Parte do valor ainda é estimada e será conciliada com a Twilio." : "Custos das chamadas encerradas conciliados."}</div>
             <div style="margin-top:5px;color:#bfdbfe"><b>Este valor é cobrado separadamente da mensalidade da plataforma.</b></div>
           </div>
@@ -1233,7 +1244,7 @@
         </div>
 
         <div class="pc-fin-alerta" style="margin:0 0 16px;border-color:rgba(59,130,246,.32);background:rgba(37,99,235,.09);color:#bfdbfe">
-          📞 <b>O VoIP é cobrado à parte.</b> No mês atual: número ${formatarMoeda(voip.custo_numero_brl || 0)} + ligações ${formatarMoeda(voip.custo_chamadas_brl || 0)} = <b>${formatarMoeda(voip.valor_a_pagar_brl || 0)}</b>.
+          📞 <b>O VoIP é cobrado à parte.</b> No mês atual: número ${formatarMoeda(voip.custo_numero_brl || 0)} + ligações ${formatarMoeda(voip.custo_chamadas_brl || 0)}${Number(voip.taxa_fixa_brl || 0) > 0 ? ` + taxa fixa ${formatarMoeda(voip.taxa_fixa_brl)}` : ""} = <b>${formatarMoeda(voip.valor_a_pagar_brl || 0)}</b>.
         </div>
 
         <div class="pc-voip-grade">
@@ -1293,6 +1304,8 @@
       const original = iniciarPainelCliente;
       iniciarPainelCliente = async function iniciarPainelComRecursos(perfil = {}) {
         clearInterval(atualizacaoConversas);
+        clearInterval(atualizacaoVoip);
+        atualizacaoVoip = null;
         await destruirSoftphoneVoip();
         conversaSelecionadaId = null;
         whatsappPainelPronto = false;
@@ -1311,6 +1324,8 @@
       const original = logout;
       logout = function logoutComRecursos(...args) {
         clearInterval(atualizacaoConversas);
+        clearInterval(atualizacaoVoip);
+        atualizacaoVoip = null;
         destruirSoftphoneVoip();
         return original.apply(this, args);
       };

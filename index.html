@@ -36871,7 +36871,8 @@ async function salvarRascunhosPlataformasAdicionais() {
     return {
       plataforma: rede,
       nome,
-      daily_budget: rede === "google"
+      // Google e LinkedIn usam orçamento em reais; Meta e TikTok usam centavos.
+      daily_budget: (rede === "google" || rede === "linkedin")
         ? Math.max(0, valorReais)
         : Math.round(Math.max(0, valorReais) * 100),
       configuracoes_avancadas: configuracoes

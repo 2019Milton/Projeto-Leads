@@ -371,8 +371,35 @@
     document.querySelectorAll("button").forEach((botao) => {
       const texto = String(botao.textContent || "").replace(/\s+/g, " ").trim();
       if (!/^\+?\s*Novo corretor$/i.test(texto)) return;
-      botao.innerHTML = botao.innerHTML.replace(/Novo corretor/gi, "Novo Corretor/Cliente");
+
+      const nosTexto = Array.from(botao.childNodes).filter((no) => no.nodeType === Node.TEXT_NODE);
+      let alterado = false;
+
+      nosTexto.forEach((no) => {
+        if (/Novo corretor/i.test(no.nodeValue || "")) {
+          no.nodeValue = String(no.nodeValue || "").replace(/Novo corretor/gi, "Novo Corretor/Cliente");
+          alterado = true;
+        }
+      });
+
+      if (!alterado) {
+        botao.innerHTML = botao.innerHTML.replace(/Novo corretor/gi, "Novo Corretor/Cliente");
+      }
     });
+  }
+
+  function observarRotuloNovoCorretor() {
+    ajustarRotuloNovoCorretor();
+
+    if (window.__observerNovoCorretorCliente) return;
+
+    const observer = new MutationObserver(() => ajustarRotuloNovoCorretor());
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+
+    window.__observerNovoCorretorCliente = observer;
   }
 
   function enriquecerCardsGestor() {
@@ -1283,7 +1310,7 @@
 
   function instalarExtensoes() {
     injetarEstilos();
-    ajustarRotuloNovoCorretor();
+    observarRotuloNovoCorretor();
 
     if (typeof renderizarClientesGerenciados === "function") {
       const original = renderizarClientesGerenciados;

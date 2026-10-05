@@ -336,7 +336,7 @@
         <div class="vc-resumo">
           <div class="vc-mini"><span>Número / linha</span><b>${moeda(item.custos?.numero_brl)}</b></div>
           <div class="vc-mini"><span>Chamadas</span><b>${moeda(item.custos?.chamadas_brl)}</b></div>
-          <div class="vc-mini"><span>${ehSuperAdmin() ? "Custo Twilio" : "Consumo VoIP"}</span><b>${moeda(item.custos?.provedor_brl)}</b></div>
+          <div class="vc-mini"><span>${ehSuperAdmin() ? "Custo Twilio" : "Taxa fixa adicional"}</span><b>${moeda(ehSuperAdmin() ? item.custos?.provedor_brl : item.custos?.taxa_fixa_brl)}</b></div>
           <div class="vc-mini"><span>Valor do VoIP no mês</span><b>${moeda(item.custos?.valor_repassado_brl)}</b></div>
         </div>
         <div class="vc-aviso"><b>Cobrança separada da plataforma.</b> Este valor não está incluído na mensalidade do plano.</div>

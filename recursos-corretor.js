@@ -367,41 +367,6 @@
     }
   };
 
-  function ajustarRotuloNovoCorretor() {
-    document.querySelectorAll("button").forEach((botao) => {
-      const texto = String(botao.textContent || "").replace(/\s+/g, " ").trim();
-      if (!/^\+?\s*Novo corretor$/i.test(texto)) return;
-
-      const nosTexto = Array.from(botao.childNodes).filter((no) => no.nodeType === Node.TEXT_NODE);
-      let alterado = false;
-
-      nosTexto.forEach((no) => {
-        if (/Novo corretor/i.test(no.nodeValue || "")) {
-          no.nodeValue = String(no.nodeValue || "").replace(/Novo corretor/gi, "Novo Corretor/Cliente");
-          alterado = true;
-        }
-      });
-
-      if (!alterado) {
-        botao.innerHTML = botao.innerHTML.replace(/Novo corretor/gi, "Novo Corretor/Cliente");
-      }
-    });
-  }
-
-  function observarRotuloNovoCorretor() {
-    ajustarRotuloNovoCorretor();
-
-    if (window.__observerNovoCorretorCliente) return;
-
-    const observer = new MutationObserver(() => ajustarRotuloNovoCorretor());
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true
-    });
-
-    window.__observerNovoCorretorCliente = observer;
-  }
-
   function enriquecerCardsGestor() {
     document.querySelectorAll("#gt_lista_clientes .gt-card").forEach((card) => {
       if (card.dataset.recursosProntos === "1") return;
@@ -1310,13 +1275,10 @@
 
   function instalarExtensoes() {
     injetarEstilos();
-    observarRotuloNovoCorretor();
-
     if (typeof renderizarClientesGerenciados === "function") {
       const original = renderizarClientesGerenciados;
       renderizarClientesGerenciados = function renderizarClientesComRecursos(...args) {
         const retorno = original.apply(this, args);
-        ajustarRotuloNovoCorretor();
         enriquecerCardsGestor();
         return retorno;
       };

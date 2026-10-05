@@ -53598,8 +53598,102 @@ function selecionarNichoTab(nicho, btnEl, opcoes = {}) {
         </div>
       </div>
     `;
-  } else if (nicho.slug === "faculdade_universidade" || nicho.slug === "dentista") {
-    container.innerHTML = "";
+  } else if (nicho.slug === "faculdade_universidade") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Curso / Área ${_i('Informe o curso ou area principal anunciada. Ex: Administracao, Pedagogia, Engenharia de Software.')}</label>
+          <input type="text" id="nicho_curso_interesse" placeholder="Ex: Administração" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Modalidade ${_i('Modalidade oferecida nesta campanha: presencial, EAD ou hibrida.')}</label>
+          <select id="nicho_modalidade_faculdade" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="presencial">Presencial</option>
+            <option value="ead">EAD</option>
+            <option value="hibrido">Híbrido</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Turno ${_i('Turno principal da oferta. Use flexivel quando a modalidade nao tiver turno fixo.')}</label>
+          <select id="nicho_turno_faculdade" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="manha">Manhã</option>
+            <option value="tarde">Tarde</option>
+            <option value="noite">Noite</option>
+            <option value="integral">Integral</option>
+            <option value="flexivel">Flexível</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Forma de ingresso ${_i('Forma de ingresso que a campanha pretende captar. Nao informe bolsa ou desconto que nao esteja confirmado.')}</label>
+          <select id="nicho_tipo_ingresso" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="vestibular">Vestibular</option>
+            <option value="enem">ENEM</option>
+            <option value="transferencia">Transferência</option>
+            <option value="segunda_graduacao">Segunda graduação</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Cidade / Campus ${_i('Cidade, unidade ou campus atendido pela campanha. Para EAD, pode informar a regiao ou polo.')}</label>
+          <input type="text" id="nicho_cidade_campus" placeholder="Ex: São Paulo - Campus Centro" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Descreva o perfil de aluno que a campanha quer alcançar, sem inferir atributos sensiveis.')}</label>
+          <input type="text" id="nicho_publico_alvo_faculdade" placeholder="Ex: pessoas buscando primeira graduação ou mudança de carreira" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
+  } else if (nicho.slug === "dentista") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tratamento / Serviço ${_i('Selecione o servico principal divulgado. Isso orienta texto, criativo e palavras-chave sem fazer diagnostico do paciente.')}</label>
+          <select id="nicho_tratamento_dentista" style="margin-top:4px;">
+            <option value="">Geral / Avaliação</option>
+            <option value="implante">Implantes</option>
+            <option value="ortodontia">Ortodontia / Aparelho</option>
+            <option value="clareamento">Clareamento</option>
+            <option value="facetas">Facetas / Lentes</option>
+            <option value="protese">Próteses</option>
+            <option value="endodontia">Canal / Endodontia</option>
+            <option value="limpeza_prevencao">Limpeza / Prevenção</option>
+            <option value="odontopediatria">Odontopediatria</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de atendimento ${_i('Objetivo comercial da campanha: captar avaliacao, atendimento geral, estetica ou outro servico.')}</label>
+          <select id="nicho_tipo_atendimento_dentista" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="avaliacao">Avaliação</option>
+            <option value="geral">Atendimento geral</option>
+            <option value="estetica">Odontologia estética</option>
+            <option value="reabilitacao">Reabilitação</option>
+            <option value="prevencao">Prevenção</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Região atendida ${_i('Cidade, bairro ou regiao da clinica. Importante para campanhas locais.')}</label>
+          <input type="text" id="nicho_regiao_dentista" placeholder="Ex: Mooca, São Paulo" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Forma de atendimento ${_i('Informe se a campanha e para atendimento particular, convenio ou ambos, somente se isso for verdadeiro para a clinica.')}</label>
+          <select id="nicho_forma_atendimento_dentista" style="margin-top:4px;">
+            <option value="">Não informar</option>
+            <option value="particular">Particular</option>
+            <option value="convenio">Convênio</option>
+            <option value="ambos">Particular e convênio</option>
+          </select>
+        </div>
+        <div style="grid-column:1 / -1;">
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Descreva de forma ampla o publico que a campanha quer alcançar. Evite diagnosticos, condicoes de saude ou atributos sensiveis.')}</label>
+          <input type="text" id="nicho_publico_alvo_dentista" placeholder="Ex: adultos da região interessados em avaliação odontológica" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
@@ -59050,8 +59144,102 @@ function selecionarNichoTab(nicho, btnEl, opcoes = {}) {
         </div>
       </div>
     `;
-  } else if (nicho.slug === "faculdade_universidade" || nicho.slug === "dentista") {
-    container.innerHTML = "";
+  } else if (nicho.slug === "faculdade_universidade") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Curso / Área ${_i('Informe o curso ou area principal anunciada. Ex: Administracao, Pedagogia, Engenharia de Software.')}</label>
+          <input type="text" id="nicho_curso_interesse" placeholder="Ex: Administração" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Modalidade ${_i('Modalidade oferecida nesta campanha: presencial, EAD ou hibrida.')}</label>
+          <select id="nicho_modalidade_faculdade" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="presencial">Presencial</option>
+            <option value="ead">EAD</option>
+            <option value="hibrido">Híbrido</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Turno ${_i('Turno principal da oferta. Use flexivel quando a modalidade nao tiver turno fixo.')}</label>
+          <select id="nicho_turno_faculdade" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="manha">Manhã</option>
+            <option value="tarde">Tarde</option>
+            <option value="noite">Noite</option>
+            <option value="integral">Integral</option>
+            <option value="flexivel">Flexível</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Forma de ingresso ${_i('Forma de ingresso que a campanha pretende captar. Nao informe bolsa ou desconto que nao esteja confirmado.')}</label>
+          <select id="nicho_tipo_ingresso" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="vestibular">Vestibular</option>
+            <option value="enem">ENEM</option>
+            <option value="transferencia">Transferência</option>
+            <option value="segunda_graduacao">Segunda graduação</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Cidade / Campus ${_i('Cidade, unidade ou campus atendido pela campanha. Para EAD, pode informar a regiao ou polo.')}</label>
+          <input type="text" id="nicho_cidade_campus" placeholder="Ex: São Paulo - Campus Centro" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Descreva o perfil de aluno que a campanha quer alcançar, sem inferir atributos sensiveis.')}</label>
+          <input type="text" id="nicho_publico_alvo_faculdade" placeholder="Ex: pessoas buscando primeira graduação ou mudança de carreira" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
+  } else if (nicho.slug === "dentista") {
+    container.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tratamento / Serviço ${_i('Selecione o servico principal divulgado. Isso orienta texto, criativo e palavras-chave sem fazer diagnostico do paciente.')}</label>
+          <select id="nicho_tratamento_dentista" style="margin-top:4px;">
+            <option value="">Geral / Avaliação</option>
+            <option value="implante">Implantes</option>
+            <option value="ortodontia">Ortodontia / Aparelho</option>
+            <option value="clareamento">Clareamento</option>
+            <option value="facetas">Facetas / Lentes</option>
+            <option value="protese">Próteses</option>
+            <option value="endodontia">Canal / Endodontia</option>
+            <option value="limpeza_prevencao">Limpeza / Prevenção</option>
+            <option value="odontopediatria">Odontopediatria</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Tipo de atendimento ${_i('Objetivo comercial da campanha: captar avaliacao, atendimento geral, estetica ou outro servico.')}</label>
+          <select id="nicho_tipo_atendimento_dentista" style="margin-top:4px;">
+            <option value="">Qualquer</option>
+            <option value="avaliacao">Avaliação</option>
+            <option value="geral">Atendimento geral</option>
+            <option value="estetica">Odontologia estética</option>
+            <option value="reabilitacao">Reabilitação</option>
+            <option value="prevencao">Prevenção</option>
+          </select>
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Região atendida ${_i('Cidade, bairro ou regiao da clinica. Importante para campanhas locais.')}</label>
+          <input type="text" id="nicho_regiao_dentista" placeholder="Ex: Mooca, São Paulo" style="margin-top:4px;">
+        </div>
+        <div>
+          <label style="color:#9ca3af;font-size:12px;">Forma de atendimento ${_i('Informe se a campanha e para atendimento particular, convenio ou ambos, somente se isso for verdadeiro para a clinica.')}</label>
+          <select id="nicho_forma_atendimento_dentista" style="margin-top:4px;">
+            <option value="">Não informar</option>
+            <option value="particular">Particular</option>
+            <option value="convenio">Convênio</option>
+            <option value="ambos">Particular e convênio</option>
+          </select>
+        </div>
+        <div style="grid-column:1 / -1;">
+          <label style="color:#9ca3af;font-size:12px;">Público-alvo ${_i('Descreva de forma ampla o publico que a campanha quer alcançar. Evite diagnosticos, condicoes de saude ou atributos sensiveis.')}</label>
+          <input type="text" id="nicho_publico_alvo_dentista" placeholder="Ex: adultos da região interessados em avaliação odontológica" style="margin-top:4px;">
+        </div>
+      </div>
+    `;
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)

@@ -52978,6 +52978,22 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Qual seu objetivo com o curso?",
     interesse: "Ex: cursos online, empreendedorismo feminino, renda extra"
   };
+  if (slug === "faculdade_universidade") return {
+    ia:        "Opcional: descreva a faculdade, curso, modalidade, campus, público-alvo e diferenciais reais da instituição",
+    nome:      "Ex: Graduação em Administração - Turma 2027",
+    titulo:    "Ex: Comece sua Graduação",
+    descricao: "Ex: Presencial, EAD ou híbrido conforme a oferta da instituição",
+    perguntas: "Uma pergunta por linha. Ex: Qual curso você quer fazer?",
+    interesse: "Ex: faculdade, universidade, graduação, vestibular, ENEM"
+  };
+  if (slug === "dentista") return {
+    ia:        "Opcional: descreva a clínica, tratamento divulgado, região atendida e diferenciais reais do atendimento",
+    nome:      "Ex: Avaliação Odontológica - Implantes",
+    titulo:    "Ex: Agende sua Avaliação Odontológica",
+    descricao: "Ex: Atendimento profissional e plano de tratamento individualizado",
+    perguntas: "Uma pergunta por linha. Ex: Qual tratamento você procura?",
+    interesse: "Ex: dentista, odontologia, implante dentário, ortodontia"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -53031,6 +53047,18 @@ window.PERGUNTAS_RAPIDAS_FORMULARIO = window.PERGUNTAS_RAPIDAS_FORMULARIO || {
     "Quanto tempo por semana voce teria para estudar?",
     "Ja fez algum curso online antes?"
   ],
+  faculdade_universidade: [
+    "Qual curso voce quer fazer?",
+    "Prefere presencial, EAD ou hibrido?",
+    "Qual turno fica melhor para voce?",
+    "Em qual cidade pretende estudar?"
+  ],
+  dentista: [
+    "Qual tratamento odontologico voce procura?",
+    "E algo urgente ou voce esta pesquisando?",
+    "Qual sua cidade ou regiao?",
+    "Qual periodo e melhor para uma avaliacao?"
+  ],
   default: [
     "Qual sua principal necessidade?",
     "Qual melhor horario para contato?",
@@ -53053,6 +53081,8 @@ function perguntasRapidasDoNicho(slug = "") {
   if (chave.includes("higien")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.higienizacao;
   if (chave.includes("telecom")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.telecom;
   if (chave.includes("curso")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.cursos_online;
+  if (chave.includes("faculdade") || chave.includes("universidade")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.faculdade_universidade;
+  if (chave.includes("dentista") || chave.includes("odonto")) return window.PERGUNTAS_RAPIDAS_FORMULARIO.dentista;
 
   return window.PERGUNTAS_RAPIDAS_FORMULARIO.default;
 }
@@ -53568,6 +53598,8 @@ function selecionarNichoTab(nicho, btnEl, opcoes = {}) {
         </div>
       </div>
     `;
+  } else if (nicho.slug === "faculdade_universidade" || nicho.slug === "dentista") {
+    container.innerHTML = "";
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)
@@ -58557,6 +58589,22 @@ function _placeholdersPorNicho(slug) {
     perguntas: "Uma pergunta por linha. Ex: Qual seu objetivo com o curso?",
     interesse: "Ex: cursos online, empreendedorismo feminino, renda extra"
   };
+  if (slug === "faculdade_universidade") return {
+    ia:        "Opcional: descreva a faculdade, curso, modalidade, campus, público-alvo e diferenciais reais da instituição",
+    nome:      "Ex: Graduação em Administração - Turma 2027",
+    titulo:    "Ex: Comece sua Graduação",
+    descricao: "Ex: Presencial, EAD ou híbrido conforme a oferta da instituição",
+    perguntas: "Uma pergunta por linha. Ex: Qual curso você quer fazer?",
+    interesse: "Ex: faculdade, universidade, graduação, vestibular, ENEM"
+  };
+  if (slug === "dentista") return {
+    ia:        "Opcional: descreva a clínica, tratamento divulgado, região atendida e diferenciais reais do atendimento",
+    nome:      "Ex: Avaliação Odontológica - Implantes",
+    titulo:    "Ex: Agende sua Avaliação Odontológica",
+    descricao: "Ex: Atendimento profissional e plano de tratamento individualizado",
+    perguntas: "Uma pergunta por linha. Ex: Qual tratamento você procura?",
+    interesse: "Ex: dentista, odontologia, implante dentário, ortodontia"
+  };
   return {
     ia:        "Opcional: descreva o empreendimento, publico-alvo ou diferencial (ex: apartamentos 2 quartos em Santo Andre, proximo ao metro, para jovens casais)",
     nome:      "Ex: Casas Alto Padrão",
@@ -59002,6 +59050,8 @@ function selecionarNichoTab(nicho, btnEl, opcoes = {}) {
         </div>
       </div>
     `;
+  } else if (nicho.slug === "faculdade_universidade" || nicho.slug === "dentista") {
+    container.innerHTML = "";
   }
 
   // restaura o conteúdo salvo para este nicho (após innerHTML ser gerado)

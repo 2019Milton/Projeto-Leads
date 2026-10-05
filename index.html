@@ -28718,7 +28718,9 @@ function camposFaltantesCampanhaIA(plataformas = []) {
     saas: ["nicho_tipo_produto", "nicho_publico_alvo_saas"],
     higienizacao: ["nicho_tipo_servico", "nicho_frequencia", "nicho_publico_alvo_higienizacao"],
     telecom: ["nicho_tipo_servico_telecom", "nicho_porte_empresa", "nicho_situacao_atual"],
-    cursos_online: ["nicho_area_curso", "nicho_objetivo_aluno", "nicho_publico_alvo_cursos_online"]
+    cursos_online: ["nicho_area_curso", "nicho_objetivo_aluno", "nicho_publico_alvo_cursos_online"],
+    faculdade_universidade: ["nicho_curso_interesse", "nicho_modalidade_faculdade", "nicho_turno_faculdade", "nicho_tipo_ingresso", "nicho_cidade_campus", "nicho_publico_alvo_faculdade"],
+    dentista: ["nicho_tratamento_dentista", "nicho_tipo_atendimento_dentista", "nicho_regiao_dentista", "nicho_forma_atendimento_dentista", "nicho_publico_alvo_dentista"]
   };
 
   const incluiMeta = plataformas.some(p => REDES_META_COM_FORMULARIO_PROPRIO.includes(p));
@@ -30348,6 +30350,17 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
       nicho_situacao_atual: "Situação atual",
       nicho_area_curso: "Área do curso",
       nicho_objetivo_aluno: "Objetivo do aluno",
+      nicho_curso_interesse: "Curso / área",
+      nicho_modalidade_faculdade: "Modalidade",
+      nicho_turno_faculdade: "Turno",
+      nicho_tipo_ingresso: "Forma de ingresso",
+      nicho_cidade_campus: "Cidade / campus",
+      nicho_publico_alvo_faculdade: "Público-alvo",
+      nicho_tratamento_dentista: "Tratamento / serviço",
+      nicho_tipo_atendimento_dentista: "Tipo de atendimento",
+      nicho_regiao_dentista: "Região atendida",
+      nicho_forma_atendimento_dentista: "Forma de atendimento",
+      nicho_publico_alvo_dentista: "Público-alvo",
       nicho_tipo_produto: "Tipo de produto",
       google_titulo_longo: "Título longo Google",
       google_descricao_1: "Descrição 1 Google",
@@ -30446,7 +30459,9 @@ const CAMPOS_IA_POR_NICHO = {
   saas: ["#nicho_tipo_produto", "#nicho_publico_alvo_saas"],
   higienizacao: ["#nicho_tipo_servico", "#nicho_frequencia", "#nicho_area_atendida", "#nicho_publico_alvo_higienizacao"],
   telecom: ["#nicho_tipo_servico_telecom", "#nicho_porte_empresa", "#nicho_situacao_atual", "#nicho_area_atendida_telecom"],
-  cursos_online: ["#nicho_area_curso", "#nicho_objetivo_aluno", "#nicho_publico_alvo_cursos_online"]
+  cursos_online: ["#nicho_area_curso", "#nicho_objetivo_aluno", "#nicho_publico_alvo_cursos_online"],
+  faculdade_universidade: ["#nicho_curso_interesse", "#nicho_modalidade_faculdade", "#nicho_turno_faculdade", "#nicho_tipo_ingresso", "#nicho_cidade_campus", "#nicho_publico_alvo_faculdade"],
+  dentista: ["#nicho_tratamento_dentista", "#nicho_tipo_atendimento_dentista", "#nicho_regiao_dentista", "#nicho_forma_atendimento_dentista", "#nicho_publico_alvo_dentista"]
 };
 
 function campoPertenceAoNichoAtivoIA(seletor) {
@@ -30548,6 +30563,17 @@ function marcarCamposAposAplicarIA(camposPreenchidos = [], plataformasAlvo = pla
     ["#nicho_area_curso", "área do curso"],
     ["#nicho_objetivo_aluno", "objetivo do aluno"],
     ["#nicho_publico_alvo_cursos_online", "público-alvo"],
+    ["#nicho_curso_interesse", "curso / área"],
+    ["#nicho_modalidade_faculdade", "modalidade"],
+    ["#nicho_turno_faculdade", "turno"],
+    ["#nicho_tipo_ingresso", "forma de ingresso"],
+    ["#nicho_cidade_campus", "cidade / campus"],
+    ["#nicho_publico_alvo_faculdade", "público-alvo"],
+    ["#nicho_tratamento_dentista", "tratamento / serviço"],
+    ["#nicho_tipo_atendimento_dentista", "tipo de atendimento"],
+    ["#nicho_regiao_dentista", "região atendida"],
+    ["#nicho_forma_atendimento_dentista", "forma de atendimento"],
+    ["#nicho_publico_alvo_dentista", "público-alvo"],
     ["#nicho_tipo_produto", "tipo de produto SaaS"],
     ["#nicho_publico_alvo_saas", "público-alvo SaaS"],
     ["#adv_cbo", "CBO (otimização de orçamento)"],
@@ -30599,6 +30625,17 @@ function marcarCamposAposAplicarIA(camposPreenchidos = [], plataformasAlvo = pla
     ["#nicho_area_curso", "área do curso"],
     ["#nicho_objetivo_aluno", "objetivo do aluno"],
     ["#nicho_publico_alvo_cursos_online", "público-alvo"],
+    ["#nicho_curso_interesse", "curso / área"],
+    ["#nicho_modalidade_faculdade", "modalidade"],
+    ["#nicho_turno_faculdade", "turno"],
+    ["#nicho_tipo_ingresso", "forma de ingresso"],
+    ["#nicho_cidade_campus", "cidade / campus"],
+    ["#nicho_publico_alvo_faculdade", "público-alvo"],
+    ["#nicho_tratamento_dentista", "tratamento / serviço"],
+    ["#nicho_tipo_atendimento_dentista", "tipo de atendimento"],
+    ["#nicho_regiao_dentista", "região atendida"],
+    ["#nicho_forma_atendimento_dentista", "forma de atendimento"],
+    ["#nicho_publico_alvo_dentista", "público-alvo"],
     ["#nicho_tipo_produto", "tipo de produto SaaS"],
     ["#nicho_publico_alvo_saas", "público-alvo SaaS"],
     ["#adv_platform_facebook", "Facebook/Instagram"],

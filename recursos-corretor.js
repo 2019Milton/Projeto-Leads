@@ -83,9 +83,9 @@
         <div class="gt-modal-box gt-fin-box">
           <div class="gt-modal-topo"><div><h3>Financeiro do corretor</h3><p id="gt_fin_cliente" class="gt-ajuda" style="margin-top:4px"></p></div><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_financeiro')">✕</button></div>
           <input id="gt_fin_id" type="hidden">
-          <div class="gt-form-grid"><div class="gt-campo"><label>Nome do plano</label><input id="gt_fin_plano_nome"></div><div class="gt-campo"><label>Mensalidade do plano (R$)</label><input id="gt_fin_plano_valor" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Dia do vencimento</label><input id="gt_fin_vencimento" type="number" min="1" max="28"></div><div class="gt-campo"><label>Adicional mensal do VoIP (R$)</label><input id="gt_fin_voip" type="number" min="0" step="0.01"></div></div>
-          <div class="gt-fin-secao"><h4>Possíveis cobranças adicionais</h4><p>Deixe em zero enquanto não houver cobrança. O valor só aparecerá no total do corretor quando o recurso correspondente estiver ativo.</p><div class="gt-form-grid"><div class="gt-campo"><label>WhatsApp oficial (R$/mês)</label><input id="gt_fin_whatsapp" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Créditos extras de IA (R$/mês)</label><input id="gt_fin_ia" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Gravação e transcrição (R$/mês)</label><input id="gt_fin_gravacao" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Outro adicional</label><input id="gt_fin_outro_descricao" placeholder="Descrição do serviço"></div><div class="gt-campo"><label>Valor do outro adicional (R$/mês)</label><input id="gt_fin_outro_valor" type="number" min="0" step="0.01"></div><div class="gt-campo gt-campo-largo"><label>Observações para o corretor</label><textarea id="gt_fin_observacoes" maxlength="500"></textarea></div></div></div>
-          <div class="gt-sem-custo"><b>Importante:</b> a verba dos anúncios não está incluída na mensalidade de gestão. Minutos de ligações e taxas cobradas pelos provedores podem variar conforme o uso.</div>
+          <div class="gt-form-grid"><div class="gt-campo"><label>Nome do plano</label><input id="gt_fin_plano_nome"></div><div class="gt-campo"><label>Mensalidade do plano (R$)</label><input id="gt_fin_plano_valor" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Dia do vencimento</label><input id="gt_fin_vencimento" type="number" min="1" max="28"></div></div>
+          <div class="gt-fin-secao"><h4>Possíveis cobranças adicionais</h4><p>Deixe em zero enquanto não houver cobrança. O valor só aparecerá no total do corretor quando o recurso correspondente estiver ativo.</p><div class="gt-form-grid"><div class="gt-campo"><label>WhatsApp oficial (R$/mês)</label><input id="gt_fin_whatsapp" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Créditos extras de IA (R$/mês)</label><input id="gt_fin_ia" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Outro adicional</label><input id="gt_fin_outro_descricao" placeholder="Descrição do serviço"></div><div class="gt-campo"><label>Valor do outro adicional (R$/mês)</label><input id="gt_fin_outro_valor" type="number" min="0" step="0.01"></div><div class="gt-campo gt-campo-largo"><label>Observações para o corretor</label><textarea id="gt_fin_observacoes" maxlength="500"></textarea></div></div></div>
+          <div class="gt-sem-custo"><b>Importante:</b> o VoIP não faz parte desta mensalidade. Número e consumo de ligações são calculados separadamente no painel “Custos VoIP”. A verba dos anúncios também é paga separadamente.</div>
           <div class="gt-modal-acoes"><button class="gt-btn gt-btn-secondary" onclick="fecharModalGestor('gt_modal_financeiro')">Cancelar</button><button id="gt_fin_salvar" class="gt-btn gt-btn-primary" onclick="salvarFinanceiroClienteGerenciado()">Salvar valores</button></div>
         </div>
       </div>`);
@@ -327,10 +327,8 @@
       preencher("gt_fin_plano_nome", config.plano_nome || "Plano Gestão de Tráfego");
       preencher("gt_fin_plano_valor", Number(config.valor_plano_mensal ?? 800).toFixed(2));
       preencher("gt_fin_vencimento", Number(config.dia_vencimento || 10));
-      preencher("gt_fin_voip", Number(config.valor_voip_mensal || 0).toFixed(2));
       preencher("gt_fin_whatsapp", Number(config.valor_whatsapp_mensal || 0).toFixed(2));
       preencher("gt_fin_ia", Number(config.valor_ia_extra_mensal || 0).toFixed(2));
-      preencher("gt_fin_gravacao", Number(config.valor_gravacao_mensal || 0).toFixed(2));
       preencher("gt_fin_outro_descricao", config.outros_descricao || "");
       preencher("gt_fin_outro_valor", Number(config.valor_outros_mensal || 0).toFixed(2));
       preencher("gt_fin_observacoes", config.observacoes || "");
@@ -350,10 +348,8 @@
       plano_nome: document.getElementById("gt_fin_plano_nome")?.value?.trim(),
       valor_plano_mensal: valorCampoFinanceiro("gt_fin_plano_valor"),
       dia_vencimento: Number(document.getElementById("gt_fin_vencimento")?.value || 10),
-      valor_voip_mensal: valorCampoFinanceiro("gt_fin_voip"),
       valor_whatsapp_mensal: valorCampoFinanceiro("gt_fin_whatsapp"),
       valor_ia_extra_mensal: valorCampoFinanceiro("gt_fin_ia"),
-      valor_gravacao_mensal: valorCampoFinanceiro("gt_fin_gravacao"),
       outros_descricao: document.getElementById("gt_fin_outro_descricao")?.value?.trim(),
       valor_outros_mensal: valorCampoFinanceiro("gt_fin_outro_valor"),
       observacoes: document.getElementById("gt_fin_observacoes")?.value?.trim()
@@ -1110,9 +1106,10 @@
     }
 
     try {
-      const [config, historico] = await Promise.all([
+      const [config, historico, custosVoip] = await Promise.all([
         requisicaoPainel("/painel-cliente/voip/configuracao"),
-        requisicaoPainel("/painel-cliente/voip/chamadas")
+        requisicaoPainel("/painel-cliente/voip/chamadas"),
+        requisicaoPainel("/painel-cliente/voip/custos")
       ]);
 
       voipConfigAtual = config;
@@ -1127,6 +1124,9 @@
       const minutos = Number(config.minutos_usados_mes || 0);
       const limite = Number(config.limite_minutos_mensal || 0);
       const restantes = Number(config.minutos_restantes_mes || 0);
+      const custoMes = custosVoip?.resumo?.custos || {};
+      const consumoMes = custosVoip?.resumo?.consumo || {};
+      const custoParcial = Number(consumoMes.custos_estimados || 0) > 0;
 
       configEl.innerHTML = `
         <div style="width:100%">
@@ -1134,6 +1134,12 @@
           <h2>${ativo ? "Telefonia ativa" : "VoIP preparado"}</h2>
           <p>${htmlSeguro(config.mensagem || "Telefonia preparada.")}</p>
           <span class="pc-voip-status ${ativo ? "ativo" : "preparado"}">${ativo ? `Linha ${htmlSeguro(config.numero || "")}` : "Sem linha contratada · custo externo zero"}</span>
+          <div class="pc-voip-chamada-status" style="margin-top:12px;border-color:rgba(59,130,246,.3);background:rgba(37,99,235,.08)">
+            <strong>VoIP no mês: ${formatarMoeda(custoMes.valor_repassado_brl || 0)}</strong>
+            <div style="margin-top:5px;color:#93a4bb">Número: ${formatarMoeda(custoMes.numero_brl || 0)} · Ligações: ${formatarMoeda(custoMes.chamadas_brl || 0)} · ${Number(consumoMes.chamadas || 0)} chamada(s)</div>
+            <div style="margin-top:5px;color:${custoParcial ? "#fbbf24" : "#86efac"}">${custoParcial ? "Parte do valor ainda é estimada e será conciliada com a Twilio." : "Custos das chamadas encerradas conciliados."}</div>
+            <div style="margin-top:5px;color:#bfdbfe"><b>Este valor é cobrado separadamente da mensalidade da plataforma.</b></div>
+          </div>
           ${ativo ? `
             <div class="pc-voip-softphone">
               <input id="pc_voip_numero_destino" inputmode="tel" placeholder="DDD + telefone, ex.: (11) 99999-9999" ${emChamada ? "disabled" : ""}>
@@ -1183,6 +1189,7 @@
     const container = document.getElementById("pc_financeiro_conteudo");
     if (!container) return;
     container.innerHTML = '<div class="pc-vazio">Carregando informações financeiras...</div>';
+
     try {
       const data = await requisicaoPainel("/painel-cliente/financeiro");
       const plano = data.plano || {};
@@ -1190,14 +1197,66 @@
       const itens = Array.isArray(data.itens) ? data.itens : [];
       const historico = Array.isArray(data.historico) ? data.historico : [];
       const custos = Array.isArray(data.custos_variaveis) ? data.custos_variaveis : [];
-      const linhas = itens.map((item) => {
-        const valorDepois = item.status !== "ativo" && Number(item.valor_apos_ativacao || 0) > 0
-          ? `<span>Após ativação: ${formatarMoeda(item.valor_apos_ativacao)}/mês</span>`
-          : "";
-        return `<div class="pc-fin-item"><div><strong>${htmlSeguro(item.descricao)}</strong><span class="pc-fin-tag ${item.status === "ativo" ? "ativo" : ""}">${htmlSeguro(labelStatusFinanceiro(item.status))}</span>${valorDepois}</div><b>${formatarMoeda(item.status === "ativo" ? item.valor : 0)}</b></div>`;
-      }).join("");
-      const historicoHtml = historico.length ? historico.map((item) => `<div class="pc-fin-item"><div><strong>${new Date(item.mes_referencia).toLocaleDateString("pt-BR", { month:"long", year:"numeric", timeZone:"UTC" })}</strong><span class="pc-fin-tag ${item.status === "pago" ? "ativo" : ""}">${htmlSeguro(labelStatusFinanceiro(item.status))}</span></div><b>${formatarMoeda(item.valor)}</b></div>`).join("") : '<div class="pc-vazio">Nenhuma cobrança mensal emitida até o momento.</div>';
-      container.innerHTML = `<div class="pc-fin-resumo"><article class="pc-card"><span>Plano atual</span><h2 style="margin-top:7px">${htmlSeguro(plano.nome || "Plano Gestão de Tráfego")}</h2><p class="pc-card-sub">Vencimento todo dia ${Number(plano.dia_vencimento || 10)}</p><strong style="font-size:25px;color:#fff">${formatarMoeda(plano.valor_mensal)}<small style="font-size:11px;color:#8190a7">/mês</small></strong></article><article class="pc-card"><span>Telefonia VoIP</span><h2 style="margin-top:7px">${voip.ativo ? htmlSeguro(voip.numero || "Ativa") : htmlSeguro(labelStatusFinanceiro(voip.status))}</h2><p class="pc-card-sub">${voip.ativo ? "Número ativo nesta conta" : "Sem cobrança enquanto não houver número ativo"}</p><strong style="font-size:25px;color:#fff">${formatarMoeda(voip.valor_mensal)}<small style="font-size:11px;color:#8190a7">/mês</small></strong></article><article class="pc-card pc-fin-total"><span>Total mensal atual</span><h2 style="margin-top:7px">Serviços ativos</h2><p class="pc-card-sub">Não inclui a verba investida nos anúncios</p><strong style="font-size:28px;color:#86efac">${formatarMoeda(data.total_mensal)}<small style="font-size:11px;color:#8190a7">/mês</small></strong></article></div><div class="pc-voip-grade"><article class="pc-card"><h2>Composição da mensalidade</h2><p class="pc-card-sub">Somente serviços ativos entram no total.</p><div class="pc-fin-itens">${linhas}</div><div class="pc-fin-alerta">💡 ${htmlSeguro(data.investimento_anuncios?.mensagem || "A verba de anúncios é paga separadamente às plataformas.")}</div>${data.observacoes ? `<div class="pc-fin-alerta" style="border-color:rgba(59,130,246,.22);background:rgba(37,99,235,.07);color:#bfdbfe">${htmlSeguro(data.observacoes)}</div>` : ""}</article><article class="pc-card"><h2>Histórico de cobranças</h2><p class="pc-card-sub">Últimos lançamentos registrados na plataforma.</p>${historicoHtml}</article></div><article class="pc-card" style="margin-top:16px"><h2>Custos que podem existir futuramente</h2><p class="pc-card-sub">Eles não são cobrados automaticamente. Só aparecem no total depois de contratados ou utilizados.</p><div class="pc-fin-custos">${custos.map((item) => `<div class="pc-fin-custo">${htmlSeguro(item)}</div>`).join("")}</div></article>`;
+
+      const linhas = itens.map((item) =>
+        `<div class="pc-fin-item"><div><strong>${htmlSeguro(item.descricao)}</strong><span class="pc-fin-tag ${item.status === "ativo" ? "ativo" : ""}">${htmlSeguro(labelStatusFinanceiro(item.status))}</span></div><b>${formatarMoeda(item.status === "ativo" ? item.valor : 0)}</b></div>`
+      ).join("");
+
+      const historicoHtml = historico.length
+        ? historico.map((item) => `<div class="pc-fin-item"><div><strong>${new Date(item.mes_referencia).toLocaleDateString("pt-BR", { month:"long", year:"numeric", timeZone:"UTC" })}</strong><span class="pc-fin-tag ${item.status === "pago" ? "ativo" : ""}">${htmlSeguro(labelStatusFinanceiro(item.status))}</span></div><b>${formatarMoeda(item.valor)}</b></div>`).join("")
+        : '<div class="pc-vazio">Nenhuma cobrança mensal emitida até o momento.</div>';
+
+      const statusVoip = voip.custo_status === "parcialmente_estimado"
+        ? "Valor parcial/estimado"
+        : "Valor conciliado";
+
+      container.innerHTML = `
+        <div class="pc-fin-resumo">
+          <article class="pc-card">
+            <span>Plano da plataforma</span>
+            <h2 style="margin-top:7px">${htmlSeguro(plano.nome || "Plano Gestão de Tráfego")}</h2>
+            <p class="pc-card-sub">Vencimento todo dia ${Number(plano.dia_vencimento || 10)}</p>
+            <strong style="font-size:25px;color:#fff">${formatarMoeda(plano.valor_mensal)}<small style="font-size:11px;color:#8190a7">/mês</small></strong>
+          </article>
+          <article class="pc-card" style="border-color:rgba(59,130,246,.34)">
+            <span>VoIP — adicional separado</span>
+            <h2 style="margin-top:7px">${voip.numero ? htmlSeguro(voip.numero) : htmlSeguro(labelStatusFinanceiro(voip.status))}</h2>
+            <p class="pc-card-sub">${Number(voip.chamadas || 0)} chamada(s) · ${Number(voip.minutos || 0).toLocaleString("pt-BR")} min · ${htmlSeguro(statusVoip)}</p>
+            <strong style="font-size:25px;color:#93c5fd">${formatarMoeda(voip.valor_a_pagar_brl || 0)}<small style="font-size:11px;color:#8190a7"> neste mês</small></strong>
+          </article>
+          <article class="pc-card pc-fin-total">
+            <span>Mensalidade da plataforma</span>
+            <h2 style="margin-top:7px">Total do plano</h2>
+            <p class="pc-card-sub">Não inclui VoIP nem verba de anúncios</p>
+            <strong style="font-size:28px;color:#86efac">${formatarMoeda(data.total_mensal_plataforma ?? data.total_mensal)}<small style="font-size:11px;color:#8190a7">/mês</small></strong>
+          </article>
+        </div>
+
+        <div class="pc-fin-alerta" style="margin:0 0 16px;border-color:rgba(59,130,246,.32);background:rgba(37,99,235,.09);color:#bfdbfe">
+          📞 <b>O VoIP é cobrado à parte.</b> No mês atual: número ${formatarMoeda(voip.custo_numero_brl || 0)} + ligações ${formatarMoeda(voip.custo_chamadas_brl || 0)} = <b>${formatarMoeda(voip.valor_a_pagar_brl || 0)}</b>.
+        </div>
+
+        <div class="pc-voip-grade">
+          <article class="pc-card">
+            <h2>Composição da mensalidade da plataforma</h2>
+            <p class="pc-card-sub">O consumo VoIP não entra neste total.</p>
+            <div class="pc-fin-itens">${linhas}</div>
+            <div class="pc-fin-alerta">💡 ${htmlSeguro(data.investimento_anuncios?.mensagem || "A verba de anúncios é paga separadamente às plataformas.")}</div>
+            ${data.observacoes ? `<div class="pc-fin-alerta" style="border-color:rgba(59,130,246,.22);background:rgba(37,99,235,.07);color:#bfdbfe">${htmlSeguro(data.observacoes)}</div>` : ""}
+          </article>
+          <article class="pc-card">
+            <h2>Histórico de cobranças da plataforma</h2>
+            <p class="pc-card-sub">Não inclui o consumo variável de VoIP.</p>
+            ${historicoHtml}
+          </article>
+        </div>
+
+        <article class="pc-card" style="margin-top:16px">
+          <h2>Custos separados e variáveis</h2>
+          <p class="pc-card-sub">São apresentados fora da mensalidade base para manter total transparência.</p>
+          <div class="pc-fin-custos">${custos.map((item) => `<div class="pc-fin-custo">${htmlSeguro(item)}</div>`).join("")}</div>
+        </article>
+      `;
     } catch (err) {
       container.innerHTML = `<div class="pc-vazio">${htmlSeguro(err.message)}</div>`;
     }

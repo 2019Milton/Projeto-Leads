@@ -31020,6 +31020,40 @@ function aplicarCampanhaIA(indice) {
     }
   );
   preencherCampoIA("#nicho_publico_alvo_cursos_online", s.nicho_publico_alvo || s.publico_alvo);
+
+  preencherCampoIA("#nicho_curso_interesse", s.nicho_curso_interesse || s.curso_interesse);
+  preencherSelectIA("#nicho_modalidade_faculdade", s.nicho_modalidade_faculdade || s.modalidade, {
+    presencial: "presencial", ead: "ead", "e.a.d": "ead", hibrido: "hibrido", híbrido: "hibrido"
+  });
+  preencherSelectIA("#nicho_turno_faculdade", s.nicho_turno_faculdade || s.turno, {
+    manha: "manha", manhã: "manha", tarde: "tarde", noite: "noite", integral: "integral", flexivel: "flexivel", flexível: "flexivel"
+  });
+  preencherSelectIA("#nicho_tipo_ingresso", s.nicho_tipo_ingresso || s.tipo_ingresso, {
+    vestibular: "vestibular", enem: "enem", transferencia: "transferencia", transferência: "transferencia",
+    segunda_graduacao: "segunda_graduacao", "segunda graduacao": "segunda_graduacao", "segunda graduação": "segunda_graduacao", outro: "outro"
+  });
+  preencherCampoIA("#nicho_cidade_campus", s.nicho_cidade_campus || s.cidade_campus || s.localidade);
+  preencherCampoIA("#nicho_publico_alvo_faculdade", s.nicho_publico_alvo_faculdade || s.nicho_publico_alvo || s.publico_alvo);
+
+  preencherSelectIA("#nicho_tratamento_dentista", s.nicho_tratamento_dentista || s.tratamento, {
+    implante: "implante", implantes: "implante", ortodontia: "ortodontia", aparelho: "ortodontia",
+    clareamento: "clareamento", faceta: "facetas", facetas: "facetas", lentes: "facetas",
+    protese: "protese", prótese: "protese", proteses: "protese", próteses: "protese",
+    canal: "endodontia", endodontia: "endodontia",
+    limpeza: "limpeza_prevencao", prevencao: "limpeza_prevencao", prevenção: "limpeza_prevencao",
+    odontopediatria: "odontopediatria", outro: "outro"
+  });
+  preencherSelectIA("#nicho_tipo_atendimento_dentista", s.nicho_tipo_atendimento_dentista || s.tipo_atendimento, {
+    avaliacao: "avaliacao", avaliação: "avaliacao", geral: "geral", estetica: "estetica", estética: "estetica",
+    reabilitacao: "reabilitacao", reabilitação: "reabilitacao", prevencao: "prevencao", prevenção: "prevencao"
+  });
+  preencherCampoIA("#nicho_regiao_dentista", s.nicho_regiao_dentista || s.regiao || s.localidade);
+  preencherSelectIA("#nicho_forma_atendimento_dentista", s.nicho_forma_atendimento_dentista || s.forma_atendimento, {
+    particular: "particular", convenio: "convenio", convênio: "convenio", ambos: "ambos",
+    "particular e convenio": "ambos", "particular e convênio": "ambos"
+  });
+  preencherCampoIA("#nicho_publico_alvo_dentista", s.nicho_publico_alvo_dentista || s.nicho_publico_alvo || s.publico_alvo);
+
   preencherSelectIA(
     "#nicho_tipo_produto",
     s.nicho_tipo_produto || s.tipo_produto,
@@ -53253,6 +53287,19 @@ function _salvarEstadoFormNicho(slug) {
     state.area_curso      = get("nicho_area_curso");
     state.objetivo_aluno  = get("nicho_objetivo_aluno");
     state.publico_alvo    = get("nicho_publico_alvo_cursos_online");
+  } else if (slug === "faculdade_universidade") {
+    state.curso_interesse = get("nicho_curso_interesse");
+    state.modalidade = get("nicho_modalidade_faculdade");
+    state.turno = get("nicho_turno_faculdade");
+    state.tipo_ingresso = get("nicho_tipo_ingresso");
+    state.cidade_campus = get("nicho_cidade_campus");
+    state.publico_alvo = get("nicho_publico_alvo_faculdade");
+  } else if (slug === "dentista") {
+    state.tratamento = get("nicho_tratamento_dentista");
+    state.tipo_atendimento = get("nicho_tipo_atendimento_dentista");
+    state.regiao = get("nicho_regiao_dentista");
+    state.forma_atendimento = get("nicho_forma_atendimento_dentista");
+    state.publico_alvo = get("nicho_publico_alvo_dentista");
   }
   window._nichoFormState[slug] = state;
 }
@@ -53313,6 +53360,19 @@ function _restaurarEstadoFormNicho(slug) {
     set("nicho_area_curso",                  state.area_curso);
     set("nicho_objetivo_aluno",              state.objetivo_aluno);
     set("nicho_publico_alvo_cursos_online",  state.publico_alvo);
+  } else if (slug === "faculdade_universidade") {
+    set("nicho_curso_interesse", state.curso_interesse);
+    set("nicho_modalidade_faculdade", state.modalidade);
+    set("nicho_turno_faculdade", state.turno);
+    set("nicho_tipo_ingresso", state.tipo_ingresso);
+    set("nicho_cidade_campus", state.cidade_campus);
+    set("nicho_publico_alvo_faculdade", state.publico_alvo);
+  } else if (slug === "dentista") {
+    set("nicho_tratamento_dentista", state.tratamento);
+    set("nicho_tipo_atendimento_dentista", state.tipo_atendimento);
+    set("nicho_regiao_dentista", state.regiao);
+    set("nicho_forma_atendimento_dentista", state.forma_atendimento);
+    set("nicho_publico_alvo_dentista", state.publico_alvo);
   }
 }
 
@@ -53782,6 +53842,19 @@ function coletarDadosNichoAtivo() {
     dados.area_curso     = document.getElementById("nicho_area_curso")?.value || null;
     dados.objetivo_aluno = document.getElementById("nicho_objetivo_aluno")?.value || null;
     dados.publico_alvo   = document.getElementById("nicho_publico_alvo_cursos_online")?.value || null;
+  } else if (nicho.slug === "faculdade_universidade") {
+    dados.curso_interesse = document.getElementById("nicho_curso_interesse")?.value || null;
+    dados.modalidade = document.getElementById("nicho_modalidade_faculdade")?.value || null;
+    dados.turno = document.getElementById("nicho_turno_faculdade")?.value || null;
+    dados.tipo_ingresso = document.getElementById("nicho_tipo_ingresso")?.value || null;
+    dados.cidade_campus = document.getElementById("nicho_cidade_campus")?.value || null;
+    dados.publico_alvo = document.getElementById("nicho_publico_alvo_faculdade")?.value || null;
+  } else if (nicho.slug === "dentista") {
+    dados.tratamento = document.getElementById("nicho_tratamento_dentista")?.value || null;
+    dados.tipo_atendimento = document.getElementById("nicho_tipo_atendimento_dentista")?.value || null;
+    dados.regiao = document.getElementById("nicho_regiao_dentista")?.value || null;
+    dados.forma_atendimento = document.getElementById("nicho_forma_atendimento_dentista")?.value || null;
+    dados.publico_alvo = document.getElementById("nicho_publico_alvo_dentista")?.value || null;
   }
 
   return dados;
@@ -53831,6 +53904,21 @@ function restaurarDadosNichoAtivo(dados = {}) {
       area_curso: "nicho_area_curso",
       objetivo_aluno: "nicho_objetivo_aluno",
       publico_alvo: "nicho_publico_alvo_cursos_online"
+    },
+    faculdade_universidade: {
+      curso_interesse: "nicho_curso_interesse",
+      modalidade: "nicho_modalidade_faculdade",
+      turno: "nicho_turno_faculdade",
+      tipo_ingresso: "nicho_tipo_ingresso",
+      cidade_campus: "nicho_cidade_campus",
+      publico_alvo: "nicho_publico_alvo_faculdade"
+    },
+    dentista: {
+      tratamento: "nicho_tratamento_dentista",
+      tipo_atendimento: "nicho_tipo_atendimento_dentista",
+      regiao: "nicho_regiao_dentista",
+      forma_atendimento: "nicho_forma_atendimento_dentista",
+      publico_alvo: "nicho_publico_alvo_dentista"
     }
   };
 
@@ -58799,6 +58887,19 @@ function _salvarEstadoFormNicho(slug) {
     state.area_curso      = get("nicho_area_curso");
     state.objetivo_aluno  = get("nicho_objetivo_aluno");
     state.publico_alvo    = get("nicho_publico_alvo_cursos_online");
+  } else if (slug === "faculdade_universidade") {
+    state.curso_interesse = get("nicho_curso_interesse");
+    state.modalidade = get("nicho_modalidade_faculdade");
+    state.turno = get("nicho_turno_faculdade");
+    state.tipo_ingresso = get("nicho_tipo_ingresso");
+    state.cidade_campus = get("nicho_cidade_campus");
+    state.publico_alvo = get("nicho_publico_alvo_faculdade");
+  } else if (slug === "dentista") {
+    state.tratamento = get("nicho_tratamento_dentista");
+    state.tipo_atendimento = get("nicho_tipo_atendimento_dentista");
+    state.regiao = get("nicho_regiao_dentista");
+    state.forma_atendimento = get("nicho_forma_atendimento_dentista");
+    state.publico_alvo = get("nicho_publico_alvo_dentista");
   }
   window._nichoFormState[slug] = state;
 }
@@ -58859,6 +58960,19 @@ function _restaurarEstadoFormNicho(slug) {
     set("nicho_area_curso",                  state.area_curso);
     set("nicho_objetivo_aluno",              state.objetivo_aluno);
     set("nicho_publico_alvo_cursos_online",  state.publico_alvo);
+  } else if (slug === "faculdade_universidade") {
+    set("nicho_curso_interesse", state.curso_interesse);
+    set("nicho_modalidade_faculdade", state.modalidade);
+    set("nicho_turno_faculdade", state.turno);
+    set("nicho_tipo_ingresso", state.tipo_ingresso);
+    set("nicho_cidade_campus", state.cidade_campus);
+    set("nicho_publico_alvo_faculdade", state.publico_alvo);
+  } else if (slug === "dentista") {
+    set("nicho_tratamento_dentista", state.tratamento);
+    set("nicho_tipo_atendimento_dentista", state.tipo_atendimento);
+    set("nicho_regiao_dentista", state.regiao);
+    set("nicho_forma_atendimento_dentista", state.forma_atendimento);
+    set("nicho_publico_alvo_dentista", state.publico_alvo);
   }
 }
 

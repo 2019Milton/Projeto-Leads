@@ -36296,6 +36296,8 @@ function chaveNichoFormulario(nicho = {}) {
   if (slug.includes("higien") || id === 5) return "higienizacao";
   if (slug.includes("telecom") || id === 6) return "telecom";
   if (slug.includes("curso") || id === 1327) return "cursos_online";
+  if (slug.includes("faculdade") || slug.includes("universidade")) return "faculdade_universidade";
+  if (slug.includes("dentista") || slug.includes("odonto")) return "dentista";
   return slug.trim();
 }
 
@@ -42053,6 +42055,8 @@ const HUB_RANKING_MERCADO = {
   higienizacao:  { meta: 88, google: 95, tiktok: 65, linkedin: 60, kwai: 55, pinterest: 50, snapchat: 42, microsoft: 70 },
   telecom:       { meta: 86, google: 95, tiktok: 65, linkedin: 92, kwai: 50, pinterest: 40, snapchat: 35, microsoft: 78 },
   cursos_online: { meta: 91, google: 90, tiktok: 88, linkedin: 75, kwai: 60, pinterest: 62, snapchat: 55, microsoft: 65 },
+  faculdade_universidade: { meta: 90, google: 94, tiktok: 82, linkedin: 78, kwai: 55, pinterest: 62, snapchat: 50, microsoft: 70 },
+  dentista:      { meta: 91, google: 96, tiktok: 72, linkedin: 45, kwai: 50, pinterest: 58, snapchat: 45, microsoft: 70 },
   educacao:      { meta: 90, google: 92, tiktok: 85, linkedin: 76, kwai: 58, pinterest: 64, snapchat: 54, microsoft: 66 },
   automoveis:    { meta: 91, google: 94, tiktok: 80, linkedin: 55, kwai: 60, pinterest: 65, snapchat: 55, microsoft: 70 },
   consorcio:     { meta: 90, google: 93, tiktok: 74, linkedin: 60, kwai: 55, pinterest: 50, snapchat: 45, microsoft: 68 }
@@ -52801,6 +52805,8 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("higien")) return "Higienização";
   if (slug.includes("telecom")) return "Telecom Empresarial";
   if (slug.includes("curso")) return "Cursos Online";
+  if (slug.includes("faculdade") || slug.includes("universidade")) return "Faculdade / Universidade";
+  if (slug.includes("dentista") || slug.includes("odonto")) return "Dentista";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";
@@ -56974,6 +56980,8 @@ async function enviarFeedback() {
             <option value="higienizacao">Higienização</option>
             <option value="telecom">Telecom empresarial</option>
             <option value="cursos_online">Cursos online</option>
+            <option value="faculdade_universidade">Faculdade / Universidade</option>
+            <option value="dentista">Dentista</option>
             <option value="educacao">Educação</option>
             <option value="auto">Automotivo</option>
             <option value="consorcio">Consórcio</option>
@@ -58404,6 +58412,8 @@ function nomeExibirNicho(nicho = {}) {
   if (slug.includes("higien")) return "Higienização";
   if (slug.includes("telecom")) return "Telecom Empresarial";
   if (slug.includes("curso")) return "Cursos Online";
+  if (slug.includes("faculdade") || slug.includes("universidade")) return "Faculdade / Universidade";
+  if (slug.includes("dentista") || slug.includes("odonto")) return "Dentista";
   const id = Number(nicho.id || nicho.nicho_id);
   if (id === 1) return "Imóveis";
   if (id === 2) return "Planos de Saúde";

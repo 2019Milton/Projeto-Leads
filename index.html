@@ -19463,7 +19463,7 @@ body.tema-claro .criar-campanha-descricao {
                 </div>
                 <div id="destino_google_site_modo_display_info" class="channel-picker-status" style="display:none;">No Display o Google não oferece formulário de leads — ele existe só em anúncios de <b>Pesquisa</b>. Para usar "Formulário + botão para o seu site", selecione Pesquisa em "Tipo de campanha".</div>
                 <div id="destino_google_site_modo_formulario_info" class="channel-picker-status">O anúncio abre o formulário da própria rede: a plataforma recebe nome e telefone, acompanha o lead e devolve os sinais de qualidade e venda. No final, o botão <b>Visitar site</b> leva à URL de destino preenchida abaixo. Você não precisa instalar nada no site.</div>
-                <div id="destino_google_site_modo_direto_info" class="channel-picker-status alerta" style="display:none;" data-site-codigo-pai>O clique abre direto o seu site. A plataforma <b>não recebe</b> nome e telefone de quem preencher o formulário do site: as conversões aparecem só como números nos resultados da campanha (se o site tiver a tag do Google). Para receber os leads aqui, cole o código de <b>Integrações → Formulário do seu site</b>.</div>
+                <div id="destino_google_site_modo_direto_info" class="channel-picker-status alerta" style="display:none;" data-site-codigo-pai>O clique abre direto o seu site. Sem o código do formulário, a plataforma <b>não recebe</b> nome e telefone de quem preencher o formulário do site e a campanha fica em <b>CPC manual</b>. Com o código (abaixo, ou em <b>Integrações → Formulário do seu site</b>), cada lead entra aqui, a tag de conversão do Google vai junto no código e a campanha passa a <b>otimizar por quem preenche o formulário</b>.</div>
               </div>
               <div id="destino_google_site_info" class="channel-picker-status" style="display:none;">
                 O clique principal será direcionado para a URL de destino preenchida abaixo.
@@ -19889,6 +19889,7 @@ body.tema-claro .criar-campanha-descricao {
                     </div>
                     <p>A integração pode enviar qualificação e fechamento — este com o valor da venda, quando informado — usando o identificador do clique ou, no fluxo de conversões otimizadas, e-mail/telefone. O envio depende das permissões e das ações de conversão configuradas; ter o contato cadastrado não garante atribuição.</p>
                     <p>As ações da plataforma são criadas como <b>Lead qualificado</b> e <b>Lead convertido</b>. Em campanhas de formulário ou WhatsApp criadas pela plataforma, só contam no lance a meta principal (formulário enviado ou contato pelo WhatsApp) e essas duas — outras metas da conta, como visitas de página ou compras de outro negócio, ficam de fora dessa campanha. Campanhas antigas e a configuração da conta não são alteradas.</p>
+                    <p><b>Site:</b> com o formulário do site (em Integrações), a tag de conversão do Google vai dentro do próprio código e registra cada lead como <b>Lead do site</b> — só para quem chegou por anúncio do Google. Com o código detectado, campanhas <b>Direto para o site</b> otimizam por esses leads (Maximizar conversões); sem ele, ficam em CPC manual.</p>
                   </article>
 
                   <article class="iapm-platform-card iapm-platform-card--tiktok">
@@ -43090,20 +43091,26 @@ function instrucoesInstalacaoSiteHtml() {
 // Código instalado no site? (backend registra quando uma página do site
 // carrega o script). Decide se a campanha Meta "Direto para o site" otimiza
 // por quem preenche o formulário (lead) ou só por visitas à página.
+// Com o Google conectado, a mesma regra vale para a campanha Google "Direto
+// para o site" (Maximizar conversões pela tag do Google que vai no código).
 function statusCodigoSiteHtml(data) {
   if (!data) return "";
+  const redes = data.google_conectado ? "da Meta e do Google" : "da Meta";
+  const notaGoogle = data.google_conectado
+    ? " A tag de conversão do Google entra no código sozinha (só para quem chega por anúncio do Google)."
+    : "";
   if (data.codigo_visto_em) {
     const quando = new Date(data.codigo_visto_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
     const onde = data.codigo_dominio ? ` em <b>${escaparHtml(data.codigo_dominio)}</b>` : "";
     const otimizacao = data.otimizacao_meta === "lead"
-      ? "Campanhas da Meta com <b>Direto para o site</b> vão otimizar por quem <b>preenche o formulário</b>, não só por quem abre a página."
-      : `Campanhas da Meta com <b>Direto para o site</b> otimizam por visitas (${escaparHtml(data.otimizacao_meta_motivo || "")}).`;
+      ? `Campanhas ${redes} com <b>Direto para o site</b> vão otimizar por quem <b>preenche o formulário</b>, não só por quem abre a página.${notaGoogle}`
+      : `Campanhas ${redes} com <b>Direto para o site</b> otimizam por visitas (${escaparHtml(data.otimizacao_meta_motivo || "")}).`;
     return `<div class="site-codigo-status ok">✅ Código detectado${onde} (último acesso ${escaparHtml(quando)}). ${otimizacao}</div>`;
   }
   if (data.otimizacao_meta === "lead") {
-    return `<div class="site-codigo-status ok">✅ Já chegaram leads pelo formulário do seu site. Campanhas da Meta com <b>Direto para o site</b> vão otimizar por quem <b>preenche o formulário</b>.</div>`;
+    return `<div class="site-codigo-status ok">✅ Já chegaram leads pelo formulário do seu site. Campanhas ${redes} com <b>Direto para o site</b> vão otimizar por quem <b>preenche o formulário</b>.${notaGoogle}</div>`;
   }
-  return `<div class="site-codigo-status alerta">⚠️ Ainda não detectamos o código no seu site. Enquanto isso, campanhas da Meta com <b>Direto para o site</b> otimizam só por visitas à página. Depois de colar o código, abra a página do site uma vez para a plataforma detectar.</div>`;
+  return `<div class="site-codigo-status alerta">⚠️ Ainda não detectamos o código no seu site. Enquanto isso, campanhas ${redes} com <b>Direto para o site</b> otimizam só por visitas à página. Depois de colar o código, abra a página do site uma vez para a plataforma detectar.</div>`;
 }
 
 let _chaveFormularioSiteCache = null;

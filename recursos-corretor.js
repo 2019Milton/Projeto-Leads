@@ -367,6 +367,14 @@
     }
   };
 
+  function ajustarRotuloNovoCorretor() {
+    document.querySelectorAll("button").forEach((botao) => {
+      const texto = String(botao.textContent || "").replace(/\s+/g, " ").trim();
+      if (!/^\+?\s*Novo corretor$/i.test(texto)) return;
+      botao.innerHTML = botao.innerHTML.replace(/Novo corretor/gi, "Novo Corretor/Cliente");
+    });
+  }
+
   function enriquecerCardsGestor() {
     document.querySelectorAll("#gt_lista_clientes .gt-card").forEach((card) => {
       if (card.dataset.recursosProntos === "1") return;
@@ -1275,11 +1283,13 @@
 
   function instalarExtensoes() {
     injetarEstilos();
+    ajustarRotuloNovoCorretor();
 
     if (typeof renderizarClientesGerenciados === "function") {
       const original = renderizarClientesGerenciados;
       renderizarClientesGerenciados = function renderizarClientesComRecursos(...args) {
         const retorno = original.apply(this, args);
+        ajustarRotuloNovoCorretor();
         enriquecerCardsGestor();
         return retorno;
       };

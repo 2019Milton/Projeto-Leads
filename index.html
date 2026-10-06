@@ -58161,8 +58161,10 @@ async function _configurarNichoCriativoUsuario() {
     select.appendChild(opt);
   });
 
-  const ativo = _slugNichoCriativo(window._nichoAtivo || {});
-  select.value = nichos.some(n => _slugNichoCriativo(n) === ativo) ? ativo : "";
+  // Com mais de um nicho, o padrão é realmente automático.
+  // Não herdamos window._nichoAtivo, pois a aba inicial pode ser apenas o
+  // primeiro nicho da tela e não uma escolha consciente do usuário.
+  select.value = "";
 
   if (ajuda) {
     ajuda.textContent = "No modo automático, a IA escolhe somente entre os nichos habilitados para sua conta.";
@@ -58179,7 +58181,7 @@ function _coletarBriefingCriativoIA() {
   return {
     nicho: valor("banner_ia_nicho") || null,
     formato: valor("banner_ia_formato") || "instagram_feed",
-    objetivo: valor("banner_ia_objetivo") || "leads",
+    objetivo: valor("banner_ia_objetivo") || "auto",
     estilo: valor("banner_ia_estilo") || "auto",
     publico: valor("banner_ia_publico"),
     oferta: valor("banner_ia_oferta"),

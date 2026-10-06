@@ -24229,7 +24229,12 @@ async function criarClienteGerenciado() {
     const data = await requisicaoGestor("/gestor/clientes", { method:"POST", body:JSON.stringify(payload) });
     fecharModalGestor("gt_modal_novo");
     await carregarClientesGerenciados(true);
-    alert(`Corretor criado com sucesso. O painel de acompanhamento já está ativo para ${data.cliente?.email || payload.email}.`);
+    const emailDestino = data.cliente?.email || payload.email;
+    if (data.email_enviado === false) {
+      alert(data.aviso || "Corretor criado, mas o email de acesso não pôde ser enviado.");
+    } else {
+      alert(`Corretor criado com sucesso. Login e senha foram enviados para ${emailDestino}. Você já pode pedir para ele verificar o email.`);
+    }
   } catch (err) { alert(err.message); }
   finally { if (btn) { btn.disabled = false; btn.textContent = "Criar corretor e painel"; } }
 }
@@ -52779,7 +52784,11 @@ async function criarUsuario() {
     return;
   }
 
-  alert("Usuário criado");
+  if (data.email_enviado === false) {
+    alert(data.aviso || "Usuário criado, mas o email de acesso não pôde ser enviado.");
+  } else {
+    alert(`Usuário criado com sucesso. Login e senha foram enviados para ${email}. Você já pode pedir para o usuário verificar o email.`);
+  }
 
   document.getElementById(
     "novo_usuario_email"

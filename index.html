@@ -46206,8 +46206,9 @@ function campanhasDisponiveisNumeroWhatsapp(nichoId) {
 function renderWhatsappNumeros() {
   const area=document.getElementById("whatsapp_numeros_area"), lista=document.getElementById("whatsapp_numeros_lista");
   if(!area||!lista)return;
-  area.style.display=_whatsappBotConectado?"":"none";
-  if(!_whatsappBotConectado)return;
+  const habilitado=usuarioLogado?.whatsapp_multiplos_numeros_habilitado===true;
+  area.style.display=(_whatsappBotConectado&&habilitado)?"":"none";
+  if(!_whatsappBotConectado||!habilitado)return;
   if(!_whatsappNumeros.length){lista.innerHTML='<div style="font-size:13px;color:#94a3b8;">Nenhum número encontrado. Clique em <b>Adicionar número</b>.</div>';return;}
   const nichos=Array.isArray(usuarioLogado?.nichos)?usuarioLogado.nichos:[];
   lista.innerHTML=_whatsappNumeros.map(n=>{
@@ -46247,6 +46248,11 @@ function filtrarCampanhasNumeroWhatsapp(id) {
   select.innerHTML=_wppNumeroOptions(campanhasDisponiveisNumeroWhatsapp(nicho),select.value||numero?.campanha_id,"Nenhuma — usar origem detectada");
 }
 async function carregarWhatsappNumeros(token) {
+  if(usuarioLogado?.whatsapp_multiplos_numeros_habilitado!==true){
+    _whatsappNumeros=[];
+    renderWhatsappNumeros();
+    return;
+  }
   try {
     if (!Array.isArray(campanhasAtuais) || !campanhasAtuais.length) {
       const resCampanhas = await fetch(`${API}/campanhas`, { headers:{ Authorization:`Bearer ${token}` } });
@@ -46300,12 +46306,13 @@ async function carregarWhatsappBot() {
     statusEl.classList.toggle("conectado", _whatsappBotConectado);
     if (_whatsappBotConectado) {
       const conta = conexao.conta || {};
+      const multiplos=usuarioLogado?.whatsapp_multiplos_numeros_habilitado===true;
       statusEl.innerHTML = `
         <div>
           <div style="color:#25d366;font-weight:bold;">🟢 Conectado</div>
-          <div style="font-size:13px;color:#cbd5e1;margin-top:4px;">Número principal: ${escaparHtml(conta.numero || "")} ${conta.display_name ? `— ${escaparHtml(conta.display_name)}` : ""}</div>
+          <div style="font-size:13px;color:#cbd5e1;margin-top:4px;">${multiplos ? "Número principal: " : ""}${escaparHtml(conta.numero || "")} ${conta.display_name ? `— ${escaparHtml(conta.display_name)}` : ""}</div>
         </div>
-        <button class="btn wpp-btn wpp-btn-danger" onclick="desconectarPlataforma('whatsapp', this)">Desconectar todos</button>
+        <button class="btn wpp-btn wpp-btn-danger" onclick="desconectarPlataforma('whatsapp', this)">${multiplos ? "Desconectar todos" : "Desconectar"}</button>
       `;
       carregarDiagnosticoWhatsapp(token);
       carregarContatoFormularioWhatsapp();

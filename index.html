@@ -51182,6 +51182,18 @@ async function carregarPainelAdmin() {
             >
           
               <button
+                type="button"
+                style="
+                  background:${u.whatsapp_multiplos_numeros_habilitado ? "linear-gradient(135deg,#16a34a,#15803d)" : "linear-gradient(135deg,#475569,#334155)"};
+                  white-space:nowrap;
+                "
+                onclick="alterarWhatsappMultiplosUsuario(${u.id}, ${u.whatsapp_multiplos_numeros_habilitado === true})"
+                title="Libera números adicionais e configurações avançadas sem alterar o número principal atual."
+              >
+                📱 Múltiplos: ${u.whatsapp_multiplos_numeros_habilitado ? "Ativo" : "Desligado"}
+              </button>
+
+              <button
                 onclick='abrirTrocaSenha(${u.id}, ${JSON.stringify(u.email)})'
               >
                 🔐 Senha
@@ -52347,6 +52359,36 @@ async function salvarRailwayBillingAdmin() {
   await carregarRecursosAdmin();
 }
 
+
+
+async function alterarWhatsappMultiplosUsuario(id, ativoAtual) {
+  const novoStatus = !ativoAtual;
+  const confirmar = confirm(
+    novoStatus
+      ? "Habilitar múltiplos números de WhatsApp para este usuário? O número atual continuará sendo o principal e nada será distribuído automaticamente."
+      : "Desabilitar múltiplos números para este usuário? O número principal continuará funcionando normalmente; os adicionais deixarão de ser usados até uma nova ativação."
+  );
+  if (!confirmar) return;
+
+  const token = localStorage.getItem("token");
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/whatsapp-multiplos-numeros`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ habilitado: novoStatus })
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) {
+    alert(data.error || "Erro ao alterar recurso de múltiplos números");
+    return;
+  }
+  await carregarPainelAdmin();
+}
 
 
 async function alterarStatusUsuario(id, ativoAtual) {

@@ -18682,6 +18682,15 @@ body.tema-claro .criar-campanha-descricao {
           <div style="color:#64748b;font-size:13px;">Carregando conexão...</div>
         </div>
 
+        <div id="whatsapp_numeros_area" style="display:none;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+            <div><div style="font-weight:700;color:#e2e8f0;">Números conectados</div>
+            <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Cada número pode ter seu próprio nicho, campanha e roteiro.</div></div>
+            <button type="button" class="btn wpp-btn wpp-btn-success" onclick="conectarWhatsapp(this)">+ Adicionar número</button>
+          </div>
+          <div id="whatsapp_numeros_lista" style="display:grid;gap:10px;"></div>
+        </div>
+
         <div id="whatsapp_diagnostico" class="wpp-diag" style="display:none;"></div>
 
         </section>
@@ -24692,6 +24701,8 @@ async function init() {
         if (usuarioLogado) {
           usuarioLogado.whatsapp = perfil.whatsapp || null;
           usuarioLogado.notif_whatsapp_lead = perfil.notif_whatsapp_lead !== false;
+          usuarioLogado.whatsapp_multiplos_numeros_habilitado =
+            perfil.whatsapp_multiplos_numeros_habilitado === true;
         }
       }
     } catch (_) {}
@@ -45338,7 +45349,7 @@ async function carregarStatusGoogle() {
             <span style="font-size:32px;line-height:1;">🔴</span>
             <div>
               <div style="font-weight:bold;">Google Ads</div>
-              <div style="color:#22c55e;">🟢 Conectado</div>
+              <div style="color:#22c55e;">🟢 WhatsApp conectado</div>
             </div>
           </div>
 
@@ -45961,6 +45972,7 @@ function parsearPassosWhatsappBot(texto) {
 let whatsappBotEditandoId = null;
 let _whatsappBotRoteiros = [];
 let _whatsappBotConectado = false;
+let _whatsappNumeros = [];
 
 function renderRoteiroWhatsappBotCard(r) {
   const ativoBadge = r.ativo
@@ -46182,6 +46194,101 @@ function preencherSelectNichoWhatsappBot() {
   if (nichos.some(n => String(n.id) === valorAtual)) select.value = valorAtual;
 }
 
+function _wppNumeroOptions(lista, atual, vazio) {
+  const valor=String(atual??"");
+  return `<option value="">${vazio}</option>`+(Array.isArray(lista)?lista:[]).map(item =>
+    `<option value="${item.id}" ${String(item.id)===valor?"selected":""}>${escaparHtml(item.nome||item.titulo||("#"+item.id))}</option>`
+  ).join("");
+}
+function campanhasDisponiveisNumeroWhatsapp(nichoId) {
+  const todas=Array.isArray(campanhasAtuais)?campanhasAtuais:[];
+  const id=Number(nichoId||0);
+  return todas.filter(c=>!id||Number(c.nicho_id||0)===id);
+}
+function renderWhatsappNumeros() {
+  const area=document.getElementById("whatsapp_numeros_area"), lista=document.getElementById("whatsapp_numeros_lista");
+  if(!area||!lista)return;
+  const habilitado=usuarioLogado?.whatsapp_multiplos_numeros_habilitado===true;
+  area.style.display=(_whatsappBotConectado&&habilitado)?"":"none";
+  if(!_whatsappBotConectado||!habilitado)return;
+  if(!_whatsappNumeros.length){lista.innerHTML='<div style="font-size:13px;color:#94a3b8;">Nenhum número encontrado. Clique em <b>Adicionar número</b>.</div>';return;}
+  const nichos=Array.isArray(usuarioLogado?.nichos)?usuarioLogado.nichos:[];
+  lista.innerHTML=_whatsappNumeros.map(n=>{
+    const campanhas=campanhasDisponiveisNumeroWhatsapp(n.nicho_id);
+    const titulo=n.numero||n.display_name||n.phone_number_id||"Número WhatsApp";
+    return `<div class="wpp-roteiro-card" style="display:block;padding:14px;">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+        <div><div class="wpp-roteiro-nome">📱 ${escaparHtml(titulo)}</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;">
+          ${n.principal?'<span class="wpp-badge wpp-badge-ativo">Principal</span>':""}
+          ${n.display_name?`<span style="font-size:12px;color:#94a3b8;">${escaparHtml(n.display_name)}</span>`:""}
+        </div></div>
+        <label style="display:flex;gap:7px;align-items:center;font-size:13px;color:#e2e8f0;">
+          <input type="checkbox" id="wpp_numero_bot_${n.id}" ${n.bot_ativo?"checked":""}> Bot ligado
+        </label>
+      </div>
+      <div class="wpp-fields-row" style="margin-top:12px;">
+        <div class="wpp-field"><label>Nicho padrão</label>
+          <select id="wpp_numero_nicho_${n.id}" onchange="filtrarCampanhasNumeroWhatsapp(${n.id})">${_wppNumeroOptions(nichos,n.nicho_id,"Detectar pela campanha")}</select></div>
+        <div class="wpp-field"><label>Campanha padrão</label>
+          <select id="wpp_numero_campanha_${n.id}">${_wppNumeroOptions(campanhas,n.campanha_id,"Nenhuma — usar origem detectada")}</select></div>
+        <div class="wpp-field"><label>Roteiro</label>
+          <select id="wpp_numero_roteiro_${n.id}">${_wppNumeroOptions(_whatsappBotRoteiros,n.roteiro_id,"Automático pelo nicho")}</select></div>
+      </div>
+      <div style="font-size:11px;color:#64748b;margin-top:7px;">A campanha identificada pelo anúncio tem prioridade. Os padrões são usados quando a origem não vier identificada.</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+        <button type="button" class="btn wpp-btn" onclick="salvarNumeroWhatsapp(${n.id},this)">Salvar configuração</button>
+        ${n.principal?"":`<button type="button" class="btn wpp-btn wpp-btn-danger" onclick="removerNumeroWhatsapp(${n.id},this)">Remover</button>`}
+        <span id="wpp_numero_status_${n.id}" style="font-size:12px;color:#94a3b8;"></span>
+      </div></div>`;
+  }).join("");
+}
+function filtrarCampanhasNumeroWhatsapp(id) {
+  const nicho=document.getElementById(`wpp_numero_nicho_${id}`)?.value||"";
+  const select=document.getElementById(`wpp_numero_campanha_${id}`); if(!select)return;
+  const numero=_whatsappNumeros.find(n=>Number(n.id)===Number(id));
+  select.innerHTML=_wppNumeroOptions(campanhasDisponiveisNumeroWhatsapp(nicho),select.value||numero?.campanha_id,"Nenhuma — usar origem detectada");
+}
+async function carregarWhatsappNumeros(token) {
+  if(usuarioLogado?.whatsapp_multiplos_numeros_habilitado!==true){
+    _whatsappNumeros=[];
+    renderWhatsappNumeros();
+    return;
+  }
+  try {
+    if (!Array.isArray(campanhasAtuais) || !campanhasAtuais.length) {
+      const resCampanhas = await fetch(`${API}/campanhas`, { headers:{ Authorization:`Bearer ${token}` } });
+      const dataCampanhas = resCampanhas.ok ? await resCampanhas.json().catch(() => []) : [];
+      if (Array.isArray(dataCampanhas)) campanhasAtuais = dataCampanhas;
+    }
+    const res=await fetch(`${API}/whatsapp/numeros`,{headers:{Authorization:`Bearer ${token}`}});
+    const data=await res.json().catch(()=>({})); if(!res.ok)throw new Error(data.error||"Erro ao carregar números");
+    _whatsappNumeros=Array.isArray(data.numeros)?data.numeros:[];
+  } catch(e) { console.error("Erro ao carregar números WhatsApp:",e); _whatsappNumeros=[]; }
+  renderWhatsappNumeros();
+}
+async function salvarNumeroWhatsapp(id,botao) {
+  const status=document.getElementById(`wpp_numero_status_${id}`); if(botao)botao.disabled=true; if(status)status.textContent="Salvando...";
+  try {
+    const body={bot_ativo:Boolean(document.getElementById(`wpp_numero_bot_${id}`)?.checked),
+      nicho_id:document.getElementById(`wpp_numero_nicho_${id}`)?.value||null,
+      campanha_id:document.getElementById(`wpp_numero_campanha_${id}`)?.value||null,
+      roteiro_id:document.getElementById(`wpp_numero_roteiro_${id}`)?.value||null};
+    const res=await fetch(`${API}/whatsapp/numeros/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",Authorization:`Bearer ${localStorage.getItem("token")}`},body:JSON.stringify(body)});
+    const data=await res.json().catch(()=>({})); if(!res.ok)throw new Error(data.error||"Erro ao salvar");
+    const p=_whatsappNumeros.findIndex(n=>Number(n.id)===Number(id)); if(p>=0)_whatsappNumeros[p]={..._whatsappNumeros[p],...data.numero};
+    if(status)status.textContent=body.bot_ativo?"Salvo — bot ligado ✅":"Salvo — bot pausado";
+  } catch(e) { if(status)status.textContent=e.message||"Erro ao salvar"; } finally { if(botao)botao.disabled=false; }
+}
+async function removerNumeroWhatsapp(id,botao) {
+  if(!confirm("Remover este número adicional da plataforma?"))return; if(botao)botao.disabled=true;
+  try {
+    const res=await fetch(`${API}/whatsapp/numeros/${id}`,{method:"DELETE",headers:{Authorization:`Bearer ${localStorage.getItem("token")}`}});
+    const data=await res.json().catch(()=>({})); if(!res.ok)throw new Error(data.error||"Erro ao remover número");
+    _whatsappNumeros=_whatsappNumeros.filter(n=>Number(n.id)!==Number(id)); renderWhatsappNumeros();
+  } catch(e) { alert(e.message||"Erro ao remover número"); if(botao)botao.disabled=false; }
+}
+
 async function carregarWhatsappBot() {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -46201,12 +46308,13 @@ async function carregarWhatsappBot() {
     statusEl.classList.toggle("conectado", _whatsappBotConectado);
     if (_whatsappBotConectado) {
       const conta = conexao.conta || {};
+      const multiplos=usuarioLogado?.whatsapp_multiplos_numeros_habilitado===true;
       statusEl.innerHTML = `
         <div>
           <div style="color:#25d366;font-weight:bold;">🟢 Conectado</div>
-          <div style="font-size:13px;color:#cbd5e1;margin-top:4px;">${escaparHtml(conta.numero || "")} ${conta.display_name ? `— ${escaparHtml(conta.display_name)}` : ""}</div>
+          <div style="font-size:13px;color:#cbd5e1;margin-top:4px;">${multiplos ? "Número principal: " : ""}${escaparHtml(conta.numero || "")} ${conta.display_name ? `— ${escaparHtml(conta.display_name)}` : ""}</div>
         </div>
-        <button class="btn wpp-btn wpp-btn-danger" onclick="desconectarPlataforma('whatsapp', this)">Desconectar</button>
+        <button class="btn wpp-btn wpp-btn-danger" onclick="desconectarPlataforma('whatsapp', this)">${multiplos ? "Desconectar todos" : "Desconectar"}</button>
       `;
       carregarDiagnosticoWhatsapp(token);
       carregarContatoFormularioWhatsapp();
@@ -46221,6 +46329,8 @@ async function carregarWhatsappBot() {
       `;
       const diagEl = document.getElementById("whatsapp_diagnostico");
       if (diagEl) diagEl.style.display = "none";
+      _whatsappNumeros = [];
+      renderWhatsappNumeros();
     }
     // Editor fica sempre visível — corretor pode rascunhar/gerar com IA e salvar
     // roteiros mesmo sem conectar ainda; só a ativação exige conexão (checada
@@ -46232,6 +46342,7 @@ async function carregarWhatsappBot() {
     _whatsappBotRoteiros = dataBot.roteiros || [];
     renderListaWhatsappBot();
     renderWhatsappBotPreview();
+    await carregarWhatsappNumeros(token);
   } catch (e) {
     statusEl.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar a conexão do WhatsApp.</div>`;
   }
@@ -51071,6 +51182,18 @@ async function carregarPainelAdmin() {
             >
           
               <button
+                type="button"
+                style="
+                  background:${u.whatsapp_multiplos_numeros_habilitado ? "linear-gradient(135deg,#16a34a,#15803d)" : "linear-gradient(135deg,#475569,#334155)"};
+                  white-space:nowrap;
+                "
+                onclick="alterarWhatsappMultiplosUsuario(${u.id}, ${u.whatsapp_multiplos_numeros_habilitado === true})"
+                title="Libera números adicionais e configurações avançadas sem alterar o número principal atual."
+              >
+                📱 Múltiplos: ${u.whatsapp_multiplos_numeros_habilitado ? "Ativo" : "Desligado"}
+              </button>
+
+              <button
                 onclick='abrirTrocaSenha(${u.id}, ${JSON.stringify(u.email)})'
               >
                 🔐 Senha
@@ -52236,6 +52359,36 @@ async function salvarRailwayBillingAdmin() {
   await carregarRecursosAdmin();
 }
 
+
+
+async function alterarWhatsappMultiplosUsuario(id, ativoAtual) {
+  const novoStatus = !ativoAtual;
+  const confirmar = confirm(
+    novoStatus
+      ? "Habilitar múltiplos números de WhatsApp para este usuário? O número atual continuará sendo o principal e nada será distribuído automaticamente."
+      : "Desabilitar múltiplos números para este usuário? O número principal continuará funcionando normalmente; os adicionais deixarão de ser usados até uma nova ativação."
+  );
+  if (!confirmar) return;
+
+  const token = localStorage.getItem("token");
+  const res = await fetch(
+    `${API}/admin/usuarios/${id}/whatsapp-multiplos-numeros`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ habilitado: novoStatus })
+    }
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) {
+    alert(data.error || "Erro ao alterar recurso de múltiplos números");
+    return;
+  }
+  await carregarPainelAdmin();
+}
 
 
 async function alterarStatusUsuario(id, ativoAtual) {

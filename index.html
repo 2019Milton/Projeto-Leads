@@ -46248,6 +46248,11 @@ function filtrarCampanhasNumeroWhatsapp(id) {
 }
 async function carregarWhatsappNumeros(token) {
   try {
+    if (!Array.isArray(campanhasAtuais) || !campanhasAtuais.length) {
+      const resCampanhas = await fetch(`${API}/campanhas`, { headers:{ Authorization:`Bearer ${token}` } });
+      const dataCampanhas = resCampanhas.ok ? await resCampanhas.json().catch(() => []) : [];
+      if (Array.isArray(dataCampanhas)) campanhasAtuais = dataCampanhas;
+    }
     const res=await fetch(`${API}/whatsapp/numeros`,{headers:{Authorization:`Bearer ${token}`}});
     const data=await res.json().catch(()=>({})); if(!res.ok)throw new Error(data.error||"Erro ao carregar números");
     _whatsappNumeros=Array.isArray(data.numeros)?data.numeros:[];

@@ -17376,6 +17376,93 @@ body.tema-claro .criar-campanha-descricao {
 
 
 
+
+/* Criativo IA — formulário simplificado */
+.modal-banner-ia-content { width: min(580px, 96vw); }
+.banner-ia-briefing-simples { margin: 0; }
+.banner-ia-briefing-simples .banner-ia-briefing-grid { align-items: start; }
+
+.banner-ia-nicho-unico {
+  min-height: 39px;
+  align-items: center;
+  padding: 9px 11px;
+  box-sizing: border-box;
+  border: 1px solid rgba(74, 222, 128, .24);
+  border-radius: 8px;
+  background: rgba(34, 197, 94, .08);
+  color: #bbf7d0;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.banner-ia-ajuda-campo {
+  color: #64748b;
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+.banner-ia-avancado {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(148, 163, 184, .12);
+}
+
+.banner-ia-avancado > summary {
+  cursor: pointer;
+  list-style: none;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 750;
+  user-select: none;
+}
+
+.banner-ia-avancado > summary::-webkit-details-marker { display: none; }
+.banner-ia-avancado > summary::before {
+  content: "›";
+  display: inline-block;
+  margin-right: 7px;
+  color: #a78bfa;
+  transition: transform .16s ease;
+}
+.banner-ia-avancado[open] > summary::before { transform: rotate(90deg); }
+.banner-ia-avancado > summary span {
+  margin-left: 4px;
+  color: #56667d;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.banner-ia-avancado-conteudo {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding-top: 11px;
+}
+
+.banner-ia-revisao-compacta {
+  margin: 0;
+  padding: 8px 9px;
+}
+
+.banner-ia-info-simples {
+  padding: 10px 12px;
+  line-height: 1.45;
+}
+
+.banner-ia-label-opcional {
+  margin-left: 4px;
+  color: #56667d;
+  font-size: 9px;
+  font-weight: 650;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.banner-ia-status-selo.nicho {
+  background: rgba(96, 165, 250, .12);
+  color: #bfdbfe;
+}
 </style>
 <link rel="stylesheet" href="landing-public.css">
 <link rel="stylesheet" href="paineis-visuais.css">
@@ -57384,104 +57471,68 @@ async function enviarFeedback() {
     <!-- Tabs de modo -->
     <div class="banner-ia-tabs">
       <button class="banner-ia-tab ativo" id="banner_tab_gerar" onclick="selecionarModoBanner('gerar')">
-        🎨 Gerar criativo novo
+        Criar novo
       </button>
       <button class="banner-ia-tab" id="banner_tab_editar" onclick="selecionarModoBanner('editar')">
-        ✏️ Editar criativo existente
+        Editar existente
       </button>
     </div>
 
-    <div class="banner-ia-briefing">
-      <div class="banner-ia-briefing-titulo">🧭 Direção estratégica do criativo</div>
+    <div class="banner-ia-briefing banner-ia-briefing-simples">
+      <div class="banner-ia-briefing-titulo">Configuração do criativo</div>
       <div class="banner-ia-briefing-grid">
-        <div class="banner-ia-campo">
+        <div class="banner-ia-campo" id="banner_ia_nicho_wrap">
           <label for="banner_ia_nicho">Nicho</label>
-          <select id="banner_ia_nicho">
-            <option value="">Detectar pelo briefing</option>
-            <option value="imoveis">Imóveis</option>
-            <option value="saude">Saúde e planos</option>
-            <option value="suplementos">Suplementos e fitness</option>
-            <option value="saas">Plataforma / SaaS</option>
-            <option value="higienizacao">Higienização</option>
-            <option value="telecom">Telecom empresarial</option>
-            <option value="cursos_online">Cursos online</option>
-            <option value="faculdade_universidade">Faculdade / Universidade</option>
-            <option value="dentista">Dentista</option>
-            <option value="educacao">Educação</option>
-            <option value="auto">Automotivo</option>
-            <option value="consorcio">Consórcio</option>
-          </select>
+          <select id="banner_ia_nicho"></select>
+          <div id="banner_ia_nicho_unico" class="banner-ia-nicho-unico" style="display:none;"></div>
+          <small id="banner_ia_nicho_ajuda" class="banner-ia-ajuda-campo">
+            A IA usará somente os nichos disponíveis para sua conta.
+          </small>
         </div>
+
         <div class="banner-ia-campo">
-          <label for="banner_ia_formato">Canal e formato</label>
+          <label for="banner_ia_formato">Onde será usado?</label>
           <select id="banner_ia_formato">
-            <option value="instagram_feed">Instagram / Facebook — feed quadrado</option>
-            <option value="stories_reels">Stories / Reels — vertical</option>
-            <option value="tiktok_vertical">TikTok — vertical</option>
-            <option value="google_display">Google Display — paisagem</option>
-            <option value="linkedin_feed">LinkedIn — paisagem</option>
+            <option value="instagram_feed">Instagram / Facebook — Feed</option>
+            <option value="stories_reels">Instagram / Facebook — Stories e Reels</option>
+            <option value="tiktok_vertical">TikTok</option>
+            <option value="google_display">Google Display</option>
+            <option value="linkedin_feed">LinkedIn</option>
             <option value="quadrado_generico">Quadrado — uso geral</option>
           </select>
         </div>
-        <div class="banner-ia-campo">
-          <label for="banner_ia_objetivo">Objetivo principal</label>
-          <select id="banner_ia_objetivo">
-            <option value="leads">Gerar leads</option>
-            <option value="whatsapp">Iniciar conversas no WhatsApp</option>
-            <option value="site">Levar ao site</option>
-            <option value="remarketing">Remarketing</option>
-            <option value="reconhecimento">Reconhecimento de marca</option>
-          </select>
-        </div>
-        <div class="banner-ia-campo">
-          <label for="banner_ia_estilo">Estilo criativo</label>
-          <select id="banner_ia_estilo">
-            <option value="auto">IA escolhe com base na pesquisa</option>
-            <option value="resposta_direta">Resposta direta / conversão</option>
-            <option value="premium">Premium e sofisticado</option>
-            <option value="ugc">Autêntico / UGC</option>
-            <option value="minimalista">Minimalista</option>
-            <option value="corporativo">Corporativo</option>
-            <option value="ousado">Ousado e alto contraste</option>
-          </select>
-        </div>
-        <div class="banner-ia-campo full">
-          <label for="banner_ia_publico">Público que precisa se identificar com a peça</label>
-          <input id="banner_ia_publico" type="text" maxlength="300" placeholder="Ex: donos de pequenas empresas com problemas de internet e telefonia">
-        </div>
-        <div class="banner-ia-campo full">
-          <label for="banner_ia_oferta">Oferta, diferencial e benefício principal</label>
-          <input id="banner_ia_oferta" type="text" maxlength="500" placeholder="Ex: internet empresarial estável, suporte rápido e redução de quedas">
-        </div>
-        <div class="banner-ia-campo">
-          <label for="banner_ia_texto_arte">Texto exato dentro da arte (opcional)</label>
-          <input id="banner_ia_texto_arte" type="text" maxlength="100" placeholder="Ex: Chega de quedas!">
-        </div>
-        <div class="banner-ia-campo">
-          <label for="banner_ia_marca">Marca, cores ou restrições (opcional)</label>
-          <input id="banner_ia_marca" type="text" maxlength="300" placeholder="Ex: usar azul-marinho; não usar logotipos inventados">
-        </div>
-        <label class="banner-ia-revisao-opcao">
-          <input id="banner_ia_refinar_auto" type="checkbox" checked>
-          <span><strong>Revisão automática ativada:</strong> depois de gerar, a IA avalia clareza, composição, aderência ao nicho e qualidade visual. Se ficar abaixo do padrão, faz um refinamento antes de entregar — isso pode levar mais tempo e usar uma segunda geração.</span>
-        </label>
+
+        <details class="banner-ia-avancado">
+          <summary>Opções avançadas <span>opcional</span></summary>
+          <div class="banner-ia-avancado-conteudo">
+            <div class="banner-ia-campo">
+              <label for="banner_ia_texto_arte">Texto que precisa aparecer na arte</label>
+              <input id="banner_ia_texto_arte" type="text" maxlength="100" placeholder="Ex: Matrículas abertas">
+            </div>
+            <div class="banner-ia-campo">
+              <label for="banner_ia_marca">Cores, marca ou algo que a IA deve respeitar</label>
+              <input id="banner_ia_marca" type="text" maxlength="300" placeholder="Ex: usar azul-marinho e não inventar logotipo">
+            </div>
+            <label class="banner-ia-revisao-opcao banner-ia-revisao-compacta">
+              <input id="banner_ia_refinar_auto" type="checkbox" checked>
+              <span>Revisar automaticamente o resultado e refinar se necessário.</span>
+            </label>
+          </div>
+        </details>
       </div>
     </div>
 
     <!-- ── MODO GERAR NOVO ── -->
     <div id="banner_modo_gerar">
-      <div class="banner-ia-info">
-        <strong>Como funciona:</strong> a IA pesquisa referências e padrões atuais do nicho na web,
-        monta uma direção criativa própria e cria a peça em alta qualidade.
-        Selecione fotos do carrossel abaixo para usar como referência de estilo — quanto mais imagens, mais contexto a IA tem.
-        Ou deixe sem nenhuma e descreva tudo no texto.
+      <div class="banner-ia-info banner-ia-info-simples">
+        Descreva o que você quer anunciar. A IA identifica a melhor direção visual para o seu nicho e cria a peça.
       </div>
 
       <div style="margin-top:16px;">
-        <div class="banner-ia-label">Imagens de referência (opcional — selecione quantas quiser)</div>
+        <div class="banner-ia-label">Imagem de referência <span class="banner-ia-label-opcional">opcional</span></div>
         <div id="banner_ia_grid_gerar" class="banner-ia-imagens-grid"></div>
         <p class="banner-ia-sem-imagens" id="banner_ia_vazio_gerar" style="display:none;">
-          Sem imagens no carrossel. Você pode gerar sem referência, apenas com o texto.
+          Nenhuma imagem disponível. Você pode gerar o criativo somente com a descrição.
         </p>
         <label class="banner-ia-anexar-externa">
           📎 Anexar imagem do computador
@@ -57490,31 +57541,24 @@ async function enviarFeedback() {
       </div>
 
       <div style="margin-top:16px;">
-        <div class="banner-ia-label">Descreva o criativo que você quer</div>
+        <div class="banner-ia-label">O que você quer anunciar?</div>
         <textarea
           id="banner_ia_prompt_gerar"
           class="banner-ia-textarea"
-          placeholder="Ex: Criativo profissional para apartamento de alto padrão, fundo em tons de azul e dourado, texto 'Reserve sua unidade' em destaque, estilo moderno e sofisticado..."
+          placeholder="Ex: Quero divulgar meu serviço, destacar o principal benefício e gerar interesse para a pessoa entrar em contato."
         ></textarea>
-        <div class="banner-ia-exemplos" id="banner_exemplos_gerar">
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Apartamento de luxo com piscina</span>
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Casa moderna, jardim e garagem</span>
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Plano de saúde familiar, tons verdes</span>
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Suplemento esportivo, energia, fundo escuro</span>
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('gerar', this)">Montagem com várias fotos do imóvel</span>
-        </div>
+
       </div>
     </div>
 
     <!-- ── MODO EDITAR IMAGEM ── -->
     <div id="banner_modo_editar" style="display:none;">
-      <div class="banner-ia-info">
-        <strong>Como funciona:</strong> Selecione <strong>uma imagem</strong> do carrossel como base.
-        A IA pesquisa o contexto visual do nicho e aplica somente as modificações descritas, preservando a base sempre que possível.
+      <div class="banner-ia-info banner-ia-info-simples">
+        Selecione uma imagem e diga somente o que deseja alterar. O restante será preservado sempre que possível.
       </div>
 
       <div style="margin-top:16px;">
-        <div class="banner-ia-label">Imagem base (clique para selecionar uma)</div>
+        <div class="banner-ia-label">Imagem que será editada</div>
         <div id="banner_ia_grid_editar" class="banner-ia-imagens-grid"></div>
         <p class="banner-ia-sem-imagens" id="banner_ia_vazio_editar" style="display:none;">
           Adicione imagens ao carrossel primeiro para poder editá-las.
@@ -57533,15 +57577,9 @@ async function enviarFeedback() {
         <textarea
           id="banner_ia_prompt_editar"
           class="banner-ia-textarea"
-          placeholder="Ex: Adicione o texto 'Últimas unidades' em vermelho no canto superior. Coloque um selo dourado com '10% OFF'. Troque o fundo para branco e adicione bordas elegantes..."
+          placeholder="Ex: Troque o fundo para azul, mantenha o produto e adicione o texto 'Oferta especial' no topo."
         ></textarea>
-        <div class="banner-ia-exemplos">
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Adicione texto "Últimas unidades"</span>
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Coloque um logo no canto superior</span>
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Troque o fundo para branco</span>
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Adicione moldura elegante dourada</span>
-          <span class="banner-ia-exemplo-pill" onclick="usarExemploBanner('editar', this)">Insira selo vermelho "Oferta especial"</span>
-        </div>
+
       </div>
     </div>
 
@@ -58036,32 +58074,104 @@ function _formatoCriativoSugeridoPelaTela() {
   return "instagram_feed";
 }
 
-function _preencherBriefingCriativoComContexto() {
-  const nicho = document.getElementById("banner_ia_nicho");
-  const nichoAtivo = window._nichoAtivo?.slug || "";
-  if (nicho && Array.from(nicho.options).some(opt => opt.value === nichoAtivo)) {
-    nicho.value = nichoAtivo;
+let _nichosCriativoDisponiveis = [];
+
+function _slugNichoCriativo(nicho = {}) {
+  return String(nicho.slug || nicho.nicho_slug || "").trim().toLowerCase();
+}
+
+async function _carregarNichosPermitidosCriativo() {
+  let nichos = Array.isArray(usuarioLogado?.nichos) ? usuarioLogado.nichos : [];
+  const tipo = String(usuarioLogado?.tipo || "");
+
+  if (["super_admin", "master"].includes(tipo)) {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/nichos`, {
+        headers: token ? { "Authorization": "Bearer " + token } : {}
+      });
+      const todos = await res.json();
+      if (res.ok && Array.isArray(todos)) nichos = todos;
+    } catch (_) {}
   }
 
+  const vistos = new Set();
+  _nichosCriativoDisponiveis = nichos.filter(nicho => {
+    const slug = _slugNichoCriativo(nicho);
+    if (!slug || vistos.has(slug)) return false;
+    vistos.add(slug);
+    return true;
+  });
+
+  return _nichosCriativoDisponiveis;
+}
+
+async function _configurarNichoCriativoUsuario() {
+  const select = document.getElementById("banner_ia_nicho");
+  const unico = document.getElementById("banner_ia_nicho_unico");
+  const ajuda = document.getElementById("banner_ia_nicho_ajuda");
+  if (!select) return;
+
+  const nichos = await _carregarNichosPermitidosCriativo();
+  select.replaceChildren();
+
+  if (!nichos.length) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Nenhum nicho habilitado";
+    select.appendChild(opt);
+    select.disabled = true;
+    select.style.display = "";
+    if (unico) unico.style.display = "none";
+    if (ajuda) ajuda.textContent = "Sua conta ainda não possui um nicho habilitado.";
+    return;
+  }
+
+  select.disabled = false;
+
+  if (nichos.length === 1) {
+    const nicho = nichos[0];
+    const opt = document.createElement("option");
+    opt.value = _slugNichoCriativo(nicho);
+    opt.textContent = nicho.nome || opt.value;
+    select.appendChild(opt);
+    select.value = opt.value;
+    select.style.display = "none";
+
+    if (unico) {
+      unico.textContent = nicho.nome || opt.value;
+      unico.style.display = "flex";
+    }
+    if (ajuda) ajuda.textContent = "Este é o nicho habilitado para sua conta.";
+    return;
+  }
+
+  select.style.display = "";
+  if (unico) unico.style.display = "none";
+
+  const auto = document.createElement("option");
+  auto.value = "";
+  auto.textContent = "Detectar automaticamente pela descrição";
+  select.appendChild(auto);
+
+  nichos.forEach(nicho => {
+    const opt = document.createElement("option");
+    opt.value = _slugNichoCriativo(nicho);
+    opt.textContent = nicho.nome || opt.value;
+    select.appendChild(opt);
+  });
+
+  const ativo = _slugNichoCriativo(window._nichoAtivo || {});
+  select.value = nichos.some(n => _slugNichoCriativo(n) === ativo) ? ativo : "";
+
+  if (ajuda) {
+    ajuda.textContent = "No modo automático, a IA escolhe somente entre os nichos habilitados para sua conta.";
+  }
+}
+
+function _preencherBriefingCriativoComContexto() {
   const formato = document.getElementById("banner_ia_formato");
   if (formato) formato.value = _formatoCriativoSugeridoPelaTela();
-
-  const oferta = document.getElementById("banner_ia_oferta");
-  const textoCampanha = document.getElementById("texto")?.value?.trim() || "";
-  if (oferta && textoCampanha && !oferta.value.trim()) {
-    oferta.value = textoCampanha.slice(0, 500);
-  }
-
-  const publico = document.getElementById("banner_ia_publico");
-  if (publico && !publico.value.trim() && typeof coletarDadosNichoAtivo === "function") {
-    const dadosNicho = coletarDadosNichoAtivo() || {};
-    const publicoNicho =
-      dadosNicho.publico_alvo ||
-      dadosNicho.porte_empresa ||
-      dadosNicho.objetivo_aluno ||
-      "";
-    if (publicoNicho) publico.value = String(publicoNicho).slice(0, 300);
-  }
 }
 
 function _coletarBriefingCriativoIA() {
@@ -58090,6 +58200,15 @@ function _renderizarMetaCriativoGerado(data = {}) {
 
   const linhaStatus = document.createElement("div");
   linhaStatus.className = "banner-ia-resultado-linha";
+
+  const nichoDetectado = String(pesquisa.nicho_identificado || "").trim();
+  if (nichoDetectado) {
+    const nichoInfo = _nichosCriativoDisponiveis.find(n => _slugNichoCriativo(n) === nichoDetectado);
+    const seloNicho = document.createElement("span");
+    seloNicho.className = "banner-ia-status-selo nicho";
+    seloNicho.textContent = `Nicho: ${nichoInfo?.nome || nichoDetectado}`;
+    linhaStatus.appendChild(seloNicho);
+  }
 
   const seloPesquisa = document.createElement("span");
   seloPesquisa.className = `banner-ia-status-selo${pesquisa.realizada ? "" : " aviso"}`;
@@ -58296,7 +58415,7 @@ function editarCriativoRecemGerado() {
   }
 }
 
-function abrirModalGerarBanner() {
+async function abrirModalGerarBanner() {
   const modal = document.getElementById("modal_banner_ia");
   if (!modal) return;
 
@@ -58317,6 +58436,7 @@ function abrirModalGerarBanner() {
   const btn = document.getElementById("btn_executar_gerar_banner");
   if (btn) btn.textContent = _textoBotaoGerarBanner();
 
+  await _configurarNichoCriativoUsuario();
   _preencherBriefingCriativoComContexto();
 
   _preencherGridBanner("banner_ia_grid_gerar", "banner_ia_vazio_gerar", false);
@@ -58372,6 +58492,13 @@ async function gerarBannerComIA() {
     if (feedback) { feedback.textContent = "Descreva o criativo antes de gerar."; feedback.style.display = "block"; }
     return;
   }
+  if (!_nichosCriativoDisponiveis.length) {
+    if (feedback) {
+      feedback.textContent = "Sua conta não possui um nicho habilitado para gerar criativos.";
+      feedback.style.display = "block";
+    }
+    return;
+  }
   if (feedback) { feedback.style.display = "none"; feedback.textContent = ""; }
 
   const token = localStorage.getItem("token");
@@ -58416,7 +58543,7 @@ async function gerarBannerComIA() {
     // visual apropriada ao mercado do anunciante. Se o modal foi aberto fora do
     // fluxo de Criar Campanha (ex: atalho flutuante), window._nichoAtivo pode
     // não existir — backend cai num guia genérico nesse caso.
-    const nichoAtivo = briefing.nicho || window._nichoAtivo?.slug || null;
+    const nichoAtivo = briefing.nicho || null;
 
     const res = await fetch(`${API}/ia/gerar-banner`, {
       method: "POST",

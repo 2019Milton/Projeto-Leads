@@ -24701,6 +24701,8 @@ async function init() {
         if (usuarioLogado) {
           usuarioLogado.whatsapp = perfil.whatsapp || null;
           usuarioLogado.notif_whatsapp_lead = perfil.notif_whatsapp_lead !== false;
+          usuarioLogado.whatsapp_multiplos_numeros_habilitado =
+            perfil.whatsapp_multiplos_numeros_habilitado === true;
         }
       }
     } catch (_) {}

@@ -23546,10 +23546,18 @@ async function criarClienteGerenciado() {
     fecharModalGestor("gt_modal_novo");
     await carregarClientesGerenciados(true);
     const emailDestino = data.cliente?.email || payload.email;
-    if (data.email_enviado === false) {
-      alert(data.aviso || "Corretor criado, mas o email de acesso não pôde ser enviado.");
+    if (data.email_usuario_enviado === false || data.email_enviado === false) {
+      const copiaPlataforma = data.email_plataforma_enviado
+        ? "\n📩 Notificação enviada para contato@plataformadeleads.com.br."
+        : "\n⚠️ A notificação para contato@plataformadeleads.com.br também não pôde ser enviada.";
+      alert((data.aviso || "Corretor criado, mas o email de acesso não pôde ser enviado.") + copiaPlataforma);
     } else {
-      alert(`Corretor criado com sucesso. Login e senha foram enviados para ${emailDestino}. Você já pode pedir para ele verificar o email.`);
+      const copiaPlataforma = data.email_plataforma_enviado === false
+        ? "\n⚠️ A notificação interna para contato@plataformadeleads.com.br não pôde ser enviada."
+        : "\n📩 Notificação enviada para contato@plataformadeleads.com.br.";
+      alert(
+        `✅ Corretor criado com sucesso.\n\n📧 Email de acesso enviado para: ${emailDestino}\nLogin e senha foram enviados ao usuário.${copiaPlataforma}\n\nVocê já pode pedir para ele verificar o email.`
+      );
     }
   } catch (err) { alert(err.message); }
   finally { if (btn) { btn.disabled = false; btn.textContent = "Criar corretor e painel"; } }
@@ -52100,10 +52108,18 @@ async function criarUsuario() {
     return;
   }
 
-  if (data.email_enviado === false) {
-    alert(data.aviso || "Usuário criado, mas o email de acesso não pôde ser enviado.");
+  if (data.email_usuario_enviado === false || data.email_enviado === false) {
+    const copiaPlataforma = data.email_plataforma_enviado
+      ? "\n📩 Notificação enviada para contato@plataformadeleads.com.br."
+      : "\n⚠️ A notificação para contato@plataformadeleads.com.br também não pôde ser enviada.";
+    alert((data.aviso || "Usuário criado, mas o email de acesso não pôde ser enviado.") + copiaPlataforma);
   } else {
-    alert(`Usuário criado com sucesso. Login e senha foram enviados para ${email}. Você já pode pedir para o usuário verificar o email.`);
+    const copiaPlataforma = data.email_plataforma_enviado === false
+      ? "\n⚠️ A notificação interna para contato@plataformadeleads.com.br não pôde ser enviada."
+      : "\n📩 Notificação enviada para contato@plataformadeleads.com.br.";
+    alert(
+      `✅ Usuário criado com sucesso.\n\n📧 Email de acesso enviado para: ${email}\nLogin e senha foram enviados ao usuário.${copiaPlataforma}\n\nVocê já pode pedir para ele verificar o email.`
+    );
   }
 
   document.getElementById(

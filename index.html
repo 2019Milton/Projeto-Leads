@@ -10620,6 +10620,63 @@ body.tema-claro .info-tooltip-popup {
   min-height: 72px;
 }
 
+/* Saldo estimado dos créditos de IA (cartões OpenAI/Anthropic do painel de IA). */
+.ia-saldo-estimado {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #3b3f5c;
+  font-size: 12px;
+}
+
+.ia-saldo-estimado-valor {
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+.ia-saldo-estimado-valor small {
+  display: block;
+  color: #9ca3af;
+}
+
+.ia-saldo-estimado-valor.baixo {
+  color: #fca5a5;
+}
+
+.ia-saldo-estimado details {
+  margin-top: 8px;
+}
+
+.ia-saldo-estimado summary {
+  cursor: pointer;
+  color: #9ca3af;
+}
+
+.ia-saldo-estimado label {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  color: #9ca3af;
+}
+
+.ia-saldo-estimado label.ia-saldo-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ia-saldo-estimado input[type="text"] {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #3b3f5c;
+  background: #111827;
+  color: #e2e8f0;
+  font: inherit;
+}
+
+.ia-saldo-estimado button {
+  margin-top: 10px;
+}
+
 .admin-ia-status-card {
   margin-top: 16px;
   padding: 14px;
@@ -21258,6 +21315,20 @@ body.tema-claro .criar-campanha-descricao {
                   <div id="ia_saldo_openai_saldo" style="color:#6ee7b7;font-weight:600;">-</div>
                 </div>
               </div>
+              <div class="ia-saldo-estimado" data-provider="openai">
+                <div class="ia-saldo-estimado-valor" id="ia_saldo_openai_estimado">Saldo estimado: informe o saldo abaixo para receber avisos no WhatsApp.</div>
+                <details>
+                  <summary>Informar saldo e avisos</summary>
+                  <label>Saldo atual no painel da OpenAI (US$)<input type="text" inputmode="decimal" id="ia_saldo_openai_input" placeholder="ex.: 10,00"></label>
+                  <label>Avisar no WhatsApp abaixo de (US$)<input type="text" inputmode="decimal" id="ia_saldo_openai_alerta" placeholder="3,00"></label>
+                  <label class="ia-saldo-check"><input type="checkbox" id="ia_saldo_openai_recarga" onchange="alternarRecargaAutoIA('openai')"> A recarga automática está ligada</label>
+                  <div class="ia-saldo-recarga" id="ia_saldo_openai_recarga_campos" style="display:none;">
+                    <label>Recarrega quando ficar abaixo de (US$)<input type="text" inputmode="decimal" id="ia_saldo_openai_recarga_abaixo" placeholder="10,00"></label>
+                    <label>Recarrega até (US$)<input type="text" inputmode="decimal" id="ia_saldo_openai_recarga_ate" placeholder="50,00"></label>
+                  </div>
+                  <button type="button" onclick="salvarSaldoProvedorIA('openai', this)">Salvar saldo</button>
+                </details>
+              </div>
             </div>
 
             <!-- Anthropic -->
@@ -21294,6 +21365,20 @@ body.tema-claro .criar-campanha-descricao {
                   <div style="color:#9ca3af;margin-bottom:2px;">Saldo restante</div>
                   <div id="ia_saldo_anthropic_saldo" style="color:#a5b4fc;font-weight:600;">-</div>
                 </div>
+              </div>
+              <div class="ia-saldo-estimado" data-provider="anthropic">
+                <div class="ia-saldo-estimado-valor" id="ia_saldo_anthropic_estimado">Saldo estimado: informe o saldo abaixo para receber avisos no WhatsApp.</div>
+                <details>
+                  <summary>Informar saldo e avisos</summary>
+                  <label>Saldo atual no painel da Anthropic (US$)<input type="text" inputmode="decimal" id="ia_saldo_anthropic_input" placeholder="ex.: 17,62"></label>
+                  <label>Avisar no WhatsApp abaixo de (US$)<input type="text" inputmode="decimal" id="ia_saldo_anthropic_alerta" placeholder="3,00"></label>
+                  <label class="ia-saldo-check"><input type="checkbox" id="ia_saldo_anthropic_recarga" onchange="alternarRecargaAutoIA('anthropic')"> A recarga automática está ligada</label>
+                  <div class="ia-saldo-recarga" id="ia_saldo_anthropic_recarga_campos" style="display:none;">
+                    <label>Recarrega quando ficar abaixo de (US$)<input type="text" inputmode="decimal" id="ia_saldo_anthropic_recarga_abaixo" placeholder="10,00"></label>
+                    <label>Recarrega até (US$)<input type="text" inputmode="decimal" id="ia_saldo_anthropic_recarga_ate" placeholder="50,00"></label>
+                  </div>
+                  <button type="button" onclick="salvarSaldoProvedorIA('anthropic', this)">Salvar saldo</button>
+                </details>
               </div>
             </div>
 
@@ -51454,6 +51539,99 @@ async function resolverAlertaProvedorIA(id) {
   }
 }
 
+// Saldo estimado dos créditos (backend: saldo informado − gasto da plataforma
+// desde então). Os provedores não informam o saldo por API, então o admin
+// informa o que vê no painel deles; abaixo do limite, chega aviso no WhatsApp.
+const _saldoEstimadoIAFormPreenchido = {};
+
+function formatarUsdIA(valor) {
+  return "US$ " + Number(valor || 0).toFixed(2).replace(".", ",");
+}
+
+function renderizarSaldoEstimadoIA(provider, s) {
+  const el = document.getElementById(`ia_saldo_${provider}_estimado`);
+  if (!el) return;
+  if (!s) {
+    el.className = "ia-saldo-estimado-valor";
+    el.innerHTML = "Saldo estimado: informe o saldo abaixo para receber avisos no WhatsApp.";
+    return;
+  }
+  const quando = (v) => v ? new Date(v).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "-";
+  const origem = s.base_origem === "recarga_estimada"
+    ? `recarga automática presumida de ${formatarUsdIA(s.base_usd)} em ${quando(s.base_em)}`
+    : `informado ${formatarUsdIA(s.base_usd)} em ${quando(s.base_em)}`;
+  const detalhes = [
+    `${origem} · gasto da plataforma desde então ${formatarUsdIA(s.gasto_usd)}`,
+    s.alerta_abaixo_usd != null ? `aviso no WhatsApp abaixo de ${formatarUsdIA(s.alerta_abaixo_usd)}${s.alerta_baixo_enviado_em ? ` (enviado em ${quando(s.alerta_baixo_enviado_em)})` : ""}` : "sem aviso de saldo baixo",
+    s.recarga_auto_abaixo_usd != null ? `recarga automática: abaixo de ${formatarUsdIA(s.recarga_auto_abaixo_usd)} → ${formatarUsdIA(s.recarga_auto_ate_usd)}` : ""
+  ].filter(Boolean);
+  const baixo = s.alerta_abaixo_usd != null && s.estimado_usd < s.alerta_abaixo_usd;
+  el.className = "ia-saldo-estimado-valor" + (baixo ? " baixo" : "");
+  el.innerHTML = `Saldo estimado: <b>${escaparHtml(formatarUsdIA(s.estimado_usd))}</b>` +
+    detalhes.map(d => `<small>${escaparHtml(d)}</small>`).join("") +
+    `<small>Uso fora da plataforma (playground, outros sistemas) não entra na conta.</small>`;
+
+  // Preenche o formulário só uma vez: o painel se atualiza a cada 30s e não
+  // pode apagar o que o admin está digitando.
+  if (_saldoEstimadoIAFormPreenchido[provider]) return;
+  _saldoEstimadoIAFormPreenchido[provider] = true;
+  const preencher = (sufixo, valor) => {
+    const campo = document.getElementById(`ia_saldo_${provider}_${sufixo}`);
+    if (campo && valor != null) campo.value = String(Number(valor).toFixed(2)).replace(".", ",");
+  };
+  preencher("alerta", s.alerta_abaixo_usd);
+  preencher("recarga_abaixo", s.recarga_auto_abaixo_usd);
+  preencher("recarga_ate", s.recarga_auto_ate_usd);
+  const check = document.getElementById(`ia_saldo_${provider}_recarga`);
+  if (check) {
+    check.checked = s.recarga_auto_abaixo_usd != null;
+    alternarRecargaAutoIA(provider);
+  }
+}
+
+function alternarRecargaAutoIA(provider) {
+  const check = document.getElementById(`ia_saldo_${provider}_recarga`);
+  const campos = document.getElementById(`ia_saldo_${provider}_recarga_campos`);
+  if (campos) campos.style.display = check?.checked ? "" : "none";
+}
+
+async function salvarSaldoProvedorIA(provider, botao) {
+  const valor = (sufixo) => (document.getElementById(`ia_saldo_${provider}_${sufixo}`)?.value || "").trim();
+  const recarga = document.getElementById(`ia_saldo_${provider}_recarga`)?.checked;
+  const body = {
+    provider,
+    saldo_usd: valor("input"),
+    alerta_abaixo_usd: valor("alerta"),
+    recarga_auto_abaixo_usd: recarga ? valor("recarga_abaixo") : "",
+    recarga_auto_ate_usd: recarga ? valor("recarga_ate") : ""
+  };
+  if (!body.saldo_usd) {
+    alert("Informe o saldo atual que aparece no painel do provedor.");
+    return;
+  }
+  if (botao) botao.disabled = true;
+  try {
+    const res = await fetch(`${API}/admin/ia/saldo-provedor`, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert(data.error || "Erro ao salvar o saldo");
+      return;
+    }
+    const campo = document.getElementById(`ia_saldo_${provider}_input`);
+    if (campo) campo.value = "";
+    await carregarSaldosIA();
+  } catch (err) {
+    console.error("ERRO SALVAR SALDO IA:", err);
+    alert("Erro ao salvar o saldo");
+  } finally {
+    if (botao) botao.disabled = false;
+  }
+}
+
 async function carregarSaldosIA() {
   const token = localStorage.getItem("token");
 
@@ -51530,6 +51708,9 @@ async function carregarSaldosIA() {
       if (anthropicBadge) anthropicBadge.style.display = "none";
       if (anthropicSaldoWrap) anthropicSaldoWrap.style.display = "none";
     }
+
+    renderizarSaldoEstimadoIA("openai", openai.saldo_estimado);
+    renderizarSaldoEstimadoIA("anthropic", anthropic.saldo_estimado);
 
     // Timestamp
     if (data.atualizado_em) {

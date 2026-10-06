@@ -23807,6 +23807,45 @@ function renderizarHistoricoFinanceiroUsuario() {
     .join("");
 }
 
+function formatarDataAvisoFinanceiro(valor) {
+  const data = String(valor || "").slice(0, 10);
+  const partes = data.split("-");
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : data;
+}
+
+function rotuloAvisoWhatsappFinanceiro(aviso) {
+  if (aviso?.tipo === "um_dia_antes") return "Lembrete: vence amanhã";
+  if (aviso?.tipo === "vencimento") return "Aviso: vencimento hoje";
+  if (aviso?.tipo === "atraso") {
+    const dias = Number(aviso?.dias_atraso || 0);
+    return dias > 0
+      ? `Pagamento pendente — ${dias} ${dias === 1 ? "dia" : "dias"} de atraso`
+      : "Pagamento pendente";
+  }
+  return "Aviso enviado";
+}
+
+function renderAvisosWhatsappFinanceiro(lancamento) {
+  const avisos = Array.isArray(lancamento?.lembretes_whatsapp)
+    ? lancamento.lembretes_whatsapp
+    : [];
+  if (!avisos.length) return "";
+
+  return `
+    <div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.18);">
+      <div style="font-size:12px;font-weight:700;color:#86efac;margin-bottom:6px;">📲 Avisos WhatsApp enviados</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${avisos.map(aviso => `
+          <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(34,197,94,0.10);border:1px solid rgba(34,197,94,0.24);font-size:11px;color:#d1fae5;">
+            ✓ ${escaparHtml(rotuloAvisoWhatsappFinanceiro(aviso))}
+            <strong style="color:#86efac;">${escaparHtml(formatarDataAvisoFinanceiro(aviso.data_envio))}</strong>
+          </span>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function renderLancamentoFinanceiroAdmin(l) {
   const statusInfo = FINANCEIRO_STATUS_LABEL[l.status] || { texto: l.status, cor: "#94a3b8" };
   return `
@@ -23820,6 +23859,7 @@ function renderLancamentoFinanceiroAdmin(l) {
       </div>
       ${l.pix_chave ? `<div style="font-size:12px;color:#94a3b8;margin-top:6px;">Chave PIX${l.pix_tipo_label ? ` (${escaparHtml(l.pix_tipo_label)})` : ""}: <strong style="color:#e2e8f0;">${escaparHtml(l.pix_chave)}</strong></div>` : ""}
       ${l.observacao ? `<div style="font-size:12px;color:#94a3b8;margin-top:6px;">${escaparHtml(l.observacao)}</div>` : ""}
+      ${renderAvisosWhatsappFinanceiro(l)}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
         ${l.tem_comprovante
           ? `<button type="button" class="btn-video-anuncio" onclick="abrirArquivoFinanceiro(${l.id}, 'comprovante')">📎 Ver comprovante</button>`

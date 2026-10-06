@@ -18695,9 +18695,22 @@ body.tema-claro .criar-campanha-descricao {
 
         </section>
         <section class="wpp-panel wpp-contato-panel" id="wpp_contato_formulario" aria-labelledby="wpp_contato_titulo" style="display:none;">
-          <div class="wpp-panel-heading"><h4 id="wpp_contato_titulo">Primeiro contato com leads de formulário</h4></div>
-          <p class="wpp-help-intro" style="margin:10px 0 14px;">Quando chega um lead de formulário (Meta, Google, TikTok ou LinkedIn), a plataforma manda na hora uma mensagem pelo seu WhatsApp. Quando ele responder, a conversa segue o roteiro do nicho dele (ou vai direto pra você, se não houver roteiro) e a IA passa a acompanhar o status — é isso que devolve às plataformas de anúncio quais leads são bons.</p>
-          <div id="wpp_contato_conteudo"><div style="color:#94a3b8;font-size:13px;">Carregando...</div></div>
+          <details id="wpp_contato_details">
+            <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+              <div>
+                <h4 id="wpp_contato_titulo" style="margin:0;">Primeiro contato com leads de formulário</h4>
+                <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Clique para configurar o envio automático para leads de formulário.</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span id="wpp_contato_resumo_status" style="font-size:12px;color:#94a3b8;">Carregando...</span>
+                <span aria-hidden="true" style="font-size:14px;color:#94a3b8;">▼</span>
+              </div>
+            </summary>
+            <div style="padding-top:14px;">
+              <p class="wpp-help-intro" style="margin:0 0 14px;">Quando chega um lead de formulário (Meta, Google, TikTok ou LinkedIn), a plataforma manda na hora uma mensagem pelo seu WhatsApp. Quando ele responder, a conversa segue o roteiro do nicho dele (ou vai direto pra você, se não houver roteiro) e a IA passa a acompanhar o status — é isso que devolve às plataformas de anúncio quais leads são bons.</p>
+              <div id="wpp_contato_conteudo"><div style="color:#94a3b8;font-size:13px;">Carregando...</div></div>
+            </div>
+          </details>
         </section>
         <div class="wpp-workspace">
           <div id="whatsapp_bot_editor" style="display:none;">
@@ -46379,6 +46392,19 @@ function renderContatoFormularioWhatsapp() {
   const sugerido = data.modelo_sugerido || {};
   const sugeridoExiste = modelos.some(m => m.nome === sugerido.nome);
   const stats = data.estatisticas || {};
+  const resumoStatus = document.getElementById("wpp_contato_resumo_status");
+  if (resumoStatus) {
+    if (config.ativo) {
+      resumoStatus.textContent = "● Ativo";
+      resumoStatus.style.color = "#4ade80";
+    } else if (!compativeis.length) {
+      resumoStatus.textContent = "Aguardando modelo aprovado";
+      resumoStatus.style.color = "#fbbf24";
+    } else {
+      resumoStatus.textContent = "Desligado";
+      resumoStatus.style.color = "#94a3b8";
+    }
+  }
 
   const opcoes = [
     `<option value="">Escolha um modelo aprovado</option>`,
@@ -46391,9 +46417,13 @@ function renderContatoFormularioWhatsapp() {
 
   const semModelo = !compativeis.length
     ? `<div class="wpp-contato-vazio" style="margin-top:12px;">
+        <div style="font-weight:700;color:#fbbf24;margin-bottom:6px;">Configuração aguardando modelo aprovado pela Meta</div>
+        <div style="color:#cbd5e1;font-size:12px;line-height:1.5;margin-bottom:10px;">
+          O botão de ativação e o seletor ficam indisponíveis até existir pelo menos um modelo aprovado. Isso é uma exigência da Meta para iniciar uma conversa automaticamente.
+        </div>
         ${sugeridoExiste
-          ? "O modelo sugerido já foi enviado para a Meta e ainda está em análise (costuma levar de minutos a algumas horas). Volte aqui depois para escolhê-lo."
-          : `Você ainda não tem um modelo de mensagem aprovado. A plataforma pode criar este na sua conta e enviar para a análise da Meta:
+          ? "O modelo sugerido já foi enviado para a Meta e ainda está em análise. Quando for aprovado, ele aparecerá aqui para seleção."
+          : `Você ainda não tem um modelo de mensagem aprovado. A plataforma pode criar este na sua conta e enviar para análise:
              <div class="wpp-contato-balao">${escaparHtml(String(sugerido.corpo || "").replace("{{1}}", "Maria"))}</div>
              <button type="button" class="btn wpp-btn" style="margin-top:12px;" onclick="criarModeloSugeridoWhatsapp(this)">Criar modelo sugerido</button>`}
       </div>`

@@ -46229,31 +46229,45 @@ function renderWhatsappNumeros() {
   lista.innerHTML=_whatsappNumeros.map(n=>{
     const campanhas=campanhasDisponiveisNumeroWhatsapp(n.nicho_id);
     const titulo=n.numero||n.display_name||n.phone_number_id||"Número WhatsApp";
-    return `<div class="wpp-roteiro-card" style="display:block;padding:14px;">
-      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
-        <div><div class="wpp-roteiro-nome">📱 ${escaparHtml(titulo)}</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;">
-          ${n.principal?'<span class="wpp-badge wpp-badge-ativo">Principal</span>':""}
-          ${n.display_name?`<span style="font-size:12px;color:#94a3b8;">${escaparHtml(n.display_name)}</span>`:""}
-        </div></div>
-        <label style="display:flex;gap:7px;align-items:center;font-size:13px;color:#e2e8f0;">
-          <input type="checkbox" id="wpp_numero_bot_${n.id}" ${n.bot_ativo?"checked":""}> Bot ligado
-        </label>
+    const botStatus=n.bot_ativo
+      ? '<span class="wpp-badge wpp-badge-ativo">● Bot ligado</span>'
+      : '<span class="wpp-badge" style="background:rgba(245,158,11,.14);color:#fbbf24;border:1px solid rgba(245,158,11,.35);">● Bot pausado</span>';
+    return `<details class="wpp-roteiro-card" style="display:block;padding:0;overflow:hidden;">
+      <summary style="cursor:pointer;padding:14px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div style="min-width:0;">
+          <div class="wpp-roteiro-nome">📱 ${escaparHtml(titulo)}</div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:5px;">
+            ${n.principal?'<span class="wpp-badge wpp-badge-ativo">Principal</span>':'<span class="wpp-badge">Adicional</span>'}
+            ${n.display_name?`<span style="font-size:12px;color:#94a3b8;">${escaparHtml(n.display_name)}</span>`:""}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-left:auto;">
+          ${botStatus}
+          <span style="font-size:12px;color:#94a3b8;">Configurar</span>
+        </div>
+      </summary>
+      <div style="padding:0 14px 14px;border-top:1px solid rgba(148,163,184,.14);">
+        <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+          <label style="display:flex;gap:7px;align-items:center;font-size:13px;color:#e2e8f0;">
+            <input type="checkbox" id="wpp_numero_bot_${n.id}" ${n.bot_ativo?"checked":""}> Bot ligado
+          </label>
+        </div>
+        <div class="wpp-fields-row" style="margin-top:12px;">
+          <div class="wpp-field"><label>Nicho padrão</label>
+            <select id="wpp_numero_nicho_${n.id}" onchange="filtrarCampanhasNumeroWhatsapp(${n.id})">${_wppNumeroOptions(nichos,n.nicho_id,"Detectar pela campanha")}</select></div>
+          <div class="wpp-field"><label>Campanha padrão</label>
+            <select id="wpp_numero_campanha_${n.id}">${_wppNumeroOptions(campanhas,n.campanha_id,"Nenhuma — usar origem detectada")}</select></div>
+          <div class="wpp-field"><label>Roteiro</label>
+            <select id="wpp_numero_roteiro_${n.id}">${_wppNumeroOptions(_whatsappBotRoteiros,n.roteiro_id,"Automático pelo nicho")}</select></div>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-top:7px;">A campanha identificada pelo anúncio tem prioridade. Os padrões são usados quando a origem não vier identificada.</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+          <button type="button" class="btn wpp-btn" onclick="salvarNumeroWhatsapp(${n.id},this)">Salvar configuração</button>
+          ${n.principal?"":`<button type="button" class="btn wpp-btn wpp-btn-danger" onclick="removerNumeroWhatsapp(${n.id},this)">Remover número</button>`}
+          <span id="wpp_numero_status_${n.id}" style="font-size:12px;color:#94a3b8;"></span>
+        </div>
       </div>
-      <div class="wpp-fields-row" style="margin-top:12px;">
-        <div class="wpp-field"><label>Nicho padrão</label>
-          <select id="wpp_numero_nicho_${n.id}" onchange="filtrarCampanhasNumeroWhatsapp(${n.id})">${_wppNumeroOptions(nichos,n.nicho_id,"Detectar pela campanha")}</select></div>
-        <div class="wpp-field"><label>Campanha padrão</label>
-          <select id="wpp_numero_campanha_${n.id}">${_wppNumeroOptions(campanhas,n.campanha_id,"Nenhuma — usar origem detectada")}</select></div>
-        <div class="wpp-field"><label>Roteiro</label>
-          <select id="wpp_numero_roteiro_${n.id}">${_wppNumeroOptions(_whatsappBotRoteiros,n.roteiro_id,"Automático pelo nicho")}</select></div>
-      </div>
-      <div style="font-size:11px;color:#64748b;margin-top:7px;">A campanha identificada pelo anúncio tem prioridade. Os padrões são usados quando a origem não vier identificada.</div>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;">
-        <button type="button" class="btn wpp-btn" onclick="salvarNumeroWhatsapp(${n.id},this)">Salvar configuração</button>
-        ${n.principal?"":`<button type="button" class="btn wpp-btn wpp-btn-danger" onclick="removerNumeroWhatsapp(${n.id},this)">Remover</button>`}
-        <span id="wpp_numero_status_${n.id}" style="font-size:12px;color:#94a3b8;"></span>
-      </div></div>`;
+    </details>`;
   }).join("");
 }
 function filtrarCampanhasNumeroWhatsapp(id) {

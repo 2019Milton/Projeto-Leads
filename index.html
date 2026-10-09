@@ -19030,6 +19030,13 @@ body.tema-claro .criar-campanha-descricao {
               <div id="destino_site_modo_formulario_info" class="channel-picker-status">O anúncio abre o formulário da própria rede: a plataforma recebe nome e telefone, acompanha o lead e devolve os sinais de qualidade e venda. No final, o botão <b>Visitar site</b> leva ao endereço informado. Você não precisa instalar nada no site.</div>
               <div id="destino_site_modo_direto_info" class="channel-picker-status alerta" style="display:none;" data-site-codigo-pai>O clique abre direto o seu site. A plataforma <b>não recebe</b> nome e telefone de quem preencher o formulário do site: as conversões aparecem só como números nos resultados da campanha (se o site tiver o pixel da rede). Para receber os leads aqui, cole o código de <b>Integrações → Formulário do seu site</b>.</div>
             </div>
+            <div id="campanha_whatsapp_numero_bloco" style="display:none;margin:12px 0;padding:12px;border:1px solid rgba(34,197,94,.3);border-radius:10px;">
+              <label for="campanha_whatsapp_numero" style="display:block;font-weight:700;margin-bottom:7px;">Número que receberá os contatos</label>
+              <select id="campanha_whatsapp_numero" style="width:100%;padding:8px;border-radius:6px;">
+                <option value="">Padrão (número principal)</option>
+              </select>
+              <small style="display:block;opacity:.72;margin-top:7px;">Escolha um número conectado com bot ativo. A seleção vale apenas para este anúncio, não altera campanhas já publicadas.</small>
+            </div>
             <div id="destino_whatsapp_aviso" class="channel-picker-status alerta" style="display:none;">
               Conecte o WhatsApp da plataforma (aba Whatsapp Bot) antes de publicar uma campanha com esse destino.
             </div>
@@ -30440,6 +30447,49 @@ let destinoCampanhaSelecionado = "lead_ads";
 // no botão final do formulário (configuracoes_avancadas.site_via_formulario).
 let siteViaFormularioMeta = false;
 
+// Seleção de destino fica disponível apenas para usuários com múltiplos números.
+async function carregarNumerosDestinoCampanha() {
+  const bloco = document.getElementById("campanha_whatsapp_numero_bloco");
+  const seletor = document.getElementById("campanha_whatsapp_numero");
+  if (!bloco || !seletor) return;
+  bloco.style.display = "none";
+  const token = localStorage.getItem("token");
+  if (!token) return;
+  try {
+    const resposta = await fetch(`${API}/whatsapp/numeros`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!resposta.ok) return;
+    const dados = await resposta.json();
+    if (!dados.habilitado) return;
+    const numeros = (dados.numeros || []).filter(n =>
+      n.status === "conectado" && n.bot_ativo === true
+    );
+    if (!numeros.length || destinoCampanhaSelecionado !== "whatsapp") return;
+    const valorAnterior = seletor.dataset.numeroPendente ?? seletor.value;
+    seletor.replaceChildren();
+    const padrao = document.createElement("option");
+    padrao.value = "";
+    padrao.textContent = "Padrão (número principal)";
+    seletor.appendChild(padrao);
+    for (const numero of numeros) {
+      const option = document.createElement("option");
+      option.value = String(numero.id);
+      option.textContent = (numero.display_name || numero.numero || "WhatsApp") +
+        " — " + (numero.numero || "") + (numero.principal ? " (principal)" : "");
+      seletor.appendChild(option);
+    }
+    seletor.value = Array.from(seletor.options).some(x => x.value === String(valorAnterior))
+      ? String(valorAnterior) : "";
+    delete seletor.dataset.numeroPendente;
+    bloco.style.display = "";
+    seletor.disabled = Boolean(typeof campanhaEmEdicao !== "undefined" &&
+      campanhaEmEdicao && campanhaJaFoiPublicada(campanhaEmEdicao));
+  } catch (e) {
+    console.warn("Não foi possível listar os números da campanha", e);
+  }
+}
+
 // Formulário de Leads vs WhatsApp (Click-to-WhatsApp) — mesmo padrão de
 // aplicarRedesCampanha, mas via [data-destino-only] em vez de [data-plat-only].
 // Campos de formulário/tela de obrigado só fazem sentido pra Lead Ads.
@@ -30514,6 +30564,8 @@ async function aplicarDestinoCampanha() {
 
   if (destinoCampanhaSelecionado !== "whatsapp") {
     aviso.style.display = "none";
+    const blocoNumeros = document.getElementById("campanha_whatsapp_numero_bloco");
+    if (blocoNumeros) blocoNumeros.style.display = "none";
     return;
   }
 
@@ -30525,6 +30577,7 @@ async function aplicarDestinoCampanha() {
   } catch (e) {
     aviso.style.display = "";
   }
+  await carregarNumerosDestinoCampanha();
 }
 
 function atualizarEstadoBotaoGerarIA() {
@@ -30538,6 +30591,11 @@ function atualizarEstadoBotaoGerarIA() {
 }
 
 function inicializarEstadoCriarCampanha() {
+  const seletorWhatsapp = document.getElementById("campanha_whatsapp_numero");
+  if (seletorWhatsapp) {
+    seletorWhatsapp.value = "";
+    delete seletorWhatsapp.dataset.numeroPendente;
+  }
   // O formulario faz parte da coluna principal de criacao e permanece visivel.
   aplicarEstadoCriarCampanha(false);
   aplicarRedesCampanha();
@@ -36012,6 +36070,8 @@ function coletarConfiguracoesAvancadas() {
       ["lead_ads", "site", "whatsapp"].includes(destinoCampanhaSelecionado)
         ? destinoCampanhaSelecionado
         : "lead_ads",
+    whatsapp_phone_number_id: destinoCampanhaSelecionado === "whatsapp"
+      ? (Number(valorCampo("campanha_whatsapp_numero")) || null) : null,
     categoria_especial:
       valorCampo("adv_categoria_especial"),
     titulo: valorCampo("adv_titulo"),
@@ -36536,6 +36596,8 @@ function preencherConfiguracoesAvancadas(cfg, dailyBudgetSalvo, plataformaOrcame
   const destinoRadioId = cfg.destino === "whatsapp" ? "destino_whatsapp" : cfg.destino === "site" ? "destino_site" : "destino_lead_ads";
   const destinoRadio = document.getElementById(destinoRadioId);
   if (destinoRadio) destinoRadio.checked = true;
+  const seletorWhatsapp = document.getElementById("campanha_whatsapp_numero");
+  if (seletorWhatsapp) seletorWhatsapp.dataset.numeroPendente = String(cfg.whatsapp_phone_number_id || "");
   aplicarDestinoCampanha();
 
   marcarCheckboxesPorValor(".adv-facebook-position", cfg.facebook_positions);
@@ -42195,6 +42257,7 @@ function blocoNichoCampanhaImportada(c) {
     return `<option value="${Number(n.id)}"${selecionado}>${nomeExibirNicho(n)}</option>`;
   }).join("");
   const titulo = "O nicho define qual roteiro do WhatsApp Bot atende as conversas desta campanha";
+  const metaImportada = ["meta","facebook","instagram"].includes(String(c.plataforma || "meta").toLowerCase());
   return `
     <div class="campanha-nicho-import ${confirmado ? "" : "sem-nicho"}" onclick="event.stopPropagation()">
       <select onchange="salvarNichoCampanhaImportada(${Number(c.id)}, this)" title="${titulo}">
@@ -42202,7 +42265,30 @@ function blocoNichoCampanhaImportada(c) {
         ${opcoes}
       </select>
       ${confirmado ? "" : `<small>Sem nicho salvo: o WhatsApp Bot não sabe qual roteiro usar nesta campanha.</small>`}
+      ${metaImportada ? `<button type="button" onclick="event.stopPropagation();consultarDestinoWhatsappCampanha(${Number(c.id)})" style="font-size:11px;padding:6px;border:1px solid #64748b;border-radius:6px;background:transparent;color:inherit;cursor:pointer;">Ver destino WhatsApp na Meta</button>` : ""}
     </div>`;
+}
+
+// Apenas leitura: não altera anúncios, conjuntos ou números conectados.
+async function consultarDestinoWhatsappCampanha(campanhaId) {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(`${API}/meta/campanhas/${Number(campanhaId)}/destino-whatsapp`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const dados = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(dados.error || "Consulta indisponível");
+    const linhas = (dados.anuncios || []).map(a =>
+      (a.nome || "Anúncio " + a.id) + "\n  Destino: " + (a.destino || "não informado") +
+      "\n  Número: " + (a.numero_whatsapp || "não informado pela Meta") +
+      "\n  Origem do número: " + (a.fonte_numero || "não identificada")
+    );
+    alert("Destino dos anúncios na Meta (somente leitura)\n\n" +
+      (linhas.join("\n\n") || "Nenhum anúncio retornado.") +
+      "\n\nNenhuma alteração foi realizada.");
+  } catch (e) {
+    alert("Não foi possível verificar o destino: " + (e?.message || "erro de conexão"));
+  }
 }
 
 async function salvarNichoCampanhaImportada(campanhaId, select) {

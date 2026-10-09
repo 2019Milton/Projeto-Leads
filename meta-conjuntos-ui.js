@@ -78,25 +78,45 @@
       'ontoggle="if(this.open)window.MetaConjuntosUI.carregarNumeros(this)">' +
       '<summary>+ Criar novo conjunto de anúncios</summary>' +
       '<div class="meta-conj-criar-corpo">' +
-      '<p>Copia público e otimização de um conjunto existente. O novo conjunto será criado <strong>pausado</strong>, sem anúncios e sem gasto até a ativação posterior.</p>' +
+      '<p>Copia público e otimização do conjunto e também o criativo de um anúncio existente. <strong>Conjunto e anúncio serão criados PAUSADOS.</strong> Confira ambos na Meta antes de ativar.</p>' +
       '<form onsubmit="window.MetaConjuntosUI.criar(event,this,' + Number(campanhaId) + ')">' +
       '<label>Nome do novo conjunto<input name="nome" required minlength="3" maxlength="120" ' +
       'placeholder="Ex.: DIHOR Suplementos — WhatsApp 0205"></label>' +
-      '<label>Copiar configurações deste conjunto<select name="conjunto_origem_id" required>' +
+      '<label>Copiar configurações deste conjunto<select name="conjunto_origem_id" required onchange="window.MetaConjuntosUI.atualizarAnuncios(this.form)">' +
       '<option value="">Selecione um conjunto existente</option>' +
       conjuntos.filter(x => x.destino === "WHATSAPP").map(x =>
         '<option value="' + esc(x.id) + '">' + esc(x.nome || x.id) + '</option>').join("") +
       '</select></label>' +
+      '<label>Anúncio a ser copiado<select name="anuncio_origem_id" required>' +
+      '<option value="">Escolha um conjunto primeiro</option></select></label>' +
       '<label>WhatsApp de destino<select name="whatsapp_numero_id" required data-numeros>' +
       '<option value="">Carregando números...</option></select></label>' +
       (campanha.cbo ? '<p>Orçamento controlado na campanha. O valor total não será alterado.</p>' :
         '<label>Orçamento diário deste conjunto (R$)<input name="orcamento" type="number" min="1" step="0.01" required placeholder="Ex.: 25.00"></label>' +
         '<p>Atenção: ao ativar este conjunto, o orçamento poderá somar ao dos demais conjuntos.</p>') +
-      '<button type="submit" class="meta-conj-criar-btn">Criar conjunto PAUSADO</button>' +
+      '<button type="submit" class="meta-conj-criar-btn">Criar conjunto + anúncio PAUSADOS</button>' +
       '<div class="meta-conj-feedback" role="status"></div></form>' +
-      '<p>Depois de criar, é necessário adicionar um anúncio e conferir o destino na Meta antes da ativação.</p>' +
+      '<p>Caso a Meta não permita copiar um criativo específico, nenhuma campanha ou anúncio atual será alterado. Se o conjunto tiver sido criado, permanecerá pausado.</p>' +
       '</div></details>';
     alvo.innerHTML = s;
+    const details = alvo.closest(".meta-conjuntos-campanha");
+    if(details) details.dataset.campanhaId = String(campanhaId);
+  }
+
+  function atualizarAnuncios(formulario) {
+    const details = formulario && formulario.closest(".meta-conjuntos-campanha");
+    const localId = details && Number(details.dataset.campanhaId);
+    const dados = estados.get(localId);
+    const seletor = formulario && formulario.elements.namedItem("anuncio_origem_id");
+    const origemId = formulario && formulario.elements.namedItem("conjunto_origem_id").value;
+    if (!seletor) return;
+    const conjunto = (dados?.conjuntos || []).find(c => String(c.id) === String(origemId));
+    const anuncios = conjunto?.anuncios || [];
+    seletor.innerHTML = '<option value="">Selecione o anúncio original</option>' +
+      anuncios.map(a => '<option value="' + esc(a.id) + '">' + esc(a.nome || a.id) + '</option>').join("");
+    if (!anuncios.length) {
+      seletor.innerHTML = '<option value="">Este conjunto não possui anúncio para copiar</option>';
+    }
   }
 
   async function carregarNumeros(details) {
@@ -129,12 +149,13 @@
     const nome = formulario.elements.namedItem("nome").value.trim();
     const origem = formulario.elements.namedItem("conjunto_origem_id").value;
     const numeroId = formulario.elements.namedItem("whatsapp_numero_id").value;
+    const anuncioId = formulario.elements.namedItem("anuncio_origem_id").value;
     const inputOrcamento = formulario.elements.namedItem("orcamento");
     const valor = inputOrcamento ? Math.round(Number(inputOrcamento.value) * 100) : null;
-    if (!origem || !numeroId || (inputOrcamento && (!Number.isSafeInteger(valor) || valor <= 0))) {
+    if (!origem || !numeroId || !anuncioId || (inputOrcamento && (!Number.isSafeInteger(valor) || valor <= 0))) {
       alert("Informe o conjunto de origem, WhatsApp e orçamento válido.");return;
     }
-    if (!confirm("Criar o conjunto '" + nome + "' na Meta, em estado PAUSADO? Nenhum anúncio será criado e não haverá alteração no conjunto atual.")) return;
+    if (!confirm("Criar o conjunto '" + nome + "' e copiar o anúncio selecionado na Meta, ambos PAUSADOS? O anúncio atual permanecerá inalterado. Confira o WhatsApp antes de qualquer ativação.")) return;
     const btn = formulario.querySelector('button[type="submit"]');
     const feedback = formulario.querySelector(".meta-conj-feedback");
     formulario.dataset.enviando = "1";
@@ -147,16 +168,22 @@
         body:JSON.stringify({
           nome,
           conjunto_origem_id:origem,
+          anuncio_origem_id:anuncioId,
           whatsapp_numero_id:Number(numeroId),
           orcamento_diario_centavos:valor
         })
       });
       const resultado = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(resultado.error || "Criação recusada");
-      alert("Conjunto PAUSADO criado na Meta. " +
-        (resultado.numero_verificado ? "Número de WhatsApp confirmado." :
-          "A Meta não confirmou o número solicitado: verifique-o antes de ativar.") +
-        "\nNenhum anúncio foi criado. Adicione o anúncio antes de veicular.");
+      const recado = resultado.parcial
+        ? "ATENÇÃO: " + (resultado.aviso || "Criação parcialmente concluída.") +
+          "\nNão repita a operação sem conferir primeiro os IDs na Meta."
+        : "Conjunto e anúncio criados PAUSADOS. " +
+          (resultado.numero_verificado ? "WhatsApp do conjunto confirmado." :
+            "WhatsApp não confirmado: verifique o destino.") +
+          "\nValide o botão na prévia da Meta antes de ativar.";
+      alert(recado + "\nConjunto ID: " + (resultado.id || "?") +
+        "\nAnúncio ID: " + (resultado.anuncio_id || "não criado"));
       const pai = formulario.closest(".meta-conjuntos-campanha");
       if (pai) await carregar(pai, campanhaId);
     } catch(e) {
@@ -166,5 +193,5 @@
       btn.disabled = false;
     }
   }
-  window.MetaConjuntosUI = { carregar, carregarNumeros, criar };
+  window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar };
 })();

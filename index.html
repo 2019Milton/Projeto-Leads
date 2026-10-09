@@ -17527,6 +17527,7 @@ body.tema-claro .criar-campanha-descricao {
 <link rel="stylesheet" href="servicos-visuais.css">
 <link rel="stylesheet" href="configuracoes-visuais.css">
 <link rel="stylesheet" href="meta-conjuntos-ui.css">
+<link rel="stylesheet" href="meta-orcamentos-ui.css?v=20261009">
 </head>
 
 <body>
@@ -37044,6 +37045,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
       preencherCamposTikTokCampanha({}, false);
     }
     configurarEdicaoDestinoCampanha(campanha);
+    window.MetaOrcamentosUI?.editorIndicacao(campanha);
     preencherCamposBasicosCampanha({
       ...campanha,
       configuracoes_avancadas: configuracoesCampanha
@@ -37082,6 +37084,7 @@ function abrirEdicaoCampanha(campanhaEncoded) {
 function fecharEdicaoCampanha() {
 
   try {
+    window.MetaOrcamentosUI?.resetarEditor();
 
     esconderAbasEdicaoCampanha();
     invalidarSugestoesCampanhaIA();
@@ -38054,7 +38057,8 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
       page_id: camposBasicos.page_id,
       texto: camposBasicos.texto,
       cta: camposBasicos.cta,
-      daily_budget: orcamento ? Number(orcamento) * 100 : null,
+      daily_budget: window.MetaOrcamentosUI?.bloquearBudgetEditor(campanhaEmEdicao?.id)
+        ? null : (orcamento ? Number(orcamento) * 100 : null),
       atualizar_criativo: criativoFoiAlteradoNoEditor,
       configuracoes_avancadas
     };
@@ -48294,7 +48298,15 @@ async function carregarCampanhas(somenteRenderizar = false) {
         </div>
         ` : ""}
 
-        ${c.daily_budget ? `
+        ${["meta","facebook","instagram"].includes(String(c.plataforma||"meta").toLowerCase()) && c.campaign_id
+          ? `<div class="metrica meta-orcamento-banner" data-campanha-id="${Number(c.id)}"
+                 onclick="event.stopPropagation();window.MetaOrcamentosUI?.abrir(${Number(c.id)})"
+                 title="Orçamento atual por conjunto consultado na Meta">
+                 <span class="meta-budget-main">Consultando Meta...</span>
+                 <small>Orçamento por conjunto</small>
+               </div>`
+          : ""}
+        ${c.daily_budget && !(["meta","facebook","instagram"].includes(String(c.plataforma||"meta").toLowerCase()) && c.campaign_id) ? `
         <div class="metrica" title="Orçamento diário definido para esta campanha.">
           🗓️
           <span>
@@ -60540,5 +60552,6 @@ async function criarLookalike() {
 <script src="assistente-contas.js?v=20261009"></script>
 
 <script src="meta-conjuntos-ui.js"></script>
+<script src="meta-orcamentos-ui.js?v=20261009"></script>
 </body>
 </html>

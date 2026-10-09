@@ -71,7 +71,8 @@
       '<summary>+ Criar novo conjunto de anúncios</summary>' +
       '<div class="meta-conj-criar-corpo">' +
       '<p>Copia público e otimização do conjunto e também o criativo de um anúncio existente. <strong>Conjunto e anúncio serão criados PAUSADOS.</strong> Confira ambos na Meta antes de ativar.</p>' +
-      '<form onsubmit="window.MetaConjuntosUI.criar(event,this,' + Number(campanhaId) + ')">' +
+      '<form onsubmit="window.MetaConjuntosUI.criar(event,this,' + Number(campanhaId) +
+        ')" oninput="window.MetaConjuntosUI.invalidar(this)" onchange="window.MetaConjuntosUI.invalidar(this)">' +
       '<label>Nome do novo conjunto<input name="nome" required minlength="3" maxlength="120" ' +
       'placeholder="Ex.: DIHOR Suplementos — WhatsApp 0205"></label>' +
       '<label>Copiar configurações deste conjunto<select name="conjunto_origem_id" required onchange="window.MetaConjuntosUI.atualizarAnuncios(this.form)">' +
@@ -86,7 +87,9 @@
       (campanha.cbo ? '<p>Orçamento controlado na campanha. O valor total não será alterado.</p>' :
         '<label>Orçamento diário deste conjunto (R$)<input name="orcamento" type="number" min="1" step="0.01" required placeholder="Ex.: 25.00"></label>' +
         '<p>Atenção: ao ativar este conjunto, o orçamento poderá somar ao dos demais conjuntos.</p>') +
-      '<button type="submit" class="meta-conj-criar-btn">Criar conjunto + anúncio PAUSADOS</button>' +
+      '<button type="button" class="meta-conj-validar-btn" onclick="window.MetaConjuntosUI.validar(event,this.form,' +
+      Number(campanhaId) + ')">Validar configuração na Meta (não cria)</button>' +
+      '<button type="submit" class="meta-conj-criar-btn" disabled>Criar conjunto + anúncio PAUSADOS</button>' +
       '<div class="meta-conj-feedback" role="status"></div></form>' +
       '<p>Caso a Meta não permita copiar um criativo específico, nenhuma campanha ou anúncio atual será alterado. Se o conjunto tiver sido criado, permanecerá pausado.</p>' +
       '</div></details>';
@@ -171,21 +174,84 @@
     }
   }
 
+  function camposParaMeta(formulario) {
+    const nome = formulario.elements.namedItem("nome")?.value?.trim();
+    const origem = formulario.elements.namedItem("conjunto_origem_id")?.value;
+    const numeroId = formulario.elements.namedItem("whatsapp_numero_id")?.value;
+    const anuncioId = formulario.elements.namedItem("anuncio_origem_id")?.value;
+    const inputOrcamento = formulario.elements.namedItem("orcamento");
+    const valor = inputOrcamento ? Math.round(Number(inputOrcamento.value) * 100) : null;
+    if(!nome || nome.length < 3 || !origem || !numeroId || !anuncioId ||
+       (inputOrcamento && (!Number.isSafeInteger(valor) || valor <= 0))) {
+      throw new Error("Preencha o nome, conjunto de origem, anúncio, WhatsApp e orçamento válido.");
+    }
+    return { nome, conjunto_origem_id:origem, anuncio_origem_id:anuncioId,
+      whatsapp_numero_id:Number(numeroId), orcamento_diario_centavos:valor };
+  }
+
+  function invalidar(formulario) {
+    if(!formulario) return;
+    delete formulario.dataset.assinaturaValida;
+    const criarBotao=formulario.querySelector(".meta-conj-criar-btn");
+    if(criarBotao)criarBotao.disabled=true;
+    const msg=formulario.querySelector(".meta-conj-feedback");
+    if(msg && msg.dataset.validado==="1"){
+      msg.textContent="Dados alterados. Valide novamente antes de criar.";
+      msg.dataset.validado="0";
+    }
+  }
+
+  async function validar(ev,formulario,campanhaId) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if(formulario.dataset.enviando==="1")return;
+    const msg=formulario.querySelector(".meta-conj-feedback");
+    const btn=formulario.querySelector(".meta-conj-validar-btn");
+    invalidar(formulario);
+    let dados;
+    try {dados=camposParaMeta(formulario);}
+    catch(e){msg.textContent=e.message;return;}
+    formulario.dataset.enviando="1";
+    btn.disabled=true;
+    msg.textContent="Validando a configuração na Meta, sem criar conjuntos ou anúncios...";
+    try {
+      const resp=await fetch(caminho(campanhaId)+"/validar",{
+        method:"POST",
+        headers:{"Content-Type":"application/json",Authorization:"Bearer "+token()},
+        body:JSON.stringify(dados)
+      });
+      const resultado=await resp.json().catch(()=>({}));
+      if(!resp.ok || !resultado.validacao_sem_criacao || !resultado.ok){
+        throw new Error(resultado.error||"A Meta não confirmou a validação.");
+      }
+      formulario.dataset.assinaturaValida=JSON.stringify(dados);
+      const btnCriar=formulario.querySelector(".meta-conj-criar-btn");
+      if(btnCriar)btnCriar.disabled=false;
+      msg.dataset.validado="1";
+      msg.textContent="Validação concluída: "+(resultado.aviso||
+        "A configuração do conjunto foi aceita pela Meta. Nenhum conjunto ou anúncio foi criado.");
+    } catch(e){
+      msg.dataset.validado="0";
+      msg.textContent="Configuração rejeitada: "+(e.message||"Falha ao consultar a Meta.");
+    } finally {
+      formulario.dataset.enviando="0";btn.disabled=false;
+    }
+  }
+
   async function criar(ev, formulario, campanhaId) {
     ev.preventDefault();
     ev.stopPropagation();
     if (formulario.dataset.enviando === "1") return;
     const dados = estados.get(Number(campanhaId));
     if (!dados) return;
-    const nome = formulario.elements.namedItem("nome").value.trim();
-    const origem = formulario.elements.namedItem("conjunto_origem_id").value;
-    const numeroId = formulario.elements.namedItem("whatsapp_numero_id").value;
-    const anuncioId = formulario.elements.namedItem("anuncio_origem_id").value;
-    const inputOrcamento = formulario.elements.namedItem("orcamento");
-    const valor = inputOrcamento ? Math.round(Number(inputOrcamento.value) * 100) : null;
-    if (!origem || !numeroId || !anuncioId || (inputOrcamento && (!Number.isSafeInteger(valor) || valor <= 0))) {
-      alert("Informe o conjunto de origem, WhatsApp e orçamento válido.");return;
+    let payload;
+    try {payload=camposParaMeta(formulario);}
+    catch(e){alert(e.message);return;}
+    if(formulario.dataset.assinaturaValida!==JSON.stringify(payload)){
+      alert("Valide primeiro os dados do conjunto na Meta, sem criar. Depois você poderá confirmar a criação.");
+      return;
     }
+    const nome=payload.nome;
     const opcaoSelecionada = formulario.elements.namedItem("whatsapp_numero_id").selectedOptions?.[0];
     const botPausado = opcaoSelecionada?.dataset?.botAtivo === "0";
     if (!confirm("Criar o conjunto '" + nome +
@@ -201,16 +267,11 @@
       const r = await fetch(caminho(campanhaId), {
         method:"POST",
         headers:{"Content-Type":"application/json",Authorization:"Bearer " + token()},
-        body:JSON.stringify({
-          nome,
-          conjunto_origem_id:origem,
-          anuncio_origem_id:anuncioId,
-          whatsapp_numero_id:Number(numeroId),
-          orcamento_diario_centavos:valor
-        })
+        body:JSON.stringify(payload)
       });
       const resultado = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(resultado.error || "Criação recusada");
+      invalidar(formulario);
       const recado = resultado.parcial
         ? "ATENÇÃO: " + (resultado.aviso || "Criação parcialmente concluída.") +
           "\nNão repita a operação sem conferir primeiro os IDs na Meta."
@@ -225,11 +286,14 @@
         await window.MetaOrcamentosUI.recarregarEdicao(campanhaId);
       }
     } catch(e) {
+      feedback.dataset.validado="0";
       feedback.textContent = e.message || "Falha ao criar o conjunto.";
+      invalidar(formulario);
     } finally {
       formulario.dataset.enviando = "0";
-      btn.disabled = false;
+      // Para segurança, não habilitar o botão de criação após falha sem nova validação.
+      btn.disabled = true;
     }
   }
-  window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar, renderizarGestao };
+  window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar, validar, invalidar, renderizarGestao };
 })();

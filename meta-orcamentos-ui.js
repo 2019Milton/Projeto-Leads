@@ -64,13 +64,23 @@ function linhasOrcamento(d) {
  const soma=estadoResumo(d);
  const checkbox=soma.sets.map((x,i)=>{
   const checked=ativo(x)?" checked":"";
+  const nome=esc(x.nome||"Conjunto "+(i+1));
+  const valorAtual=brl(orcamento(x));
+  const status=ativo(x)?"Ativo":"Pausado";
   return '<div class="meta-budget-choice" data-budget-id="'+esc(x.id)+'">'+
-    '<label><input type="checkbox" data-selecionado value="'+esc(x.id)+'"'+checked+
+    '<label class="meta-budget-choice-name">'+
+    '<input type="checkbox" data-selecionado value="'+esc(x.id)+'"'+checked+
     ' onchange="window.MetaOrcamentosUI.recalcular(this.form)">'+
-    '<span>'+esc(x.nome||"Conjunto "+(i+1))+' <small>'+(ativo(x)?"Ativo":"Pausado")+
-    ' — hoje '+brl(orcamento(x))+'</small></span></label>'+
-    '<input type="number" data-valor name="valor_'+esc(x.id)+'" step="0.01" min="15" value="'+(orcamento(x)/100).toFixed(2)+
-    '" onchange="window.MetaOrcamentosUI.recalcular(this.form)" aria-label="Orçamento de '+esc(x.nome||"conjunto")+'"></div>';
+    '<span class="meta-budget-choice-info">'+
+      '<strong title="'+nome+'">'+nome+'</strong>'+
+      '<small>'+status+' · Orçamento atual: '+valorAtual+'/dia</small>'+
+    '</span></label>'+
+    '<div class="meta-budget-choice-valor">'+
+      '<span>Orçamento deste conjunto (R$)</span>'+
+      '<input type="number" data-valor name="valor_'+esc(x.id)+
+      '" step="0.01" min="15" value="'+(orcamento(x)/100).toFixed(2)+
+      '" onchange="window.MetaOrcamentosUI.recalcular(this.form)" aria-label="Orçamento de '+nome+'">'+
+    '</div></div>';
  }).join("");
  const totalInicial=soma.active>0?soma.active:soma.all;
  return '<details class="meta-budget-editor" onclick="event.stopPropagation()">'+
@@ -189,6 +199,7 @@ function recalcular(form){
   const valor=w.querySelector("[data-valor]");
   const ok=check.checked;
   valor.disabled=!ok||!manual;
+  w.classList.toggle("meta-budget-choice-desmarcado",!ok);
   valor.style.opacity=ok?1:.45;
   if(ok&&!manual&&Number.isSafeInteger(total))valor.value=((base+(i<resto?1:0))/100).toFixed(2);
   if(ok)i++;

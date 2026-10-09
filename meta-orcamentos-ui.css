@@ -198,3 +198,8 @@
 .campanha-editar-modal .meta-conj-criar-btn:disabled{
   opacity:.45;cursor:not-allowed
 }
+
+.campanha-editar-modal .meta-conj-aviso-atribuicao{
+  color:#bfdbfe;background:#172554;border:1px solid #3b82f6;
+  padding:10px;border-radius:8px;line-height:1.55;font-size:12px
+}

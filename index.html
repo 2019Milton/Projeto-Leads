@@ -38030,6 +38030,20 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
       configuracoes_avancadas.criativo_tipo = imageHashes.length > 1 ? "carrossel" : "imagem";
     }
 
+    const snapshotBasicos = _snapshotCriarCampanha?.basicos || {};
+    const snapshotAvancadas = _snapshotCriarCampanha?.avancadas || {};
+    const textoComparavel = valor => String(valor ?? "").trim();
+
+    const criativoFoiAlteradoNoEditor =
+      imagensForamAlteradas ||
+      videoFoiAlterado ||
+      textoComparavel(camposBasicos.texto) !== textoComparavel(snapshotBasicos.texto) ||
+      textoComparavel(camposBasicos.page_id) !== textoComparavel(snapshotBasicos.page_id) ||
+      textoComparavel(camposBasicos.cta) !== textoComparavel(snapshotBasicos.cta) ||
+      textoComparavel(configuracoes_avancadas.titulo) !== textoComparavel(snapshotAvancadas.titulo) ||
+      textoComparavel(configuracoes_avancadas.descricao) !== textoComparavel(snapshotAvancadas.descricao) ||
+      textoComparavel(configuracoes_avancadas.link) !== textoComparavel(snapshotAvancadas.link);
+
     const payloadEdicao = {
       usuario_id,
       campanha_local_id: campanhaEmEdicao.id ?? null,
@@ -38041,6 +38055,7 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
       texto: camposBasicos.texto,
       cta: camposBasicos.cta,
       daily_budget: orcamento ? Number(orcamento) * 100 : null,
+      atualizar_criativo: criativoFoiAlteradoNoEditor,
       configuracoes_avancadas
     };
 

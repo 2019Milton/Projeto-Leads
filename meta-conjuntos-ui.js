@@ -71,6 +71,7 @@
       '<summary>+ Criar novo conjunto de anúncios</summary>' +
       '<div class="meta-conj-criar-corpo">' +
       '<p>Copia público e otimização do conjunto e também o criativo de um anúncio existente. <strong>Conjunto e anúncio serão criados PAUSADOS.</strong> Confira ambos na Meta antes de ativar.</p>' +
+      '<p class="meta-conj-aviso-atribuicao">Para anúncios de WhatsApp otimizados para conversas, o novo conjunto usará atribuição por clique de <strong>1 dia</strong>, conforme a exigência atual da Meta. O conjunto original não será modificado.</p>' +
       '<form onsubmit="window.MetaConjuntosUI.criar(event,this,' + Number(campanhaId) +
         ')" oninput="window.MetaConjuntosUI.invalidar(this)" onchange="window.MetaConjuntosUI.invalidar(this)">' +
       '<label>Nome do novo conjunto<input name="nome" required minlength="3" maxlength="120" ' +

@@ -64,18 +64,9 @@
       '</div>';
   }
 
-  function renderizar(alvo, campanhaId, dados) {
-    const conjuntos = Array.isArray(dados.conjuntos) ? dados.conjuntos : [];
-    const campanha = dados.campanha || {};
-    const orcamento = campanha.cbo
-      ? 'Orçamento definido na campanha' +
-        (campanha.orcamento_diario_centavos ? ': ' + valorCentavos(campanha.orcamento_diario_centavos) + '/dia' : "")
-      : 'Orçamento individual por conjunto (ABO)';
-    let s = '<div class="meta-conj-resumo">' + esc(orcamento) + ' · Período: últimos 30 dias</div>';
-    s += conjuntos.map(htmlConjunto).join("") ||
-      '<div class="meta-conj-vazio">A Meta não retornou conjuntos para esta campanha.</div>';
-    if (dados.aviso_metricas) s += '<div class="meta-conj-aviso">' + esc(dados.aviso_metricas) + '</div>';
-    s += '<details class="meta-conj-criar" onclick="event.stopPropagation()" ' +
+  // Ações administrativas ficam exclusivamente na edição da campanha.
+  function montarFormularioCriacao(conjuntos, campanha, campanhaId) {
+    let s = '<details class="meta-conj-criar" onclick="event.stopPropagation()" ' +
       'ontoggle="if(this.open)window.MetaConjuntosUI.carregarNumeros(this)">' +
       '<summary>+ Criar novo conjunto de anúncios</summary>' +
       '<div class="meta-conj-criar-corpo">' +
@@ -99,13 +90,35 @@
       '<div class="meta-conj-feedback" role="status"></div></form>' +
       '<p>Caso a Meta não permita copiar um criativo específico, nenhuma campanha ou anúncio atual será alterado. Se o conjunto tiver sido criado, permanecerá pausado.</p>' +
       '</div></details>';
+    return s;
+  }
+
+  function renderizarGestao(alvo, campanhaId, dados) {
+    if (!alvo) return;
+    const conjuntos = Array.isArray(dados?.conjuntos) ? dados.conjuntos : [];
+    estados.set(Number(campanhaId),dados);
+    alvo.dataset.campanhaId = String(campanhaId);
+    alvo.innerHTML = montarFormularioCriacao(conjuntos, dados.campanha || {}, campanhaId);
+  }
+
+  function renderizar(alvo, campanhaId, dados) {
+    const conjuntos = Array.isArray(dados.conjuntos) ? dados.conjuntos : [];
+    const campanha = dados.campanha || {};
+    const orcamento = campanha.cbo
+      ? 'Orçamento definido na campanha' +
+        (campanha.orcamento_diario_centavos ? ': ' + valorCentavos(campanha.orcamento_diario_centavos) + '/dia' : "")
+      : 'Orçamento individual por conjunto (ABO)';
+    let s = '<div class="meta-conj-resumo">' + esc(orcamento) + ' · Período: últimos 30 dias</div>';
+    s += conjuntos.map(htmlConjunto).join("") ||
+      '<div class="meta-conj-vazio">A Meta não retornou conjuntos para esta campanha.</div>';
+    if (dados.aviso_metricas) s += '<div class="meta-conj-aviso">' + esc(dados.aviso_metricas) + '</div>';
     alvo.innerHTML = s;
     const details = alvo.closest(".meta-conjuntos-campanha");
     if(details) details.dataset.campanhaId = String(campanhaId);
   }
 
   function atualizarAnuncios(formulario) {
-    const details = formulario && formulario.closest(".meta-conjuntos-campanha");
+    const details = formulario && formulario.closest("[data-campanha-id].meta-conjuntos-edicao");
     const localId = details && Number(details.dataset.campanhaId);
     const dados = estados.get(localId);
     const seletor = formulario && formulario.elements.namedItem("anuncio_origem_id");
@@ -185,8 +198,9 @@
           "\nValide o botão na prévia da Meta antes de ativar.";
       alert(recado + "\nConjunto ID: " + (resultado.id || "?") +
         "\nAnúncio ID: " + (resultado.anuncio_id || "não criado"));
-      const pai = formulario.closest(".meta-conjuntos-campanha");
-      if (pai) await carregar(pai, campanhaId);
+      if (window.MetaOrcamentosUI?.recarregarEdicao) {
+        await window.MetaOrcamentosUI.recarregarEdicao(campanhaId);
+      }
     } catch(e) {
       feedback.textContent = e.message || "Falha ao criar o conjunto.";
     } finally {
@@ -194,5 +208,5 @@
       btn.disabled = false;
     }
   }
-  window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar };
+  window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar, renderizarGestao };
 })();

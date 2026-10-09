@@ -190,6 +190,13 @@
       whatsapp_numero_id:Number(numeroId), orcamento_diario_centavos:valor };
   }
 
+  // Mensagens semânticas: sucesso verde; atenção/pendência laranja; falha vermelha.
+  function feedbackStatus(elemento, estado, mensagem) {
+    if (!elemento) return;
+    elemento.dataset.estado = estado;
+    elemento.textContent = mensagem;
+  }
+
   function invalidar(formulario) {
     if(!formulario) return;
     delete formulario.dataset.assinaturaValida;
@@ -197,7 +204,7 @@
     if(criarBotao)criarBotao.disabled=true;
     const msg=formulario.querySelector(".meta-conj-feedback");
     if(msg && msg.dataset.validado==="1"){
-      msg.textContent="Dados alterados. Valide novamente antes de criar.";
+      feedbackStatus(msg,"aviso","Dados alterados. Valide novamente antes de criar.");
       msg.dataset.validado="0";
     }
   }
@@ -211,10 +218,10 @@
     invalidar(formulario);
     let dados;
     try {dados=camposParaMeta(formulario);}
-    catch(e){msg.textContent=e.message;return;}
+    catch(e){feedbackStatus(msg,"aviso",e.message);return;}
     formulario.dataset.enviando="1";
     btn.disabled=true;
-    msg.textContent="Validando a configuração na Meta, sem criar conjuntos ou anúncios...";
+    feedbackStatus(msg,"aviso","Validando a configuração na Meta, sem criar conjuntos ou anúncios...");
     try {
       const resp=await fetch(caminho(campanhaId)+"/validar",{
         method:"POST",
@@ -229,11 +236,11 @@
       const btnCriar=formulario.querySelector(".meta-conj-criar-btn");
       if(btnCriar)btnCriar.disabled=false;
       msg.dataset.validado="1";
-      msg.textContent="Validação concluída: "+(resultado.aviso||
-        "A configuração do conjunto foi aceita pela Meta. Nenhum conjunto ou anúncio foi criado.");
+      feedbackStatus(msg,"sucesso","Validação concluída: "+(resultado.aviso||
+        "A configuração do conjunto foi aceita pela Meta. Nenhum conjunto ou anúncio foi criado."));
     } catch(e){
       msg.dataset.validado="0";
-      msg.textContent="Configuração rejeitada: "+(e.message||"Falha ao consultar a Meta.");
+      feedbackStatus(msg,"erro","Configuração rejeitada: "+(e.message||"Falha ao consultar a Meta."));
     } finally {
       formulario.dataset.enviando="0";btn.disabled=false;
     }
@@ -263,7 +270,7 @@
     const feedback = formulario.querySelector(".meta-conj-feedback");
     formulario.dataset.enviando = "1";
     btn.disabled = true;
-    feedback.textContent = "Enviando solicitação à Meta...";
+    feedbackStatus(feedback,"aviso","Enviando solicitação à Meta...");
     try {
       const r = await fetch(caminho(campanhaId), {
         method:"POST",
@@ -288,7 +295,7 @@
       }
     } catch(e) {
       feedback.dataset.validado="0";
-      feedback.textContent = e.message || "Falha ao criar o conjunto.";
+      feedbackStatus(feedback,"erro",e.message || "Falha ao criar o conjunto.");
       invalidar(formulario);
     } finally {
       formulario.dataset.enviando = "0";

@@ -203,3 +203,14 @@
   color:#bfdbfe;background:#172554;border:1px solid #3b82f6;
   padding:10px;border-radius:8px;line-height:1.55;font-size:12px
 }
+
+/* Feedback de validação de conjuntos Meta: estado explícito sem alterar a API. */
+.campanha-editar-modal .meta-conj-feedback[data-estado="sucesso"] {
+  color:#4ade80;
+}
+.campanha-editar-modal .meta-conj-feedback[data-estado="aviso"] {
+  color:#fbbf24;
+}
+.campanha-editar-modal .meta-conj-feedback[data-estado="erro"] {
+  color:#fca5a5;
+}

@@ -24826,6 +24826,7 @@ function inicializarKanbanTopScrollbar() {
   
 // LOGOUT
 function logout() {
+  window.assistenteLimparSessao?.();
   clearInterval(painelClienteIntervalo);
   if (painelSlugUrl) {
     sessionStorage.removeItem(PAINEL_CLIENTE_TOKEN_KEY);
@@ -60397,10 +60398,11 @@ async function criarLookalike() {
 
 <link rel="stylesheet" href="tutorial-meta-conta.css">
 <script src="tutorial-meta-conta.js"></script>
-<link rel="stylesheet" href="assistente-contas.css">
+<link rel="stylesheet" href="assistente-contas.css?v=20261009">
 <script src="recursos-corretor.js"></script>
 <script src="voip-custos.js"></script>
-<script src="assistente-contas.js"></script>
+<script src="assistente-contas-regras.js?v=20261009"></script>
+<script src="assistente-contas.js?v=20261009"></script>
 
 </body>
 </html>

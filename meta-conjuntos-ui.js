@@ -32,6 +32,7 @@
       if (!resposta.ok) throw new Error(dados.error || "Erro na consulta à Meta");
       estados.set(Number(campanhaId), dados);
       renderizar(alvo, campanhaId, dados);
+      window.MetaOrcamentosUI?.atualizar(campanhaId,dados,alvo);
       const contador = details.querySelector(".meta-conj-contagem");
       if (contador) contador.textContent = (dados.conjuntos || []).length;
     } catch(e) {

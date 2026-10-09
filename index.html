@@ -19189,6 +19189,10 @@ body.tema-claro .criar-campanha-descricao {
               oninput="limparValidacaoCampanha(); validarOrcamentoRealtime(this)"
             >
             <div id="orcamento_aviso_rt" style="display:none;margin-top:6px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;"></div>
+            <p id="meta-orcamento-criacao-ajuda" hidden class="meta-edicao-orcamento-nota">
+              Meta Ads: com orçamento por conjunto (ABO), este valor será usado no primeiro conjunto.
+              Após publicar, volte em Editar campanha para criar mais conjuntos e distribuir o orçamento neste mesmo campo.
+            </p>
           </div>
 
           <section class="campaign-setup-section" id="bloco_publico">
@@ -29776,6 +29780,10 @@ function limparCamposPlataformaAdicionalEdicao(plat) {
 }
 
 function aplicarRedesCampanha() {
+  window.MetaOrcamentosUI?.atualizarAjudaCriacao(
+    (redesSelecionadasCampanha.has("facebook") || redesSelecionadasCampanha.has("instagram")) &&
+    !campanhaEmEdicao
+  );
   // Na edição, facebook+instagram entram juntos no Set só pra manter os
   // campos data-plat-only="facebook,instagram" visíveis (campanhas Meta já
   // publicadas ainda são uma campanha só, plataforma='meta') — não deve virar
@@ -48300,8 +48308,7 @@ async function carregarCampanhas(somenteRenderizar = false) {
 
         ${["meta","facebook","instagram"].includes(String(c.plataforma||"meta").toLowerCase()) && c.campaign_id
           ? `<div class="metrica meta-orcamento-banner" data-campanha-id="${Number(c.id)}"
-                 onclick="event.stopPropagation();window.MetaOrcamentosUI?.abrir(${Number(c.id)})"
-                 title="Orçamento atual por conjunto consultado na Meta">
+                 title="Resumo informativo de orçamento por conjunto consultado na Meta">
                  <span class="meta-budget-main">Consultando Meta...</span>
                  <small>Orçamento por conjunto</small>
                </div>`

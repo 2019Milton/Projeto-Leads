@@ -24,3 +24,38 @@
 .meta-budget-disclaimer{font-size:10px;color:#94a3b8}
 .meta-edicao-orcamento-nota{font-size:12px;line-height:1.55;color:#facc15;margin:6px 0}
 .meta-budget-link{background:none;border:none;padding:0;color:#a5b4fc;cursor:pointer;text-decoration:underline;font:inherit;font-weight:700}
+
+
+/* No card, apenas métricas informativas. Controles são exclusivos da edição. */
+.meta-orcamento-banner{cursor:default}
+.campanha-editar-modal .meta-edicao-gestao{margin:15px 0 0;display:grid;gap:12px;min-width:0;padding:15px;border:1px solid rgba(129,140,248,.5);border-radius:12px;background:rgba(15,23,42,.35)}
+.campanha-editar-modal .meta-edicao-gestao-titulo{font-weight:800;color:#e0e7ff;font-size:15px}
+.campanha-editar-modal .meta-edicao-gestao-resumo{font-size:13px;color:#bef264;font-weight:700}
+.campanha-editar-modal .meta-edicao-gestao-lista{display:grid;gap:7px}
+.campanha-editar-modal .meta-edicao-gestao-linha{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 10px;background:rgba(15,23,42,.65);border:1px solid #334155;border-radius:8px;min-width:0}
+.campanha-editar-modal .meta-edicao-gestao-linha span{min-width:0;overflow-wrap:anywhere;line-height:1.35;color:#e2e8f0;font-size:12px}
+.campanha-editar-modal .meta-edicao-gestao-linha strong{white-space:nowrap;font-size:12px;color:#f8fafc}
+.campanha-editar-modal .meta-edicao-gestao-linha small{display:inline-block;color:#94a3b8;font-size:10px}
+.campanha-editar-modal .meta-budget-editor,.campanha-editar-modal .meta-conj-criar{margin:0}
+.campanha-editar-modal .meta-budget-choice{grid-template-columns:minmax(0,1fr) minmax(85px,110px)}
+.campanha-editar-modal .meta-budget-total-aviso{font-size:12px;color:#e2e8f0}
+.campanha-editar-modal .meta-conj-criar-corpo{padding:12px;gap:14px}
+.campanha-editar-modal .meta-conj-criar-corpo form{gap:13px}
+.campanha-editar-modal .meta-conj-criar-corpo label{line-height:1.4}
+.campanha-editar-modal .meta-conj-criar-corpo input,.campanha-editar-modal .meta-conj-criar-corpo select{padding:10px;font-size:13px;width:100%;max-width:100%;min-width:0}
+.campanha-editar-modal .meta-conj-criar{margin-top:4px}
+.campanha-editar-modal .meta-conj-criar>summary{padding:13px}
+.campanha-editar-modal .meta-budget-choices{max-height:330px}
+@media(max-width:520px){
+ .campanha-editar-modal .meta-edicao-gestao{padding:10px}
+ .campanha-editar-modal .meta-budget-choice{grid-template-columns:minmax(0,1fr)}
+ .campanha-editar-modal .meta-edicao-gestao-linha{flex-wrap:wrap}
+}
+
+/* Resumo compacto no card para não quebrar nomes de conjuntos letra por letra. */
+.meta-orcamento-banner .meta-budget-line span{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  overflow-wrap:normal;
+}

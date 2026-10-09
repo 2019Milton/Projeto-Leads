@@ -8,7 +8,7 @@ const brl=c=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).fo
 const centavos=x=>Math.round(Number(x)*100);
 const token=()=>localStorage.getItem("token")||"";
 const url=id=>API+"/meta/campanhas/"+Number(id)+"/conjuntos";
-let observer=null, mutation=null, editorId=null;
+let observer=null, mutation=null, editorId=null, handlerOrcamento=null;
 
 const orcamento=x=>Number(x?.orcamento_diario_centavos)||0;
 const ativo=x=>String(x?.status_efetivo||x?.status)==="ACTIVE";
@@ -23,16 +23,21 @@ function banner(id,dados) {
  const resumo=estadoResumo(dados),metas=document.querySelectorAll(".meta-orcamento-banner[data-campanha-id='"+Number(id)+"']");
  const cbo=Boolean(resumo.campanha.cbo);
  const principal=cbo?Number(resumo.campanha.orcamento_diario_centavos)||0:resumo.active;
- const linhas=resumo.sets.map(x=>
-  '<span class="meta-budget-line"><span>'+esc(x.nome||"Conjunto")+
-  (ativo(x)?"":" (pausado)")+'</span><strong>'+brl(orcamento(x))+'</strong></span>'
- ).join("");
+ const linhas=resumo.sets.map(x=>{
+   const identificador=x.numero_whatsapp
+     ? "WhatsApp "+String(x.numero_whatsapp).replace(/\D/g,"").slice(-4)
+     : (x.nome||"Conjunto");
+   const descricao=x.nome||identificador;
+   return '<span class="meta-budget-line"><span title="'+esc(descricao)+'">'+
+     esc(identificador)+(ativo(x)?"":" (pausado)")+
+     '</span><strong>'+brl(orcamento(x))+'</strong></span>';
+ }).join("");
  metas.forEach(el=>{
    el.innerHTML='<span class="meta-budget-main">'+brl(principal)+'</span>'+
      '<small>'+(cbo?"Orçamento diário CBO":"Total/dia dos conjuntos ativos")+'</small>'+
      '<div class="meta-budget-lines">'+linhas+'</div>'+
      (!cbo&&resumo.all!==resumo.active?'<small>Configurado em todos: '+brl(resumo.all)+'</small>':"");
-   el.title="Valores atuais consultados diretamente na Meta. Toque para gerenciar os conjuntos.";
+   el.title="Consulta dos orçamentos de conjuntos da Meta. Para editar, abra Editar campanha.";
  });
 }
 async function buscar(id,forcar=false) {
@@ -72,9 +77,7 @@ function linhasOrcamento(d) {
     '<summary>Editar orçamento e distribuir entre conjuntos</summary>'+
     '<form class="meta-budget-form" onsubmit="window.MetaOrcamentosUI.salvar(event,this)">'+
     '<p>Selecione os conjuntos que receberão valores novos. Conjuntos não selecionados não serão alterados, incluindo os pausados.</p>'+
-    '<label>Valor total a distribuir por dia (R$)'+
-    '<input name="total" type="number" min="15" step="0.01" required value="'+(totalInicial/100).toFixed(2)+
-    '" oninput="window.MetaOrcamentosUI.recalcular(this.form)"></label>'+
+    '<p class="meta-budget-total-aviso">O total a distribuir é definido no campo <strong>Orçamento diário (R$)</strong> logo acima. Selecione os conjuntos e escolha a forma de divisão.</p>'+
     '<label>Como distribuir<select name="modo" onchange="window.MetaOrcamentosUI.recalcular(this.form)">'+
     '<option value="igual">Dividir igualmente entre os selecionados</option>'+
     '<option value="manual">Definir o valor de cada conjunto</option></select></label>'+
@@ -85,21 +88,59 @@ function linhasOrcamento(d) {
     '</form></details>';
 }
 
+// O card exibe dados somente de leitura. As ações são montadas na edição da campanha.
 function atualizar(id,dados,alvo) {
  estados.set(Number(id),dados);
  banner(id,dados);
- const destino=alvo||document.querySelector(".meta-conjuntos-campanha[data-campanha-id='"+Number(id)+"'] .meta-conj-conteudo");
+ if(editorId===Number(id)) montarGestaoEdicao(Number(id),dados);
+}
+
+function montarGestaoEdicao(id,dados) {
+ if(editorId!==Number(id))return;
+ const destino=document.getElementById("meta-edicao-gestao-conjuntos");
  if(!destino)return;
- destino.querySelectorAll(".meta-budget-editor").forEach(x=>x.remove());
- if(dados.campanha?.cbo)return;
- const wrapper=document.createElement("div");
- wrapper.innerHTML=linhasOrcamento(dados);
- const painel=wrapper.firstElementChild;
- const resumo=destino.querySelector(".meta-conj-resumo");
- if(resumo)resumo.insertAdjacentElement("afterend",painel);
- else destino.prepend(painel);
- const form=painel.querySelector("form");
- if(form){form.dataset.campanhaId=String(id);recalcular(form);}
+ const resumo=estadoResumo(dados);
+ const cbo=Boolean(dados.campanha?.cbo);
+ destino.innerHTML='<div class="meta-edicao-gestao-titulo">Conjuntos de anúncios</div>'+
+   '<div class="meta-edicao-gestao-resumo">'+
+   (cbo? 'Orçamento diário da campanha (CBO): '+brl(dados.campanha?.orcamento_diario_centavos):
+     'Total diário dos conjuntos ativos (ABO): '+brl(resumo.active))+
+   '</div>'+
+   '<div class="meta-edicao-gestao-lista">'+resumo.sets.map(c=>
+     '<div class="meta-edicao-gestao-linha"><span>'+esc(c.nome||"Conjunto")+
+     (ativo(c)?' <small>Ativo</small>':' <small>Pausado</small>')+
+     '</span><strong>'+brl(orcamento(c))+'/dia</strong></div>').join("")+
+   '</div>'+
+   '<div id="meta-edicao-form-orcamento"></div>'+
+   '<div class="meta-conjuntos-edicao" data-campanha-id="'+id+'"></div>';
+ const formOrcamento=destino.querySelector("#meta-edicao-form-orcamento");
+ if(!cbo&&resumo.sets.length){
+   const entrada=document.getElementById("orcamento");
+   if(entrada&&!entrada.dataset.metaBudgetTotalInicializado){
+     entrada.value=((resumo.active||resumo.all)/100).toFixed(2);
+     entrada.dataset.metaBudgetTotalInicializado="1";
+   }
+   const wrapper=document.createElement("div");
+   wrapper.innerHTML=linhasOrcamento(dados);
+   formOrcamento.appendChild(wrapper.firstElementChild);
+   const form=formOrcamento.querySelector("form");
+   if(form){form.dataset.campanhaId=String(id);recalcular(form);}
+ } else if(cbo) {
+   formOrcamento.textContent="Nesta campanha o orçamento é controlado na campanha (CBO); não há distribuição individual por conjunto.";
+ }
+ // Mesmo em CBO, permite criar conjunto pausado com anúncio e sem orçamento separado.
+ window.MetaConjuntosUI?.renderizarGestao(destino.querySelector(".meta-conjuntos-edicao"),id,dados);
+}
+
+async function recarregarEdicao(id) {
+ if(Number(editorId)!==Number(id))return;
+ estados.delete(Number(id));
+ const entrada=document.getElementById("orcamento");
+ if(entrada)delete entrada.dataset.metaBudgetTotalInicializado;
+ const dados=await buscar(id,true);
+ if(Number(editorId)===Number(id))montarGestaoEdicao(Number(id),dados);
+ const details=document.querySelector(".meta-conjuntos-campanha[data-campanha-id='"+Number(id)+"']");
+ if(details?.open)await window.MetaConjuntosUI?.carregar(details,Number(id));
 }
 
 function calcular(form) {
@@ -108,7 +149,7 @@ function calcular(form) {
  if(!dados)throw new Error("Reabra o painel para consultar os dados atuais.");
  const selecionados=[...form.querySelectorAll("input[data-selecionado]:checked")].map(x=>texto(x.value));
  if(!selecionados.length)throw new Error("Escolha pelo menos um conjunto.");
- const total=centavos(form.elements.namedItem("total").value);
+ const total=centavos(document.getElementById("orcamento")?.value);
  if(!Number.isSafeInteger(total)||total<1500)throw new Error("Informe um total diário válido a partir de R$ 15.");
  const todos=dados.conjuntos||[];
  const somaAtual=estadoResumo(dados);
@@ -140,7 +181,7 @@ function recalcular(form){
  const manual=campoModo?.value==="manual";
  const selecoes=[...form.querySelectorAll(".meta-budget-choice")];
  const ativos=selecoes.filter(w=>w.querySelector("[data-selecionado]")?.checked);
- const total=centavos(form.elements.namedItem("total").value);
+ const total=centavos(document.getElementById("orcamento")?.value);
  const base=Math.floor(total/Math.max(1,ativos.length)),resto=total%Math.max(1,ativos.length);
  let i=0;
  selecoes.forEach(w=>{
@@ -193,9 +234,7 @@ async function salvar(e,form){
   if(!r.ok||!result.ok)throw new Error(result.error||"Meta não confirmou todos os orçamentos.");
   alert("Orçamentos atualizados na Meta. Conjuntos alterados: "+result.alterados+".");
   estados.delete(plano.id);
-  const details=document.querySelector(".meta-conjuntos-campanha[data-campanha-id='"+plano.id+"']");
-  if(details&&window.MetaConjuntosUI)await window.MetaConjuntosUI.carregar(details,plano.id);
-  else await buscar(plano.id,true);
+  await recarregarEdicao(plano.id);
  }catch(err){
   alert("Não foi possível concluir a distribuição. "+texto(err.message)+
     "\nConfira os orçamentos na Meta antes de repetir.");
@@ -206,22 +245,26 @@ async function salvar(e,form){
 }
 
 function abrir(id) {
- id=Number(id);
- const details=document.querySelector(".meta-conjuntos-campanha[data-campanha-id='"+id+"']");
- if(!details){alert("Abra o card da campanha para editar os conjuntos.");return;}
- details.open=true;
- details.scrollIntoView({behavior:"smooth",block:"center"});
- const conferir=()=>{const painel=details.querySelector(".meta-budget-editor");
-   if(painel){painel.open=true;return true;}return false;};
- if(!conferir())setTimeout(conferir,1500);
+ if(editorId===Number(id)) {
+   document.getElementById("meta-edicao-gestao-conjuntos")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+   return;
+ }
+ alert("Para criar conjuntos ou distribuir orçamento, abra Editar campanha e vá ao campo Orçamento diário.");
 }
 
 function editorIndicacao(campanha) {
+ const plataforma=String(campanha?.plataforma||"meta").toLowerCase();
+ if(!["meta","facebook","instagram"].includes(plataforma)||!campanha?.campaign_id) {
+   resetarEditor();
+   return;
+ }
  editorId=Number(campanha?.id)||null;
  const campo=document.getElementById("orcamento");
  if(!campo||!editorId)return;
+ // Até consultar a Meta, impede que o formulário legado sobrescreva o orçamento
+ // de um único conjunto enquanto o usuário pensa editar o total da campanha.
  campo.readOnly=true;
- campo.title="Orçamento Meta: consulte valores atuais por conjunto no card.";
+ campo.title="O orçamento ABO deve ser editado nos conjuntos logo abaixo deste campo.";
  let nota=document.getElementById("meta-edicao-orcamento-nota");
  if(!nota){
    nota=document.createElement("div");
@@ -229,27 +272,69 @@ function editorIndicacao(campanha) {
    nota.className="meta-edicao-orcamento-nota";
    campo.insertAdjacentElement("afterend",nota);
  }
- nota.innerHTML="Verificando orçamentos de conjuntos na Meta...";
- buscar(editorId).then(d=>{
-   if(editorId!==Number(campanha.id))return;
+ nota.textContent="Consultando orçamento e conjuntos atuais na Meta...";
+ let gestao=document.getElementById("meta-edicao-gestao-conjuntos");
+ if(!gestao){
+   gestao=document.createElement("section");
+   gestao.id="meta-edicao-gestao-conjuntos";
+   gestao.className="meta-edicao-gestao";
+   const raiz=campo.closest("#bloco_orcamento") || campo.parentElement;
+   raiz.appendChild(gestao);
+ }
+ const infoNovo=document.getElementById("meta-orcamento-criacao-ajuda");
+ if(infoNovo)infoNovo.hidden=true;
+ const solicitado=editorId;
+ // Não exibe valores de cache ao entrar no editor: a Meta deve ser fonte atual.
+ buscar(editorId,true).then(d=>{
+   if(editorId!==solicitado)return;
    if(d.campanha?.cbo){
-     campo.readOnly=false;nota.textContent="Campanha com orçamento centralizado (CBO).";return;
+     campo.readOnly=false;
+     campo.title="CBO: orçamento centralizado na campanha.";
+     nota.textContent="Campanha CBO: o orçamento é controlado no nível da campanha. Conjuntos adicionais podem ser criados abaixo.";
+   }else{
+     const resumo=estadoResumo(d);
+     campo.readOnly=false;
+     campo.dataset.metaAboConjuntos="1";
+     campo.title="ABO: valor TOTAL para distribuir entre os conjuntos selecionados abaixo. Somente o botão Aplicar na Meta modifica os valores.";
+     nota.textContent="ABO: atual nos conjuntos ativos "+brl(resumo.active)+
+       ". Defina o total neste campo e distribua abaixo. Salvar a campanha não aplica a distribuição; use o botão específico da Meta.";
+     if(handlerOrcamento)campo.removeEventListener("input",handlerOrcamento);
+     handlerOrcamento=()=>{
+       const form=document.querySelector("#meta-edicao-gestao-conjuntos .meta-budget-form");
+       if(form)recalcular(form);
+     };
+     campo.addEventListener("input",handlerOrcamento);
    }
-   nota.innerHTML="Nesta campanha, o orçamento é definido por conjunto (ABO). "+
-     "Para alterar valores, use "+
-     '<button type="button" class="meta-budget-link" onclick="fecharEdicaoCampanha();window.MetaOrcamentosUI.abrir('+editorId+')">Distribuir orçamento entre conjuntos</button>.';
- }).catch(err=>{nota.textContent="Não foi possível verificar o orçamento na Meta. Evite alterar este campo até confirmar os valores.";});
+   montarGestaoEdicao(solicitado,d);
+ }).catch(err=>{
+   if(editorId!==solicitado)return;
+   nota.textContent="Não foi possível carregar os conjuntos da Meta. Edição de orçamento bloqueada por segurança: "+texto(err.message);
+   gestao.innerHTML='<p>Reabra a edição após restabelecer a conexão com a Meta.</p>';
+ });
 }
 function bloquearBudgetEditor(id){
  const campo=document.getElementById("orcamento");
- return Number(editorId)===Number(id)&&Boolean(campo?.readOnly);
+ return Number(editorId)===Number(id)&&Boolean(campo?.readOnly||campo?.dataset.metaAboConjuntos==="1");
 }
 function resetarEditor(){
  const campo=document.getElementById("orcamento");
- if(campo)campo.readOnly=false;
+ if(campo){
+   campo.readOnly=false;
+   delete campo.dataset.metaAboConjuntos;
+   delete campo.dataset.metaBudgetTotalInicializado;
+   if(handlerOrcamento){campo.removeEventListener("input",handlerOrcamento);handlerOrcamento=null;}
+ }
  const nota=document.getElementById("meta-edicao-orcamento-nota");
  if(nota)nota.remove();
+ document.getElementById("meta-edicao-gestao-conjuntos")?.remove();
+ const infoNovo=document.getElementById("meta-orcamento-criacao-ajuda");
+ if(infoNovo)infoNovo.hidden=false;
  editorId=null;
+}
+
+function atualizarAjudaCriacao(metaAtiva) {
+ const nota=document.getElementById("meta-orcamento-criacao-ajuda");
+ if(nota)nota.hidden=!(metaAtiva && !editorId);
 }
 
 function observar(){
@@ -257,6 +342,9 @@ function observar(){
   observer=new IntersectionObserver(es=>es.forEach(x=>{
     if(x.isIntersecting){observer.unobserve(x.target);carregarBanner(x.target);}
   }),{rootMargin:"250px"});
+ }
+ if(typeof redesSelecionadasCampanha!=="undefined") {
+   atualizarAjudaCriacao((redesSelecionadasCampanha.has("facebook")||redesSelecionadasCampanha.has("instagram"))&&!campanhaEmEdicao);
  }
  const scan=()=>document.querySelectorAll(".meta-orcamento-banner").forEach(x=>{
    if(x.dataset.visto==="1")return;
@@ -269,7 +357,7 @@ function observar(){
   mutation.observe(document.body,{childList:true,subtree:true});
  }
 }
-window.MetaOrcamentosUI={atualizar,recalcular,salvar,abrir,editorIndicacao,bloquearBudgetEditor,resetarEditor};
+window.MetaOrcamentosUI={atualizar,recalcular,salvar,abrir,editorIndicacao,bloquearBudgetEditor,resetarEditor,recarregarEdicao,atualizarAjudaCriacao};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",observar,{once:true});
 else observar();
 })();

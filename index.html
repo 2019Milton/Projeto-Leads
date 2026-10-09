@@ -37891,19 +37891,44 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
     feedback.textContent = "";
   }
 
+  // Campanhas Meta antigas podem existir como uma única campanha/conjunto
+  // veiculando simultaneamente em Facebook e Instagram. Nesse caso o seletor
+  // moderno da edição mantém as duas redes em redesSelecionadasCampanha, mas
+  // os checkboxes antigos de "Onde anunciar" podem vir vazios (campanhas
+  // importadas/legadas nem sempre têm configuracoes_avancadas.plataformas).
+  // Para edição da campanha original, preserve as redes que ela já possuía.
+  const redesMetaOriginais = Array.from(plataformasOriginaisEdicao)
+    .filter(rede => rede === "facebook" || rede === "instagram");
+
+  if (!configuracoes_avancadas.plataformas.length && redesMetaOriginais.length) {
+    configuracoes_avancadas.plataformas = [...redesMetaOriginais];
+  }
+
+  const campanhaMetaCombinadaOriginal =
+    plataformaCampanhaExibicao(campanhaEmEdicao) === "meta" &&
+    redesMetaOriginais.includes("facebook") &&
+    redesMetaOriginais.includes("instagram");
+
   if (!configuracoes_avancadas.plataformas.length) {
     if (feedback) {
       feedback.textContent =
-        "Escolha Facebook ou Instagram para anunciar.";
+        "Não foi possível identificar onde esta campanha veicula. Sincronize a campanha e tente novamente.";
       feedback.style.display = "block";
     }
     return;
   }
 
-  if (configuracoes_avancadas.plataformas.length > 1) {
+  // Campanhas novas usam uma campanha independente por rede. A única exceção
+  // é a campanha Meta legada/combinada que já nasceu veiculando nas duas:
+  // nela, editar orçamento/segmentação deve continuar afetando o mesmo
+  // conjunto Meta usado por Facebook e Instagram.
+  if (
+    configuracoes_avancadas.plataformas.length > 1 &&
+    !campanhaMetaCombinadaOriginal
+  ) {
     if (feedback) {
       feedback.textContent =
-        "Escolha só uma rede — Facebook ou Instagram. Pra anunciar nas duas, use duas campanhas separadas (uma pra cada).";
+        "Escolha só uma rede — Facebook ou Instagram. Para campanhas novas, cada rede usa uma campanha independente.";
       feedback.style.display = "block";
     }
     return;

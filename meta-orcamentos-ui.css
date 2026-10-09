@@ -184,3 +184,17 @@
     flex: 1 1 120px;
   }
 }
+
+.campanha-editar-modal .meta-conj-validar-btn{
+  width:100%;padding:10px;border:1px solid #60a5fa;border-radius:7px;
+  background:#172554;color:#e0f2fe;font-weight:700;cursor:pointer
+}
+.campanha-editar-modal .meta-conj-validar-btn:disabled{
+  opacity:.55;cursor:wait
+}
+.campanha-editar-modal .meta-conj-feedback{
+  font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere
+}
+.campanha-editar-modal .meta-conj-criar-btn:disabled{
+  opacity:.45;cursor:not-allowed
+}

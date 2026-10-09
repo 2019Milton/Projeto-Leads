@@ -1,0 +1,30 @@
+/* Conjuntos Meta integrados aos cards de Minhas Campanhas */
+.meta-conjuntos-campanha{margin:10px 0;border:1px solid rgba(148,163,184,.36);border-radius:10px;background:rgba(15,23,42,.4);font-size:11px;color:#e2e8f0}
+.meta-conjuntos-campanha>summary{cursor:pointer;list-style:none;padding:11px;display:flex;gap:6px;align-items:center;font-weight:650;user-select:none}
+.meta-conjuntos-campanha>summary::-webkit-details-marker{display:none}
+.meta-conjuntos-campanha>summary:before{content:"▸";color:#8b9cff;font-size:14px}
+.meta-conjuntos-campanha[open]>summary:before{content:"▾"}
+.meta-conj-contagem{background:#334155;border-radius:8px;padding:1px 6px;font-size:10px}
+.meta-conj-conteudo{padding:0 10px 10px;display:grid;gap:8px;max-height:420px;overflow:auto}
+.meta-conj-resumo,.meta-conj-vazio,.meta-conj-carregando{color:#cbd5e1;padding:6px 0;font-size:10px}
+.meta-conj-erro{color:#fecaca;padding:6px}
+.meta-conj-aviso{color:#facc15;padding:6px 0}
+.meta-conj-item{border:1px solid #334155;border-radius:8px;padding:8px;background:rgba(2,6,23,.62);display:grid;gap:5px;min-width:0}
+.meta-conj-cabecalho{display:flex;justify-content:space-between;align-items:flex-start;gap:5px;word-break:break-word}
+.meta-conj-cabecalho strong{line-height:1.4}
+.meta-conj-status{border-radius:12px;background:#1e293b;padding:2px 5px;font-size:9px;white-space:nowrap}
+.meta-conj-destino{color:#86efac;font-size:10px;word-break:break-word}
+.meta-conj-metricas{display:flex;gap:6px;flex-wrap:wrap;color:#cbd5e1;font-size:10px}
+.meta-conj-metricas span{padding:3px 4px;background:#1e293b;border-radius:4px}
+.meta-conj-anuncios{border-top:1px solid #334155;padding-top:5px;color:#94a3b8;font-size:10px}
+.meta-conj-anuncio{padding:2px 0;overflow-wrap:anywhere}
+.meta-conj-criar{border:1px solid #6366f1;border-radius:8px;margin-top:5px}
+.meta-conj-criar>summary{cursor:pointer;padding:9px 8px;font-weight:700;color:#c7d2fe}
+.meta-conj-criar-corpo{padding:9px;display:grid;gap:9px}
+.meta-conj-criar-corpo p{margin:3px 0;color:#cbd5e1;line-height:1.5}
+.meta-conj-criar-corpo form{display:grid;gap:9px}
+.meta-conj-criar-corpo label{display:grid;gap:5px;font-weight:600;color:#e2e8f0}
+.meta-conj-criar-corpo input,.meta-conj-criar-corpo select{width:100%;max-width:100%;box-sizing:border-box;padding:8px 6px;background:#0f172a;border:1px solid #475569;border-radius:6px;color:#f8fafc;font-size:12px;min-width:0}
+.meta-conj-criar-btn{padding:9px 7px;background:#4f46e5;border:0;border-radius:6px;color:white;font-weight:700;cursor:pointer}
+.meta-conj-criar-btn:disabled{opacity:.5;cursor:wait}
+.meta-conj-feedback{color:#fca5a5;line-height:1.5}

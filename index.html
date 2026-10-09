@@ -17526,6 +17526,7 @@ body.tema-claro .criar-campanha-descricao {
 <link rel="stylesheet" href="central-leads-visual.css">
 <link rel="stylesheet" href="servicos-visuais.css">
 <link rel="stylesheet" href="configuracoes-visuais.css">
+<link rel="stylesheet" href="meta-conjuntos-ui.css">
 </head>
 
 <body>
@@ -47904,6 +47905,13 @@ async function carregarCampanhas(somenteRenderizar = false) {
           </div>
 
           ${campanhaOrigemImportada(c) ? blocoNichoCampanhaImportada(c) : ""}
+        ${["meta","facebook","instagram"].includes(String(c.plataforma || "meta").toLowerCase()) && c.campaign_id
+          ? `<details class="meta-conjuntos-campanha" onclick="event.stopPropagation()"
+               ontoggle="if(this.open)window.MetaConjuntosUI?.carregar(this,${Number(c.id)})">
+               <summary>Conjuntos de anúncios <span class="meta-conj-contagem">...</span></summary>
+               <div class="meta-conj-conteudo">Abra para consultar os conjuntos na Meta.</div>
+             </details>`
+          : ""}
 
         </div>
     
@@ -60491,5 +60499,6 @@ async function criarLookalike() {
 <script src="assistente-contas-regras.js?v=20261009"></script>
 <script src="assistente-contas.js?v=20261009"></script>
 
+<script src="meta-conjuntos-ui.js"></script>
 </body>
 </html>

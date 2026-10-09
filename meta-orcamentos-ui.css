@@ -59,3 +59,128 @@
   text-overflow:ellipsis;
   overflow-wrap:normal;
 }
+
+
+/* 2026-10-09 — Distribuição ABO sem nomes em coluna e sem barra de rolagem dentro de outra. */
+.campanha-editar-modal .pagamento-modal-content {
+  width: min(820px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+}
+.campanha-editar-modal #editar_campanha_campos,
+.campanha-editar-modal #bloco_publico_orcamento,
+.campanha-editar-modal #bloco_orcamento,
+.campanha-editar-modal .meta-edicao-gestao,
+.campanha-editar-modal .meta-budget-editor,
+.campanha-editar-modal .meta-budget-form,
+.campanha-editar-modal .meta-budget-choices {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.campanha-editar-modal .meta-budget-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: visible;
+  max-height: none;
+}
+.campanha-editar-modal .meta-budget-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 9px;
+  padding: 12px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.campanha-editar-modal .meta-budget-choice-name {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.campanha-editar-modal .meta-budget-choice-name input[type="checkbox"] {
+  margin: 3px 0 0;
+  width: 16px;
+  height: 16px;
+}
+.campanha-editar-modal .meta-budget-choice-info {
+  min-width: 0;
+  display: block;
+  word-break: normal;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+.campanha-editar-modal .meta-budget-choice-info strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 700;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+.campanha-editar-modal .meta-budget-choice-info small {
+  display: block;
+  color: #cbd5e1;
+  margin-top: 3px;
+  line-height: 1.45;
+  font-size: 11px;
+  word-break: normal;
+}
+.campanha-editar-modal .meta-budget-choice-valor {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: 30px;
+  min-width: 0;
+}
+.campanha-editar-modal .meta-budget-choice-valor > span {
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 500;
+  flex: 1 1 135px;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+.campanha-editar-modal .meta-budget-choice-valor input[data-valor] {
+  flex: 0 1 135px;
+  width: 135px;
+  min-width: 90px;
+  max-width: 100%;
+  padding: 9px 10px;
+  box-sizing: border-box;
+}
+.campanha-editar-modal .meta-budget-choice-desmarcado {
+  opacity: .68;
+}
+.campanha-editar-modal .meta-budget-choices::-webkit-scrollbar {
+  display: none;
+}
+@media(max-width:540px) {
+  .campanha-editar-modal .pagamento-modal-content {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    padding: 12px;
+  }
+  .campanha-editar-modal .meta-budget-choice {
+    padding: 10px;
+  }
+  .campanha-editar-modal .meta-budget-choice-valor {
+    margin-left: 30px;
+  }
+  .campanha-editar-modal .meta-budget-choice-valor input[data-valor] {
+    flex: 1 1 120px;
+  }
+}

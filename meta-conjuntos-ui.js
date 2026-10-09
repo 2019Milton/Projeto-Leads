@@ -142,13 +142,30 @@
       });
       const dados = await r.json().catch(() => ({}));
       if (!r.ok || !dados.habilitado) throw new Error("Múltiplos números não estão habilitados");
-      const nums = (dados.numeros || []).filter(x =>
-        x.status === "conectado" && x.bot_ativo === true);
+      const nums = Array.isArray(dados.numeros) ? dados.numeros : [];
+      const conectados = nums.filter(x => String(x.status).toLowerCase() === "conectado");
       seletor.innerHTML = '<option value="">Escolha um WhatsApp conectado</option>' +
-        nums.map(x => '<option value="' + esc(x.id) + '">' +
-          esc((x.display_name || "WhatsApp") + " — " + x.numero) + '</option>').join("");
+        nums.map(x => {
+          const conectado = String(x.status).toLowerCase() === "conectado";
+          const botAtivo = x.bot_ativo === true;
+          const rotulo = (x.display_name || "WhatsApp") + " — " + (x.numero || "") +
+            (!conectado ? " (desconectado)" : botAtivo ? " (bot ligado)" : " (bot pausado)");
+          return '<option value="' + esc(x.id) + '" data-bot-ativo="' + (botAtivo ? "1" : "0") +
+            '" ' + (conectado ? "" : "disabled") + '>' + esc(rotulo) + '</option>';
+        }).join("");
       seletor.dataset.pronto = "1";
-      if (!nums.length) throw new Error("Nenhum número conectado com bot ativo");
+      let aviso = details.querySelector(".meta-conj-aviso-numeros");
+      if (!aviso) {
+        aviso = document.createElement("p");
+        aviso.className = "meta-conj-aviso-numeros";
+        seletor.closest("label")?.insertAdjacentElement("afterend", aviso);
+      }
+      aviso.textContent = !conectados.length
+        ? "Nenhum número WhatsApp conectado. Verifique suas conexões em WhatsApp Bot."
+        : "Números conectados com bot pausado também aparecem. Se usar um deles, o cliente poderá chamar no WhatsApp, mas o atendimento automático só funcionará após ligar o bot.";
+      if (!conectados.length) {
+        seletor.innerHTML = '<option value="">Nenhum número WhatsApp conectado</option>';
+      }
     } catch(e) {
       seletor.innerHTML = '<option value="">Indisponível: ' + esc(e.message) + '</option>';
     }
@@ -169,7 +186,12 @@
     if (!origem || !numeroId || !anuncioId || (inputOrcamento && (!Number.isSafeInteger(valor) || valor <= 0))) {
       alert("Informe o conjunto de origem, WhatsApp e orçamento válido.");return;
     }
-    if (!confirm("Criar o conjunto '" + nome + "' e copiar o anúncio selecionado na Meta, ambos PAUSADOS? O anúncio atual permanecerá inalterado. Confira o WhatsApp antes de qualquer ativação.")) return;
+    const opcaoSelecionada = formulario.elements.namedItem("whatsapp_numero_id").selectedOptions?.[0];
+    const botPausado = opcaoSelecionada?.dataset?.botAtivo === "0";
+    if (!confirm("Criar o conjunto '" + nome +
+      "' e copiar o anúncio selecionado na Meta, ambos PAUSADOS? O anúncio atual permanecerá inalterado." +
+      (botPausado ? "\n\nATENÇÃO: o bot do WhatsApp escolhido está PAUSADO. Antes de veicular, habilite o bot em WhatsApp Bot se quiser atendimento automático." : "") +
+      "\n\nConfirme o destino antes de qualquer ativação.")) return;
     const btn = formulario.querySelector('button[type="submit"]');
     const feedback = formulario.querySelector(".meta-conj-feedback");
     formulario.dataset.enviando = "1";
@@ -196,7 +218,8 @@
           (resultado.numero_verificado ? "WhatsApp do conjunto confirmado." :
             "WhatsApp não confirmado: verifique o destino.") +
           "\nValide o botão na prévia da Meta antes de ativar.";
-      alert(recado + "\nConjunto ID: " + (resultado.id || "?") +
+      alert(recado + (resultado.aviso_bot ? "\n\n" + resultado.aviso_bot : "") +
+        "\nConjunto ID: " + (resultado.id || "?") +
         "\nAnúncio ID: " + (resultado.anuncio_id || "não criado"));
       if (window.MetaOrcamentosUI?.recarregarEdicao) {
         await window.MetaOrcamentosUI.recarregarEdicao(campanhaId);

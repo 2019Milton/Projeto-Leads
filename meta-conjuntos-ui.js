@@ -97,12 +97,138 @@
     return s;
   }
 
+  // Um novo conjunto pode ser criado mesmo se a Meta recusar o anúncio.
+  // Esta ação reaproveita o conjunto PAUSADO e não altera seu orçamento.
+  function montarCompletarAnuncios(conjuntos,campanhaId) {
+    const pendentes=conjuntos.filter(x=>
+      x.status==="PAUSED" && x.destino==="WHATSAPP" &&
+      x.numero_whatsapp && Array.isArray(x.anuncios) && x.anuncios.length===0);
+    const fontes=conjuntos.flatMap(x=>(x.anuncios||[]).map(a=>({
+      id:String(a.id),conjuntoId:String(x.id),
+      rotulo:(a.nome||a.id)+" — "+(x.nome||x.id)
+    })));
+    if(!pendentes.length||!fontes.length)return "";
+    const options=fontes.map(a=>
+      '<option value="'+esc(a.conjuntoId+":"+a.id)+'">'+esc(a.rotulo)+'</option>').join("");
+    return '<section class="meta-conj-recuperacao">'+
+      '<h4>Concluir conjuntos que estão sem anúncio</h4>'+
+      '<p>Estes conjuntos já foram criados na Meta. Aqui você copiará somente o anúncio, sem criar outro conjunto ou alterar o orçamento.</p>'+
+      pendentes.map(x=>{
+        const display=esc(x.nome||x.id);
+        const alvoNumero=String(x.numero_whatsapp).replace(/\D/g,"");
+        return '<details class="meta-conj-completar" data-target-id="'+esc(x.id)+'">'+
+          '<summary>Adicionar anúncio ao conjunto <strong>'+display+'</strong> — WhatsApp final '+
+           esc(alvoNumero.slice(-4))+'</summary>'+
+          '<form data-campanha-id="'+Number(campanhaId)+'" '+
+           'onsubmit="window.MetaConjuntosUI.copiarParaExistente(event,this)" '+
+           'onchange="window.MetaConjuntosUI.invalidarConclusao(this)">'+
+            '<p>Conjunto existente <strong>ID '+esc(x.id)+'</strong>, status PAUSADO. Sem anúncio no momento.</p>'+
+            '<label>Escolha o anúncio original para copiar<select name="anuncio_origem" required>'+
+              '<option value="">Selecione um anúncio existente</option>'+
+              options+
+            '</select></label>'+
+            '<button type="button" class="meta-conj-validar-btn" onclick="window.MetaConjuntosUI.validarConclusao(event,this.form)">'+
+              'Validar cópia na Meta (não cria)</button>'+
+            '<button type="submit" class="meta-conj-criar-btn" disabled>'+
+              'Copiar anúncio PAUSADO para este conjunto</button>'+
+            '<div class="meta-conj-feedback" role="status"></div>'+
+          '</form>'+
+        '</details>';
+      }).join("")+'</section>';
+  }
+
+  function detalhesCopiaExistente(form) {
+    const conjuntoId=form.closest("[data-target-id]")?.dataset.targetId;
+    const id=Number(form.dataset.campanhaId);
+    const [fonte,anuncio]=String(form.elements.namedItem("anuncio_origem").value||"").split(":");
+    if(!/^[0-9]+$/.test(String(conjuntoId))||!/^[0-9]+$/.test(fonte)||
+       !/^[0-9]+$/.test(anuncio)||!Number.isSafeInteger(id)||id<=0)
+      throw new Error("Selecione um anúncio de origem para continuar.");
+    return {campanhaLocalId:id,conjuntoId,
+      payload:{conjunto_origem_id:fonte,anuncio_origem_id:anuncio}};
+  }
+  function invalidarConclusao(form){
+    delete form.dataset.assinaturaValida;
+    const b=form.querySelector(".meta-conj-criar-btn");
+    if(b)b.disabled=true;
+    const m=form.querySelector(".meta-conj-feedback");
+    if(m && m.dataset.estado==="sucesso")
+      feedbackStatus(m,"aviso","O anúncio de origem mudou. Valide novamente.");
+  }
+  async function validarConclusao(ev,form){
+    ev.preventDefault();ev.stopPropagation();
+    if(form.dataset.ocupado==="1")return;
+    const msg=form.querySelector(".meta-conj-feedback");
+    invalidarConclusao(form);
+    let req;
+    try{req=detalhesCopiaExistente(form);}
+    catch(e){feedbackStatus(msg,"aviso",e.message);return;}
+    const btn=form.querySelector(".meta-conj-validar-btn");
+    form.dataset.ocupado="1";btn.disabled=true;
+    feedbackStatus(msg,"aviso","Consultando a Meta. Nenhum anúncio será criado durante esta validação...");
+    try{
+      const url=caminho(req.campanhaLocalId)+"/"+req.conjuntoId+"/copiar-anuncio/validar";
+      const r=await fetch(url,{
+        method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token()},
+        body:JSON.stringify(req.payload)
+      });
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok||!data.ok||!data.validacao_sem_criacao)
+        throw new Error(data.error||"A Meta não confirmou os dados do anúncio.");
+      form.dataset.assinaturaValida=JSON.stringify(req);
+      form.querySelector(".meta-conj-criar-btn").disabled=false;
+      feedbackStatus(msg,"sucesso",data.aviso||"Validação aprovada; nenhum anúncio foi criado.");
+    }catch(e){
+      feedbackStatus(msg,"erro","Não foi possível validar: "+(e.message||"Erro na Meta"));
+    }finally{btn.disabled=false;form.dataset.ocupado="0";}
+  }
+  async function copiarParaExistente(ev,form){
+    ev.preventDefault();ev.stopPropagation();
+    if(form.dataset.ocupado==="1")return;
+    let req;
+    try{req=detalhesCopiaExistente(form);}
+    catch(e){alert(e.message);return;}
+    if(form.dataset.assinaturaValida!==JSON.stringify(req)){
+      alert("Valide a cópia na Meta antes de criar o anúncio.");return;
+    }
+    if(!confirm("Copiar somente o anúncio para o conjunto JÁ EXISTENTE "+req.conjuntoId+
+      "? O anúncio e o conjunto continuarão PAUSADOS. Nenhum orçamento será modificado."))return;
+    const btn=form.querySelector(".meta-conj-criar-btn");
+    const msg=form.querySelector(".meta-conj-feedback");
+    form.dataset.ocupado="1";btn.disabled=true;
+    feedbackStatus(msg,"aviso","Copiando somente o anúncio para o conjunto existente...");
+    try{
+      const url=caminho(req.campanhaLocalId)+"/"+req.conjuntoId+"/copiar-anuncio";
+      const r=await fetch(url,{
+        method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token()},
+        body:JSON.stringify(req.payload)
+      });
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(data.error||"A Meta recusou copiar o anúncio.");
+      invalidarConclusao(form);
+      const aviso=data.aviso||"A Meta respondeu sobre a cópia.";
+      feedbackStatus(msg,data.parcial?"aviso":"sucesso",aviso+
+        " Conjunto: "+data.conjunto_id+" — Anúncio: "+(data.anuncio_id||"não criado"));
+      alert(aviso+"\nConjunto já existente: "+data.conjunto_id+
+        "\nAnúncio: "+(data.anuncio_id||"não criado"));
+      if(window.MetaOrcamentosUI?.recarregarEdicao)
+        await window.MetaOrcamentosUI.recarregarEdicao(req.campanhaLocalId);
+    }catch(e){
+      invalidarConclusao(form);
+      feedbackStatus(msg,"erro",(e.message||"Falha ao copiar anúncio")+
+        " Não repita sem conferir primeiro a lista de anúncios na Meta.");
+    }finally{
+      btn.disabled=true;form.dataset.ocupado="0";
+    }
+  }
+
   function renderizarGestao(alvo, campanhaId, dados) {
     if (!alvo) return;
     const conjuntos = Array.isArray(dados?.conjuntos) ? dados.conjuntos : [];
     estados.set(Number(campanhaId),dados);
     alvo.dataset.campanhaId = String(campanhaId);
-    alvo.innerHTML = montarFormularioCriacao(conjuntos, dados.campanha || {}, campanhaId);
+    alvo.innerHTML = montarCompletarAnuncios(conjuntos,campanhaId) +
+      montarFormularioCriacao(conjuntos, dados.campanha || {}, campanhaId);
   }
 
   function renderizar(alvo, campanhaId, dados) {
@@ -303,5 +429,6 @@
       btn.disabled = true;
     }
   }
-  window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar, validar, invalidar, renderizarGestao };
+  window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar, validar, invalidar, renderizarGestao,
+    validarConclusao, copiarParaExistente, invalidarConclusao };
 })();

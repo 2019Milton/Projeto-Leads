@@ -45943,6 +45943,7 @@ async function finalizarConexaoWhatsapp(wabaId, phoneNumberId, codigo, restaurar
     }
     await carregarWhatsappBot();
     await carregarHub();
+    restaurarBotao();
     if (data?.aviso) alert(data.aviso);
     await avisarIntegracaoTikTokWhatsappSeNecessario("whatsapp");
   } catch (e) {

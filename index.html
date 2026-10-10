@@ -36194,6 +36194,30 @@ const BLOCOS_SEGMENTACAO_ABERTO_PADRAO = {
 
 let campanhaEmEdicao = null;
 let _snapshotCriarCampanha = null;
+// Baseline da tela EDITADA, separado do snapshot da criação (usado para
+// restaurar o formulário anterior ao fechar a edição).
+let _snapshotEdicaoCampanhaMeta = null;
+// Marca somente interação real no formulário principal (não ações separadas
+// de orçamento/conjuntos). Abrir e clicar Salvar sem alterar campos não deve
+// gerar chamadas para Meta, ainda mais com limite de 1 req / 30 segundos.
+let _metaEdicaoHouveMudancaUsuario = false;
+let _metaEdicaoAtribuicaoAlteradaUsuario = false;
+function registrarAlteracaoEdicaoMeta(evento) {
+  if (!campanhaEmEdicao) return;
+  const plataforma=String(campanhaEmEdicao.plataforma||"meta").toLowerCase();
+  if (!["meta","facebook","instagram"].includes(plataforma)) return;
+  const alvo=evento?.target;
+  if (!(alvo instanceof Element) || !alvo.closest("#editar_campanha_campos")) return;
+  if (alvo.closest("#meta-edicao-gestao-conjuntos")) return;
+  // ABO: o orçamento é gerido em ação exclusiva, e não no Salvar campanha.
+  if(alvo.id==="orcamento" &&
+     window.MetaOrcamentosUI?.bloquearBudgetEditor(campanhaEmEdicao.id)) return;
+  _metaEdicaoHouveMudancaUsuario=true;
+  if(alvo.id==="adv_attribution_spec")
+    _metaEdicaoAtribuicaoAlteradaUsuario=true;
+}
+document.addEventListener("input",registrarAlteracaoEdicaoMeta,true);
+document.addEventListener("change",registrarAlteracaoEdicaoMeta,true);
 
 // Plataformas que a campanha já tinha ao abrir o editor (facebook+instagram
 // pra Meta, ou a própria plataforma isolada pra Google/TikTok/LinkedIn) —
@@ -37069,6 +37093,12 @@ function abrirEdicaoCampanha(campanhaEncoded) {
     atualizarDisponibilidadeVideoCampanha();
     _snapshotCriarCampanha.imagensAssinatura = assinaturaImagensCampanha();
     _snapshotCriarCampanha.videoAssinatura = assinaturaVideoCampanha();
+    _snapshotEdicaoCampanhaMeta = {
+      basicos: coletarCamposBasicosCampanha(),
+      avancadas: coletarConfiguracoesAvancadas()
+    };
+    _metaEdicaoHouveMudancaUsuario=false;
+    _metaEdicaoAtribuicaoAlteradaUsuario=false;
 
     const feedback = document.getElementById("editar_campanha_feedback");
 
@@ -37186,7 +37216,10 @@ function fecharEdicaoCampanha() {
       console.error("ERRO ao restaurar blocos movidos da edição:", errRestaurar);
     }
     _snapshotCriarCampanha = null;
+    _snapshotEdicaoCampanhaMeta = null;
     campanhaEmEdicao = null;
+    _metaEdicaoHouveMudancaUsuario=false;
+    _metaEdicaoAtribuicaoAlteradaUsuario=false;
     plataformasOriginaisEdicao = new Set();
     plataformasExistentesEdicaoGrupo = new Set();
     plataformasReaproveitadasEdicao = new Set();
@@ -37899,6 +37932,7 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
 
   if (feedback) {
     feedback.style.display = "none";
+    feedback.style.color = "";
     feedback.textContent = "";
   }
 
@@ -38041,8 +38075,8 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
       configuracoes_avancadas.criativo_tipo = imageHashes.length > 1 ? "carrossel" : "imagem";
     }
 
-    const snapshotBasicos = _snapshotCriarCampanha?.basicos || {};
-    const snapshotAvancadas = _snapshotCriarCampanha?.avancadas || {};
+    const snapshotBasicos = _snapshotEdicaoCampanhaMeta?.basicos || {};
+    const snapshotAvancadas = _snapshotEdicaoCampanhaMeta?.avancadas || {};
     const textoComparavel = valor => String(valor ?? "").trim();
 
     const criativoFoiAlteradoNoEditor =
@@ -38054,6 +38088,19 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
       textoComparavel(configuracoes_avancadas.titulo) !== textoComparavel(snapshotAvancadas.titulo) ||
       textoComparavel(configuracoes_avancadas.descricao) !== textoComparavel(snapshotAvancadas.descricao) ||
       textoComparavel(configuracoes_avancadas.link) !== textoComparavel(snapshotAvancadas.link);
+
+    // Ações de criar/copiar conjuntos são separadas; "Salvar campanha" sem
+    // modificação real deve ser um no-op, não reenviar targeting/attribution à Meta.
+    if(!_metaEdicaoHouveMudancaUsuario && !criativoFoiAlteradoNoEditor &&
+       !imagensForamAlteradas && !videoFoiAlterado &&
+       !videoFoiRemovido && !videoArquivo) {
+      if(feedback){
+        feedback.textContent="Nenhuma alteração na campanha para salvar. Os conjuntos e anúncios que você acabou de criar já estão registrados na Meta.";
+        feedback.style.color="#86efac";
+        feedback.style.display="block";
+      }
+      return;
+    }
 
     const payloadEdicao = {
       usuario_id,
@@ -38068,6 +38115,8 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
       daily_budget: window.MetaOrcamentosUI?.bloquearBudgetEditor(campanhaEmEdicao?.id)
         ? null : (orcamento ? Number(orcamento) * 100 : null),
       atualizar_criativo: criativoFoiAlteradoNoEditor,
+      // Só altera attribution_spec se o usuário mudou explicitamente seu seletor.
+      alterar_atribuicao_meta: _metaEdicaoAtribuicaoAlteradaUsuario,
       configuracoes_avancadas
     };
 
@@ -38104,11 +38153,13 @@ async function salvarEdicaoCampanhaMeta(token, usuario_id) {
 
     if (!res.ok || data.error) {
 
-      const mensagemBruta =
+      const mensagemBruta = res.status === 429
+        ? (data.error || "A Meta limitou temporariamente as requisições. Aguarde pelo menos 30 segundos antes de salvar novamente.")
+        : (
         data.error?.error_user_msg ||
         data.error?.message ||
         (typeof data.error === "string" ? data.error : null) ||
-        "Erro ao salvar alterações";
+        "Erro ao salvar alterações");
 
       const mensagemTecnica =
         data.detalhe?.message && data.detalhe.message !== mensagemBruta

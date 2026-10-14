@@ -1,0 +1,15 @@
+/* Central de Leads: WhatsApp receptor (numero da empresa), nao numero do cliente */
+.leads-toolbar .leads-filter-receptor[hidden]{display:none!important}
+.lead-receptor-container{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.lead-receptor-container:empty{display:none}
+.lead-receptor-badge{
+ display:inline-flex;align-items:center;max-width:100%;
+ border:1px solid rgba(52,211,153,.45);
+ background:rgba(6,95,70,.35);color:#bbf7d0;
+ padding:4px 7px;border-radius:6px;font-size:10px;font-weight:700;
+ line-height:1.4;overflow-wrap:anywhere;white-space:normal
+}
+body.light-theme .lead-receptor-badge,
+html[data-theme="light"] .lead-receptor-badge{
+ border-color:#047857;background:#d1fae5;color:#064e3b
+}

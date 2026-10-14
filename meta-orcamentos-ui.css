@@ -242,3 +242,91 @@
   width:100%;min-width:0;background:#0f172a;color:white;
   border:1px solid #64748b;border-radius:6px;padding:10px
 }
+
+/* Status operacional por conjunto/anúncio — somente na edição da campanha */
+.campanha-editar-modal .meta-gestao-veiculacao{
+  border:1px solid #64748b;border-radius:12px;background:#0f172a;
+  padding:14px;display:grid;gap:11px;min-width:0;
+}
+.campanha-editar-modal .meta-gestao-veiculacao h4{
+  margin:0;font-size:15px;font-weight:800;color:#e0e7ff;
+}
+.campanha-editar-modal .meta-gestao-veiculacao p{
+  margin:0;font-size:12px;line-height:1.6;color:#cbd5e1;
+}
+.campanha-editar-modal .meta-gestao-veiculacao .meta-gestao-limite{
+  color:#fbbf24;
+}
+.campanha-editar-modal .meta-gestao-feedback{
+  font-size:12px;line-height:1.6;overflow-wrap:anywhere;
+}
+.campanha-editar-modal .meta-gestao-feedback:empty{display:none}
+.campanha-editar-modal .meta-gestao-feedback[data-estado=sucesso]{
+  color:#4ade80;
+}
+.campanha-editar-modal .meta-gestao-feedback[data-estado=erro]{
+  color:#fca5a5;
+}
+.campanha-editar-modal .meta-gestao-feedback[data-estado=aviso]{
+  color:#fbbf24;
+}
+.campanha-editar-modal .meta-gestao-atualizar{
+  justify-self:start;border-radius:7px;border:1px solid #818cf8;
+  background:#172554;color:#dbeafe;padding:8px 13px;
+  font-size:12px;font-weight:700;cursor:pointer;
+}
+.campanha-editar-modal .meta-gestao-lista{
+  display:grid;gap:12px;min-width:0;
+}
+.campanha-editar-modal .meta-gestao-conjunto{
+  display:grid;gap:9px;border:1px solid #475569;
+  border-radius:10px;padding:12px;min-width:0;background:#111e33;
+}
+.campanha-editar-modal .meta-gestao-conjunto-topo,
+.campanha-editar-modal .meta-gestao-anuncio{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  justify-content:space-between;min-width:0;
+}
+.campanha-editar-modal .meta-gestao-info{
+  display:grid;gap:4px;min-width:0;flex:1 1 185px;
+}
+.campanha-editar-modal .meta-gestao-info strong{
+  font-size:12px;color:#f8fafc;overflow-wrap:break-word;
+  word-break:normal;line-height:1.5;
+}
+.campanha-editar-modal .meta-gestao-info small{
+  font-size:11px;color:#cbd5e1;overflow-wrap:break-word;
+  word-break:normal;line-height:1.45;
+}
+.campanha-editar-modal .meta-gestao-anuncios{
+  display:grid;gap:8px;border-top:1px solid #334155;padding-top:9px;
+}
+.campanha-editar-modal .meta-gestao-anuncio{
+  background:#1e293b;border:1px solid #334155;border-radius:7px;
+  padding:9px;
+}
+.campanha-editar-modal .meta-gestao-alterar-status{
+  border:1px solid transparent;border-radius:7px;padding:9px 12px;
+  font-weight:800;font-size:11px;white-space:nowrap;
+  cursor:pointer;flex-shrink:0;
+}
+.campanha-editar-modal .meta-gestao-ativar{
+  background:#14532d;color:#dcfce7;border-color:#16a34a;
+}
+.campanha-editar-modal .meta-gestao-pausar{
+  background:#78350f;color:#fef3c7;border-color:#f59e0b;
+}
+.campanha-editar-modal .meta-gestao-alterar-status:disabled{
+  opacity:.45;cursor:not-allowed;
+}
+.campanha-editar-modal .meta-gestao-veiculacao .meta-gestao-atencao{
+  color:#fbbf24;font-size:11px;
+}
+.campanha-editar-modal .meta-gestao-status-incerto,
+.campanha-editar-modal .meta-gestao-vazio{
+  color:#94a3b8;font-size:11px;
+}
+@media(max-width:540px){
+  .campanha-editar-modal .meta-gestao-veiculacao{padding:10px}
+  .campanha-editar-modal .meta-gestao-alterar-status{width:100%}
+}

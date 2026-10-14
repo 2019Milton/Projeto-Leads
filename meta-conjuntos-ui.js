@@ -2,6 +2,8 @@
 (function () {
   "use strict";
   const estados = new Map();
+  let ultimaOperacaoMetaAte=0; // controle local para evitar rajadas (#613).
+
   const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[c]));
@@ -222,12 +224,161 @@
     }
   }
 
+  const statusConfigurado = v => String(v||"").toUpperCase();
+  function textoStatusConfigurado(v) {
+    return statusConfigurado(v)==="ACTIVE"?"Ativo":
+      statusConfigurado(v)==="PAUSED"?"Pausado":"Indisponível";
+  }
+  function renderizarAcaoStatus(id,tipo,status,temAnuncioAtivo,orcamento) {
+    const atual=statusConfigurado(status);
+    if(!["ACTIVE","PAUSED"].includes(atual))
+      return '<span class="meta-gestao-status-incerto">Gerenciamento indisponível para este status</span>';
+    const deseja=atual==="ACTIVE"?"PAUSED":"ACTIVE";
+    const ativar=deseja==="ACTIVE";
+    // Bloquear no frontend apenas a ativação de conjunto sem anúncios ativos.
+    const impedido=tipo==="conjunto"&&ativar&&!temAnuncioAtivo;
+    return '<button type="button" class="meta-gestao-alterar-status '+
+      (ativar?'meta-gestao-ativar':'meta-gestao-pausar')+'" '+
+      'data-tipo="'+tipo+'" data-id="'+esc(id)+'" '+
+      'data-esperado="'+atual+'" data-desejado="'+deseja+'" '+
+      'data-orcamento="'+Number(orcamento||0)+'" '+
+      (impedido?'disabled title="Ative primeiro pelo menos um anúncio deste conjunto"':'')+
+      'onclick="window.MetaConjuntosUI.alterarStatus(event,this)">'+
+      (ativar?'Ativar':'Pausar')+' '+(tipo==="conjunto"?"conjunto":"anúncio")+'</button>';
+  }
+
+  function montarControlesStatus(conjuntos,campanhaId,campanha) {
+    const lista=conjuntos.map(x=>{
+      const ads=Array.isArray(x.anuncios)?x.anuncios:[];
+      const ativo=ads.some(a=>statusConfigurado(a.status)==="ACTIVE");
+      const orcamento=x.orcamento_diario_centavos||campanha.orcamento_diario_centavos||0;
+      const efetivo=x.status_efetivo||x.status;
+      const cardsAnuncios=ads.map(a=>
+        '<div class="meta-gestao-anuncio">'+
+          '<div class="meta-gestao-info"><strong>'+esc(a.nome||a.id)+'</strong>'+
+          '<small>Anúncio · Configurado: '+textoStatusConfigurado(a.status)+
+           ' · Veiculação: '+esc(statusLabel(a.status_efetivo||a.status))+'</small></div>'+
+           renderizarAcaoStatus(a.id,"anuncio",a.status,true,0)+'</div>'
+      ).join("");
+      return '<div class="meta-gestao-conjunto">'+
+        '<div class="meta-gestao-conjunto-topo">'+
+          '<div class="meta-gestao-info"><strong>'+esc(x.nome||x.id)+'</strong>'+
+            '<small>Conjunto · Configurado: '+textoStatusConfigurado(x.status)+
+            ' · Veiculação: '+esc(statusLabel(efetivo))+
+            (x.numero_whatsapp?' · WhatsApp '+esc(String(x.numero_whatsapp).replace(/\D/g,"").slice(-4)):'')+
+            ' · Orçamento '+valorCentavos(orcamento)+'/dia</small>'+
+          '</div>'+
+          renderizarAcaoStatus(x.id,"conjunto",x.status,ativo,orcamento)+
+        '</div>'+
+        (!ativo&&statusConfigurado(x.status)==="PAUSED"?
+          '<p class="meta-gestao-atencao">Ative primeiro o anúncio. Enquanto o conjunto estiver pausado, ele não veicula.</p>':'')+
+        '<div class="meta-gestao-anuncios">'+
+          (cardsAnuncios||'<small class="meta-gestao-vazio">Sem anúncios neste conjunto.</small>')+
+        '</div></div>';
+    }).join("");
+    return '<section class="meta-gestao-veiculacao">'+
+      '<h4>Ativação e pausa de conjuntos e anúncios</h4>'+
+      '<p>Controle os dois níveis separadamente. Para iniciar veiculação, ative primeiro o anúncio e depois o conjunto. '+
+      'Ativar conjunto com anúncio ativo pode gerar gastos. Nenhuma alteração acontece sem confirmação.</p>'+
+      '<p class="meta-gestao-limite">Após uma mudança, aguarde aproximadamente 30 segundos antes de consultar ou alterar outro status, por causa dos limites da Meta.</p>'+
+      '<div class="meta-gestao-feedback" role="status" aria-live="polite"></div>'+
+      '<button type="button" class="meta-gestao-atualizar" onclick="window.MetaConjuntosUI.atualizarStatus(event,'+
+        Number(campanhaId)+')">Atualizar status na Meta</button>'+
+      '<div class="meta-gestao-lista">'+(lista||'<p>Nenhum conjunto disponível.</p>')+'</div>'+
+    '</section>';
+  }
+
+  const intervaloRestante=()=>Math.max(0,Math.ceil((ultimaOperacaoMetaAte-Date.now())/1000));
+  async function atualizarStatus(ev,campanhaId){
+    ev?.preventDefault();ev?.stopPropagation();
+    const tempo=intervaloRestante();
+    const msg=document.querySelector(".meta-conjuntos-edicao .meta-gestao-feedback");
+    if(tempo>0){
+      if(msg){msg.dataset.estado="aviso";msg.textContent=
+        "Aguarde "+tempo+" segundos antes de consultar novamente, para evitar o limite de chamadas da Meta.";}
+      return;
+    }
+    try{
+      if(window.MetaOrcamentosUI?.recarregarEdicao){
+        await window.MetaOrcamentosUI.recarregarEdicao(campanhaId);
+        const msgNovo=document.querySelector(".meta-conjuntos-edicao .meta-gestao-feedback");
+        if(msgNovo){msgNovo.dataset.estado="sucesso";msgNovo.textContent=
+          "Consulta atualizada a partir da Meta. Confira os status configurados e efetivos.";}
+      }
+    }catch(e){
+      if(msg){msg.dataset.estado="erro";msg.textContent=e.message||"Falha na consulta à Meta.";}
+    }
+  }
+  async function alterarStatus(ev,btn){
+    ev.preventDefault();ev.stopPropagation();
+    const painel=btn.closest(".meta-gestao-veiculacao");
+    const msg=painel?.querySelector(".meta-gestao-feedback");
+    const tempo=intervaloRestante();
+    if(tempo>0){
+      if(msg){msg.dataset.estado="aviso";msg.textContent=
+        "Aguarde "+tempo+" segundos antes de enviar outra alteração à Meta.";}
+      return;
+    }
+    const campanhaId=Number(btn.closest(".meta-conjuntos-edicao")?.dataset.campanhaId||0);
+    const tipo=btn.dataset.tipo,itemId=btn.dataset.id,desejado=btn.dataset.desejado,
+      esperado=btn.dataset.esperado,valor=Number(btn.dataset.orcamento||0);
+    const item=btn.closest(".meta-gestao-conjunto-topo, .meta-gestao-anuncio");
+    const nome=item?.querySelector(".meta-gestao-info strong")?.textContent||itemId;
+    if(!Number.isSafeInteger(campanhaId)||campanhaId<=0 ||
+      !/^[0-9]+$/.test(String(itemId))||
+      !["conjunto","anuncio"].includes(tipo)||
+      !["ACTIVE","PAUSED"].includes(desejado))return;
+    const ativar=desejado==="ACTIVE";
+    const gasto=ativar&&tipo==="conjunto"
+      ? "\n\nATENÇÃO: ativar este conjunto pode iniciar gastos com anúncios. "+
+        "Orçamento diário configurado: "+valorCentavos(valor)+
+        ". Isso poderá se somar a outros conjuntos ativos."
+      : "";
+    const contexto=tipo==="anuncio"
+      ? "\n\nATENCAO: se o conjunto e a campanha ja estiverem ativos, ativar este anuncio pode iniciar gastos imediatamente. Se estiverem pausados, a veiculacao so iniciara apos ativa-los."
+      : "";
+    if(!confirm(
+      (ativar?"ATIVAR":"PAUSAR")+" "+tipo.toUpperCase()+" NA META?"+
+      "\n\n"+nome+"\nID "+itemId+
+      "\nStatus configurado atual: "+textoStatusConfigurado(esperado)+
+      "\nNovo status: "+textoStatusConfigurado(desejado)+gasto+contexto+
+      "\n\nEssa ação será enviada diretamente à conta de anúncios vinculada."
+    ))return;
+    if(painel.dataset.ocupado==="1")return;
+    painel.dataset.ocupado="1";btn.disabled=true;
+    if(msg){msg.dataset.estado="aviso";msg.textContent="Solicitando alteração de status na Meta...";}
+    try{
+      const resp=await fetch(API+"/meta/campanhas/"+campanhaId+"/status-item",{
+        method:"POST",
+        headers:{"Content-Type":"application/json",Authorization:"Bearer "+token()},
+        body:JSON.stringify({item_id:itemId,tipo,
+          status_esperado:esperado,status_desejado:desejado})
+      });
+      const resultado=await resp.json().catch(()=>({}));
+      if(!resp.ok||!resultado.ok)
+        throw new Error(resultado.error||"Meta não confirmou a operação.");
+      ultimaOperacaoMetaAte=Date.now()+30000;
+      if(msg){msg.dataset.estado="sucesso";msg.textContent=resultado.aviso+
+        " Não clique novamente até consultar o status atualizado.";}
+      // Não atualizar otimisticamente o estado efetivo e não disparar GET
+      // automático após o POST: evita rate-limit #613.
+    }catch(e){
+      if(msg){msg.dataset.estado="erro";msg.textContent=e.message||
+        "Não foi possível alterar status na Meta.";}
+      // Também respeitar cooldown na resposta #613, sem fazer retry automático.
+      if(/613|limitou temporariamente/i.test(String(e.message||"")))
+        ultimaOperacaoMetaAte=Date.now()+30000;
+      else btn.disabled=false;
+    }finally{painel.dataset.ocupado="0";}
+  }
+
   function renderizarGestao(alvo, campanhaId, dados) {
     if (!alvo) return;
     const conjuntos = Array.isArray(dados?.conjuntos) ? dados.conjuntos : [];
     estados.set(Number(campanhaId),dados);
     alvo.dataset.campanhaId = String(campanhaId);
-    alvo.innerHTML = montarCompletarAnuncios(conjuntos,campanhaId) +
+    alvo.innerHTML = montarControlesStatus(conjuntos,campanhaId,dados.campanha||{}) +
+      montarCompletarAnuncios(conjuntos,campanhaId) +
       montarFormularioCriacao(conjuntos, dados.campanha || {}, campanhaId);
   }
 
@@ -430,5 +581,6 @@
     }
   }
   window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar, validar, invalidar, renderizarGestao,
-    validarConclusao, copiarParaExistente, invalidarConclusao };
+    validarConclusao, copiarParaExistente, invalidarConclusao,
+    alterarStatus, atualizarStatus };
 })();

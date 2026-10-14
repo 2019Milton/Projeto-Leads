@@ -17529,6 +17529,7 @@ body.tema-claro .criar-campanha-descricao {
 <link rel="stylesheet" href="meta-conjuntos-ui.css?v=20261009-layout">
 <link rel="stylesheet" href="meta-orcamentos-ui.css?v=20261014-controle-status">
 <link rel="stylesheet" href="meta-distribuicao-ui.css?v=20261014-distribuicao1">
+<link rel="stylesheet" href="leads-whatsapp-receptor-ui.css?v=20261014-numero-receptor1">
 </head>
 
 <body>
@@ -20395,6 +20396,15 @@ body.tema-claro .criar-campanha-descricao {
         >
           <option value="">Facebook/Instagram</option>
         </select></label>
+
+        <!-- Número de WhatsApp da empresa que recebeu a conversa -->
+        <label class="leads-filter-field leads-filter-receptor" hidden>
+          <span>WhatsApp receptor</span>
+          <select class="lead-filter" id="filtro_whatsapp_receptor"
+            onchange="aplicarFiltrosLeads()">
+            <option value="">Todos os números</option>
+          </select>
+        </label>
 
         <!-- 📅 PERÍODO -->
         <label class="leads-filter-field "><span>Período</span><select
@@ -26848,6 +26858,8 @@ function limparFiltrosLeads() {
   if (redeOrigem) redeOrigem.value = "";
   const periodo = document.getElementById("filtro_periodo");
   if (periodo) periodo.value = "todos";
+  const numeroReceptor=document.getElementById("filtro_whatsapp_receptor");
+  if(numeroReceptor)numeroReceptor.value="";
   carregarLeads();
 }
 
@@ -26880,6 +26892,10 @@ async function carregarLeads() {
   popularFiltroCampanhas(todosLeads);
   popularFiltroPlataformas(todosLeads);
   popularFiltroRedeOrigem(todosLeads);
+  window.LeadsWhatsappReceptorUI?.popularFiltro(
+    document.getElementById("filtro_whatsapp_receptor"),
+    leads.whatsapp_numeros_disponiveis||[],todosLeads
+  );
 
   leadsFiltradosAtuais = todosLeads;
 
@@ -27123,6 +27139,16 @@ function aplicarFiltrosLeads() {
   if (redeOrigemSelecionada) {
     filtrados = filtrados.filter(
       lead => lead.rede_origem === redeOrigemSelecionada
+    );
+  }
+
+  // WhatsApp receptor: filtra pelo número da empresa que recebeu a
+  // conversa, não pelo telefone do cliente nem pela campanha presumida.
+  const whatsappReceptorSelecionado=
+    document.getElementById("filtro_whatsapp_receptor")?.value || "";
+  if(whatsappReceptorSelecionado) {
+    filtrados=filtrados.filter(lead=>
+      window.LeadsWhatsappReceptorUI?.corresponde(lead,whatsappReceptorSelecionado)
     );
   }
 
@@ -27426,7 +27452,7 @@ function exportarLeadsCSV() {
     "Campanha","Origem","Motivo de Perda",
     "Agendamento","Obs. Agendamento",
     "Prioridade IA","Próxima Ação IA",
-    "Qualificação","Observação","Data de Cadastro"
+    "Qualificação","Observação","Data de Cadastro","WhatsApp Receptor"
   ];
   const NUM_COLS = COLS.length;
   const LAST_COL = String.fromCharCode(64 + NUM_COLS); // A=1, R=18
@@ -27461,7 +27487,8 @@ function exportarLeadsCSV() {
       proximaAcaoIA,
       qualificacao,
       lead.observacao || "",
-      formatarDataExcel(lead.criado_em)
+      formatarDataExcel(lead.criado_em),
+      window.LeadsWhatsappReceptorUI?.textoExportacao(lead)||""
     ];
   });
 
@@ -27741,6 +27768,10 @@ function criarLeadCard(lead) {
       <div class="lead-info">
 
         <p>📞 ${escaparHtml(lead.telefone || "-")}</p>
+
+        <div class="lead-receptor-container">
+          ${window.LeadsWhatsappReceptorUI?.badges(lead)||""}
+        </div>
 
         <div class="lead-meta">
 
@@ -60614,6 +60645,7 @@ async function criarLookalike() {
 
 <script src="meta-conjuntos-ui.js?v=20261014-controle-status"></script>
 <script src="meta-distribuicao-ui.js?v=20261014-distribuicao1"></script>
+<script src="leads-whatsapp-receptor-ui.js?v=20261014-numero-receptor1"></script>
 <script src="meta-orcamentos-ui.js?v=20261009-fix-layout2"></script>
 </body>
 </html>

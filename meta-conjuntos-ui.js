@@ -46,6 +46,21 @@
 
   function htmlConjunto(x) {
     const m = x.metricas || {};
+    const crm = x.metricas_crm || {};
+    // Três fontes/períodos distintos. Null = métrica indisponível, zero =
+    // consulta confirmou ausência de leads, nunca esconder divergências.
+    const contabilizar = v => v === null || v === undefined ? "—" : esc(v);
+    const resumoCrm = '<div class="meta-conj-crm-comparativo" role="group" aria-label="Comparativo de leads e conversas">'+
+      '<div class="meta-conj-crm-indicador"><strong>'+contabilizar(crm.leads_whatsapp_hoje)+'</strong>'+
+        '<span>Leads WhatsApp <b>hoje</b></span><small>CRM · todas as origens</small></div>'+
+      '<div class="meta-conj-crm-indicador"><strong>'+contabilizar(m.conversas_meta)+'</strong>'+
+        '<span>Conversas Meta <b>30 dias</b></span><small>Atribuição publicitária</small></div>'+
+      '<div class="meta-conj-crm-indicador"><strong>'+contabilizar(crm.leads_anuncio_30d)+'</strong>'+
+        '<span>Leads do anúncio <b>30 dias</b></span><small>CRM · origem confirmada</small></div>'+
+      '</div>'+
+      '<p class="meta-conj-crm-explicacao">Os leads no WhatsApp incluem outras origens. '+
+       'Leads do anúncio só contam quando a referência da Meta identifica um anúncio deste conjunto. '+
+       'Os números podem ser diferentes.</p>';
     const dinheiro = x.orcamento_diario_centavos > 0 ? valorCentavos(x.orcamento_diario_centavos) + "/dia" :
       x.orcamento_total_centavos > 0 ? valorCentavos(x.orcamento_total_centavos) + " total" : "Orçamento na campanha";
     const anuncios = (x.anuncios || []).map(a =>
@@ -60,8 +75,7 @@
       '<div class="meta-conj-metricas"><span>Orçamento: ' + esc(dinheiro) +
       '</span><span>Gasto (30d): ' + fmt(m.gasto) + '</span><span>Cliques: ' +
       esc(m.cliques || 0) + '</span><span>Impressões: ' + esc(m.impressoes || 0) +
-      '</span>' + (m.conversas_meta == null ? "" :
-        '<span>Conversas (Meta): ' + esc(m.conversas_meta) + '</span>') + '</div>' +
+      '</span></div>' + resumoCrm +
       '<div class="meta-conj-anuncios">' + (anuncios || '<em>Sem anúncio neste conjunto</em>') + '</div>' +
       '</div>';
   }
@@ -393,6 +407,7 @@
     s += conjuntos.map(htmlConjunto).join("") ||
       '<div class="meta-conj-vazio">A Meta não retornou conjuntos para esta campanha.</div>';
     if (dados.aviso_metricas) s += '<div class="meta-conj-aviso">' + esc(dados.aviso_metricas) + '</div>';
+    if (dados.aviso_crm) s += '<div class="meta-conj-aviso">' + esc(dados.aviso_crm) + '</div>';
     alvo.innerHTML = s;
     const details = alvo.closest(".meta-conjuntos-campanha");
     if(details) details.dataset.campanhaId = String(campanhaId);

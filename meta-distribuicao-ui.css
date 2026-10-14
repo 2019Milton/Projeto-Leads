@@ -1,0 +1,81 @@
+/* Dashboard › Status Meta › Distribuição de Leads */
+.meta-distribuicao {
+  border:1px solid rgba(129,140,248,.40);border-radius:10px;
+  margin:10px 0;background:#101c33;color:#e2e8f0;min-width:0
+}
+.meta-distribuicao>summary{
+  padding:12px;display:flex;align-items:center;justify-content:space-between;
+  gap:8px;cursor:pointer;font-size:12px;font-weight:800;list-style:none
+}
+.meta-distribuicao>summary::-webkit-details-marker{display:none}
+.meta-distribuicao[open] .meta-dist-chevron{transform:rotate(180deg)}
+.meta-dist-chevron{color:#818cf8;transition:transform .15s}
+.meta-dist-body{padding:0 12px 12px;display:grid;gap:11px;min-width:0}
+.meta-dist-intro,.meta-dist-legenda{
+  color:#94a3b8;font-size:11px;line-height:1.6;margin:0
+}
+.meta-dist-filtros{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
+.meta-dist-filtros label{
+  display:flex;flex-direction:column;gap:5px;font-size:10px;
+  color:#cbd5e1;font-weight:700;min-width:0
+}
+.meta-dist-filtros select,.meta-dist-filtros input{
+  box-sizing:border-box;width:100%;min-width:0;border:1px solid #475569;
+  border-radius:7px;background:#17243b;color:#f8fafc;
+  padding:8px;font-size:12px
+}
+.meta-dist-filtros .meta-dist-data[hidden]{display:none}
+.meta-dist-atualizar{
+  grid-column:1/-1;justify-self:start;border:1px solid #6366f1;
+  background:#312e81;color:#e0e7ff;border-radius:7px;
+  padding:9px 12px;font-size:11px;font-weight:700;cursor:pointer
+}
+.meta-dist-atualizar:disabled{opacity:.5;cursor:wait}
+.meta-dist-estado{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.meta-dist-estado[data-estado=sucesso]{color:#4ade80}
+.meta-dist-estado[data-estado=erro]{color:#fca5a5}
+.meta-dist-estado[data-estado=aviso]{color:#fbbf24}
+.meta-dist-resultados{min-width:0}
+.meta-dist-referencia{color:#94a3b8;font-size:10px;margin-bottom:9px}
+.meta-dist-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.meta-dist-resumo>div{padding:10px 7px;border-radius:8px;background:#182740;
+  border:1px solid #334155;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.meta-dist-resumo strong{font-size:20px;color:#a5b4fc}
+.meta-dist-resumo small{font-size:9px;line-height:1.35;color:#cbd5e1}
+.meta-dist-resultados h5{font-size:12px;margin:15px 0 7px;color:#e0e7ff}
+.meta-dist-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.meta-dist-numero{background:#15243b;border:1px solid #334155;border-radius:9px;
+ padding:10px;min-width:0;display:grid;gap:5px}
+.meta-dist-numero header{display:flex;align-items:center;justify-content:space-between;gap:5px;flex-wrap:wrap}
+.meta-dist-numero header>span{font-size:12px;font-weight:800;color:#86efac}
+.meta-dist-numero header>small{font-size:10px;color:#94a3b8}
+.meta-dist-lead-grande{font-size:26px;color:#f8fafc;line-height:1.2}
+.meta-dist-numero>small,.meta-dist-numero-pares{font-size:10px;color:#94a3b8}
+.meta-dist-numero-pares{display:flex;justify-content:space-between;gap:5px}
+.meta-dist-numero-pares b{font-size:12px;color:#e2e8f0}
+.meta-dist-conjuntos{display:grid;gap:8px}
+.meta-dist-conjunto{background:#15243b;border:1px solid #334155;border-radius:9px;
+ padding:11px;display:grid;gap:8px;min-width:0}
+.meta-dist-conjunto-titulo{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.meta-dist-conjunto-titulo strong{font-size:12px;overflow-wrap:anywhere}
+.meta-dist-estado-conjunto{font-size:10px;color:#4ade80}
+.meta-dist-conjunto>small{font-size:10px;color:#94a3b8}
+.meta-dist-metricas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.meta-dist-metricas>div{display:grid;gap:4px;min-width:0}
+.meta-dist-metricas b{font-size:14px;overflow-wrap:anywhere}
+.meta-dist-metricas small{font-size:9px;color:#94a3b8}
+.meta-dist-indisponivel{font-size:11px;color:#94a3b8}
+.meta-dist-vazio{font-size:11px;color:#94a3b8;margin:0;padding:10px;
+ border:1px dashed #475569;border-radius:8px}
+.meta-dist-resultados .meta-dist-legenda{margin-top:11px}
+@media(max-width:550px){
+ .meta-dist-filtros{grid-template-columns:1fr}
+ .meta-dist-resumo{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .meta-dist-grade{grid-template-columns:1fr}
+}
+
+.meta-dist-aviso-parcial {
+  color:#fbbf24;background:rgba(245,158,11,.08);
+  border:1px solid rgba(245,158,11,.4);border-radius:8px;
+  font-size:11px;line-height:1.6;padding:9px;margin-top:10px;
+}

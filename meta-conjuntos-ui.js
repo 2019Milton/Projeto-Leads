@@ -10,7 +10,8 @@
   const fmt = v => new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(v)||0);
   const valorCentavos = v => fmt((Number(v)||0)/100);
   const numeroExibido = v => v ? "+" + String(v).replace(/\D/g,"") : "Não identificado pela Meta";
-  const caminho = id => API + "/meta/campanhas/" + Number(id) + "/conjuntos";
+  const caminho = (id, periodo) => API + "/meta/campanhas/" + Number(id) +
+    "/conjuntos?periodo=" + (periodo==="hoje"?"hoje":"30d");
   const token = () => localStorage.getItem("token") || "";
   const statusLabel = status => {
     const x = String(status||"").toUpperCase();
@@ -27,12 +28,14 @@
     details.dataset.carregando = "1";
     alvo.innerHTML = '<div class="meta-conj-carregando">Consultando conjuntos na Meta...</div>';
     try {
-      const resposta = await fetch(caminho(campanhaId), {
+      const periodo=details.dataset.metaPeriodo==="hoje"?"hoje":"30d";
+      const resposta = await fetch(caminho(campanhaId,periodo), {
         headers: {Authorization:"Bearer " + token()}
       });
       const dados = await resposta.json().catch(() => ({}));
       if (!resposta.ok) throw new Error(dados.error || "Erro na consulta à Meta");
       estados.set(Number(campanhaId), dados);
+      details.dataset.metaPeriodo=dados.periodo_query==="hoje"?"hoje":"30d";
       renderizar(alvo, campanhaId, dados);
       window.MetaOrcamentosUI?.atualizar(campanhaId,dados,alvo);
       const contador = details.querySelector(".meta-conj-contagem");
@@ -44,9 +47,12 @@
     }
   }
 
-  function htmlConjunto(x) {
+  function htmlConjunto(x, periodo="30d") {
     const m = x.metricas || {};
     const crm = x.metricas_crm || {};
+    const dataCurta=periodo==="hoje"?"hoje":"30 dias";
+    const origens=periodo==="hoje"?crm.leads_anuncio_hoje:crm.leads_anuncio_30d;
+    const valorMeta = v => v == null ? "—" : esc(v);
     // Três fontes/períodos distintos. Null = métrica indisponível, zero =
     // consulta confirmou ausência de leads, nunca esconder divergências.
     const contabilizar = v => v === null || v === undefined ? "—" : esc(v);
@@ -54,9 +60,9 @@
       '<div class="meta-conj-crm-indicador"><strong>'+contabilizar(crm.leads_whatsapp_hoje)+'</strong>'+
         '<span>Leads WhatsApp <b>hoje</b></span><small>CRM · todas as origens</small></div>'+
       '<div class="meta-conj-crm-indicador"><strong>'+contabilizar(m.conversas_meta)+'</strong>'+
-        '<span>Conversas Meta <b>30 dias</b></span><small>Atribuição publicitária</small></div>'+
-      '<div class="meta-conj-crm-indicador"><strong>'+contabilizar(crm.leads_anuncio_30d)+'</strong>'+
-        '<span>Leads do anúncio <b>30 dias</b></span><small>CRM · origem confirmada</small></div>'+
+        '<span>Conversas Meta <b>'+dataCurta+'</b></span><small>Atribuição publicitária</small></div>'+
+      '<div class="meta-conj-crm-indicador"><strong>'+contabilizar(origens)+'</strong>'+
+        '<span>Leads do anúncio <b>'+dataCurta+'</b></span><small>CRM · origem confirmada</small></div>'+
       '</div>'+
       '<p class="meta-conj-crm-explicacao">Os leads no WhatsApp incluem outras origens. '+
        'Leads do anúncio só contam quando a referência da Meta identifica um anúncio deste conjunto. '+
@@ -73,8 +79,8 @@
       '<div class="meta-conj-destino">WhatsApp: ' + esc(numeroExibido(x.numero_whatsapp)) +
       ' · ' + esc(x.destino || "Destino não informado") + '</div>' +
       '<div class="meta-conj-metricas"><span>Orçamento: ' + esc(dinheiro) +
-      '</span><span>Gasto (30d): ' + fmt(m.gasto) + '</span><span>Cliques: ' +
-      esc(m.cliques || 0) + '</span><span>Impressões: ' + esc(m.impressoes || 0) +
+      '</span><span>Gasto (' + dataCurta + '): ' + (m.gasto==null?"—":fmt(m.gasto)) + '</span><span>Cliques: ' +
+      valorMeta(m.cliques) + '</span><span>Impressões: ' + valorMeta(m.impressoes) +
       '</span></div>' + resumoCrm +
       '<div class="meta-conj-anuncios">' + (anuncios || '<em>Sem anúncio neste conjunto</em>') + '</div>' +
       '</div>';
@@ -403,14 +409,30 @@
       ? 'Orçamento definido na campanha' +
         (campanha.orcamento_diario_centavos ? ': ' + valorCentavos(campanha.orcamento_diario_centavos) + '/dia' : "")
       : 'Orçamento individual por conjunto (ABO)';
-    let s = '<div class="meta-conj-resumo">' + esc(orcamento) + ' · Período: últimos 30 dias</div>';
-    s += conjuntos.map(htmlConjunto).join("") ||
+    const periodo = dados.periodo_query==="hoje"?"hoje":"30d";
+    let s = '<div class="meta-conj-resumo">' + esc(orcamento) + '</div>' +
+      '<div class="meta-conj-periodo-filtro"><label>Resultados da Meta:'+
+      '<select aria-label="Período dos resultados Meta" '+
+      'onchange="window.MetaConjuntosUI.trocarPeriodo(event,this)">'+
+      '<option value="hoje" '+(periodo==="hoje"?"selected":"")+' >Hoje</option>'+
+      '<option value="30d" '+(periodo==="30d"?"selected":"")+' >Últimos 30 dias</option>'+
+      '</select></label><small>Impressões, cliques, gasto e conversas seguem o período selecionado.</small></div>';
+    s += conjuntos.map(x=>htmlConjunto(x,periodo)).join("") ||
       '<div class="meta-conj-vazio">A Meta não retornou conjuntos para esta campanha.</div>';
     if (dados.aviso_metricas) s += '<div class="meta-conj-aviso">' + esc(dados.aviso_metricas) + '</div>';
     if (dados.aviso_crm) s += '<div class="meta-conj-aviso">' + esc(dados.aviso_crm) + '</div>';
     alvo.innerHTML = s;
     const details = alvo.closest(".meta-conjuntos-campanha");
     if(details) details.dataset.campanhaId = String(campanhaId);
+  }
+
+  function trocarPeriodo(ev,seletor) {
+    ev?.stopPropagation();
+    const detalhes=seletor?.closest(".meta-conjuntos-campanha");
+    const campanhaId=Number(detalhes?.dataset.campanhaId||0);
+    if(!detalhes||!Number.isSafeInteger(campanhaId)||campanhaId<=0)return;
+    detalhes.dataset.metaPeriodo=seletor.value==="hoje"?"hoje":"30d";
+    carregar(detalhes,campanhaId);
   }
 
   function atualizarAnuncios(formulario) {
@@ -595,7 +617,7 @@
       btn.disabled = true;
     }
   }
-  window.MetaConjuntosUI = { carregar, carregarNumeros, atualizarAnuncios, criar, validar, invalidar, renderizarGestao,
+  window.MetaConjuntosUI = { carregar, trocarPeriodo, carregarNumeros, atualizarAnuncios, criar, validar, invalidar, renderizarGestao,
     validarConclusao, copiarParaExistente, invalidarConclusao,
     alterarStatus, atualizarStatus };
 })();

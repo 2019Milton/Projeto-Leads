@@ -48751,15 +48751,32 @@ function detalheItensExtras(objeto = {}, mapa = []) {
     .join("");
 }
 
+// O CDN da Meta (fbcdn/cdninstagram) devolve o MESMO arquivo com host regional
+// e assinatura (oh/oe/_nc_*) diferentes a cada consulta — comparar a URL
+// inteira fazia uma única capa de vídeo aparecer dezenas de vezes.
+function chaveArquivoImagemUrl(url) {
+  try {
+    const u = new URL(url);
+    if (/(^|\.)(fbcdn\.net|cdninstagram\.com)$/i.test(u.hostname)) return u.pathname;
+  } catch (e) {}
+  return url;
+}
+
 function coletarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
-  const urls = Array.from(new Set([
+  const chavesVistas = new Set();
+  const urls = [
     ...(Array.isArray(cfg.imagens_urls) ? cfg.imagens_urls : []),
     ...(Array.isArray(cfg.image_urls) ? cfg.image_urls : []),
     ...(Array.isArray(campanha.imagens_urls) ? campanha.imagens_urls : []),
     cfg.imagem_url,
     cfg.image_url,
     campanha.imagem_url
-  ].filter(Boolean).map(String)));
+  ].filter(Boolean).map(String).filter(url => {
+    const chave = chaveArquivoImagemUrl(url);
+    if (chavesVistas.has(chave)) return false;
+    chavesVistas.add(chave);
+    return true;
+  });
 
   const hashes = Array.from(new Set([
     ...(Array.isArray(cfg.imageHashes) ? cfg.imageHashes : []),
@@ -48832,6 +48849,13 @@ function coletarVideoCampanhaDetalhe(campanha = {}, cfg = {}) {
 function renderizarImagensCampanhaDetalhe(campanha = {}, cfg = {}) {
   const imagens = coletarImagensCampanhaDetalhe(campanha, cfg);
   const video = coletarVideoCampanhaDetalhe(campanha, cfg);
+
+  // Em campanha de vídeo a Meta devolve a capa do vídeo como "imagem" do
+  // criativo; o player acima já mostra essa capa, então não repete em card.
+  if (video.videoThumbnailUrl && !imagens.hashes.length) {
+    const chaveCapa = chaveArquivoImagemUrl(video.videoThumbnailUrl);
+    imagens.urls = imagens.urls.filter(url => chaveArquivoImagemUrl(url) !== chaveCapa);
+  }
 
   if (
     !imagens.urls.length &&

@@ -373,7 +373,8 @@
     document.querySelectorAll("#gt_lista_clientes .gt-card").forEach((card) => {
       if (card.dataset.recursosProntos === "1") return;
       const botaoAcesso = card.querySelector('[onclick^="acessarContaGerenciada"]');
-      const id = Number(String(botaoAcesso?.getAttribute("onclick") || "").match(/\d+/)?.[0]);
+      // data-cliente-id vem do card; o onclick fica só de reserva para HTML antigo em cache.
+      const id = Number(card.dataset.clienteId || String(botaoAcesso?.getAttribute("onclick") || "").match(/\d+/)?.[0]);
       const cliente = clientePorId(id);
       if (!cliente) return;
       const whatsapp = statusRecurso(cliente, "whatsapp");

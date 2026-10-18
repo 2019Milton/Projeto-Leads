@@ -17526,6 +17526,7 @@ body.tema-claro .criar-campanha-descricao {
 <link rel="stylesheet" href="central-leads-visual.css">
 <link rel="stylesheet" href="servicos-visuais.css">
 <link rel="stylesheet" href="configuracoes-visuais.css">
+<link rel="stylesheet" href="contrato-plataforma.css?v=20261018-contrato">
 <link rel="stylesheet" href="meta-conjuntos-ui.css?v=20261015-metricas-hoje">
 <link rel="stylesheet" href="meta-orcamentos-ui.css?v=20261014-controle-status">
 <link rel="stylesheet" href="meta-distribuicao-ui.css?v=20261014-distribuicao1">
@@ -19965,6 +19966,19 @@ body.tema-claro .criar-campanha-descricao {
             </div>
           </div>
 
+          <!-- Contrato (contrato-plataforma.js) -->
+          <div class="cfg-card cfg-card-largo" id="cfg-card-contrato">
+            <div class="cfg-card-header">📄 Contrato</div>
+            <div class="cfg-field cfg-contrato-linha">
+              <div>
+                <div class="cfg-toggle-label">Contrato de utilização da plataforma</div>
+                <div class="cfg-toggle-desc">Seus dados de cadastro e as condições de pagamento combinadas.</div>
+                <span id="cfg-contrato-status" class="contrato-status contrato-status-pendente" role="status" aria-live="polite">Carregando...</span>
+              </div>
+              <button type="button" id="cfg-contrato-btn" onclick="abrirContratoPlataforma()" class="cfg-btn-save">Ver contrato</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -22035,10 +22049,12 @@ body.tema-claro .criar-campanha-descricao {
             <button type="button" class="btn-video-anuncio remover" onclick="fecharDetalheFinanceiroUsuario()">Fechar</button>
           </div>
 
+          <div id="financeiro_contrato_condicoes"></div>
+
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;">
             <div>
               <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Data de referência</label>
-              <input type="date" id="financeiro_novo_mes" />
+              <input type="date" id="financeiro_novo_mes" onchange="if (typeof sugerirValorLancamentoFinanceiro === 'function') sugerirValorLancamentoFinanceiro()" />
             </div>
             <div>
               <label style="display:block;font-size:12px;color:#9ca3af;margin-bottom:4px;">Valor (R$)</label>
@@ -22054,6 +22070,7 @@ body.tema-claro .criar-campanha-descricao {
             </div>
             <button class="btn" onclick="lancarCobrancaFinanceiroUsuario()">Lançar cobrança</button>
           </div>
+          <p id="financeiro_novo_sugestao" class="fin-contrato-sugestao" role="status" aria-live="polite"></p>
 
           <div id="financeiro_usuario_historico"></div>
         </div>
@@ -23609,6 +23626,8 @@ function abrirConfiguracoes() {
   _cfgClickFora = (e) => {
     const card = document.getElementById("card-configuracoes");
     const btn  = document.getElementById("sidebar-item-configuracoes");
+    // O contrato abre num modal por cima: clicar nele não fecha as Configurações.
+    if (e.target?.closest?.("#contrato_modal")) return;
     if (
       card && !card.contains(e.target) &&
       btn  && !btn.contains(e.target)
@@ -24306,7 +24325,7 @@ async function carregarFinanceiroUsuariosAdmin() {
       const statusInfo = ultimo ? (FINANCEIRO_STATUS_LABEL[ultimo.status] || { texto: ultimo.status, cor: "#94a3b8" }) : null;
       return `
         <tr>
-          <td>${escaparHtml(u.nome)}</td>
+          <td>${escaparHtml(u.nome)}${!u.contrato_respondido && !u.cliente_gerenciado ? `<span class="fin-contrato-badge" title="Condições do contrato ainda não respondidas">contrato a responder</span>` : ""}</td>
           <td>${escaparHtml(u.email || "")}</td>
           <td>${ultimo ? escaparHtml(formatarMesReferencia(ultimo.mes_referencia)) : "—"}</td>
           <td>${ultimo ? formatarMoeda(ultimo.valor) : "—"}</td>
@@ -24337,6 +24356,8 @@ async function abrirDetalheFinanceiroUsuario(usuarioId, nome) {
   definirValorCampo("financeiro_novo_observacao", "");
   definirValorCampo("financeiro_novo_pix", localStorage.getItem("financeiro_ultima_chave_pix") || "");
 
+  // Condições do contrato (contrato-plataforma.js): também sugerem valor e PIX do lançamento.
+  if (typeof carregarCondicoesContratoAdmin === "function") carregarCondicoesContratoAdmin(usuarioId);
   await carregarHistoricoFinanceiroUsuario();
   detalhe?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -29778,6 +29799,7 @@ function _preencherPaginaConfiguracoes() {
   }
   if (el("cfg-notif-lead")) el("cfg-notif-lead").checked = u.notif_whatsapp_lead !== false;
   if (el("cfg-tema-toggle")) el("cfg-tema-toggle").checked = document.body.classList.contains("tema-claro");
+  if (typeof carregarResumoContratoConfiguracoes === "function") carregarResumoContratoConfiguracoes();
 }
 
 function _atualizarBadgeWhatsapp(wpp) {
@@ -60768,6 +60790,7 @@ async function criarLookalike() {
 <link rel="stylesheet" href="assistente-contas.css?v=20261017">
 <script src="recursos-corretor.js?v=20261018-somente-painel"></script>
 <script src="voip-custos.js"></script>
+<script src="contrato-plataforma.js?v=20261018-contrato"></script>
 <script src="assistente-contas-regras.js?v=20261009"></script>
 <script src="assistente-contas.js?v=20261017"></script>
 

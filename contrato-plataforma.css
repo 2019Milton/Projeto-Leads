@@ -1,0 +1,62 @@
+/* Contrato de utilização: card em Configurações, modal do texto e condições no Financeiro. */
+.contrato-status {display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.5;border:1px solid transparent;}
+.contrato-status-ok {color:#86efac;background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);}
+.contrato-status-alerta {color:#fcd34d;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.35);}
+.contrato-status-pendente {color:#cbd5e1;background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.3);}
+body.tema-claro .contrato-status-ok {color:#166534;background:#dcfce7;border-color:#86efac;}
+body.tema-claro .contrato-status-alerta {color:#92400e;background:#fef3c7;border-color:#fcd34d;}
+body.tema-claro .contrato-status-pendente {color:#334155;background:#f1f5f9;border-color:#cbd5e1;}
+
+#card-configuracoes .cfg-card.cfg-card-largo {grid-column:1/-1;}
+#card-configuracoes .cfg-contrato-linha {display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+#card-configuracoes .cfg-contrato-linha > div {min-width:0;flex:1 1 220px;}
+
+.contrato-modal {
+  --ct-bg:#0e1727;--ct-surface:#152136;--ct-border:#2b3b53;--ct-text:#edf3fb;--ct-muted:#a9b9cf;--ct-accent:#99bdff;
+  position:fixed;inset:0;z-index:10050;background:rgba(2,6,15,.72);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;
+}
+body.tema-claro .contrato-modal {--ct-bg:#f5f7fb;--ct-surface:#fff;--ct-border:#d6e0ed;--ct-text:#1b2b43;--ct-muted:#53657f;--ct-accent:#315b9b;background:rgba(15,23,42,.45);}
+.contrato-modal-caixa {width:min(760px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:var(--ct-bg);color:var(--ct-text);border:1px solid var(--ct-border);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.45);padding:20px;box-sizing:border-box;}
+.contrato-modal-topo {display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:14px;}
+.contrato-modal-topo h2 {margin:4px 0 0;font-size:22px;color:var(--ct-text);}
+.contrato-modal-sobre {font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ct-accent);}
+.contrato-modal-fechar {flex:none;width:36px;height:36px;border:1px solid var(--ct-border);border-radius:9px;color:var(--ct-muted);background:var(--ct-surface);cursor:pointer;}
+.contrato-pendencias {margin:0 0 12px;padding:10px 14px;border-radius:10px;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.1);font-size:13px;line-height:1.55;}
+.contrato-pendencias ul {margin:4px 0 0;padding-left:18px;}
+.contrato-doc {flex:1 1 auto;min-height:0;overflow-y:auto;background:var(--ct-surface);border:1px solid var(--ct-border);border-radius:12px;padding:18px 20px;font-size:13.5px;line-height:1.65;}
+.contrato-doc:focus-visible,.contrato-modal :is(button):focus-visible {outline:2px solid var(--ct-accent);outline-offset:2px;}
+.contrato-doc-titulo {margin:0 0 2px;font-size:17px;color:var(--ct-text);}
+.contrato-doc-versao {margin:0 0 14px;font-size:11px;color:var(--ct-muted);}
+.contrato-doc-secao h4 {margin:16px 0 6px;font-size:14px;color:var(--ct-text);}
+.contrato-doc-secao p {margin:0 0 8px;color:var(--ct-text);overflow-wrap:anywhere;}
+.contrato-modal-rodape {display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;padding-top:14px;}
+.contrato-btn {min-height:42px;padding:10px 16px;border-radius:8px;border:1px solid #567ec0;background:#345fa5;color:#fff;font-size:13px;font-weight:600;cursor:pointer;}
+.contrato-btn:disabled {opacity:.5;cursor:not-allowed;}
+.contrato-btn-sec {background:var(--ct-surface);color:var(--ct-text);border-color:var(--ct-border);}
+.contrato-modal-aviso {margin:8px 0 0;font-size:12px;color:var(--ct-muted);text-align:right;}
+.contrato-modal-aviso:empty {display:none;}
+@media (max-width:600px) {
+  .contrato-modal {padding:0;align-items:stretch;}
+  .contrato-modal-caixa {max-height:100vh;border-radius:0;padding:16px;}
+  .contrato-doc {padding:14px;}
+  .contrato-modal-rodape .contrato-btn {flex:1 1 auto;}
+}
+
+/* Admin → Financeiro dos Usuários → Gerenciar */
+.fin-contrato {margin-bottom:16px;padding:12px 14px;border-radius:10px;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.25);}
+.fin-contrato-topo {display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.fin-contrato-topo strong {display:block;font-size:14px;}
+.fin-contrato-grade {display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 12px;align-items:end;}
+.fin-contrato-campo {display:flex;flex-direction:column;gap:4px;min-width:0;}
+.fin-contrato-campo > span {font-size:12px;color:#9ca3af;}
+.fin-contrato-campo :is(input,select,textarea) {width:100%;box-sizing:border-box;}
+.fin-contrato-campo textarea {resize:vertical;font-family:inherit;}
+.fin-contrato-campo.fin-ct-largo {grid-column:1/-1;}
+.fin-contrato-nota {font-size:12px;color:#94a3b8;margin:8px 0 0;line-height:1.5;grid-column:1/-1;}
+.fin-contrato-nota-alerta {color:#fcd34d;margin:0 0 10px;}
+.fin-contrato-acoes {display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:13px;}
+.fin-contrato-sugestao {font-size:12px;color:#86efac;margin:-8px 0 14px;}
+.fin-contrato-sugestao:empty {display:none;}
+.fin-contrato-badge {display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;color:#fcd34d;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);vertical-align:middle;}
+body.tema-claro .fin-contrato-nota-alerta,body.tema-claro .fin-contrato-badge {color:#92400e;}
+body.tema-claro .fin-contrato-sugestao {color:#166534;}

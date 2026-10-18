@@ -11,6 +11,10 @@
   let statusSequencia = 0;
   let filaSalvamento = Promise.resolve();
   let versaoRascunho = 0;
+  let rascunhoPendente = false;
+  let rascunhoLocalDisponivel = false;
+  let rascunhoCarregadoServidor = false;
+  let carregamentoSequencia = 0;
   let criandoGoogle = false;
   const sessaoValida = (token = sessaoToken) => Boolean(token && token === sessaoToken && token === localStorage.getItem("token"));
   const plataformas = {
@@ -131,6 +135,10 @@
     statusSequencia += 1;
     sessaoToken = token;
     chaveRascunho = null;
+    carregamentoSequencia += 1;
+    rascunhoPendente = false;
+    rascunhoLocalDisponivel = false;
+    rascunhoCarregadoServidor = false;
     criandoGoogle = false;
     estado = { etapa: 1, plataformas: ["meta"], dados: {}, acompanhamento: {}, erros: {}, status: {}, capacidades: {}, carregando: false, salvamento: "local" };
     // O cache antigo não tem proprietário: nunca importá-lo para uma conta.
@@ -156,14 +164,21 @@
 
   function gravarLocal() {
     if (!sessaoValida() || !chaveRascunho) return;
-    try { localStorage.setItem(chaveRascunho, JSON.stringify(dadosRascunho())); } catch (_) {}
+    rascunhoLocalDisponivel = true;
+    try { localStorage.setItem(chaveRascunho, JSON.stringify({ ...dadosRascunho(), pendente_sincronizacao: rascunhoPendente })); } catch (_) {}
   }
 
   function carregarRascunho() {
     if (!prepararSessao()) return false;
     try {
       const salvo = JSON.parse(localStorage.getItem(chaveRascunho) || "null");
-      if (salvo && typeof salvo === "object") aplicarRascunho(salvo);
+      if (salvo && typeof salvo === "object") {
+        aplicarRascunho(salvo);
+        rascunhoLocalDisponivel = true;
+        // Caches anteriores não distinguem edição pendente de cópia sincronizada.
+        rascunhoPendente = salvo.pendente_sincronizacao !== false;
+        if (rascunhoPendente) estado.salvamento = "erro";
+      }
     } catch (_) {}
     return true;
   }
@@ -172,12 +187,22 @@
     const el = document.getElementById("assistente_contas_salvamento");
     if (!el) return;
     const textos = { salvando: "Salvando na sua conta...", salvo: "✓ Salvo na sua conta",
-      local: "Salvo neste dispositivo", erro: "Salvo neste dispositivo — tente salvar novamente" };
+      local: "Salvo neste dispositivo", carregando: "Carregando seus dados...",
+      erro: rascunhoLocalDisponivel ? "Salvo neste dispositivo — tente salvar novamente" : "Não foi possível carregar seus dados" };
     el.textContent = textos[estado.salvamento] || textos.local;
     el.dataset.estado = estado.salvamento;
   }
 
   function persistirRascunhoServidor() {
+    // Nunca substituir um rascunho remoto quando sua leitura não foi concluída.
+    if (!rascunhoCarregadoServidor) {
+      if (sessaoValida()) {
+        estado.salvamento = "erro";
+        if (aberto()) renderFooter();
+        atualizarIndicadorSalvamento();
+      }
+      return Promise.resolve(false);
+    }
     const token = sessaoToken;
     const versao = versaoRascunho;
     const body = JSON.stringify(dadosRascunho());
@@ -192,11 +217,21 @@
         });
         if (!sessaoValida(token)) return false;
         if (!res.ok) throw new Error("Falha ao salvar");
-        if (versao === versaoRascunho) estado.salvamento = "salvo";
+        if (versao === versaoRascunho) {
+          rascunhoPendente = false;
+          estado.salvamento = "salvo";
+          gravarLocal();
+        }
         atualizarIndicadorSalvamento();
         return true;
       } catch (_) {
-        if (sessaoValida(token)) { estado.salvamento = "erro"; atualizarIndicadorSalvamento(); }
+        if (sessaoValida(token)) {
+          rascunhoPendente = true;
+          estado.salvamento = "erro";
+          gravarLocal();
+          if (aberto()) renderFooter();
+          atualizarIndicadorSalvamento();
+        }
         return false;
       }
     };
@@ -207,6 +242,8 @@
   function salvarRascunho(opcoes = {}) {
     if (!sessaoValida()) return;
     versaoRascunho += 1;
+    rascunhoPendente = true;
+    estado.salvamento = "local";
     gravarLocal();
     if (salvamentoTimer) clearTimeout(salvamentoTimer);
     if (opcoes.imediato) persistirRascunhoServidor();
@@ -216,30 +253,45 @@
   async function carregarRascunhoServidor() {
     const token = sessaoToken;
     if (!sessaoValida(token)) return;
+    const sequencia = ++carregamentoSequencia;
+    const versao = versaoRascunho;
+    const atual = () => sessaoValida(token) && sequencia === carregamentoSequencia;
+    rascunhoCarregadoServidor = false;
+    if (!rascunhoLocalDisponivel) estado.salvamento = "carregando";
+    if (aberto()) render();
     try {
+      // Uma leitura iniciada antes de um PUT terminar pode devolver dados antigos.
+      await filaSalvamento;
+      if (!atual()) return;
       const res = await fetch(API + "/assistente-contas-anuncios", {
         signal: AbortSignal.timeout(15000), headers: { Authorization: "Bearer " + token }
       });
       if (!res.ok) throw new Error("Falha ao carregar");
       const data = await res.json();
-      if (!sessaoValida(token)) return;
-      if (interagiuDesdeAbertura) return;
-      if (data?.rascunho && typeof data.rascunho === "object") {
+      if (!atual()) return;
+      rascunhoCarregadoServidor = true;
+      if (!rascunhoPendente && !interagiuDesdeAbertura && versao === versaoRascunho && data?.rascunho && typeof data.rascunho === "object") {
         aplicarRascunho(data.rascunho);
         estado.salvamento = "salvo";
         gravarLocal();
-        if (aberto()) render();
         if (estado.etapa === 3) carregarStatus({ silencioso: true });
       }
+      if (estado.salvamento === "carregando") estado.salvamento = "local";
+      if (aberto()) render();
     } catch (_) {
-      if (sessaoValida(token)) { estado.salvamento = "erro"; atualizarIndicadorSalvamento(); }
+      if (atual()) { estado.salvamento = "erro"; if (aberto()) render(); }
     }
   }
 
   function capturarFormulario() {
+    let mudou = false;
     document.querySelectorAll("#assistente_contas_corpo [data-assistente-campo]").forEach(el => {
-      if (el.name) estado.dados[el.name] = el.value;
+      if (el.name && String(estado.dados[el.name] ?? "") !== el.value) {
+        estado.dados[el.name] = el.value;
+        mudou = true;
+      }
     });
+    return mudou;
   }
 
   function renderEtapas() {
@@ -386,6 +438,17 @@
     </details>`;
   }
 
+  function renderOrientacoesMonitor(resultado) {
+    if (!resultado || resultado.sensivel) return "";
+    const rotulos = { preenchido: "Observado preenchido", faltando: "Preenchimento pendente", atencao: "Revisar", nao_aplicavel: "Não se aplica à etapa" };
+    const campos = (Array.isArray(resultado.campos) ? resultado.campos : []).slice(0, 40);
+    const alertas = (Array.isArray(resultado.alertas) ? resultado.alertas : []).slice(0, 10);
+    return `<div class="assistente-monitor-checklist">${campos.map(campo => {
+      const status = Object.hasOwn(rotulos, campo?.status) ? campo.status : "atencao";
+      return `<div class="assistente-monitor-campo ${status}"><span>${status === "preenchido" ? "✓" : "!"}</span><div><b>${esc(campo?.nome)}</b><small>${esc(campo?.orientacao || rotulos[status])}</small></div></div>`;
+    }).join("")}</div>${alertas.map(aviso => `<div class="assistente-monitor-erro" role="alert">${esc(aviso)}</div>`).join("")}`;
+  }
+
   function renderMonitorTela() {
     if (!monitor.ativo || !monitor.plataforma) return "";
     const p = plataformas[monitor.plataforma];
@@ -405,6 +468,7 @@
               <div class="assistente-monitor-etapa">${esc(r.pagina || p.nome)} · ${esc(r.etapa || "Etapa observada")}</div>
               <strong>${esc(r.resumo || "Imagem analisada")}</strong>
               <div class="assistente-monitor-proxima"><b>Próxima ação sugerida</b>${esc(r.proxima_acao || "Continue na página oficial.")}</div>
+              ${renderOrientacoesMonitor(r)}
               <p>A leitura desta imagem não confirma a conexão nem a autorização para anunciar. Consulte o estado da integração acima.</p>
               ${r.sensivel ? '<div class="assistente-monitor-erro">A imagem continha uma etapa sensível. Conclua essa etapa pessoalmente e não envie capturas com esses dados.</div>' : ""}` : `<strong>Compartilhamento somente neste navegador</strong><p>Capture uma imagem, confira a prévia e envie apenas se ela não mostrar dados sensíveis. Nada é enviado automaticamente ao mudar de tela.</p>`}
           </div>
@@ -500,11 +564,12 @@
       <div class="assistente-contas-footer-esq">
         ${etapa > 1 ? `<button class="assistente-btn-secundario" onclick="assistenteIrParaEtapa(${etapa - 1})">← Voltar</button>` : `<button class="assistente-btn-secundario" onclick="fecharAssistenteContasAnuncios()">Continuar depois</button>`}
         <span id="assistente_contas_salvamento" class="assistente-salvamento" data-estado="${esc(estado.salvamento)}"></span>
+        ${estado.salvamento === "erro" ? '<button class="assistente-btn-secundario" onclick="assistenteTentarSalvarRascunho()">Tentar novamente</button>' : ""}
       </div>
       <div class="assistente-contas-footer-dir">
         ${etapa === 3
           ? `<button class="assistente-btn-secundario" onclick="assistenteCopiarDados()">📋 Copiar dados</button><button class="assistente-btn-secundario" onclick="carregarAssistenteContasAnuncios()">↻ Verificar novamente</button><button class="assistente-btn-sucesso" onclick="fecharAssistenteContasAnuncios()">Salvar e fechar</button>`
-          : `<button class="assistente-btn-primario" onclick="assistenteIrParaEtapa(${etapa + 1})">Continuar →</button>`}
+          : `<button class="assistente-btn-primario" onclick="assistenteIrParaEtapa(${etapa + 1})" ${!rascunhoCarregadoServidor && !rascunhoLocalDisponivel ? "disabled" : ""}>Continuar →</button>`}
       </div>`;
   }
 
@@ -512,7 +577,9 @@
     renderEtapas();
     const corpo = document.getElementById("assistente_contas_corpo");
     if (!corpo) return;
-    corpo.innerHTML = estado.etapa === 1 ? renderPlataformas() : estado.etapa === 2 ? renderDados() : renderStatus();
+    corpo.innerHTML = !rascunhoCarregadoServidor && !rascunhoLocalDisponivel
+      ? `<p class="assistente-contas-intro" role="status">${estado.salvamento === "erro" ? "Não foi possível carregar seu cadastro. Tente novamente para continuar sem substituir os dados salvos." : "Carregando seu cadastro salvo..."}</p>`
+      : estado.etapa === 1 ? renderPlataformas() : estado.etapa === 2 ? renderDados() : renderStatus();
     renderFooter();
     atualizarIndicadorSalvamento();
     const preview = document.getElementById("assistente_monitor_video");
@@ -650,7 +717,7 @@
   }
 
   window.assistenteAcompanharTela = async function (plataforma) {
-    if (!sessaoValida()) return;
+    if (!sessaoValida() || estado.etapa !== 3 || !estado.plataformas.includes(plataforma)) return;
     const configuracao = plataformas[plataforma];
     if (!configuracao) return;
     if (monitor.ativo && monitor.plataforma === plataforma) {
@@ -683,6 +750,8 @@
     }
 
     const tokenCaptura = sessaoToken;
+    let geracaoCaptura = monitor.geracao;
+    const capturaAtual = () => sessaoValida(tokenCaptura) && aberto() && estado.etapa === 3 && estado.plataformas.includes(plataforma) && monitor.geracao === geracaoCaptura;
     let novoStream = null;
     try {
       novoStream = await navigator.mediaDevices.getDisplayMedia({
@@ -698,15 +767,16 @@
         surfaceSwitching: "include"
       });
 
-      if (!sessaoValida(tokenCaptura) || !aberto()) { novoStream.getTracks().forEach(track => track.stop()); return; }
+      if (!capturaAtual()) { novoStream.getTracks().forEach(track => track.stop()); return; }
       pararMonitorTela(false);
+      geracaoCaptura = monitor.geracao;
       const video = document.createElement("video");
       video.autoplay = true;
       video.muted = true;
       video.playsInline = true;
       video.srcObject = novoStream;
       await video.play();
-      if (!sessaoValida(tokenCaptura) || !aberto()) { novoStream.getTracks().forEach(track => track.stop()); return; }
+      if (!capturaAtual()) { novoStream.getTracks().forEach(track => track.stop()); return; }
 
       Object.assign(monitor, {
         ativo: true,
@@ -781,7 +851,14 @@
   };
 
   window.fecharAssistenteContasAnuncios = function () {
-    if (sessaoValida()) { capturarFormulario(); salvarRascunho({ imediato: true }); }
+    if (sessaoValida()) {
+      if (capturarFormulario()) salvarRascunho({ imediato: true });
+      else if (rascunhoPendente) {
+        if (salvamentoTimer) clearTimeout(salvamentoTimer);
+        persistirRascunhoServidor();
+      }
+    }
+    carregamentoSequencia += 1;
     pararMonitorTela(false);
     const modal = document.getElementById("assistente_contas_modal");
     if (modal) modal.style.display = "none";
@@ -789,7 +866,8 @@
   };
 
   window.assistenteSelecionarPlataforma = function (plataforma) {
-    if (!sessaoValida() || !plataformas[plataforma]) return;
+    if (!sessaoValida() || !plataformas[plataforma] || (!rascunhoCarregadoServidor && !rascunhoLocalDisponivel)) return;
+    if (!estado.plataformas.includes(plataforma)) pararMonitorTela(false);
     interagiuDesdeAbertura = true;
     estado.plataformas = [plataforma];
     salvarRascunho();
@@ -797,7 +875,7 @@
   };
 
   window.assistenteSalvarCampoDados = function (el) {
-    if (!sessaoValida() || !el?.name) return;
+    if (!sessaoValida() || !el?.name || (!rascunhoCarregadoServidor && !rascunhoLocalDisponivel)) return;
     interagiuDesdeAbertura = true;
     estado.dados[el.name] = el.value;
     delete estado.erros[el.name];
@@ -808,7 +886,7 @@
   };
 
   window.assistenteIrParaEtapa = function (etapa) {
-    if (!sessaoValida()) return;
+    if (!sessaoValida() || (!rascunhoCarregadoServidor && !rascunhoLocalDisponivel)) return;
     interagiuDesdeAbertura = true;
     capturarFormulario();
     if (etapa === 2 && !estado.plataformas.length) {
@@ -818,6 +896,7 @@
     if (etapa === 3) {
       estado.erros = validarDadosAssistente(estado.dados);
       if (Object.keys(estado.erros).length) {
+        pararMonitorTela(false);
         estado.etapa = 2;
         salvarRascunho();
         render();
@@ -826,12 +905,24 @@
       }
     }
     estado.etapa = Math.min(3, Math.max(1, etapa));
+    if (estado.etapa !== 3) pararMonitorTela(false);
     salvarRascunho();
     render();
     if (estado.etapa === 3) carregarStatus();
   };
 
   window.carregarAssistenteContasAnuncios = carregarStatus;
+
+  window.assistenteTentarSalvarRascunho = async function () {
+    const token = sessaoToken;
+    await carregarRascunhoServidor();
+    if (!sessaoValida(token) || !aberto()) return;
+    if (rascunhoPendente && rascunhoCarregadoServidor) {
+      if (salvamentoTimer) clearTimeout(salvamentoTimer);
+      await persistirRascunhoServidor();
+    }
+    if (sessaoValida(token) && aberto()) render();
+  };
 
   window.assistenteIniciarConexao = function (plataforma, btn) {
     if (typeof window.conectarPlataforma === "function") window.conectarPlataforma(plataforma, btn);
@@ -949,6 +1040,10 @@
     try { if (chaveRascunho) localStorage.removeItem(chaveRascunho); localStorage.removeItem(STORAGE_LEGADO); } catch (_) {}
     sessaoToken = null;
     chaveRascunho = null;
+    carregamentoSequencia += 1;
+    rascunhoPendente = false;
+    rascunhoLocalDisponivel = false;
+    rascunhoCarregadoServidor = false;
     estado = { etapa: 1, plataformas: ["meta"], dados: {}, acompanhamento: {}, erros: {}, status: {}, capacidades: {}, carregando: false, salvamento: "local" };
     const modal = document.getElementById("assistente_contas_modal");
     if (modal) modal.style.display = "none";

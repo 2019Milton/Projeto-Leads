@@ -44804,10 +44804,11 @@ async function selecionarAnuncianteTikTok(advertiserId, opts = {}, btnEl) {
     const res = await fetch(`${API}/tiktok/selecionar-anunciante`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ advertiser_id: advertiserId })
+      body: JSON.stringify({ advertiser_id: String(advertiserId) })
     });
     if (!res.ok) {
-      if (!opts.silencioso) alert("Erro ao selecionar a conta de anúncios.");
+      const erro = await res.json().catch(() => ({}));
+      if (!opts.silencioso) alert(erro.error || "Erro ao selecionar a conta de anúncios.");
       restaurarBotao();
       return false;
     }
@@ -57424,10 +57425,9 @@ async function enviarFeedback() {
             <strong>"Começar agora"</strong> ou <strong>"Nova conta"</strong>.
           </p>
           <p style="margin:10px 0 0;background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:8px 12px;color:#92400e!important;font-size:13px;font-weight:600;">
-            ⚠️ Importante: crie uma conta Google Ads normal (de anunciante), <u>não</u> uma "conta gerenciadora"
-            (também chamada de MCC). Se em algum momento o Google perguntar se você "gerencia contas de
-            anúncio de outras pessoas/empresas" ou oferecer criar uma "conta de gerenciador", responda que
-            <u>não</u> — essa conta é só pra você anunciar o seu próprio negócio.
+            Este guia é para criar uma conta de anunciante para seu próprio negócio. Se você já usa uma
+            conta gerenciadora (MCC), o assistente também pode oferecer a criação de uma conta cliente
+            vinculada a ela, conforme seu acesso e a elegibilidade definida pelo Google.
           </p>
           <p style="margin:10px 0 0;">
             <a href="https://ads.google.com/signup" target="_blank" rel="noopener noreferrer"
@@ -57439,13 +57439,13 @@ async function enviarFeedback() {
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Conclua a ativação inicial da conta</h3>
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">3. Procure a criação sem campanha</h3>
           <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
-            A conta precisa estar totalmente ativada para funcionar com a API. Primeiro procure
-            <strong>"Criar conta sem campanha"</strong> ou uma opção equivalente. Se o Google obrigar a
-            criação da primeira campanha, conclua o fluxo guiado com os dados mínimos solicitados.
-            <strong>Não é o anúncio que a Plataforma de Leads exige</strong>; é a conclusão do cadastro
-            inicial exigida pelo próprio Google Ads.
+            Procure <strong>"Criar conta sem campanha"</strong>, <strong>"Pular"</strong> ou uma opção
+            equivalente para concluir o cadastro sem publicar anúncios. A disponibilidade varia conforme
+            o fluxo e a elegibilidade da conta. Se essa opção não aparecer, consulte a ajuda do Google
+            antes de continuar. <strong>Não publique uma campanha apenas para testar a conexão.</strong>
+            A Plataforma de Leads não exige uma campanha ativa para selecionar a conta.
           </p>
         </div>
       </div>
@@ -57474,12 +57474,14 @@ async function enviarFeedback() {
 
       <div class="passo-meta-step">
         <div class="passo-meta-step-text">
-          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">6. Pause imediatamente a campanha inicial</h3>
+          <h3 style="color:#111827!important;margin:0 0 6px;font-size:16px;font-weight:700;">6. Confira campanhas e possíveis cobranças</h3>
           <p style="color:#111827!important;font-size:14px;line-height:1.6;margin:0;font-weight:400;">
-            Se o Google obrigou você a criar uma campanha, abra <strong>Campanhas</strong>, clique no
-            status verde <strong>"Ativada"</strong> e selecione <strong>"Pausar"</strong>. Confirme que o
-            status ficou cinza como <strong>"Pausada"</strong>, evitando qualquer gasto. As campanhas
-            definitivas serão criadas depois pela Plataforma de Leads.
+            Se criou a conta sem campanha, siga para o próximo passo. Se já houver uma campanha ativa
+            que você não pretende veicular, abra <strong>Campanhas</strong>, selecione-a e escolha
+            <strong>"Pausar"</strong>. Confira o status <strong>"Pausada"</strong> e o faturamento.
+            <strong>Pausar não garante gasto zero:</strong> a interrupção pode levar algum tempo e custos
+            acumulados antes dela continuam sujeitos a cobrança. Publique somente depois de revisar
+            orçamento, anúncio e destino dos leads.
           </p>
         </div>
       </div>
@@ -60661,11 +60663,11 @@ async function criarLookalike() {
 
 <link rel="stylesheet" href="tutorial-meta-conta.css">
 <script src="tutorial-meta-conta.js"></script>
-<link rel="stylesheet" href="assistente-contas.css?v=20261009">
+<link rel="stylesheet" href="assistente-contas.css?v=20261017">
 <script src="recursos-corretor.js"></script>
 <script src="voip-custos.js"></script>
 <script src="assistente-contas-regras.js?v=20261009"></script>
-<script src="assistente-contas.js?v=20261009"></script>
+<script src="assistente-contas.js?v=20261017"></script>
 
 <script src="meta-conjuntos-ui.js?v=20261015-metricas-hoje"></script>
 <script src="meta-distribuicao-ui.js?v=20261014-distribuicao1"></script>

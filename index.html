@@ -20933,7 +20933,7 @@ body.tema-claro .criar-campanha-descricao {
       <div class="gt-toolbar"><input id="gt_busca_cliente" class="gt-busca" placeholder="Buscar por nome ou email" oninput="renderizarClientesGerenciados()"><button class="gt-btn gt-btn-secondary" onclick="carregarClientesGerenciados(true)">↻ Atualizar</button></div>
       <div id="gt_lista_clientes" class="gt-grid"><div class="gt-vazio">Carregando clientes...</div></div>
     </div>
-    <div id="gt_modal_novo" class="gt-modal" onclick="if(event.target===this) fecharModalGestor('gt_modal_novo')"><div class="gt-modal-box"><div class="gt-modal-topo"><h3>Novo corretor</h3><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_novo')">✕</button></div><div class="gt-form-grid"><div class="gt-campo"><label>Nome</label><input id="gt_novo_nome" autocomplete="off"></div><div class="gt-campo"><label>Sobrenome</label><input id="gt_novo_sobrenome" autocomplete="off"></div><div class="gt-campo gt-campo-largo"><label>Email de acesso</label><input id="gt_novo_email" type="email" autocomplete="off"></div><div class="gt-campo gt-campo-largo"><label>Senha inicial</label><input id="gt_novo_senha" type="password" autocomplete="new-password"><p class="gt-ajuda">Mínimo de 8 caracteres, com maiúscula, minúscula, número e símbolo. A senha vai só para o e-mail do corretor e fica guardada de forma protegida — ninguém consegue consultá-la depois, nem a plataforma.</p></div></div><div class="gt-modal-acoes"><button class="gt-btn gt-btn-secondary" onclick="fecharModalGestor('gt_modal_novo')">Cancelar</button><button id="gt_btn_criar" class="gt-btn gt-btn-primary" onclick="criarClienteGerenciado()">Criar corretor e painel</button></div></div></div>
+    <div id="gt_modal_novo" class="gt-modal" onclick="if(event.target===this) fecharModalGestor('gt_modal_novo')"><div class="gt-modal-box"><div class="gt-modal-topo"><h3>Novo corretor</h3><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_novo')">✕</button></div><div class="gt-form-grid"><div class="gt-campo"><label>Nome</label><input id="gt_novo_nome" autocomplete="off"></div><div class="gt-campo"><label>Sobrenome</label><input id="gt_novo_sobrenome" autocomplete="off"></div><div class="gt-campo gt-campo-largo"><label>Email de acesso</label><input id="gt_novo_email" type="email" autocomplete="off"></div><div class="gt-campo gt-campo-largo"><label>Senha inicial</label><input id="gt_novo_senha" type="password" autocomplete="new-password"><p class="gt-ajuda">Mínimo de 8 caracteres, com maiúscula, minúscula, número e símbolo. A senha vai só para o e-mail do corretor e fica guardada de forma protegida — ninguém consegue consultá-la depois, nem a plataforma.</p></div><div class="gt-campo gt-campo-largo"><label>Nichos do corretor (1 a 3)</label><div id="gt_novo_nichos" style="display:flex;flex-wrap:wrap;gap:8px"></div></div><div class="gt-campo gt-campo-largo"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input id="gt_novo_somente_painel" type="checkbox" checked style="width:auto"> Entra só pelo painel (recomendado)</label><p class="gt-ajuda">Com esta opção o e-mail e a senha do corretor abrem só o painel de acompanhamento, sem poder mexer em campanhas. Desmarque para liberar a plataforma completa.</p></div></div><div class="gt-modal-acoes"><button class="gt-btn gt-btn-secondary" onclick="fecharModalGestor('gt_modal_novo')">Cancelar</button><button id="gt_btn_criar" class="gt-btn gt-btn-primary" onclick="criarClienteGerenciado()">Criar corretor e painel</button></div></div></div>
     <div id="gt_modal_editar" class="gt-modal" onclick="if(event.target===this) fecharModalGestor('gt_modal_editar')"><div class="gt-modal-box"><div class="gt-modal-topo"><h3>Dados do corretor</h3><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_editar')">✕</button></div><input id="gt_editar_id" type="hidden"><div class="gt-form-grid"><div class="gt-campo"><label>Nome</label><input id="gt_editar_nome"></div><div class="gt-campo"><label>Sobrenome</label><input id="gt_editar_sobrenome"></div><div class="gt-campo gt-campo-largo"><label>Email de acesso</label><input id="gt_editar_email" type="email"></div></div><div class="gt-modal-acoes"><button class="gt-btn gt-btn-secondary" onclick="fecharModalGestor('gt_modal_editar')">Cancelar</button><button class="gt-btn gt-btn-primary" onclick="salvarClienteGerenciado()">Salvar alterações</button></div></div></div>
     <div id="gt_modal_senha" class="gt-modal" onclick="if(event.target===this) fecharModalGestor('gt_modal_senha')"><div class="gt-modal-box"><div class="gt-modal-topo"><h3>Redefinir senha</h3><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_senha')">✕</button></div><input id="gt_senha_id" type="hidden"><div class="gt-campo"><label>Nova senha</label><input id="gt_nova_senha" type="password" autocomplete="new-password"><p class="gt-ajuda">A senha atual nunca é exibida. A nova senha deve cumprir os requisitos de segurança e ser diferente das últimas senhas usadas.</p></div><div class="gt-modal-acoes"><button class="gt-btn gt-btn-secondary" onclick="fecharModalGestor('gt_modal_senha')">Cancelar</button><button class="gt-btn gt-btn-primary" onclick="redefinirSenhaClienteGerenciado()">Redefinir senha</button></div></div></div>
     <div id="gt_modal_historico" class="gt-modal" onclick="if(event.target===this) fecharModalGestor('gt_modal_historico')"><div class="gt-modal-box gt-modal-box-largo"><div class="gt-modal-topo"><h3 id="gt_historico_titulo">Histórico</h3><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_historico')">✕</button></div><p class="gt-ajuda">Cada vez que alguém que gerencia esta conta abriu a plataforma do cliente e cada ação que alterou algo lá dentro. Consultas (só olhar) não entram. Mostra os 200 registros mais recentes.</p><div id="gt_historico_lista" class="gt-historico-lista"></div><div class="gt-modal-acoes"><button class="gt-btn gt-btn-secondary" onclick="fecharModalGestor('gt_modal_historico')">Fechar</button></div></div></div>
@@ -23118,6 +23118,13 @@ async function login() {
 
   const data = await res.json();
 
+  // Conta "só painel": o servidor devolve credencial de painel; abre o endereço do painel.
+  if (data.token && data.somente_painel && data.painel_slug && !painelSlugUrl) {
+    sessionStorage.setItem(`painel_cliente_token:${data.painel_slug}`, data.token);
+    window.location.href = `${window.location.pathname}?painel=${encodeURIComponent(data.painel_slug)}`;
+    return;
+  }
+
   if (data.token) {
     if (painelSlugUrl) {
       sessionStorage.setItem(PAINEL_CLIENTE_TOKEN_KEY, data.token);
@@ -23126,7 +23133,7 @@ async function login() {
     }
     await iniciarAplicacaoAutenticada();
   } else {
-    alert("Login inválido");
+    alert(data.error || "Login inválido");
   }
   } catch {
     alert("Não foi possível entrar. Tente novamente.");
@@ -23762,14 +23769,31 @@ function renderizarClientesGerenciados() {
 
 function abrirModalNovoClienteGerenciado() {
   ["gt_novo_nome","gt_novo_sobrenome","gt_novo_email","gt_novo_senha"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+  const somentePainel = document.getElementById("gt_novo_somente_painel"); if (somentePainel) somentePainel.checked = true;
+  carregarNichosNovoClienteGerenciado();
   document.getElementById("gt_modal_novo")?.classList.add("aberto");
   setTimeout(() => document.getElementById("gt_novo_nome")?.focus(), 50);
+}
+
+async function carregarNichosNovoClienteGerenciado() {
+  const caixa = document.getElementById("gt_novo_nichos");
+  if (!caixa) return;
+  caixa.innerHTML = '<span class="gt-ajuda">Carregando nichos...</span>';
+  try {
+    const res = await fetch(`${API}/nichos`);
+    const nichos = await res.json();
+    if (!res.ok || !Array.isArray(nichos)) throw new Error();
+    caixa.innerHTML = nichos.map(n => `<label class="gt-chip" style="cursor:pointer;gap:6px"><input type="checkbox" name="gt_novo_nicho" value="${Number(n.id)}" style="width:auto;margin:0" onchange="if(document.querySelectorAll('input[name=gt_novo_nicho]:checked').length>3){this.checked=false;alert('Escolha no máximo 3 nichos.');}">${escaparHtml(n.nome)}</label>`).join("");
+  } catch (_) {
+    caixa.innerHTML = '<span class="gt-ajuda">Não foi possível carregar os nichos. Feche e abra de novo.</span>';
+  }
 }
 function fecharModalGestor(id) { document.getElementById(id)?.classList.remove("aberto"); }
 
 async function criarClienteGerenciado() {
   const btn = document.getElementById("gt_btn_criar");
-  const payload = { nome:document.getElementById("gt_novo_nome")?.value?.trim(), sobrenome:document.getElementById("gt_novo_sobrenome")?.value?.trim(), email:document.getElementById("gt_novo_email")?.value?.trim(), senha:document.getElementById("gt_novo_senha")?.value || "" };
+  const payload = { nome:document.getElementById("gt_novo_nome")?.value?.trim(), sobrenome:document.getElementById("gt_novo_sobrenome")?.value?.trim(), email:document.getElementById("gt_novo_email")?.value?.trim(), senha:document.getElementById("gt_novo_senha")?.value || "", nicho_ids:Array.from(document.querySelectorAll("input[name='gt_novo_nicho']:checked")).map(el => Number(el.value)), somente_painel:document.getElementById("gt_novo_somente_painel")?.checked !== false };
+  if (!payload.nicho_ids.length || payload.nicho_ids.length > 3) return alert("Escolha de 1 a 3 nichos para o corretor.");
   if (btn) { btn.disabled = true; btn.textContent = "Criando..."; }
   try {
     const data = await requisicaoGestor("/gestor/clientes", { method:"POST", body:JSON.stringify(payload) });

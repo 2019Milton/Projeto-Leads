@@ -21,6 +21,11 @@
   const htmlSeguro = (valor) => escaparHtml(String(valor ?? ""));
 
   function statusRecurso(cliente = {}, recurso) {
+    if (recurso === "acesso") {
+      return cliente.somente_painel === true
+        ? { classe: "ativo", texto: "Acesso: só painel" }
+        : { classe: "espera", texto: "Acesso: plataforma completa" };
+    }
     if (recurso === "whatsapp") {
       if (!cliente.atendimento_whatsapp_habilitado) return { classe: "", texto: "WhatsApp desativado" };
       if (cliente.atendimento_whatsapp_status === "ativo") return { classe: "ativo", texto: "WhatsApp ativo" };
@@ -72,6 +77,7 @@
         <div class="gt-modal-box">
           <div class="gt-modal-topo"><div><h3>Recursos do painel do corretor</h3><p id="gt_recursos_cliente" class="gt-ajuda" style="margin-top:4px"></p></div><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_recursos')">✕</button></div>
           <input id="gt_recursos_id" type="hidden">
+          <div class="gt-recurso-linha"><div class="gt-recurso-texto"><strong>🔒 Entra só pelo painel</strong><p>Ligado: o e-mail e a senha do corretor abrem só o painel de acompanhamento, sem mexer em campanhas, leads ou conexões. Desligado: ele também entra na plataforma completa. Você continua operando a conta por "Abrir plataforma" nos dois casos.</p></div><label class="gt-switch" title="Corretor entra só pelo painel"><input id="gt_recurso_somente_painel" type="checkbox" onchange="alternarRecursoClienteGerenciado('somente_painel', this.checked, this)"><span></span></label></div>
           <div class="gt-recurso-linha"><div class="gt-recurso-texto"><strong>💬 Conversas do WhatsApp</strong><p>Permite ao corretor visualizar e responder, no painel dele, as conversas do WhatsApp Business já conectado à conta.</p></div><label class="gt-switch" title="Habilitar conversas"><input id="gt_recurso_whatsapp" type="checkbox" onchange="alternarRecursoClienteGerenciado('atendimento_whatsapp_habilitado', this.checked, this)"><span></span></label></div>
           <div class="gt-recurso-linha"><div class="gt-recurso-texto"><strong>📞 Telefonia VoIP</strong><p>Habilita o módulo no painel sem contratar nada. A linha real só é criada quando você usar a ação separada de ativação abaixo.</p></div><label class="gt-switch" title="Preparar módulo de telefonia"><input id="gt_recurso_voip" type="checkbox" onchange="alternarRecursoClienteGerenciado('voip_habilitado', this.checked, this)"><span></span></label></div>
           <div id="gt_voip_ativacao" class="gt-voip-ativacao" hidden></div>
@@ -108,9 +114,12 @@
     document.getElementById("gt_recursos_cliente").textContent = nome;
     document.getElementById("gt_recurso_whatsapp").checked = cliente.atendimento_whatsapp_habilitado === true;
     document.getElementById("gt_recurso_voip").checked = cliente.voip_habilitado === true;
+    const somentePainel = document.getElementById("gt_recurso_somente_painel");
+    if (somentePainel) somentePainel.checked = cliente.somente_painel === true;
+    const acesso = statusRecurso(cliente, "acesso");
     const whatsapp = statusRecurso(cliente, "whatsapp");
     const voip = statusRecurso(cliente, "voip");
-    document.getElementById("gt_recursos_status").innerHTML = `<span class="gt-recurso-status ${whatsapp.classe}">${htmlSeguro(whatsapp.texto)}</span><span class="gt-recurso-status ${voip.classe}">${htmlSeguro(voip.texto)}</span>`;
+    document.getElementById("gt_recursos_status").innerHTML = `<span class="gt-recurso-status ${acesso.classe}">${htmlSeguro(acesso.texto)}</span><span class="gt-recurso-status ${whatsapp.classe}">${htmlSeguro(whatsapp.texto)}</span><span class="gt-recurso-status ${voip.classe}">${htmlSeguro(voip.texto)}</span>`;
   }
 
 
@@ -280,7 +289,12 @@
 
   window.alternarRecursoClienteGerenciado = async function alternarRecursoClienteGerenciado(campo, habilitar, controle) {
     const id = Number(document.getElementById("gt_recursos_id")?.value);
-    if (!id || !["atendimento_whatsapp_habilitado", "voip_habilitado"].includes(campo)) return;
+    if (!id || !["atendimento_whatsapp_habilitado", "voip_habilitado", "somente_painel"].includes(campo)) return;
+    if (campo === "somente_painel" && !habilitar &&
+        !confirm("Liberar a plataforma completa para este corretor?\n\nCom o mesmo e-mail e senha ele poderá alterar campanhas, leads e conexões, não só acompanhar pelo painel.")) {
+      if (controle) controle.checked = true;
+      return;
+    }
     if (controle) controle.disabled = true;
     try {
       const data = await requisicaoGestor(`/gestor/clientes/${id}`, { method: "PATCH", body: JSON.stringify({ [campo]: Boolean(habilitar) }) });
@@ -377,10 +391,11 @@
       const id = Number(card.dataset.clienteId || String(botaoAcesso?.getAttribute("onclick") || "").match(/\d+/)?.[0]);
       const cliente = clientePorId(id);
       if (!cliente) return;
+      const acesso = statusRecurso(cliente, "acesso");
       const whatsapp = statusRecurso(cliente, "whatsapp");
       const voip = statusRecurso(cliente, "voip");
       const conexoes = card.querySelector(".gt-conexoes");
-      conexoes?.insertAdjacentHTML("afterend", `<div class="gt-recursos-resumo"><span class="gt-recurso-status ${whatsapp.classe}">${htmlSeguro(whatsapp.texto)}</span><span class="gt-recurso-status ${voip.classe}">${htmlSeguro(voip.texto)}</span></div>`);
+      conexoes?.insertAdjacentHTML("afterend", `<div class="gt-recursos-resumo"><span class="gt-recurso-status ${acesso.classe}">${htmlSeguro(acesso.texto)}</span><span class="gt-recurso-status ${whatsapp.classe}">${htmlSeguro(whatsapp.texto)}</span><span class="gt-recurso-status ${voip.classe}">${htmlSeguro(voip.texto)}</span></div>`);
       const acoes = card.querySelector(".gt-acoes");
       botaoAcesso?.insertAdjacentHTML("afterend", `<button class="gt-btn gt-btn-secondary" onclick="abrirRecursosClienteGerenciado(${id})">Configurar recursos</button><button class="gt-btn gt-btn-secondary" onclick="abrirFinanceiroClienteGerenciado(${id})">Financeiro</button>`);
       card.dataset.recursosProntos = "1";

@@ -83,7 +83,7 @@
       <div id="gt_modal_financeiro" class="gt-modal" onclick="if(event.target===this) fecharModalGestor('gt_modal_financeiro')">
         <div class="gt-modal-box gt-fin-box">
           <div class="gt-modal-topo"><div><h3>Financeiro do corretor</h3><p id="gt_fin_cliente" class="gt-ajuda" style="margin-top:4px"></p></div><button class="gt-fechar" onclick="fecharModalGestor('gt_modal_financeiro')">✕</button></div>
-          <input id="gt_fin_id" type="hidden">
+          <input id="gt_fin_id" type="hidden"><p id="gt_fin_aviso" class="gt-ajuda" style="display:none;margin:0 0 12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.08);color:#fbbf24">Ainda não configurado: o corretor não vê nenhum valor no painel até você salvar. Os campos abaixo são só uma sugestão.</p>
           <div class="gt-form-grid"><div class="gt-campo"><label>Nome do plano</label><input id="gt_fin_plano_nome"></div><div class="gt-campo"><label>Mensalidade do plano (R$)</label><input id="gt_fin_plano_valor" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Dia do vencimento</label><input id="gt_fin_vencimento" type="number" min="1" max="28"></div></div>
           <div class="gt-fin-secao"><h4>Possíveis cobranças adicionais</h4><p>Deixe em zero enquanto não houver cobrança. O valor só aparecerá no total do corretor quando o recurso correspondente estiver ativo.</p><div class="gt-form-grid"><div class="gt-campo"><label>WhatsApp oficial (R$/mês)</label><input id="gt_fin_whatsapp" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Créditos extras de IA (R$/mês)</label><input id="gt_fin_ia" type="number" min="0" step="0.01"></div><div class="gt-campo"><label>Outro adicional</label><input id="gt_fin_outro_descricao" placeholder="Descrição do serviço"></div><div class="gt-campo"><label>Valor do outro adicional (R$/mês)</label><input id="gt_fin_outro_valor" type="number" min="0" step="0.01"></div><div class="gt-campo gt-campo-largo"><label>Observações para o corretor</label><textarea id="gt_fin_observacoes" maxlength="500"></textarea></div></div></div>
           <div class="gt-sem-custo"><b>Importante:</b> o VoIP não faz parte desta mensalidade. Número e consumo de ligações são calculados separadamente no painel “Custos VoIP”. A verba dos anúncios também é paga separadamente.</div>
@@ -324,6 +324,8 @@
     try {
       const data = await requisicaoGestor(`/gestor/clientes/${id}/financeiro`);
       const config = data.configuracao || {};
+      const aviso = document.getElementById("gt_fin_aviso");
+      if (aviso) aviso.style.display = config.configurado === false ? "block" : "none";
       const preencher = (campo, valor) => { const el = document.getElementById(campo); if (el) el.value = valor ?? ""; };
       preencher("gt_fin_plano_nome", config.plano_nome || "Plano Gestão de Tráfego");
       preencher("gt_fin_plano_valor", Number(config.valor_plano_mensal ?? 800).toFixed(2));
@@ -1208,6 +1210,9 @@
       const itens = Array.isArray(data.itens) ? data.itens : [];
       const historico = Array.isArray(data.historico) ? data.historico : [];
       const custos = Array.isArray(data.custos_variaveis) ? data.custos_variaveis : [];
+      // Sem configuração do gestor o backend não manda plano nem itens — antes aparecia a
+      // sugestão padrão de R$ 800 como se fosse a mensalidade combinada.
+      const mensalidadeDefinida = data.configurado !== false && data.plano;
 
       const linhas = itens.map((item) =>
         `<div class="pc-fin-item"><div><strong>${htmlSeguro(item.descricao)}</strong><span class="pc-fin-tag ${item.status === "ativo" ? "ativo" : ""}">${htmlSeguro(labelStatusFinanceiro(item.status))}</span></div><b>${formatarMoeda(item.status === "ativo" ? item.valor : 0)}</b></div>`
@@ -1223,12 +1228,16 @@
 
       container.innerHTML = `
         <div class="pc-fin-resumo">
-          <article class="pc-card">
+          ${mensalidadeDefinida ? `<article class="pc-card">
             <span>Plano da plataforma</span>
             <h2 style="margin-top:7px">${htmlSeguro(plano.nome || "Plano Gestão de Tráfego")}</h2>
             <p class="pc-card-sub">Vencimento todo dia ${Number(plano.dia_vencimento || 10)}</p>
             <strong style="font-size:25px;color:#fff">${formatarMoeda(plano.valor_mensal)}<small style="font-size:11px;color:#8190a7">/mês</small></strong>
-          </article>
+          </article>` : `<article class="pc-card">
+            <span>Plano da plataforma</span>
+            <h2 style="margin-top:7px">Ainda não definido</h2>
+            <p class="pc-card-sub">Seu gestor ainda não configurou a mensalidade.</p>
+          </article>`}
           <article class="pc-card" style="border-color:rgba(59,130,246,.34)">
             <span>VoIP — adicional separado</span>
             <h2 style="margin-top:7px">${voip.numero ? htmlSeguro(voip.numero) : htmlSeguro(labelStatusFinanceiro(voip.status))}</h2>
@@ -1238,8 +1247,8 @@
           <article class="pc-card pc-fin-total">
             <span>Mensalidade da plataforma</span>
             <h2 style="margin-top:7px">Total do plano</h2>
-            <p class="pc-card-sub">Não inclui VoIP nem verba de anúncios</p>
-            <strong style="font-size:28px;color:#86efac">${formatarMoeda(data.total_mensal_plataforma ?? data.total_mensal)}<small style="font-size:11px;color:#8190a7">/mês</small></strong>
+            ${mensalidadeDefinida ? `<p class="pc-card-sub">Não inclui VoIP nem verba de anúncios</p>
+            <strong style="font-size:28px;color:#86efac">${formatarMoeda(data.total_mensal_plataforma ?? data.total_mensal)}<small style="font-size:11px;color:#8190a7">/mês</small></strong>` : `<p class="pc-card-sub">Aparece aqui quando o gestor definir os valores.</p>`}
           </article>
         </div>
 
@@ -1251,7 +1260,7 @@
           <article class="pc-card">
             <h2>Composição da mensalidade da plataforma</h2>
             <p class="pc-card-sub">O consumo VoIP não entra neste total.</p>
-            <div class="pc-fin-itens">${linhas}</div>
+            <div class="pc-fin-itens">${mensalidadeDefinida ? linhas : '<div class="pc-vazio">A composição aparece quando o gestor definir a mensalidade.</div>'}</div>
             <div class="pc-fin-alerta">💡 ${htmlSeguro(data.investimento_anuncios?.mensagem || "A verba de anúncios é paga separadamente às plataformas.")}</div>
             ${data.observacoes ? `<div class="pc-fin-alerta" style="border-color:rgba(59,130,246,.22);background:rgba(37,99,235,.07);color:#bfdbfe">${htmlSeguro(data.observacoes)}</div>` : ""}
           </article>

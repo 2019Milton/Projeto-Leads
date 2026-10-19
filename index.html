@@ -21308,9 +21308,10 @@ body.tema-claro .criar-campanha-descricao {
           <div class="admin-ia-mini">
             <strong>
               Chamadas no mes
-              <span class="admin-help" title="Total de vezes que algum recurso de IA foi usado neste mes, como analisar lead, gerar resposta, follow-up, resumo diario ou campanha.">?</span>
+              <span class="admin-help" title="Total de vezes que a IA foi usada neste mes, incluindo as chamadas automaticas (transcricao de audio do WhatsApp, classificacao do Kanban e ranking). Embaixo: quantas contam no limite mensal de chamadas (global) — so as pedidas pelos usuarios, como analisar lead, gerar resposta ou campanha.">?</span>
             </strong>
             <span id="ia_admin_chamadas_mes">0</span>
+            <small id="ia_admin_chamadas_detalhe" style="display:block;font-size:11px;opacity:.8;"></small>
           </div>
           <div class="admin-ia-mini">
             <strong>
@@ -21505,14 +21506,14 @@ body.tema-claro .criar-campanha-descricao {
             <label>
               <span>
                 Limite mensal de chamadas (global)
-                <span class="admin-help" title="Limite real: quando a soma de chamadas de todos os usuarios atingir esse numero, a IA e bloqueada para todos ate o proximo mes.">?</span>
+                <span class="admin-help" title="Limite real: quando a soma das chamadas pedidas pelos usuarios atingir esse numero, a IA e bloqueada para todos ate o proximo mes. Chamadas automaticas (transcricao de audio, classificacao do Kanban e ranking) nao contam aqui, so no limite de custo. 0 = sem limite.">?</span>
               </span>
               <input id="ia_config_limite_req" type="number" placeholder="Ex: 1000">
             </label>
             <label>
               <span>
                 Limite mensal de custo (global)
-                <span class="admin-help" title="Limite real: quando o custo estimado total de todos os usuarios atingir esse valor, a IA e bloqueada para todos ate o proximo mes.">?</span>
+                <span class="admin-help" title="Limite real: quando o custo estimado total do mes (pedidas pelos usuarios + automaticas + ranking) atingir esse valor, a IA e bloqueada para todos ate o proximo mes, inclusive a classificacao automatica do Kanban. 0 = sem limite.">?</span>
               </span>
               <input id="ia_config_limite_custo" type="number" placeholder="Ex: 300">
             </label>
@@ -51849,6 +51850,17 @@ async function carregarPainelIAAdmin() {
     document.getElementById("ia_admin_chamadas_mes").innerText =
       resumo.chamadas_mes || 0;
 
+    // Só as chamadas pedidas pelos usuários entram no limite global de chamadas.
+    const detalheChamadas = document.getElementById("ia_admin_chamadas_detalhe");
+    if (detalheChamadas && data.uso_global) {
+      const limiteReq = Number(config.limite_mensal_requisicoes || 0);
+      const manuais = Number(data.uso_global.chamadas_manuais || 0);
+      // Divide o número do card (só ia_usos, sem o job do ranking) para a soma bater.
+      const automaticas = Math.max(0, Number(resumo.chamadas_mes || 0) - manuais);
+      detalheChamadas.innerText =
+        `${manuais}/${limiteReq > 0 ? limiteReq : "ilimitado"} no limite global · +${automaticas} automática(s)`;
+    }
+
     document.getElementById("ia_admin_custo_mes").innerText =
       formatarMoeda(resumo.custo_mes || 0);
 
@@ -52018,7 +52030,7 @@ async function carregarPainelIAAdmin() {
             </div>
           </td>
           <td>${escaparHtml(u.assinatura_status || "manual")}</td>
-          <td>${chamadas} chamada(s)<br>${formatarMoeda(custo)}${chamadasAuto > 0 ? `<br><small title="Transcrição de áudio e classificação de conversas do WhatsApp. Não contam no limite do usuário, só no limite global (${formatarMoeda(custoAuto)}).">+${chamadasAuto} automática(s)</small>` : ""}</td>
+          <td>${chamadas} chamada(s)<br>${formatarMoeda(custo)}${chamadasAuto > 0 ? `<br><small title="Transcrição de áudio e classificação de conversas do WhatsApp. Não contam em nenhum limite de chamadas (do usuário ou global), só no limite global de custo (${formatarMoeda(custoAuto)}).">+${chamadasAuto} automática(s)</small>` : ""}</td>
           <td>${tokensUsuario.toLocaleString("pt-BR")}<br><small>entrada + saida</small></td>
           <td>${chamadas}/${limite > 0 ? limite : "ilimitado"} req<br>${formatarMoeda(custo)}/${limiteCusto > 0 ? formatarMoeda(limiteCusto) : "ilimitado"}</td>
           <td>${u.ultimo_uso ? new Date(u.ultimo_uso).toLocaleString("pt-BR") : "-"}</td>

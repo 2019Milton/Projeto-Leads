@@ -53,7 +53,7 @@ test('REQUISITO: falha de leitura e fechar sem editar não pode sobrescrever ras
   assert.equal(a.requests.filter(r=>r.method==='PUT').length,0,'Falha de leitura seguida de fechar envia rascunho vazio ao servidor');
 });
 test('REQUISITO: reabrir deve preservar edição local cujo salvamento falhou',async()=>{
-  const a=app({fetch:(url,o)=>o.method==='PUT'?fail(500):url==='/mock/assistente-contas-anuncios'?ok({rascunho:{etapa:2,plataformas:['meta'],dados:{...dados,nome_legal:'Empresa antiga'}}}):null});await a.open();
+  const a=app({fetch:(url,o)=>o.method==='PUT'?fail(500):url==='/mock/assistente-contas-anuncios'?ok({rascunho:{etapa:2,plataformas:['meta'],versao:'1',dados:{...dados,nome_legal:'Empresa antiga'}}}):null});await a.open();
   a.window.assistenteSalvarCampoDados({name:'nome_legal',value:'Empresa corrigida',setAttribute(){}});
   a.window.fecharAssistenteContasAnuncios();await flush();await a.open();
   assert.match(a.html(),/Empresa corrigida/,'GET remoto antigo substitui rascunho local mais recente');
@@ -128,7 +128,7 @@ test('confirmar salvamento antigo não remove edição posterior pendente',async
   let release;const a=app({fetch:(_,o)=>o.method==='PUT'?new Promise(r=>release=r):null});await a.open();
   a.window.assistenteSalvarCampoDados({name:'nome_legal',value:'Primeira edição',setAttribute(){}});await a.runTimers();
   a.window.assistenteSalvarCampoDados({name:'nome_legal',value:'Segunda edição',setAttribute(){}});
-  release(ok({sucesso:true}));await flush();
+  release(a.saved());await flush();
   const local=JSON.parse(a.storage.get('plataforma_leads_assistente_contas_v2_1'));
   assert.equal(local.dados.nome_legal,'Segunda edição');assert.equal(local.pendente_sincronizacao,true);
   assert.notEqual(a.elements.get('assistente_contas_salvamento').dataset.estado,'salvo');

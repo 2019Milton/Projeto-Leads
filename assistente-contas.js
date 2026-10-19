@@ -14,6 +14,9 @@
   let rascunhoPendente = false;
   let rascunhoLocalDisponivel = false;
   let rascunhoCarregadoServidor = false;
+  let baseRascunho = null;
+  let versaoServidor = null;
+  let conflitoRascunho = null;
   let carregamentoSequencia = 0;
   let criandoGoogle = false;
   const sessaoValida = (token = sessaoToken) => Boolean(token && token === sessaoToken && token === localStorage.getItem("token"));
@@ -53,7 +56,6 @@
     salvamento: "local"
   };
   let salvamentoTimer = null;
-  let interagiuDesdeAbertura = false;
   const monitor = {
     ativo: false,
     pausado: false,
@@ -139,6 +141,9 @@
     rascunhoPendente = false;
     rascunhoLocalDisponivel = false;
     rascunhoCarregadoServidor = false;
+    baseRascunho = null;
+    versaoServidor = null;
+    conflitoRascunho = null;
     criandoGoogle = false;
     estado = { etapa: 1, plataformas: ["meta"], dados: {}, acompanhamento: {}, erros: {}, status: {}, capacidades: {}, carregando: false, salvamento: "local" };
     // O cache antigo não tem proprietário: nunca importá-lo para uma conta.
@@ -162,21 +167,92 @@
     return { etapa: estado.etapa, plataformas: estado.plataformas, dados: estado.dados, acompanhamento: estado.acompanhamento };
   }
 
+  const copia = valor => JSON.parse(JSON.stringify(valor));
+  const objeto = valor => valor !== null && typeof valor === "object" && !Array.isArray(valor);
+  const iguais = (a, b) => {
+    if (objeto(a) && objeto(b)) {
+      const chaves = new Set([...Object.keys(a), ...Object.keys(b)]);
+      return [...chaves].every(k => iguais(a[k], b[k]));
+    }
+    return JSON.stringify(a) === JSON.stringify(b);
+  };
+  const vazio = () => ({ etapa: 1, plataformas: ["meta"], dados: {}, acompanhamento: {} });
+  const conteudo = r => r ? { etapa: r.etapa, plataformas: r.plataformas, dados: r.dados, acompanhamento: r.acompanhamento || {} } : vazio();
+  const disponivel = () => rascunhoCarregadoServidor || rascunhoLocalDisponivel || rascunhoPendente;
+
+  function respostaRascunhoValida(data) {
+    const r = data?.rascunho;
+    return objeto(data) && Object.prototype.hasOwnProperty.call(data, "rascunho") && (r === null || (
+      objeto(r) && Number.isInteger(r.etapa) && r.etapa >= 1 && r.etapa <= 3 &&
+      Array.isArray(r.plataformas) && r.plataformas.length === 1 && Boolean(plataformas[r.plataformas[0]]) &&
+      objeto(r.dados) && (r.acompanhamento === undefined || objeto(r.acompanhamento)) &&
+      typeof r.versao === "string" && r.versao.length > 0
+    ));
+  }
+
+  function mesclarRascunhos(base, local, remoto, campos = [], caminho = "") {
+    if (iguais(local, base)) return remoto;
+    if (iguais(remoto, base) || iguais(local, remoto)) return local;
+    if (objeto(local) && objeto(remoto) && (objeto(base) || base === undefined)) {
+      const chaves = new Set([...Object.keys(base || {}), ...Object.keys(local), ...Object.keys(remoto)]);
+      return Object.fromEntries([...chaves].filter(k => !["__proto__", "constructor", "prototype"].includes(k)).map(k => [k, mesclarRascunhos(base?.[k], local[k], remoto[k], campos, caminho ? caminho + "." + k : k)]));
+    }
+    // A etapa de navegação não altera os dados da empresa.
+    if (caminho !== "etapa") campos.push({ caminho, local, remoto });
+    return local;
+  }
+
+  function receberRascunho(data) {
+    if (!respostaRascunhoValida(data)) throw new Error("Resposta de cadastro incompleta");
+    const remoto = conteudo(data.rascunho);
+    const campos = [];
+    const mesclado = rascunhoPendente
+      ? mesclarRascunhos(baseRascunho || {}, dadosRascunho(), remoto, campos)
+      : remoto;
+    if (!campos.length) baseRascunho = copia(remoto);
+    versaoServidor = data.rascunho?.versao ?? null;
+    rascunhoCarregadoServidor = true;
+    conflitoRascunho = campos.length ? { remoto: copia(remoto), campos } : null;
+    aplicarRascunho(copia(mesclado));
+    rascunhoPendente = !iguais(dadosRascunho(), remoto);
+    estado.salvamento = conflitoRascunho ? "conflito" : rascunhoPendente ? "erro" : data.rascunho ? "salvo" : "local";
+    gravarLocal();
+  }
+
+  async function consultarRascunho(token) {
+    const res = await fetch(API + "/assistente-contas-anuncios", {
+      signal: AbortSignal.timeout(15000), headers: { Authorization: "Bearer " + token }
+    });
+    if (!res.ok) throw new Error("Falha ao carregar");
+    const data = await res.json();
+    if (!respostaRascunhoValida(data)) throw new Error("Resposta de cadastro incompleta");
+    return data;
+  }
+
   function gravarLocal() {
-    if (!sessaoValida() || !chaveRascunho) return;
-    rascunhoLocalDisponivel = true;
-    try { localStorage.setItem(chaveRascunho, JSON.stringify({ ...dadosRascunho(), pendente_sincronizacao: rascunhoPendente })); } catch (_) {}
+    if (!sessaoValida() || !chaveRascunho) return false;
+    try {
+      localStorage.setItem(chaveRascunho, JSON.stringify({ ...dadosRascunho(), pendente_sincronizacao: rascunhoPendente,
+        base_rascunho: baseRascunho, versao_servidor: versaoServidor }));
+      rascunhoLocalDisponivel = true;
+    } catch (_) { rascunhoLocalDisponivel = false; }
+    return rascunhoLocalDisponivel;
   }
 
   function carregarRascunho() {
     if (!prepararSessao()) return false;
+    // Se a gravação local falhou, preservar a edição que ainda está em memória.
+    if (rascunhoPendente) return true;
     try {
       const salvo = JSON.parse(localStorage.getItem(chaveRascunho) || "null");
       if (salvo && typeof salvo === "object") {
         aplicarRascunho(salvo);
         rascunhoLocalDisponivel = true;
-        // Caches anteriores não distinguem edição pendente de cópia sincronizada.
-        rascunhoPendente = salvo.pendente_sincronizacao !== false;
+        // Ausência do marcador não prova que o usuário editou esta cópia antiga.
+        rascunhoPendente = salvo.pendente_sincronizacao === true;
+        baseRascunho = objeto(salvo.base_rascunho) ? salvo.base_rascunho : rascunhoPendente ? null : copia(dadosRascunho());
+        versaoServidor = typeof salvo.versao_servidor === "string" ? salvo.versao_servidor : null;
+        conflitoRascunho = null;
         if (rascunhoPendente) estado.salvamento = "erro";
       }
     } catch (_) {}
@@ -187,13 +263,16 @@
     const el = document.getElementById("assistente_contas_salvamento");
     if (!el) return;
     const textos = { salvando: "Salvando na sua conta...", salvo: "✓ Salvo na sua conta",
-      local: "Salvo neste dispositivo", carregando: "Carregando seus dados...",
-      erro: rascunhoLocalDisponivel ? "Salvo neste dispositivo — tente salvar novamente" : "Não foi possível carregar seus dados" };
+      local: rascunhoLocalDisponivel ? "Salvo neste dispositivo" : "Alterações ainda não salvas — mantenha esta página aberta",
+      conflito: "Há alterações em outro dispositivo — revise as versões",
+      carregando: "Carregando seus dados...",
+      erro: rascunhoLocalDisponivel ? "Salvo neste dispositivo — tente salvar novamente" : rascunhoPendente ? "Alterações ainda não salvas — mantenha esta página aberta e tente novamente" : "Não foi possível carregar seus dados" };
     el.textContent = textos[estado.salvamento] || textos.local;
     el.dataset.estado = estado.salvamento;
   }
 
   function persistirRascunhoServidor() {
+    if (conflitoRascunho) return Promise.resolve(false);
     // Nunca substituir um rascunho remoto quando sua leitura não foi concluída.
     if (!rascunhoCarregadoServidor) {
       if (sessaoValida()) {
@@ -204,26 +283,47 @@
       return Promise.resolve(false);
     }
     const token = sessaoToken;
-    const versao = versaoRascunho;
-    const body = JSON.stringify(dadosRascunho());
     const executar = async () => {
-      if (!sessaoValida(token)) return false;
+      if (!sessaoValida(token) || conflitoRascunho) return false;
       estado.salvamento = "salvando";
       atualizarIndicadorSalvamento();
       try {
-        const res = await fetch(API + "/assistente-contas-anuncios", {
-          method: "PUT", signal: AbortSignal.timeout(15000),
-          headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body
-        });
-        if (!sessaoValida(token)) return false;
-        if (!res.ok) throw new Error("Falha ao salvar");
-        if (versao === versaoRascunho) {
-          rascunhoPendente = false;
-          estado.salvamento = "salvo";
+        // O servidor compara a revisão atomicamente. Uma colisão permite uma
+        // única reconciliação automática; divergências no mesmo campo exigem revisão.
+        for (let tentativa = 0; tentativa < 2; tentativa++) {
+          const versao = versaoRascunho;
+          const enviado = copia(dadosRascunho());
+          const res = await fetch(API + "/assistente-contas-anuncios", {
+            method: "PUT", signal: AbortSignal.timeout(15000),
+            headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+            body: JSON.stringify({ ...enviado, versao_base: versaoServidor })
+          });
+          if (!sessaoValida(token)) return false;
+          const data = await res.json();
+          if (res.status === 409 && data?.codigo === "CONFLITO_RASCUNHO") {
+            const atual = await consultarRascunho(token);
+            if (!sessaoValida(token)) return false;
+            receberRascunho(atual);
+            if (aberto()) render();
+            if (conflitoRascunho) return false;
+            if (tentativa === 0) continue;
+          }
+          if (!res.ok || data?.sucesso !== true || !data.rascunho || !respostaRascunhoValida(data)) throw new Error("Falha ao salvar");
+          baseRascunho = copia(conteudo(data.rascunho));
+          versaoServidor = data.rascunho.versao;
+          if (versao === versaoRascunho) {
+            aplicarRascunho(copia(baseRascunho));
+            rascunhoPendente = false;
+            estado.salvamento = "salvo";
+          } else {
+            // Incorpora a normalização do servidor sem apagar digitação posterior.
+            aplicarRascunho(mesclarRascunhos(enviado, dadosRascunho(), baseRascunho));
+          }
           gravarLocal();
+          atualizarIndicadorSalvamento();
+          return true;
         }
-        atualizarIndicadorSalvamento();
-        return true;
+        return false;
       } catch (_) {
         if (sessaoValida(token)) {
           rascunhoPendente = true;
@@ -243,7 +343,7 @@
     if (!sessaoValida()) return;
     versaoRascunho += 1;
     rascunhoPendente = true;
-    estado.salvamento = "local";
+    estado.salvamento = conflitoRascunho ? "conflito" : "local";
     gravarLocal();
     if (salvamentoTimer) clearTimeout(salvamentoTimer);
     if (opcoes.imediato) persistirRascunhoServidor();
@@ -254,7 +354,6 @@
     const token = sessaoToken;
     if (!sessaoValida(token)) return;
     const sequencia = ++carregamentoSequencia;
-    const versao = versaoRascunho;
     const atual = () => sessaoValida(token) && sequencia === carregamentoSequencia;
     rascunhoCarregadoServidor = false;
     if (!rascunhoLocalDisponivel) estado.salvamento = "carregando";
@@ -263,20 +362,10 @@
       // Uma leitura iniciada antes de um PUT terminar pode devolver dados antigos.
       await filaSalvamento;
       if (!atual()) return;
-      const res = await fetch(API + "/assistente-contas-anuncios", {
-        signal: AbortSignal.timeout(15000), headers: { Authorization: "Bearer " + token }
-      });
-      if (!res.ok) throw new Error("Falha ao carregar");
-      const data = await res.json();
+      const data = await consultarRascunho(token);
       if (!atual()) return;
-      rascunhoCarregadoServidor = true;
-      if (!rascunhoPendente && !interagiuDesdeAbertura && versao === versaoRascunho && data?.rascunho && typeof data.rascunho === "object") {
-        aplicarRascunho(data.rascunho);
-        estado.salvamento = "salvo";
-        gravarLocal();
-        if (estado.etapa === 3) carregarStatus({ silencioso: true });
-      }
-      if (estado.salvamento === "carregando") estado.salvamento = "local";
+      receberRascunho(data);
+      if (estado.etapa === 3) carregarStatus({ silencioso: true });
       if (aberto()) render();
     } catch (_) {
       if (atual()) { estado.salvamento = "erro"; if (aberto()) render(); }
@@ -562,22 +651,32 @@
     const etapa = estado.etapa;
     footer.innerHTML = `
       <div class="assistente-contas-footer-esq">
-        ${etapa > 1 ? `<button class="assistente-btn-secundario" onclick="assistenteIrParaEtapa(${etapa - 1})">← Voltar</button>` : `<button class="assistente-btn-secundario" onclick="fecharAssistenteContasAnuncios()">Continuar depois</button>`}
+        ${etapa > 1 ? `<button class="assistente-btn-secundario" onclick="assistenteIrParaEtapa(${etapa - 1})" ${conflitoRascunho ? "disabled" : ""}>← Voltar</button>` : `<button class="assistente-btn-secundario" onclick="fecharAssistenteContasAnuncios()">Continuar depois</button>`}
         <span id="assistente_contas_salvamento" class="assistente-salvamento" data-estado="${esc(estado.salvamento)}"></span>
         ${estado.salvamento === "erro" ? '<button class="assistente-btn-secundario" onclick="assistenteTentarSalvarRascunho()">Tentar novamente</button>' : ""}
       </div>
       <div class="assistente-contas-footer-dir">
         ${etapa === 3
-          ? `<button class="assistente-btn-secundario" onclick="assistenteCopiarDados()">📋 Copiar dados</button><button class="assistente-btn-secundario" onclick="carregarAssistenteContasAnuncios()">↻ Verificar novamente</button><button class="assistente-btn-sucesso" onclick="fecharAssistenteContasAnuncios()">Salvar e fechar</button>`
-          : `<button class="assistente-btn-primario" onclick="assistenteIrParaEtapa(${etapa + 1})" ${!rascunhoCarregadoServidor && !rascunhoLocalDisponivel ? "disabled" : ""}>Continuar →</button>`}
+          ? `<button class="assistente-btn-secundario" onclick="assistenteCopiarDados()">📋 Copiar dados</button><button class="assistente-btn-secundario" onclick="carregarAssistenteContasAnuncios()">↻ Verificar novamente</button><button class="assistente-btn-sucesso" onclick="fecharAssistenteContasAnuncios()">${conflitoRascunho ? "Fechar" : "Salvar e fechar"}</button>`
+          : `<button class="assistente-btn-primario" onclick="assistenteIrParaEtapa(${etapa + 1})" ${!disponivel() || conflitoRascunho ? "disabled" : ""}>Continuar →</button>`}
       </div>`;
+  }
+
+  function renderConflito() {
+    const nomes = { nome_legal: "Nome ou razão social", nome_comercial: "Nome comercial", email: "E-mail", telefone: "Telefone", documento: "CPF ou CNPJ", site: "Site", endereco: "Endereço", segmento: "Segmento", moeda: "Moeda", fuso: "Fuso horário", pais: "País", plataformas: "Plataforma", acompanhamento: "Acompanhamento" };
+    const valor = v => v === undefined ? "Não preenchido" : typeof v === "object" ? JSON.stringify(v) : String(v);
+    return `<div class="assistente-contas-aviso" role="alert"><h3>Revise as alterações do cadastro</h3>
+      <p>Este cadastro também foi alterado em outra aba ou dispositivo. As mudanças em campos diferentes foram preservadas. Escolha quais valores manter nos campos abaixo.</p>
+      ${conflitoRascunho.campos.map(c => `<p><b>${esc(nomes[c.caminho.split(".").at(-1)] || nomes[c.caminho.split(".")[0]] || "Cadastro")}</b><br>Suas alterações: ${esc(valor(c.local))}<br>Salvo na conta: ${esc(valor(c.remoto))}</p>`).join("")}
+      <div class="assistente-status-acoes"><button class="assistente-btn-secundario" onclick="assistenteResolverConflito(false)">Usar valores salvos na conta</button>
+      <button class="assistente-btn-primario" onclick="assistenteResolverConflito(true)">Manter minhas alterações nesses campos</button></div></div>`;
   }
 
   function render() {
     renderEtapas();
     const corpo = document.getElementById("assistente_contas_corpo");
     if (!corpo) return;
-    corpo.innerHTML = !rascunhoCarregadoServidor && !rascunhoLocalDisponivel
+    corpo.innerHTML = conflitoRascunho ? renderConflito() : !disponivel()
       ? `<p class="assistente-contas-intro" role="status">${estado.salvamento === "erro" ? "Não foi possível carregar seu cadastro. Tente novamente para continuar sem substituir os dados salvos." : "Carregando seu cadastro salvo..."}</p>`
       : estado.etapa === 1 ? renderPlataformas() : estado.etapa === 2 ? renderDados() : renderStatus();
     renderFooter();
@@ -839,7 +938,6 @@
   };
 
   window.abrirAssistenteContasAnuncios = function () {
-    interagiuDesdeAbertura = false;
     if (!carregarRascunho()) { alert("Entre na sua conta para usar o assistente."); return; }
     const modal = document.getElementById("assistente_contas_modal");
     if (!modal) return;
@@ -866,17 +964,15 @@
   };
 
   window.assistenteSelecionarPlataforma = function (plataforma) {
-    if (!sessaoValida() || !plataformas[plataforma] || (!rascunhoCarregadoServidor && !rascunhoLocalDisponivel)) return;
+    if (!sessaoValida() || conflitoRascunho || !plataformas[plataforma] || !disponivel()) return;
     if (!estado.plataformas.includes(plataforma)) pararMonitorTela(false);
-    interagiuDesdeAbertura = true;
     estado.plataformas = [plataforma];
     salvarRascunho();
     render();
   };
 
   window.assistenteSalvarCampoDados = function (el) {
-    if (!sessaoValida() || !el?.name || (!rascunhoCarregadoServidor && !rascunhoLocalDisponivel)) return;
-    interagiuDesdeAbertura = true;
+    if (!sessaoValida() || conflitoRascunho || !el?.name || !disponivel()) return;
     estado.dados[el.name] = el.value;
     delete estado.erros[el.name];
     el.setAttribute("aria-invalid", "false");
@@ -886,8 +982,7 @@
   };
 
   window.assistenteIrParaEtapa = function (etapa) {
-    if (!sessaoValida() || (!rascunhoCarregadoServidor && !rascunhoLocalDisponivel)) return;
-    interagiuDesdeAbertura = true;
+    if (!sessaoValida() || conflitoRascunho || !disponivel()) return;
     capturarFormulario();
     if (etapa === 2 && !estado.plataformas.length) {
       alert("Selecione ao menos uma plataforma.");
@@ -912,6 +1007,27 @@
   };
 
   window.carregarAssistenteContasAnuncios = carregarStatus;
+
+  window.assistenteResolverConflito = async function (manterLocal) {
+    if (!sessaoValida() || !conflitoRascunho) return;
+    const token = sessaoToken;
+    const mesclado = copia(dadosRascunho());
+    if (!manterLocal) for (const campo of conflitoRascunho.campos) {
+      const partes = campo.caminho.split(".");
+      let destino = mesclado;
+      for (const parte of partes.slice(0, -1)) destino = destino[parte];
+      const chave = partes.at(-1);
+      if (campo.remoto === undefined) delete destino[chave];
+      else destino[chave] = copia(campo.remoto);
+    }
+    baseRascunho = copia(conflitoRascunho.remoto);
+    conflitoRascunho = null;
+    aplicarRascunho(mesclado);
+    salvarRascunho();
+    if (salvamentoTimer) clearTimeout(salvamentoTimer);
+    await persistirRascunhoServidor();
+    if (sessaoValida(token) && aberto()) render();
+  };
 
   window.assistenteTentarSalvarRascunho = async function () {
     const token = sessaoToken;
@@ -941,19 +1057,21 @@
   };
 
   window.assistenteCriarContaGoogle = async function (btn) {
-    if (!sessaoValida() || criandoGoogle) return;
+    if (!sessaoValida() || criandoGoogle || conflitoRascunho) return;
     capturarFormulario();
     if (Object.keys(validarDadosAssistente(estado.dados)).length) { window.assistenteIrParaEtapa(3); return; }
     const seletor = document.getElementById("assistente_google_mcc");
     const managerCustomerId = seletor?.value || "";
     const nome = String(estado.dados.nome_comercial || estado.dados.nome_legal || "").trim();
+    const criacaoConfirmada = { nome, moeda: estado.dados.moeda || "BRL", fuso: estado.dados.fuso || "America/Sao_Paulo", manager_customer_id: managerCustomerId };
     if (!managerCustomerId || !nome) {
       alert("Informe os dados da empresa e escolha a conta de administrador do Google Ads.");
       return;
     }
     const confirmar = confirm(
       `Criar agora a conta “${nome}” no Google Ads?\n\n` +
-      "Ela será vinculada à conta de administrador escolhida. Moeda e fuso horário não poderão ser alterados depois."
+      `Conta de administrador: ${managerCustomerId}\nMoeda: ${criacaoConfirmada.moeda}\nFuso horário: ${criacaoConfirmada.fuso}\n\n` +
+      "Moeda e fuso horário não poderão ser alterados depois."
     );
     if (!confirmar) return;
     criandoGoogle = true;
@@ -972,12 +1090,7 @@
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          nome,
-          moeda: estado.dados.moeda || "BRL",
-          fuso: estado.dados.fuso || "America/Sao_Paulo",
-          manager_customer_id: managerCustomerId
-        })
+        body: JSON.stringify(criacaoConfirmada)
       });
       const data = await res.json().catch(() => ({}));
       if (!sessaoValida(token)) return;
@@ -1044,6 +1157,9 @@
     rascunhoPendente = false;
     rascunhoLocalDisponivel = false;
     rascunhoCarregadoServidor = false;
+    baseRascunho = null;
+    versaoServidor = null;
+    conflitoRascunho = null;
     estado = { etapa: 1, plataformas: ["meta"], dados: {}, acompanhamento: {}, erros: {}, status: {}, capacidades: {}, carregando: false, salvamento: "local" };
     const modal = document.getElementById("assistente_contas_modal");
     if (modal) modal.style.display = "none";

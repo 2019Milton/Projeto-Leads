@@ -1,0 +1,116 @@
+/* Seletor de mês da plataforma (seletor-mes.js): substitui o calendário nativo dos
+   <input type="month"> com os anos visíveis, do ano passado até 5 anos à frente. */
+
+input[type="month"] {
+  cursor: pointer;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+.seletor-mes {
+  position: fixed;
+  z-index: 2147483000;
+  width: 272px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+}
+
+.seletor-mes-rotulo {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.seletor-mes-anos,
+.seletor-mes-meses {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.seletor-mes-anos {
+  margin-bottom: 12px;
+}
+
+.seletor-mes button.seletor-mes-opcao {
+  width: 100%;
+  margin: 0;
+  padding: 7px 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(148, 163, 184, 0.10);
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.seletor-mes button.seletor-mes-opcao:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.22);
+}
+
+.seletor-mes button.seletor-mes-opcao.atual {
+  border-color: #60a5fa;
+}
+
+.seletor-mes button.seletor-mes-opcao.selecionado {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.seletor-mes button.seletor-mes-opcao:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.seletor-mes-rodape {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.seletor-mes button.seletor-mes-acao {
+  margin: 0;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: #60a5fa;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+body.tema-claro .seletor-mes {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+body.tema-claro .seletor-mes button.seletor-mes-opcao {
+  background: #f1f5f9;
+}
+
+body.tema-claro .seletor-mes button.seletor-mes-opcao.selecionado {
+  background: #2563eb;
+  color: #fff;
+}
+
+body.tema-claro .seletor-mes button.seletor-mes-acao {
+  color: #2563eb;
+}

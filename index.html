@@ -21316,37 +21316,9 @@ body.tema-claro .criar-campanha-descricao {
           <div class="admin-ia-mini">
             <strong>
               Custo estimado
-              <span class="admin-help" title="Estimativa em reais do custo mensal da IA. Depende dos valores de tokens configurados no backend e pode ser diferente da fatura final da OpenAI.">?</span>
+              <span class="admin-help" title="Estimativa em reais do custo mensal da IA, somando OpenAI e Anthropic, as chamadas automaticas e o ranking (o mesmo valor que o limite mensal de custo compara). Pode ser diferente da fatura final dos provedores.">?</span>
             </strong>
             <span id="ia_admin_custo_mes">R$ 0,00</span>
-          </div>
-          <div class="admin-ia-mini">
-            <strong>
-              Tokens no mes
-              <span class="admin-help" title="Tokens sao pedacos de texto processados pela IA. Quanto mais texto enviado e recebido, mais tokens sao usados.">?</span>
-            </strong>
-            <span id="ia_admin_tokens_mes">0</span>
-          </div>
-          <div class="admin-ia-mini">
-            <strong>
-              Custo medio
-              <span class="admin-help" title="Custo estimado dividido pela quantidade de chamadas de IA no mes. Ajuda a entender quanto custa, em media, cada uso da IA.">?</span>
-            </strong>
-            <span id="ia_admin_custo_medio">R$ 0,00/chamada</span>
-          </div>
-          <div class="admin-ia-mini">
-            <strong>
-              Uso medio por Ouro
-              <span class="admin-help" title="Media de chamadas de IA por usuario Ouro no mes. Ajuda a perceber se os usuarios estao usando pouco ou muito a IA.">?</span>
-            </strong>
-            <span id="ia_admin_media_usuario">0 chamada(s)</span>
-          </div>
-          <div class="admin-ia-mini">
-            <strong>
-              Status da IA
-              <span class="admin-help" title="Mostra se a IA esta ativa, pausada, sem configuracao ou sem chave da OpenAI no Railway.">?</span>
-            </strong>
-            <span id="ia_admin_status_api">-</span>
           </div>
         </div>
 
@@ -51847,53 +51819,29 @@ async function carregarPainelIAAdmin() {
     document.getElementById("ia_admin_usuarios_ouro").innerText =
       resumo.usuarios_ouro_ativos || resumo.usuarios_ouro || 0;
 
-    document.getElementById("ia_admin_chamadas_mes").innerText =
-      resumo.chamadas_mes || 0;
+    // uso_global inclui o job do ranking (resumo só soma ia_usos), então os cards
+    // batem com o "Consumo por Provider" e com o que os limites globais comparam.
+    const usoGlobal = data.uso_global || {
+      chamadas: resumo.chamadas_mes,
+      chamadas_manuais: null,
+      custo: resumo.custo_mes
+    };
+    const chamadasMes = Number(usoGlobal.chamadas || 0);
+
+    document.getElementById("ia_admin_chamadas_mes").innerText = chamadasMes;
 
     // Só as chamadas pedidas pelos usuários entram no limite global de chamadas.
     const detalheChamadas = document.getElementById("ia_admin_chamadas_detalhe");
-    if (detalheChamadas && data.uso_global) {
+    if (detalheChamadas && usoGlobal.chamadas_manuais != null) {
       const limiteReq = Number(config.limite_mensal_requisicoes || 0);
-      const manuais = Number(data.uso_global.chamadas_manuais || 0);
-      // Divide o número do card (só ia_usos, sem o job do ranking) para a soma bater.
-      const automaticas = Math.max(0, Number(resumo.chamadas_mes || 0) - manuais);
+      const manuais = Number(usoGlobal.chamadas_manuais || 0);
+      const automaticas = Math.max(0, chamadasMes - manuais);
       detalheChamadas.innerText =
         `${manuais}/${limiteReq > 0 ? limiteReq : "ilimitado"} no limite global · +${automaticas} automática(s)`;
     }
 
     document.getElementById("ia_admin_custo_mes").innerText =
-      formatarMoeda(resumo.custo_mes || 0);
-
-    const chamadasMes =
-      Number(resumo.chamadas_mes || 0);
-
-    const usuariosOuro =
-      Number(
-        resumo.usuarios_ouro_ativos ||
-        resumo.usuarios_ouro ||
-        0
-      );
-
-    const custoMes =
-      Number(resumo.custo_mes || 0);
-
-    const tokensEntrada =
-      Number(resumo.tokens_entrada_mes || 0);
-
-    const tokensSaida =
-      Number(resumo.tokens_saida_mes || 0);
-
-    const tokensTotal =
-      tokensEntrada + tokensSaida;
-
-    document.getElementById("ia_admin_tokens_mes").innerText =
-      `${tokensTotal.toLocaleString("pt-BR")} tokens`;
-
-    document.getElementById("ia_admin_custo_medio").innerText =
-      `${formatarMoeda(chamadasMes ? custoMes / chamadasMes : 0)}/chamada`;
-
-    document.getElementById("ia_admin_media_usuario").innerText =
-      `${(usuariosOuro ? chamadasMes / usuariosOuro : 0).toFixed(1)} chamada(s)`;
+      formatarMoeda(usoGlobal.custo || 0);
 
     const iaTemChave = !!config.chave_configurada;
     const iaStatus = config.status || "nao_contratado";
@@ -51909,7 +51857,7 @@ async function carregarPainelIAAdmin() {
     } else if (iaStatus === "contratado") {
       iaStatusTexto = "IA ativa";
       iaStatusDetalhe =
-        `OpenAI conectada. Modelo em uso na Railway: ${config.modelo || "gpt-5-mini"}.`;
+        `OpenAI conectada. Modelo OpenAI escolhido: ${config.modelo || "gpt-5-mini"}.`;
       iaStatusCor = "#86efac";
     } else if (iaStatus === "pausado") {
       iaStatusTexto = "IA pausada";
@@ -51918,17 +51866,10 @@ async function carregarPainelIAAdmin() {
       iaStatusCor = "#fbbf24";
     }
 
-    const statusApiEl =
-      document.getElementById("ia_admin_status_api");
     const statusOperacaoEl =
       document.getElementById("ia_admin_status_operacao");
     const statusDetalheEl =
       document.getElementById("ia_admin_status_detalhe");
-
-    if (statusApiEl) {
-      statusApiEl.innerText = iaStatusTexto;
-      statusApiEl.style.color = iaStatusCor;
-    }
 
     if (statusOperacaoEl) {
       statusOperacaoEl.innerText = iaStatusTexto;

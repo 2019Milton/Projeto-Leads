@@ -12627,6 +12627,26 @@ body.tema-claro .integ-ranking-aba-nicho.ativa { color: #78350f; }
 .admin-nav-card-acao { font-size: 11px; color: #6366f1; font-weight: 600; margin-top: 10px; transition: color 0.15s; }
 .admin-nav-card.ativo .admin-nav-card-acao { color: #a5b4fc; }
 
+/* Avisos por WhatsApp (Admin) */
+.aviso-wpp-grupo { font-size: 13px; font-weight: 700; color: #cbd5e1; margin: 18px 0 10px; }
+.aviso-wpp-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; background: rgba(15,23,42,0.55); }
+.aviso-wpp-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.aviso-wpp-nome { font-size: 14px; font-weight: 700; color: #e2e8f0; }
+.aviso-wpp-info { font-size: 12px; color: #94a3b8; margin-top: 4px; line-height: 1.5; }
+.aviso-wpp-numeros { font-size: 12px; color: #94a3b8; text-align: right; line-height: 1.5; }
+.aviso-wpp-numeros b { color: #e2e8f0; }
+.aviso-wpp-tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 6px; margin-left: 6px; font-weight: 600; background: rgba(148,163,184,0.15); color: #94a3b8; }
+.aviso-wpp-tag.personalizado { background: rgba(99,102,241,0.18); color: #a5b4fc; }
+.aviso-wpp-tag.alerta { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.aviso-wpp-card details { margin-top: 10px; }
+.aviso-wpp-card summary { cursor: pointer; font-size: 13px; color: #a5b4fc; font-weight: 600; }
+.aviso-wpp-acoes { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 8px; }
+.aviso-wpp-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px; }
+.aviso-wpp-usuario { display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: #e2e8f0; cursor: pointer; }
+.aviso-wpp-usuario input { width: auto; margin-top: 3px; }
+.aviso-wpp-usuario .aviso-wpp-sub { display: block; font-size: 11px; color: #94a3b8; }
+.aviso-wpp-usuario.nao-recebe .aviso-wpp-sub.motivo { color: #fbbf24; }
+
 /* Seções colapsáveis */
 .admin-secao-colapsavel > h3:first-child {
   display: flex;
@@ -17244,6 +17264,19 @@ body.tema-claro .admin-kpi-link {
   color: var(--claro-muted) !important;
 }
 
+body.tema-claro .aviso-wpp-card { background: #ffffff; border-color: #cbd8e6; }
+body.tema-claro .aviso-wpp-usuario { border-color: #e2e8f0; }
+body.tema-claro .aviso-wpp-grupo,
+body.tema-claro .aviso-wpp-nome,
+body.tema-claro .aviso-wpp-numeros b,
+body.tema-claro .aviso-wpp-usuario { color: var(--claro-text); }
+body.tema-claro .aviso-wpp-info,
+body.tema-claro .aviso-wpp-numeros,
+body.tema-claro .aviso-wpp-usuario .aviso-wpp-sub { color: var(--claro-muted); }
+body.tema-claro .aviso-wpp-usuario.nao-recebe .aviso-wpp-sub.motivo { color: #b45309; }
+body.tema-claro .aviso-wpp-card summary { color: #4f46e5; }
+body.tema-claro .aviso-wpp-acoes .btn-video-anuncio { color: #1d4ed8; }
+
 .suporte-admin-card {
   background: linear-gradient(145deg, rgba(99,102,241,0.15), rgba(139,92,246,0.06)) !important;
   border: 1px solid rgba(139,92,246,0.25) !important;
@@ -21108,6 +21141,15 @@ body.tema-claro .criar-campanha-descricao {
           <div class="admin-nav-card-acao" id="nav-acao-ranking">Expandir →</div>
         </div>
 
+        <div class="admin-nav-card" id="nav-card-avisos-whatsapp" onclick="toggleSecaoAdmin('avisos-whatsapp')">
+          <div class="admin-nav-card-topo">
+            <span class="admin-nav-card-emoji">📲</span>
+            <span class="admin-nav-card-titulo">Avisos por WhatsApp</span>
+          </div>
+          <div class="admin-nav-card-resumo">Quais avisos saem e quem recebe cada um</div>
+          <div class="admin-nav-card-acao" id="nav-acao-avisos-whatsapp">Expandir →</div>
+        </div>
+
       </div><!-- /admin-nav-grid -->
 
       <!-- RECURSOS -->
@@ -22099,6 +22141,20 @@ body.tema-claro .criar-campanha-descricao {
         </div>
         <p style="color:#64748b;font-size:12px;margin:6px 0 0;">Campo vazio usa o padrão. Isento: não gera fatura para o gestor.</p>
         <div id="cob_previa" style="margin-top:14px;"></div>
+      </div>
+
+      <!-- 📲 AVISOS POR WHATSAPP — avisos automáticos da plataforma e quem recebe cada um -->
+      <div id="admin-secao-avisos-whatsapp" class="admin-secao admin-secao-b admin-secao-colapsavel fechada">
+        <h3 onclick="toggleSecaoAdmin('avisos-whatsapp')" style="cursor:pointer;margin-bottom:8px;color:white;">📲 Avisos por WhatsApp <span class="admin-sec-chevron">▶</span></h3>
+        <p style="color:#9ca3af;font-size:13px;margin-bottom:6px;">
+          Todos os avisos automáticos que a plataforma manda pelo WhatsApp dela. Em cada aviso, marque quem recebe.
+          Sem escolha sua vale o padrão: avisos da conta vão para o dono da conta; avisos da administração, para os super admins.
+        </p>
+        <p style="color:#64748b;font-size:12px;margin:0 0 6px;">
+          Conta inativa não recebe nada. Quem desligou "notificações no WhatsApp" em Configurações também não recebe novo lead, lead quente e resumo semanal.
+          Mensagens do atendimento aos leads (WhatsApp Bot) não são avisos e não aparecem aqui.
+        </p>
+        <div id="avisos_wpp_conteudo" style="font-size:13px;color:#94a3b8;">Carregando...</div>
       </div>
 
     </div>
@@ -24633,6 +24689,110 @@ async function requisicaoAdminCobranca(caminho, opcoes = {}) {
     throw erro;
   }
   return data;
+}
+
+// 📲 Avisos por WhatsApp (Admin). Catálogo e regra de quem recebe: avisos-whatsapp.ts no backend.
+let _avisosWppCache = null;
+const _avisosWppAbertos = new Set();
+
+const MOTIVO_AVISO_WPP_NAO_RECEBE = {
+  inativo: "Conta inativa: não recebe",
+  desligado_pelo_usuario: "Desligou as notificações em Configurações",
+  sem_whatsapp: "Sem WhatsApp cadastrado",
+};
+
+async function carregarAvisosWhatsAppAdmin() {
+  const alvo = document.getElementById("avisos_wpp_conteudo");
+  if (!alvo) return;
+  try {
+    _avisosWppCache = await requisicaoAdminCobranca("/admin/avisos-whatsapp");
+    renderizarAvisosWhatsAppAdmin();
+  } catch (err) {
+    console.error("ERRO carregarAvisosWhatsAppAdmin:", err);
+    alvo.innerHTML = `<div style="color:#f87171;">${escaparHtml(err.message)}</div>`;
+  }
+}
+
+function formatarDataHoraAvisoWpp(valor) {
+  const data = valor ? new Date(valor) : null;
+  if (!data || isNaN(data)) return "";
+  return data.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+function cardAvisoWhatsAppAdmin(aviso, usuarios) {
+  const ids = aviso.destinatarios.map(d => d.usuario_id).join(",");
+  const ultimo = formatarDataHoraAvisoWpp(aviso.ultimo_envio_em);
+  const linhas = aviso.destinatarios.map(d => {
+    const u = usuarios.get(d.usuario_id);
+    if (!u) return "";
+    const motivo = d.marcado && !d.recebe ? (MOTIVO_AVISO_WPP_NAO_RECEBE[d.motivo] || "") : "";
+    const detalhe = `${u.tipo ? labelTipoUsuario(u.tipo) : "Sem tipo"} · ${d.escolha === null ? "padrão" : "escolhido por você"}`;
+    return `
+      <label class="aviso-wpp-usuario${motivo ? " nao-recebe" : ""}">
+        <input type="checkbox" ${d.marcado ? "checked" : ""} onchange="marcarAvisoWhatsAppAdmin('${aviso.chave}', [${u.id}], this.checked)" />
+        <span>${escaparHtml(u.nome)}<span class="aviso-wpp-sub">${escaparHtml(detalhe)}</span>${motivo ? `<span class="aviso-wpp-sub motivo">${escaparHtml(motivo)}</span>` : ""}</span>
+      </label>`;
+  }).join("");
+
+  return `
+    <div class="aviso-wpp-card">
+      <div class="aviso-wpp-topo">
+        <div style="flex:1;min-width:240px;">
+          <div class="aviso-wpp-nome">${escaparHtml(aviso.nome)}${aviso.personalizado
+            ? `<span class="aviso-wpp-tag personalizado">Personalizado</span>`
+            : `<span class="aviso-wpp-tag">Padrão: ${escaparHtml(aviso.padrao)}</span>`}${aviso.recebem === 0 ? `<span class="aviso-wpp-tag alerta">Ninguém recebe</span>` : ""}</div>
+          <div class="aviso-wpp-info"><b>Quando:</b> ${escaparHtml(aviso.quando)}<br><b>Frequência:</b> ${escaparHtml(aviso.frequencia)}${aviso.respeita_preferencia_usuario ? " · respeita a chave de notificações do usuário" : ""}</div>
+        </div>
+        <div class="aviso-wpp-numeros">
+          Recebem agora: <b>${Number(aviso.recebem || 0)}</b><br>
+          Enviados (30 dias): <b>${Number(aviso.enviados_30d || 0)}</b>${aviso.falhas_30d ? ` · falhas: <b>${Number(aviso.falhas_30d)}</b>` : ""}<br>
+          ${ultimo ? `Último: ${escaparHtml(ultimo)}` : "Nenhum envio registrado"}
+        </div>
+      </div>
+      <details data-aviso="${aviso.chave}" ${_avisosWppAbertos.has(aviso.chave) ? "open" : ""} ontoggle="alternarDetalheAvisoWhatsApp(this)">
+        <summary>Escolher quem recebe</summary>
+        <div class="aviso-wpp-acoes">
+          <button type="button" class="btn-video-anuncio" onclick="marcarAvisoWhatsAppAdmin('${aviso.chave}', [${ids}], true)">Marcar todos</button>
+          <button type="button" class="btn-video-anuncio" onclick="marcarAvisoWhatsAppAdmin('${aviso.chave}', [${ids}], false)">Desmarcar todos</button>
+          ${aviso.personalizado ? `<button type="button" class="btn-video-anuncio" onclick="marcarAvisoWhatsAppAdmin('${aviso.chave}', [${ids}], null)">Voltar ao padrão</button>` : ""}
+        </div>
+        <div class="aviso-wpp-lista">${linhas}</div>
+      </details>
+    </div>`;
+}
+
+function renderizarAvisosWhatsAppAdmin() {
+  const alvo = document.getElementById("avisos_wpp_conteudo");
+  const data = _avisosWppCache;
+  if (!alvo || !data) return;
+  const usuarios = new Map((data.usuarios || []).map(u => [u.id, u]));
+  const grupo = (nome) => (data.avisos || []).filter(a => a.grupo === nome).map(a => cardAvisoWhatsAppAdmin(a, usuarios)).join("");
+  alvo.innerHTML = `
+    <div class="aviso-wpp-grupo">Para o dono da conta</div>${grupo("conta")}
+    <div class="aviso-wpp-grupo">Para a administração</div>${grupo("administracao")}`;
+}
+
+function alternarDetalheAvisoWhatsApp(el) {
+  if (el.open) _avisosWppAbertos.add(el.dataset.aviso);
+  else _avisosWppAbertos.delete(el.dataset.aviso);
+}
+
+// recebe: true/false marca ou desmarca; null volta ao padrão.
+async function marcarAvisoWhatsAppAdmin(chave, usuarioIds, recebe) {
+  if (usuarioIds.length > 1) {
+    const aviso = (_avisosWppCache?.avisos || []).find(a => a.chave === chave);
+    const acao = recebe === null ? "voltar ao padrão para todos" : recebe ? "marcar todos os usuários" : "desmarcar todos os usuários";
+    if (!confirm(`${aviso?.nome || chave}: ${acao}?`)) return;
+  }
+  try {
+    _avisosWppCache = await requisicaoAdminCobranca(`/admin/avisos-whatsapp/${encodeURIComponent(chave)}`, {
+      method: "PUT",
+      body: JSON.stringify({ usuario_ids: usuarioIds, recebe })
+    });
+  } catch (err) {
+    alert(err.message);
+  }
+  renderizarAvisosWhatsAppAdmin();
 }
 
 function preencherPadraoCobranca(p = {}) {
@@ -51211,6 +51371,7 @@ function toggleSecaoAdmin(id) {
   if (navAcao) navAcao.textContent = abrindo ? "▲ Recolher" : "Expandir →";
   if (abrindo) sec.scrollIntoView({ behavior: "smooth", block: "start" });
   if (abrindo && id === "ranking") carregarStatusRankingAdmin();
+  if (abrindo && id === "avisos-whatsapp") carregarAvisosWhatsAppAdmin();
 }
 
 function _atualizarNavResumosAdmin(data) {

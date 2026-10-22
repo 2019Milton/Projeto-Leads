@@ -40577,6 +40577,13 @@ function mostrarResumoPublicacaoMultiRede(resultados) {
 // pra permitir publicar em mais de uma rede na mesma chamada.
 async function publicarCampanhaMeta(contexto, isMultiRede) {
   let campanhaCriadaId = null;
+  let anuncioSolicitado = false;
+  const resultadoPendente = (mensagem) => ({
+    ok: false,
+    publicacaoPendente: true,
+    campanhaId: campanhaCriadaId,
+    mensagem: `${mensagem} A campanha ${campanhaCriadaId} foi preservada. Confira o resultado na Meta antes de publicar novamente para evitar duplicação.`
+  });
   const {
     token, usuario_id, campanha_nome, texto, cta, orcamento, page_id,
     configuracoesBase, imagensArquivos, videoArquivo, videoUrlFallback, publicacaoGrupoId,
@@ -40617,7 +40624,7 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
       });
       const upload = await uploadRes.json();
 
-      if (upload.error) {
+      if (!uploadRes.ok || upload.error || !upload.hash) {
         return { ok: false, mensagem: upload.error?.message || upload.error || "Erro ao enviar imagem" };
       }
 
@@ -40670,7 +40677,7 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
     });
     const campanha = await campanhaRes.json();
 
-    if (campanha.error) {
+    if (!campanhaRes.ok || campanha.error || !campanha.id) {
       const msgCampanha = campanha.detalhe?.error?.error_user_msg || campanha.detalhe?.error?.message || campanha.error || "Erro ao criar campanha";
       const msgOriginal = campanha.detalhe?.error?.message && campanha.detalhe?.error?.message !== msgCampanha
         ? ` [Meta: ${campanha.detalhe.error.message}]`
@@ -40692,7 +40699,7 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
       });
       form = await formRes.json();
 
-      if (form.error) {
+      if (!formRes.ok || form.error || !form.id) {
         await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
         return { ok: false, mensagem: form.error?.message || form.error || "Erro ao criar formulário de leads" };
       }
@@ -40714,7 +40721,7 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
     });
     const adset = await adsetRes.json();
 
-    if (adset.error) {
+    if (!adsetRes.ok || adset.error || !adset.id) {
       await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
       const msgAdset = adset.detalhe?.error?.error_user_msg || adset.detalhe?.error?.message || adset.error?.error_user_msg || adset.error?.message || adset.error || "Erro ao criar conjunto de anúncios";
       const msgOrigAdset = adset.detalhe?.error?.message && adset.detalhe?.error?.message !== msgAdset ? ` [Meta: ${adset.detalhe.error.message}]` : "";
@@ -40723,6 +40730,7 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
 
     setPublishProgress(88, `${prefixo}Publicando anúncio...`);
 
+    anuncioSolicitado = true;
     const anuncioRes = await fetch(`${API}/meta/anuncio`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
@@ -40748,23 +40756,27 @@ async function publicarCampanhaMeta(contexto, isMultiRede) {
     });
     const anuncio = await anuncioRes.json();
 
-    if (anuncio.sem_forma_pagamento) {
+    if (anuncioRes.ok && anuncio?.sem_forma_pagamento && !anuncio.error) {
       setPublishProgress(100, `${prefixo}Campanha pronta (falta forma de pagamento na Meta)`);
       return { ok: true, semFormaPagamento: true, mensagem: anuncio.mensagem };
     }
 
-    if (anuncio.error) {
-      await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
-      return {
-        ok: false,
-        mensagem: anuncio.detalhe?.error_user_msg || anuncio.detalhe?.message || anuncio.error || "Erro ao criar anúncio"
-      };
+    if (!anuncioRes.ok || anuncio?.error || !anuncio?.id) {
+      const mensagens = [
+        anuncio?.detalhe?.error?.error_user_msg, anuncio?.detalhe?.error?.message,
+        anuncio?.detalhe?.error_user_msg, anuncio?.detalhe?.message,
+        anuncio?.error?.message, anuncio?.error, anuncio?.detalhe
+      ];
+      return resultadoPendente(mensagens.find(m => typeof m === "string" && m.trim()) || "Não foi possível confirmar a publicação do anúncio.");
     }
 
     setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
     return { ok: true };
   } catch (err) {
     console.error("ERRO publicarCampanhaMeta:", err);
+    if (anuncioSolicitado) {
+      return resultadoPendente("A conexão foi interrompida antes da confirmação do anúncio.");
+    }
     if (campanhaCriadaId) {
       await descartarCampanhaCriadaPorFalha(campanhaCriadaId, token);
     }
@@ -42094,16 +42106,16 @@ async function criarCampanhaCompleta() {
 
   setPublishProgress(null);
 
-  if (resultados.some(r => r.ok)) {
+  if (resultados.some(r => r.ok || r.publicacaoPendente)) {
     // carregarCampanhas() só busca no nosso próprio banco (rápido, sem alert) —
     // sincronizarCampanhas() faria isso, mas também re-consulta cada plataforma
     // conectada de novo (redundante, já sabemos o resultado por `resultados`) e
     // termina com um alert() bloqueante, o que deixava o modal preso até o
     // usuário clicar OK mesmo com a lista já atualizada atrás dele.
     await carregarCampanhas();
-    // fecha o modal de criação assim que pelo menos uma rede publicar com
-    // sucesso, pra já mostrar "Minhas Campanhas" atualizada; erro total mantém
-    // o modal aberto pra corrigir e tentar de novo sem perder o preenchido.
+    // Mostra também campanhas preservadas com confirmação pendente e fecha o
+    // criador para não incentivar uma nova publicação enquanto se confere a Meta.
+    // Falhas anteriores ao envio mantêm o formulário aberto para correção.
     fecharCriarCampanhaModal();
   }
 

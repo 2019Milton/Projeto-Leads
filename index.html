@@ -33840,13 +33840,13 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
         <div class="performance-meta-alerta">
           <span class="performance-meta-alerta-icone">i</span>
           <span>
-            <b>Isso não significa lead perdido</b> — é uma pequena diferença normal entre o que a Meta contabiliza do lado dela e o que realmente chegou aqui.
-            ${
-              diffLeadsMetaPlataforma > 0
-                ? `A Meta contabilizou <b>${diffLeadsMetaPlataforma} lead${diffLeadsMetaPlataforma > 1 ? "s" : ""} a mais</b> neste período (<b>${resumo.leads_total || 0}</b> na Meta vs. <b>${resumo.leads_total_plataforma || 0}</b> na Central de Leads).`
-                : `A Central de Leads tem <b>${Math.abs(diffLeadsMetaPlataforma)} lead${Math.abs(diffLeadsMetaPlataforma) > 1 ? "s" : ""} a mais</b> neste período (<b>${resumo.leads_total_plataforma || 0}</b> na Central de Leads vs. <b>${resumo.leads_total || 0}</b> na Meta).`
-            }
-            Motivos mais comuns: pequeno atraso no webhook, fuso horário (o lead cai em outro dia na contagem) ou testes feitos dentro do próprio Gerenciador de Anúncios.
+            <b>Contagens diferentes entre Meta e Plataforma.</b>
+            A Meta registra <b>${Number(resumo.leads_total || 0)}</b> leads no período;
+            a Central de Leads registra <b>${Number(resumo.leads_total_plataforma || 0)}</b>.
+            Diferença de <b>${Math.abs(diffLeadsMetaPlataforma)}</b>.
+            Isso pode decorrer de atribuição, datas, campanhas filtradas ou sincronização.
+            Quando a diferença é persistente ou elevada, confira as métricas e a origem dos contatos;
+            não é possível concluir que os leads foram perdidos nem que a divergência é normal.
           </span>
         </div>
       `;
@@ -33866,6 +33866,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
     const temDados =
       registro.gasto > 0 ||
       registro.leads > 0 ||
+      Number(registro.leads_plataforma || 0) > 0 ||
       registro.cliques > 0;
 
     // Detalhamento por campanha só existe pra Meta e Google (/<plataforma>/performance-diaria/

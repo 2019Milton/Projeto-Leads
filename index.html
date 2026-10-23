@@ -42472,7 +42472,7 @@ function dashboardPercentual(valor) {
 }
 
 const DASHBOARD_AJUDA = {
-  leadsTotais: "Leads cadastrados retornados para seu usuário e contexto de acesso, sem o filtro de período do relatório de performance.",
+  leadsTotais: "Leads atribuídos a anúncios e campanhas no contexto da conta selecionada; contatos orgânicos e WhatsApp sem origem publicitária não entram.",
   campanhas: "Campanhas veiculando sobre o total. \"Ligadas sem veicular\" estão ativas, mas com o conjunto ou os anúncios pausados na Meta.",
   investimento: "Soma do gasto retornado pela consulta de campanhas (janela de 30 dias quando disponível); não é o saldo nem o orçamento.",
   cplMedio: "Gasto das campanhas dividido pelos leads retornados na mesma consulta; não usa o cartão Leads totais.",
@@ -42482,7 +42482,7 @@ const DASHBOARD_AJUDA = {
   orcamento: "Soma dos orçamentos diários informados pelas campanhas carregadas, inclusive pausadas; não representa gasto realizado.",
   leadsPorClique: "Leads gerados por clique.",
   base: "Campanhas analisadas.",
-  leadsPlataforma: "Origem dos leads.",
+  leadsPlataforma: "Distribuição de leads atribuídos a anúncios por plataforma; WhatsApp é canal de conversa e só conta quando a origem publicitária é identificada.",
   campanhasDetalhe: "Resultado por campanha.",
   campanha: "Nome da campanha.",
   status: "Situacao atual.",
@@ -42800,31 +42800,24 @@ async function carregarDashboard() {
       platsData,
       metricasCampanhasData
     ] = await Promise.all([
-      dashboardFetchJson(`${API}/leads?limite=100`, token, {}),
+      dashboardFetchJson(`${API}/leads/stats/plataformas?somente_atribuidos=1`, token, []),
       dashboardFetchJson(`${API}/campanhas`, token, []),
       dashboardFetchJson(`${API}/conexoes`, token, []),
-      dashboardFetchJson(`${API}/leads/stats/plataformas`, token, []),
+      Promise.resolve(null),
       dashboardFetchJson(`${API}/meta/metricas-campanhas`, token, [])
     ]);
 
-    // GET /leads nunca devolveu uma lista plana — sempre agrupou por coluna do Kanban
-    // ({novos, primeiro_contato, em_conversa, fechado, perdido}, igual carregarLeads() já
-    // trata em Central de Leads). dashboardLista() procurava chaves ("leads"/"data"/"items")
-    // que nunca existiram nesse formato, então "Leads totais" ficava sempre zerado aqui.
-    const leads = ["novos", "primeiro_contato", "em_conversa", "fechado", "perdido"]
-      .reduce((acc, estagio) => acc.concat(Array.isArray(leadsData?.[estagio]) ? leadsData[estagio] : []), []);
+    // Fonte única para KPIs e distribuição: agregação do backend filtrada por
+    // atribuição publicitária. Não usar /leads (Central de Leads) aqui: inclui
+    // WhatsApp orgânico e tem limite/paginação distintos da métrica de campanha.
+    const plataformasAtribuidas = Array.isArray(leadsData) ? leadsData : [];
     const campanhasPlataforma = dashboardLista(campData, ["campanhas", "data", "items"]);
     const campanhasMetricas = dashboardLista(metricasCampanhasData, ["campanhas", "data", "items"]);
     const campanhas = campanhasMetricas.length ? campanhasMetricas : campanhasPlataforma;
     const conexoes = dashboardLista(conexData, ["conexoes", "data", "items"]);
-    const plataformas = dashboardNormalizarPlataformas(platsData, leads, campanhas);
-
-    const totalLeads =
-      leadsData?.total ??
-      leadsData?.total_leads ??
-      leads.length ??
-      0;
-
+    const plataformas = dashboardNormalizarPlataformas(plataformasAtribuidas, [], []);
+    const totalLeads = plataformas.reduce((total, item) => total + item.total, 0);
+    const leadsNovos = plataformasAtribuidas.reduce((total, item) => total + dashboardPrimeiroNumero(item, ["novos"]), 0);
     const campanhasTotal = campanhas.length || campanhasPlataforma.length;
     const contagemCampanhas = dashboardContarCampanhas(campanhas);
     const campanhasAtivas = contagemCampanhas.veiculando;
@@ -42876,7 +42869,7 @@ async function carregarDashboard() {
       .slice(0, 8);
 
     const kpis = [
-      { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto((leadsData?.novos || []).length)} aguardando primeiro contato`, cor: "#60a5fa", ajuda: "leadsTotais" },
+      { label: "Leads totais", valor: dashboardCompacto(totalLeads), detalhe: `${dashboardCompacto(leadsNovos)} aguardando primeiro contato`, cor: "#60a5fa", ajuda: "leadsTotais" },
       { label: "Campanhas", valor: `${campanhasAtivas}/${campanhasTotal || 0}`, detalhe: `${campanhasSemVeicular ? `${campanhasSemVeicular} ligada${campanhasSemVeicular > 1 ? "s" : ""} sem veicular · ` : ""}${campanhasPausadas} pausadas · ${campanhasAtencao} em atenção`, cor: "#22c55e", ajuda: "campanhas" },
       { label: "Investimento", valor: formatarMoeda(gastoTotal), detalhe: "Campanhas · consulta de 30 dias", cor: "#f59e0b", ajuda: "investimento" },
       { label: "CPL médio", valor: cplMedio !== null ? formatarMoeda(cplMedio) : "-", detalhe: "Custo médio por lead", cor: "#a78bfa", ajuda: "cplMedio" },
@@ -42904,7 +42897,7 @@ async function carregarDashboard() {
         <div class="dashboard-panel-head">
           <div>
             <h3 ${dashboardAjuda("leadsPlataforma")}>📊 Leads por plataforma</h3>
-            <small>Distribuição de origem dos leads e campanhas conectadas.</small>
+            <small>Distribuição dos leads atribuídos a anúncios e campanhas.</small>
           </div>
           <span class="dashboard-pill" ${dashboardAjuda("leadsTotais")}>${dashboardCompacto(totalLeads)} leads</span>
         </div>

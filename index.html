@@ -34484,7 +34484,13 @@ function confirmarData() {
   const isoLocal = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}T${h}:${m}`;
   const labelTxt = `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${h}:${m}`;
 
-  document.getElementById(`adv_${_calCampo}`).value = isoLocal;
+  const campoData = document.getElementById(`adv_${_calCampo}`);
+  if (campoData) {
+    campoData.value = isoLocal;
+    // Campos de data são hidden e recebem valor por JavaScript; sem disparar
+    // change o editor Meta não marca a campanha como alterada.
+    campoData.dispatchEvent(new Event("change", { bubbles: true }));
+  }
   const btn = document.getElementById(`adv_${_calCampo}_btn`);
   const lbl = document.getElementById(`adv_${_calCampo}_label`);
   if (lbl) lbl.textContent = labelTxt;
@@ -34497,7 +34503,11 @@ function limparDataModal() {
   _calDiaSel = null;
   renderizarCalendario();
   atualizarPreviewCal();
-  document.getElementById(`adv_${_calCampo}`).value = "";
+  const campoData = document.getElementById(`adv_${_calCampo}`);
+  if (campoData) {
+    campoData.value = "";
+    campoData.dispatchEvent(new Event("change", { bubbles: true }));
+  }
   const btn = document.getElementById(`adv_${_calCampo}_btn`);
   const lbl = document.getElementById(`adv_${_calCampo}_label`);
   if (lbl) lbl.textContent = "Selecionar data e hora";

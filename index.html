@@ -34582,11 +34582,13 @@ async function carregarCampanhasDia(data) {
       return true;
     }
 
+    const ehMetaDetalhe = plataforma === "meta";
     const linhas = campanhas.map(camp => `
       <tr>
         <td>${escHtml(camp.nome)}</td>
         <td>${formatarMoeda(camp.gasto)}</td>
         <td>${camp.leads || 0}</td>
+        ${ehMetaDetalhe ? `<td>${camp.leads_plataforma || 0}</td>` : ""}
         <td>${camp.custo_por_lead !== null && camp.custo_por_lead !== undefined ? formatarMoeda(camp.custo_por_lead) : "-"}</td>
         <td>${camp.cliques || 0}</td>
       </tr>
@@ -34598,7 +34600,8 @@ async function carregarCampanhasDia(data) {
           <tr>
             <th>Campanha</th>
             <th>Gasto</th>
-            <th>Leads</th>
+            <th>${ehMetaDetalhe ? "Leads (Meta)" : "Leads"}</th>
+            ${ehMetaDetalhe ? "<th>Leads (Plataforma)</th>" : ""}
             <th>CPL</th>
             <th>Cliques</th>
           </tr>

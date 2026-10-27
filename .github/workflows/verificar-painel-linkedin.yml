@@ -1,0 +1,24 @@
+name: Verificar painel de campanhas LinkedIn
+
+on:
+  push:
+    branches:
+      - fix/painel-campanhas-linkedin-20261026
+  pull_request:
+    paths:
+      - index.html
+      - tests/painel-campanhas-linkedin.test.cjs
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Testes de regressão do painel
+        run: node --test tests/painel-campanhas-linkedin.test.cjs

@@ -4320,7 +4320,7 @@ body.tema-claro .perguntas-rapidas-ajuda {
 
 #filtro_status,
 #filtro_nicho,
-#filtro_plataforma,
+#filtro_plataforma_campanhas,
 #filtro_origem,
 #filtro_data_inicio,
 #filtro_data_fim,
@@ -20845,7 +20845,7 @@ body.tema-claro .criar-campanha-descricao {
           <option value="">Todos os nichos</option>
         </select>
 
-        <select id="filtro_plataforma" onchange="carregarCampanhas()" aria-label="Filtrar campanhas por plataforma">
+        <select id="filtro_plataforma_campanhas" onchange="carregarCampanhas()" aria-label="Filtrar campanhas por plataforma">
           <option value="">Todas as plataformas</option>
           <option value="meta">Meta Ads</option>
           <option value="google">Google Ads</option>
@@ -47896,7 +47896,7 @@ async function carregarCampanhas(somenteRenderizar = false) {
     document.getElementById("filtro_origem")?.value || "";
 
   const filtroPlataforma =
-    document.getElementById("filtro_plataforma")?.value || "";
+    document.getElementById("filtro_plataforma_campanhas")?.value || "";
 
   const filtroNicho =
     selectNicho?.value || "";

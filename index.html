@@ -4320,6 +4320,7 @@ body.tema-claro .perguntas-rapidas-ajuda {
 
 #filtro_status,
 #filtro_nicho,
+#filtro_plataforma_campanhas,
 #filtro_origem,
 #filtro_data_inicio,
 #filtro_data_fim,
@@ -4363,6 +4364,8 @@ body.tema-claro .perguntas-rapidas-ajuda {
   display: flex;
   gap: 12px;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .btn-sync {
@@ -20840,6 +20843,18 @@ body.tema-claro .criar-campanha-descricao {
           style="display:none;"
         >
           <option value="">Todos os nichos</option>
+        </select>
+
+        <select id="filtro_plataforma_campanhas" onchange="carregarCampanhas()" aria-label="Filtrar campanhas por plataforma">
+          <option value="">Todas as plataformas</option>
+          <option value="meta">Meta Ads</option>
+          <option value="google">Google Ads</option>
+          <option value="tiktok">TikTok Ads</option>
+          <option value="linkedin">LinkedIn Ads</option>
+          <option value="kwai">Kwai Ads</option>
+          <option value="pinterest">Pinterest Ads</option>
+          <option value="snapchat">Snapchat Ads</option>
+          <option value="microsoft">Microsoft Ads</option>
         </select>
 
         <select
@@ -42986,6 +43001,12 @@ function plataformaCampanhaExibicao(campanha) {
   return "meta";
 }
 
+// Facebook e Instagram pertencem à mesma família Meta Ads no filtro.
+function plataformaFiltroCampanha(campanha) {
+  const rede = plataformaCampanhaExibicao(campanha);
+  return ["meta", "facebook", "instagram"].includes(rede) ? "meta" : rede;
+}
+
 // Distingue campanhas criadas pela própria Plataforma de Leads (origem
 // 'plataforma'/'manual'/'rascunho' — Criar Campanha, Duplicar, campanha
 // recebida de corretor) das que já existiam direto no gerenciador de
@@ -44220,7 +44241,7 @@ function renderResumoLinkedIn(conn, statusCompleto) {
         ${hubResumoItem("Campanhas", `${campanhasAtivas}/${campanhasTotal} ativas`)}
         ${hubResumoItem("Leads hoje", leadsHoje, leadsHoje > 0 ? "sucesso" : "")}
         ${hubResumoItem("Gasto hoje", gastoHoje)}
-        ${hubResumoItem("Lead Sync", leadSyncDisponivel ? "Disponível" : "Aguardando aprovação", leadSyncDisponivel ? "sucesso" : "alerta")}
+        ${hubResumoItem("Lead Sync", leadSyncDisponivel ? "Disponível" : "Acesso negado", leadSyncDisponivel ? "sucesso" : "alerta")}
         ${hubResumoItem("Conectado", hubResumoData(conn?.conectado_em), "sucesso")}
       </div>
     </div>`;
@@ -45307,7 +45328,7 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
       ${secaoColapsavel("🧲 Lead Sync API", `
         ${leadSyncDisponivel
           ? hubResumoAlerta("Lead Sync API disponível para importar respostas dos formulários.", "ok")
-          : hubResumoAlerta("A importação automática de respostas está aguardando aprovação do LinkedIn. Campanhas e relatórios continuam disponíveis.", "warn")}
+          : hubResumoAlerta("Lead Sync API sem acesso aprovado para este aplicativo (acesso negado no LinkedIn Developer Portal). Respostas de formulários indisponíveis; campanhas e relatórios continuam disponíveis.", "warn")}
         <div style="margin-top:8px;">
           <button type="button" onclick="configurarWebhookLinkedIn(this)" ${adAccountIdAtual && leadSyncDisponivel ? "" : "disabled"}>⚡ Ativar leads em tempo real</button>
         </div>
@@ -47874,6 +47895,9 @@ async function carregarCampanhas(somenteRenderizar = false) {
   const filtroOrigem =
     document.getElementById("filtro_origem")?.value || "";
 
+  const filtroPlataforma =
+    document.getElementById("filtro_plataforma_campanhas")?.value || "";
+
   const filtroNicho =
     selectNicho?.value || "";
 
@@ -47949,6 +47973,12 @@ async function carregarCampanhas(somenteRenderizar = false) {
       filtro === "ACTIVE"
         ? campanhaEstaAtiva(c)
         : String(c.status || "").toUpperCase() === filtro
+    );
+  }
+
+  if (filtroPlataforma) {
+    campanhasFiltradas = campanhasFiltradas.filter(c =>
+      plataformaFiltroCampanha(c) === filtroPlataforma
     );
   }
 
@@ -48103,7 +48133,10 @@ async function carregarCampanhas(somenteRenderizar = false) {
       campanhaPrincipal.publicacao_grupo_id || `linha_${chavePrincipal}`
     );
     const chaveAtivaSalva = plataformaAtivaCardPorGrupo.get(grupoSelecaoId);
-    const c = linhasGrupoCampanha?.find(
+    // Quando um grupo é filtrado, destacar a rede escolhida sem esconder as outras abas.
+    const c = (filtroPlataforma ? linhasGrupoCampanha?.find(
+      linha => plataformaFiltroCampanha(linha) === filtroPlataforma
+    ) : null) || linhasGrupoCampanha?.find(
       linha => chavePorLinhaCampanha.get(linha) === chaveAtivaSalva
     ) || campanhaPrincipal;
     const campanhaCacheKey = chavePorLinhaCampanha.get(c);
@@ -48242,6 +48275,11 @@ async function carregarCampanhas(somenteRenderizar = false) {
       temaClaroAtivo
         ? "0 8px 22px rgba(15,23,42,0.12)"
         : `0 8px 28px rgba(0,0,0,0.45), 0 0 18px ${nichoCampanhaTema?.cor || "#2563eb"}40`;
+
+    // ACTIVE do LinkedIn refere-se ao Campaign Group, não à entrega dos anúncios.
+    const grupoLinkedinEntregaNaoVerificada =
+      String(c.plataforma || "").toLowerCase() === "linkedin" &&
+      Boolean(c.campaign_id) && campanhaEstaAtiva(c);
 
     const veiculacaoTipo =
       String(c.veiculacao_tipo || "desconhecido")
@@ -48412,6 +48450,8 @@ async function carregarCampanhas(somenteRenderizar = false) {
           ? "status-paused"
           : campanhaLigadaSemVeicular(c)
           ? "status-sem-veicular"
+          : grupoLinkedinEntregaNaoVerificada
+          ? "status-paused"
           : campanhaEstaAtiva(c)
           ? "status-active"
           : campanhaEstaPausada(c)
@@ -48427,6 +48467,8 @@ async function carregarCampanhas(somenteRenderizar = false) {
             ? "📝 RASCUNHO"
             : campanhaLigadaSemVeicular(c)
             ? "🟡 ATIVA · sem veicular"
+            : grupoLinkedinEntregaNaoVerificada
+            ? "🟡 GRUPO ATIVO · entrega não verificada"
             : campanhaEstaAtiva(c)
             ? `🟢 ${String(c.status || "ACTIVE").toUpperCase()}`
             : campanhaEstaPausada(c)
@@ -48437,6 +48479,12 @@ async function carregarCampanhas(somenteRenderizar = false) {
         }
 
       </div>
+
+      ${grupoLinkedinEntregaNaoVerificada ? `
+        <div style="font-size:11px;color:#fbbf24;margin:-8px 0 12px;line-height:1.45;">
+          ACTIVE é o status do grupo LinkedIn; não confirma conjuntos nem anúncios em veiculação.
+        </div>
+      ` : ""}
 
       ${
         c.veiculacao_label
@@ -49409,6 +49457,8 @@ function renderizarPainelPlataformaCampanha(campanha, chave) {
 
     <div class="detalhes-grid">
       ${detalheItem("Status", campanha.status)}
+      ${String(campanha.plataforma || "").toLowerCase() === "linkedin" && campanha.campaign_id
+        ? detalheItem("Veiculação LinkedIn", "Status do grupo; entrega de anúncios não verificada.", "full") : ""}
       ${detalheItem("Origem", campanha.origem)}
       ${campanha.conversoes_google != null ? detalheItem("Conversões no Google (30 dias)", formatarConversoesGoogle(campanha.conversoes_google)) : ""}
       ${campanha.conversoes_google != null && Number(campanha.valor_conversoes_google) > 0 ? detalheItem("Valor das conversões (Google)", formatarMoeda(campanha.valor_conversoes_google)) : ""}

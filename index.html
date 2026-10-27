@@ -4368,6 +4368,57 @@ body.tema-claro .perguntas-rapidas-ajuda {
   flex-wrap: wrap;
 }
 
+/* Barra de filtros de Campanhas: a regra global '.card select/input' usa width:100%.
+   Em uma flexbox com wrap isso empilha campos enormes. Sobrescrever SÓ neste cartão. */
+#card-campanhas .campanhas-topo .campanhas-acoes {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#card-campanhas .campanhas-acoes > select,
+#card-campanhas .campanhas-acoes > input[type="date"] {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 225px;
+  height: 34px;
+  margin: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+#card-campanhas .campanhas-acoes > input[type="date"] {
+  flex: 0 0 135px;
+  width: 135px;
+}
+
+#card-campanhas .campanhas-acoes > button,
+#card-campanhas .campanhas-acoes > .campanhas-contador {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 1250px) {
+  #card-campanhas .campanhas-topo .campanhas-acoes {
+    flex: 1 1 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 650px) {
+  #card-campanhas .campanhas-acoes > select,
+  #card-campanhas .campanhas-acoes > input[type="date"] {
+    flex: 1 1 145px;
+    width: auto;
+    max-width: none;
+  }
+}
+
 .btn-sync {
   height: 34px;
   display: inline-flex;

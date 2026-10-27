@@ -15,14 +15,16 @@ test("scripts inline seguem sintaxe JavaScript válida", () => {
   }
 });
 
-test("filtro por plataforma existe e tem opções esperadas", () => {
-  const match = html.match(/<select\b[^>]*id="filtro_plataforma"[^>]*>[\s\S]*?<\/select>/);
+test("filtro de campanhas tem ID exclusivo e opções esperadas", () => {
+  const match = html.match(/<select\b[^>]*id="filtro_plataforma_campanhas"[^>]*>[\s\S]*?<\/select>/);
+  assert.equal((html.match(/id="filtro_plataforma_campanhas"/g) || []).length, 1, "duplicação do seletor de campanhas");
+  assert.equal((html.match(/id="filtro_plataforma"/g) || []).length, 1, "campo existente da Central de Leads alterado");
   assert.ok(match, "seletor por plataforma ausente");
   assert.match(match[0], /onchange="carregarCampanhas\(\)"/);
   for (const platform of ["meta", "google", "tiktok", "linkedin", "kwai"]) {
     assert.match(match[0], new RegExp('<option value="' + platform + '">'));
   }
-  assert.match(html, /document\.getElementById\("filtro_plataforma"\)\?\.value/);
+  assert.match(html, /document\.getElementById\("filtro_plataforma_campanhas"\)\?\.value/);
 });
 
 test("filtro normaliza Facebook e Instagram como Meta, sem confundir LinkedIn", () => {

@@ -58,3 +58,39 @@ test("Lead Sync indisponível traz aviso sobre o acesso negado", () => {
   assert.match(html, /Lead Sync API sem acesso aprovado para este aplicativo/);
   assert.match(html, /configurarWebhookLinkedIn\(this\)" \$\{adAccountIdAtual && leadSyncDisponivel \? "" : "disabled"\}/);
 });
+test("filtro executa sobre uma lista sem alterar campanhas de outras redes", () => {
+  const snippet = html.match(/  if \(filtroPlataforma\) \{\s*campanhasFiltradas = campanhasFiltradas\.filter\(c =>\s*plataformaFiltroCampanha\(c\) === filtroPlataforma\s*\);\s*\}/);
+  assert.ok(snippet, "bloco real de filtragem ausente");
+  const campaigns = [
+    { id: 1, plataforma: "linkedin" },
+    { id: 2, plataforma: "instagram" },
+    { id: 3, plataforma: "google" },
+    { id: 4, plataforma: "facebook" }
+  ];
+  const platform = campaign => ["facebook", "instagram", "meta"].includes(campaign.plataforma) ? "meta" : campaign.plataforma;
+  const run = filtroPlataforma => {
+    const ctx = { campaigns, filtroPlataforma, plataformaFiltroCampanha: platform };
+    const script = new vm.Script("let campanhasFiltradas = campaigns.slice(); " + snippet[0] + "; campanhasFiltradas.map(c=>c.id)");
+    return script.runInNewContext(ctx);
+  };
+  assert.deepEqual(Array.from(run("linkedin")), [1]);
+  assert.deepEqual(Array.from(run("meta")), [2, 4]);
+  assert.deepEqual(Array.from(run("google")), [3]);
+  assert.deepEqual(Array.from(run("")), [1, 2, 3, 4]);
+});
+
+test("grupo multirrede escolhe rede filtrada antes da aba previamente selecionada", () => {
+  const match = html.match(/const c = \(filtroPlataforma \? linhasGrupoCampanha\?\.find\([\s\S]*?\) \|\| campanhaPrincipal;/);
+  assert.ok(match, "seleção de rede no grupo ausente");
+  const linkedin = { plataforma: "linkedin" };
+  const meta = { plataforma: "facebook" };
+  const ctx = {
+    filtroPlataforma: "linkedin",
+    linhasGrupoCampanha: [meta, linkedin],
+    chavePorLinhaCampanha: new Map([[meta, "m"], [linkedin, "li"]]),
+    chaveAtivaSalva: "m",
+    campanhaPrincipal: meta,
+    plataformaFiltroCampanha: x => x.plataforma === "facebook" ? "meta" : x.plataforma
+  };
+  assert.equal(new vm.Script(match[0] + "; c").runInNewContext(ctx), linkedin);
+});

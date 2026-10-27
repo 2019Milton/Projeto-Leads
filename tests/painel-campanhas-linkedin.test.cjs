@@ -94,3 +94,18 @@ test("grupo multirrede escolhe rede filtrada antes da aba previamente selecionad
   };
   assert.equal(new vm.Script(match[0] + "; c").runInNewContext(ctx), linkedin);
 });
+
+
+test("barra de campanhas supera o width 100% global sem afetar outros formulários", () => {
+  assert.match(html, /\.card input,\s*\.card select,\s*\.card textarea\s*\{\s*width: 100%/);
+  const desktop = html.match(/#card-campanhas \.campanhas-acoes > select,\s*#card-campanhas \.campanhas-acoes > input\[type="date"\]\s*\{([^}]*)\}/);
+  assert.ok(desktop, "regra de largura específica para a barra de campanhas ausente");
+  assert.match(desktop[1], /\bwidth:\s*auto\s*;/);
+  assert.match(desktop[1], /\bflex:\s*0 1 auto\s*;/);
+  assert.match(desktop[1], /\bmargin:\s*0\s*;/);
+  assert.match(desktop[1], /\bmax-width:\s*225px\s*;/);
+  assert.match(html, /#card-campanhas \.campanhas-topo \.campanhas-acoes\s*\{[^}]*min-width:\s*0/);
+  assert.match(html, /@media \(max-width: 1250px\)/);
+  assert.match(html, /@media \(max-width: 650px\)/);
+  assert.equal((html.match(/id="filtro_plataforma_campanhas"/g) || []).length, 1);
+});

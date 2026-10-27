@@ -33478,11 +33478,8 @@ function conectarInstagram() {
 
   window.addEventListener("message", msgHandler);
 
-  const pollInterval = setInterval(() => {
-    if (popup && popup.closed) {
-      aoConectar();
-    }
-  }, 600);
+  // O observer já acompanha o fechamento, confirma o OAuth no backend
+  // e executa concluir() uma única vez. Não crie outro polling aqui.
 }
 
 function abrirGerenciarPagamentoMeta(billingUrl) {

@@ -22,3 +22,5 @@ jobs:
           node-version: "22"
       - name: Testes de regressão do painel
         run: node --test tests/painel-campanhas-linkedin.test.cjs
+      - name: Smoke já existente da plataforma
+        run: node tests/smoke-novos-nichos.mjs

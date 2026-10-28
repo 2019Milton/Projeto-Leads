@@ -218,6 +218,40 @@
       });
     };
 
+    let consultaEmAndamento = false;
+    let ultimaConsulta = 0;
+    async function consultarAutorizacaoInstagram() {
+      if (consultaEmAndamento || Date.now() - ultimaConsulta < 2500) return;
+      if (typeof API !== "string" || !API) return;
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      consultaEmAndamento = true;
+      ultimaConsulta = Date.now();
+      window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "VERIFICANDO" });
+      try {
+        const resposta = await fetch(API + "/meta/status-completo", {
+          headers: { Authorization: "Bearer " + token },
+          signal: AbortSignal.timeout(15000)
+        });
+        if (!resposta.ok) throw new Error("Meta indisponível");
+        const dados = await resposta.json();
+        if (token !== localStorage.getItem("token")) return;
+        if (!dados.conta_anuncios || dados.selecao_conta_anuncios_pendente) {
+          window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "CONTA_NAO_SELECIONADA" });
+        } else if (!dados.instagram?.id) {
+          window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "INSTAGRAM_NAO_IDENTIFICADO" });
+        } else if (dados.instagram_utilizavel_na_conta === true) {
+          window.atualizarEstadoInstagramAds({ estado: "autorizado", motivo: "IDENTIDADE_NA_CONTA" });
+        } else {
+          // false não é prova de falta de permissão: a Meta pode limitar a listagem.
+          window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "SEM_EVIDENCIA_CONCLUSIVA" });
+        }
+      } catch {
+        window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "FALHA_CONSULTA" });
+      } finally {
+        consultaEmAndamento = false;
+      }
+    }
     const montar = () => {
       for (const botao of document.querySelectorAll("button")) {
         if (!textoBotao.test((botao.textContent || "").replace(/\s+/g, " ").trim())) continue;
@@ -267,6 +301,7 @@
         avisoEstado.style.cssText = "margin:8px 0;color:#fbd38d;font-size:12px";
         botao.insertAdjacentElement("afterend", avisoEstado);
         window.atualizarEstadoInstagramAds(statusAutorizacao);
+        void consultarAutorizacaoInstagram();
       }
     };
     const iniciar = () => {

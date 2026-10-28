@@ -192,4 +192,68 @@
     document.body.style.overflow = "hidden";
     modal.querySelector("button[data-fechar-meta]").focus({ preventScroll: true });
   };
+
+  // Orientação específica para perfis Instagram conectados à plataforma.
+  // Não consulta permissões nem altera conexões: evita confundir conexão com autorização.
+  (function instalarOrientacaoInstagramAnuncios() {
+    const MARCADOR = "data-guia-instagram-anuncios";
+    const textoBotao = /desconectar\s+somente\s+instagram/i;
+    const montar = () => {
+      for (const botao of document.querySelectorAll("button")) {
+        if (!textoBotao.test((botao.textContent || "").replace(/\s+/g, " ").trim())) continue;
+        if (botao.closest('[data-guia-instagram-anuncios]')) continue;
+        if (botao.nextElementSibling?.hasAttribute(MARCADOR)) continue;
+        const orientacao = document.createElement("details");
+        orientacao.setAttribute(MARCADOR, "");
+        orientacao.style.cssText = "margin:10px 0 0;padding:10px 12px;border:1px solid #806b43;border-radius:9px;background:#162b28;color:#e5f1ef;max-width:100%;font-size:12px;line-height:1.6";
+        const titulo = document.createElement("summary");
+        titulo.textContent = "Como liberar este Instagram para anúncios?";
+        titulo.style.cssText = "font-weight:700;cursor:pointer;color:#fbd38d";
+        orientacao.appendChild(titulo);
+        const aviso = document.createElement("p");
+        aviso.textContent = "Instagram conectado não significa autorização para publicar campanhas. Confira os acessos na Meta:";
+        aviso.style.margin = "9px 0";
+        orientacao.appendChild(aviso);
+        const passos = document.createElement("ol");
+        passos.style.cssText = "margin:8px 0 10px;padding-left:19px";
+        [
+          "Abra as Configurações empresariais da Meta e selecione o portfólio correto.",
+          "Em Contas → Contas do Instagram, selecione o perfil. Caso não apareça, adicione-o ao portfólio.",
+          "Em Ativos conectados / Atribuir ativos, atribua a conta de anúncios desejada e confira a Página vinculada.",
+          "Confira o acesso da pessoa responsável para criar anúncios na conta de anúncios.",
+          "Volte à Plataforma de Leads, atualize o status e selecione a conta de anúncios."
+        ].forEach(passo => {
+          const item = document.createElement("li");
+          item.textContent = passo;
+          item.style.marginBottom = "5px";
+          passos.appendChild(item);
+        });
+        orientacao.appendChild(passos);
+        const linkMeta = document.createElement("a");
+        linkMeta.href = "https://business.facebook.com/latest/settings/";
+        linkMeta.target = "_blank";
+        linkMeta.rel = "noopener noreferrer";
+        linkMeta.textContent = "Abrir configurações empresariais da Meta ↗";
+        linkMeta.style.cssText = "display:inline-block;padding:8px 10px;border:1px solid #529dd4;border-radius:6px;color:#a9daff;text-decoration:none;font-weight:700";
+        orientacao.appendChild(linkMeta);
+        const nota = document.createElement("p");
+        nota.textContent = "As autorizações são feitas na Meta. Este guia não modifica sua conexão atual.";
+        nota.style.cssText = "margin:9px 0 0;opacity:.85";
+        orientacao.appendChild(nota);
+        botao.insertAdjacentElement("afterend", orientacao);
+      }
+    };
+    const iniciar = () => {
+      montar();
+      let agendado = false;
+      new MutationObserver(() => {
+        if (agendado) return;
+        agendado = true;
+        requestAnimationFrame(() => { agendado = false; montar(); });
+      }).observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar, { once: true });
+    else iniciar();
+  })();
+
 })();

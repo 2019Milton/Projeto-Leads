@@ -33441,6 +33441,41 @@ function conectarMeta(btnEl) {
   window.addEventListener("message", msgHandler);
 }
 
+// Remove apenas o token/perfil do Instagram conectado separadamente via OAuth.
+// Preserva Facebook, Meta Ads, Pagina e ativos registrados no Business Manager.
+async function desconectarSomenteInstagram(botao) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Sua sessao expirou. Entre novamente na Plataforma de Leads.");
+    return;
+  }
+  if (botao?.disabled) return;
+  if (!confirm("Deseja desconectar SOMENTE o Instagram desta conta da Plataforma de Leads?\\n\\nA conexao Meta, a Pagina do Facebook e as contas de anuncios permanecerao inalteradas. Isto nao revoga a autorizacao do aplicativo nas configuracoes do Instagram.")) return;
+  const textoAnterior = botao?.textContent || "";
+  if (botao) {
+    botao.disabled = true;
+    botao.textContent = "Desconectando Instagram...";
+  }
+  try {
+    const resposta = await fetch(`${API}/meta/instagram/desconectar`, {
+      method: "POST",
+      headers: {"Authorization": `Bearer ${token}`}
+    });
+    const dados = await resposta.json().catch(() => ({}));
+    if (!resposta.ok || dados.sucesso !== true)
+      throw new Error(dados.error || "Nao foi possivel desconectar o Instagram.");
+    await carregarStatusMeta();
+    alert("Instagram desconectado somente da Plataforma de Leads. A conexao com a Meta e as contas de anuncios foram preservadas.");
+  } catch (erro) {
+    alert(erro?.message || "Erro ao desconectar somente o Instagram.");
+  } finally {
+    if (botao) {
+      botao.disabled = false;
+      botao.textContent = textoAnterior;
+    }
+  }
+}
+
 function conectarInstagram() {
 
   const token = localStorage.getItem("token");
@@ -47539,6 +47574,14 @@ async function carregarStatusMeta() {
                     <div class="meta-status-tile">
                       <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : "🔴"} Conta do Instagram</span>
                       <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) + (data.paginas?.[0]?.instagram?.id === data.instagram?.id ? " · detectado pela Página" : "") : "Nenhum Instagram detectado ainda"}</small>
+                      ${data.instagram_conexao_separada === true ? `
+                        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+                          <button type="button" onclick="desconectarSomenteInstagram(this)"
+                            style="padding:5px 9px;border:1px solid rgba(251,113,133,.45);border-radius:6px;background:rgba(190,24,93,.12);color:#fda4af;font-size:11px;font-weight:700;cursor:pointer;"
+                          >Desconectar somente Instagram</button>
+                          <small style="color:#94a3b8;font-size:10px;line-height:1.5;">Remove a conexao avulsa nesta plataforma; nao altera Pagina, conta de anuncios ou vinculos no Business Manager.</small>
+                        </div>
+                      ` : ""}
                       ${!instagramConectado ? `
                         <div style="margin-top:6px;font-size:10.5px;color:#94a3b8;line-height:1.5;">
                           Isso é <strong>opcional</strong>: só é necessário se você quiser que os anúncios rodem também usando um perfil do Instagram como anunciante.

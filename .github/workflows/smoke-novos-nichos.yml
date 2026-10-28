@@ -3,6 +3,8 @@ name: Smoke novos nichos
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -15,3 +17,5 @@ jobs:
           node-version: "22"
       - name: Validar Faculdade/Universidade e Dentista
         run: node tests/smoke-novos-nichos.mjs
+      - name: Validar desconexao isolada de Instagram
+        run: node --test tests/smoke-desconectar-instagram.mjs

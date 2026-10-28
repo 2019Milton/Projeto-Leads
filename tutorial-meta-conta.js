@@ -222,7 +222,7 @@
       for (const botao of document.querySelectorAll("button")) {
         if (!textoBotao.test((botao.textContent || "").replace(/\s+/g, " ").trim())) continue;
         if (botao.closest('[data-guia-instagram-anuncios]')) continue;
-        if (botao.nextElementSibling?.hasAttribute(MARCADOR)) continue;
+        if (botao.parentElement?.querySelector("[data-guia-instagram-anuncios]")) continue;
         const orientacao = document.createElement("details");
         orientacao.setAttribute(MARCADOR, "");
         orientacao.style.cssText = "margin:10px 0 0;padding:10px 12px;border:1px solid #806b43;border-radius:9px;background:#162b28;color:#e5f1ef;max-width:100%;font-size:12px;line-height:1.6";

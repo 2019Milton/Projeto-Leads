@@ -198,11 +198,66 @@
   (function instalarOrientacaoInstagramAnuncios() {
     const MARCADOR = "data-guia-instagram-anuncios";
     const textoBotao = /desconectar\s+somente\s+instagram/i;
+    // A verificação deve vir do backend autenticado para a conta de anúncios ativa.
+    // Sem evidência, não exibir o tutorial como se existisse pendência confirmada.
+    let statusAutorizacao = { estado: "indeterminado", motivo: "VERIFICACAO_NAO_DISPONIVEL" };
+    window.atualizarEstadoInstagramAds = function (resultado) {
+      const estados = ["autorizado", "pendente", "indeterminado"];
+      if (!resultado || !estados.includes(resultado.estado)) return;
+      statusAutorizacao = { estado: resultado.estado, motivo: String(resultado.motivo || "") };
+      document.querySelectorAll("[data-guia-instagram-anuncios]").forEach(guia => {
+        guia.hidden = statusAutorizacao.estado !== "pendente";
+      });
+      document.querySelectorAll("[data-status-instagram-anuncios]").forEach(aviso => {
+        aviso.hidden = statusAutorizacao.estado === "pendente";
+        aviso.textContent = statusAutorizacao.estado === "autorizado"
+          ? "Instagram identificado na conta de anúncios selecionada. A Meta ainda valida cada anúncio ao publicar."
+          : statusAutorizacao.motivo === "CONTA_NAO_SELECIONADA"
+            ? "Selecione a conta de anúncios para verificar o Instagram."
+            : "Autorização para anúncios ainda não verificada.";
+      });
+    };
+
+    let consultaEmAndamento = false;
+    let ultimaConsulta = 0;
+    async function consultarAutorizacaoInstagram() {
+      if (consultaEmAndamento || Date.now() - ultimaConsulta < 2500) return;
+      if (typeof API !== "string" || !API) return;
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      consultaEmAndamento = true;
+      ultimaConsulta = Date.now();
+      window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "VERIFICANDO" });
+      try {
+        const resposta = await fetch(API + "/meta/instagram/autorizacao-anuncios", {
+          headers: { Authorization: "Bearer " + token },
+          signal: AbortSignal.timeout(15000)
+        });
+        if (!resposta.ok) throw new Error("Meta indisponível");
+        const dados = await resposta.json();
+        if (token !== localStorage.getItem("token")) return;
+        // Não aceitar um estado confirmado sem resposta autenticada do backend.
+        if (dados.estado === "autorizado") {
+          window.atualizarEstadoInstagramAds({ estado: "autorizado", motivo: dados.motivo });
+        } else if (dados.estado === "pendente") {
+          window.atualizarEstadoInstagramAds({ estado: "pendente", motivo: dados.motivo });
+        } else {
+          window.atualizarEstadoInstagramAds({
+            estado: "indeterminado",
+            motivo: dados.motivo === "CONTA_NAO_SELECIONADA" ? "CONTA_NAO_SELECIONADA" : "SEM_EVIDENCIA_CONCLUSIVA"
+          });
+        }
+      } catch {
+        window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "FALHA_CONSULTA" });
+      } finally {
+        consultaEmAndamento = false;
+      }
+    }
     const montar = () => {
       for (const botao of document.querySelectorAll("button")) {
         if (!textoBotao.test((botao.textContent || "").replace(/\s+/g, " ").trim())) continue;
         if (botao.closest('[data-guia-instagram-anuncios]')) continue;
-        if (botao.nextElementSibling?.hasAttribute(MARCADOR)) continue;
+        if (botao.parentElement?.querySelector("[data-guia-instagram-anuncios]")) continue;
         const orientacao = document.createElement("details");
         orientacao.setAttribute(MARCADOR, "");
         orientacao.style.cssText = "margin:10px 0 0;padding:10px 12px;border:1px solid #806b43;border-radius:9px;background:#162b28;color:#e5f1ef;max-width:100%;font-size:12px;line-height:1.6";
@@ -240,7 +295,14 @@
         nota.textContent = "As autorizações são feitas na Meta. Este guia não modifica sua conexão atual.";
         nota.style.cssText = "margin:9px 0 0;opacity:.85";
         orientacao.appendChild(nota);
+        orientacao.hidden = statusAutorizacao.estado !== "pendente";
         botao.insertAdjacentElement("afterend", orientacao);
+        const avisoEstado = document.createElement("p");
+        avisoEstado.setAttribute("data-status-instagram-anuncios", "");
+        avisoEstado.style.cssText = "margin:8px 0;color:#fbd38d;font-size:12px";
+        botao.insertAdjacentElement("afterend", avisoEstado);
+        window.atualizarEstadoInstagramAds(statusAutorizacao);
+        void consultarAutorizacaoInstagram();
       }
     };
     const iniciar = () => {
@@ -251,6 +313,20 @@
         agendado = true;
         requestAnimationFrame(() => { agendado = false; montar(); });
       }).observe(document.body, { childList: true, subtree: true });
+      // Reavaliar quando o usuário altera a conta de anúncios ou atualiza o status.
+      document.addEventListener("change", event => {
+        if (event.target?.closest?.("#modal-meta, #meta-modal, [id*='meta']")) {
+          ultimaConsulta = 0;
+          void consultarAutorizacaoInstagram();
+        }
+      });
+      document.addEventListener("click", event => {
+        const alvo = event.target?.closest?.("button");
+        if (!alvo || !alvo.closest("[id*='meta'], [class*='meta']")) return;
+        if (!/atualizar|verificar|conta de an[uú]ncios/i.test(alvo.textContent || "")) return;
+        ultimaConsulta = 0;
+        setTimeout(() => { void consultarAutorizacaoInstagram(); }, 600);
+      });
     };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar, { once: true });
     else iniciar();

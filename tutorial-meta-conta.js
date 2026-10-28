@@ -201,10 +201,23 @@
     // A verificação deve vir do backend autenticado para a conta de anúncios ativa.
     // Sem evidência, não exibir o tutorial como se existisse pendência confirmada.
     let statusAutorizacao = { estado: "indeterminado", motivo: "VERIFICACAO_NAO_DISPONIVEL" };
+    // O aviso legado é renderizado em index.html usando apenas o booleano
+    // instagram_utilizavel_na_conta, que não distingue falha de permissão.
+    // Sincronizar esse bloco com a verificação autenticada e única.
+    function sincronizarAvisoLegado() {
+      const titulos = Array.from(document.querySelectorAll("div"))
+        .filter(el => el.children.length === 0 && (el.textContent || "").includes("Encontrado, mas ainda não liberado para anunciar"));
+      for (const titulo of titulos) {
+        const bloco = titulo.parentElement?.parentElement;
+        if (!bloco) continue;
+        bloco.style.display = statusAutorizacao.estado === "pendente" ? "" : "none";
+      }
+    }
     window.atualizarEstadoInstagramAds = function (resultado) {
       const estados = ["autorizado", "pendente", "indeterminado"];
       if (!resultado || !estados.includes(resultado.estado)) return;
       statusAutorizacao = { estado: resultado.estado, motivo: String(resultado.motivo || "") };
+      sincronizarAvisoLegado();
       document.querySelectorAll("[data-guia-instagram-anuncios]").forEach(guia => {
         guia.hidden = statusAutorizacao.estado !== "pendente";
       });
@@ -254,6 +267,12 @@
       }
     }
     const montar = () => {
+      sincronizarAvisoLegado();
+      // Mesmo sem botão de desconexão (Instagram detectado pela Página),
+      // verificar o status do bloco legado visível.
+      if (document.body?.textContent?.includes("Encontrado, mas ainda não liberado para anunciar")) {
+        void consultarAutorizacaoInstagram();
+      }
       for (const botao of document.querySelectorAll("button")) {
         if (!textoBotao.test((botao.textContent || "").replace(/\s+/g, " ").trim())) continue;
         if (botao.closest('[data-guia-instagram-anuncios]')) continue;

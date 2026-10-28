@@ -233,7 +233,9 @@
           ? "Instagram identificado na conta de anúncios selecionada. A Meta ainda valida cada anúncio ao publicar."
           : statusAutorizacao.motivo === "CONTA_NAO_SELECIONADA"
             ? "Selecione a conta de anúncios para verificar o Instagram."
-            : "Autorização para anúncios ainda não verificada.";
+            : statusAutorizacao.motivo === "CONEXAO_SEPARADA_SEM_VINCULO_CONFIRMADO"
+              ? "Instagram conectado separadamente. A Meta ainda não confirmou que este perfil pode ser usado na conta de anúncios selecionada."
+              : "Autorização para anúncios ainda não verificada.";
       });
     };
 
@@ -265,7 +267,7 @@
         } else {
           window.atualizarEstadoInstagramAds({
             estado: "indeterminado",
-            motivo: dados.motivo === "CONTA_NAO_SELECIONADA" ? "CONTA_NAO_SELECIONADA" : "SEM_EVIDENCIA_CONCLUSIVA"
+            motivo: ["CONTA_NAO_SELECIONADA", "CONEXAO_SEPARADA_SEM_VINCULO_CONFIRMADO"].includes(dados.motivo) ? dados.motivo : "SEM_EVIDENCIA_CONCLUSIVA"
           });
         }
       } catch {

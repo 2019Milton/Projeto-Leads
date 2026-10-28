@@ -229,22 +229,23 @@
       ultimaConsulta = Date.now();
       window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "VERIFICANDO" });
       try {
-        const resposta = await fetch(API + "/meta/status-completo", {
+        const resposta = await fetch(API + "/meta/instagram/autorizacao-anuncios", {
           headers: { Authorization: "Bearer " + token },
           signal: AbortSignal.timeout(15000)
         });
         if (!resposta.ok) throw new Error("Meta indisponível");
         const dados = await resposta.json();
         if (token !== localStorage.getItem("token")) return;
-        if (!dados.conta_anuncios || dados.selecao_conta_anuncios_pendente) {
-          window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "CONTA_NAO_SELECIONADA" });
-        } else if (!dados.instagram?.id) {
-          window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "INSTAGRAM_NAO_IDENTIFICADO" });
-        } else if (dados.instagram_utilizavel_na_conta === true) {
-          window.atualizarEstadoInstagramAds({ estado: "autorizado", motivo: "IDENTIDADE_NA_CONTA" });
+        // Não aceitar um estado confirmado sem resposta autenticada do backend.
+        if (dados.estado === "autorizado") {
+          window.atualizarEstadoInstagramAds({ estado: "autorizado", motivo: dados.motivo });
+        } else if (dados.estado === "pendente") {
+          window.atualizarEstadoInstagramAds({ estado: "pendente", motivo: dados.motivo });
         } else {
-          // false não é prova de falta de permissão: a Meta pode limitar a listagem.
-          window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "SEM_EVIDENCIA_CONCLUSIVA" });
+          window.atualizarEstadoInstagramAds({
+            estado: "indeterminado",
+            motivo: dados.motivo === "CONTA_NAO_SELECIONADA" ? "CONTA_NAO_SELECIONADA" : "SEM_EVIDENCIA_CONCLUSIVA"
+          });
         }
       } catch {
         window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "FALHA_CONSULTA" });

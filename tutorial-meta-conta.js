@@ -198,6 +198,26 @@
   (function instalarOrientacaoInstagramAnuncios() {
     const MARCADOR = "data-guia-instagram-anuncios";
     const textoBotao = /desconectar\s+somente\s+instagram/i;
+    // A verificação deve vir do backend autenticado para a conta de anúncios ativa.
+    // Sem evidência, não exibir o tutorial como se existisse pendência confirmada.
+    let statusAutorizacao = { estado: "indeterminado", motivo: "VERIFICACAO_NAO_DISPONIVEL" };
+    window.atualizarEstadoInstagramAds = function (resultado) {
+      const estados = ["autorizado", "pendente", "indeterminado"];
+      if (!resultado || !estados.includes(resultado.estado)) return;
+      statusAutorizacao = { estado: resultado.estado, motivo: String(resultado.motivo || "") };
+      document.querySelectorAll("[data-guia-instagram-anuncios]").forEach(guia => {
+        guia.hidden = statusAutorizacao.estado !== "pendente";
+      });
+      document.querySelectorAll("[data-status-instagram-anuncios]").forEach(aviso => {
+        aviso.hidden = statusAutorizacao.estado === "pendente";
+        aviso.textContent = statusAutorizacao.estado === "autorizado"
+          ? "Instagram identificado na conta de anúncios selecionada. A Meta ainda valida cada anúncio ao publicar."
+          : statusAutorizacao.motivo === "CONTA_NAO_SELECIONADA"
+            ? "Selecione a conta de anúncios para verificar o Instagram."
+            : "Autorização para anúncios ainda não verificada.";
+      });
+    };
+
     const montar = () => {
       for (const botao of document.querySelectorAll("button")) {
         if (!textoBotao.test((botao.textContent || "").replace(/\s+/g, " ").trim())) continue;
@@ -240,7 +260,13 @@
         nota.textContent = "As autorizações são feitas na Meta. Este guia não modifica sua conexão atual.";
         nota.style.cssText = "margin:9px 0 0;opacity:.85";
         orientacao.appendChild(nota);
+        orientacao.hidden = statusAutorizacao.estado !== "pendente";
         botao.insertAdjacentElement("afterend", orientacao);
+        const avisoEstado = document.createElement("p");
+        avisoEstado.setAttribute("data-status-instagram-anuncios", "");
+        avisoEstado.style.cssText = "margin:8px 0;color:#fbd38d;font-size:12px";
+        botao.insertAdjacentElement("afterend", avisoEstado);
+        window.atualizarEstadoInstagramAds(statusAutorizacao);
       }
     };
     const iniciar = () => {

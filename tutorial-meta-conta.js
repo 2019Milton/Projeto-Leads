@@ -197,10 +197,10 @@
   // Não consulta permissões nem altera conexões: evita confundir conexão com autorização.
   (function instalarOrientacaoInstagramAnuncios() {
     const MARCADOR = "data-guia-instagram-anuncios";
-    const textoBotao = /desconectar\\s+somente\\s+instagram/i;
+    const textoBotao = /desconectar\s+somente\s+instagram/i;
     const montar = () => {
       for (const botao of document.querySelectorAll("button")) {
-        if (!textoBotao.test((botao.textContent || "").replace(/\\s+/g, " ").trim())) continue;
+        if (!textoBotao.test((botao.textContent || "").replace(/\s+/g, " ").trim())) continue;
         if (botao.closest('[data-guia-instagram-anuncios]')) continue;
         const alvo = botao.parentElement;
         if (!alvo || alvo.nextElementSibling?.hasAttribute(MARCADOR)) continue;

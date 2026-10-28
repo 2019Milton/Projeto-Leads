@@ -219,11 +219,36 @@
         }
       }
     }
+    let identidadesVerificadas = null;
+    function exibirIdentidadesSeparadas() {
+      for (const botao of document.querySelectorAll("button")) {
+        if (!textoBotao.test(botao.textContent || "")) continue;
+        const cartao = botao.closest(".meta-status-tile");
+        if (!cartao) continue;
+        let area = cartao.querySelector("[data-identidades-instagram-distintas]");
+        if (!area) {
+          area = document.createElement("div");
+          area.setAttribute("data-identidades-instagram-distintas", "");
+          area.style.cssText = "font-size:11px;line-height:1.5;margin-top:8px;color:#cbd5e1";
+          botao.insertAdjacentElement("beforebegin", area);
+        }
+        if (!identidadesVerificadas?.instagram_conectado_separadamente) {
+          area.textContent = "";
+          continue;
+        }
+        const pessoal = identidadesVerificadas.instagram_conectado_separadamente.username;
+        const anuncio = identidadesVerificadas.identidade_anuncios?.username;
+        area.textContent = anuncio && pessoal && anuncio.toLowerCase() !== pessoal.toLowerCase()
+          ? "Identidade para anúncios: @" + anuncio + " | Conexão separada: @" + pessoal + " (o botão abaixo desconecta somente esta conexão)."
+          : pessoal ? "Instagram conectado separadamente: @" + pessoal : "";
+      }
+    }
     window.atualizarEstadoInstagramAds = function (resultado) {
       const estados = ["autorizado", "pendente", "indeterminado"];
       if (!resultado || !estados.includes(resultado.estado)) return;
       statusAutorizacao = { estado: resultado.estado, motivo: String(resultado.motivo || "") };
       sincronizarAvisoLegado();
+      exibirIdentidadesSeparadas();
       document.querySelectorAll("[data-guia-instagram-anuncios]").forEach(guia => {
         guia.hidden = statusAutorizacao.estado !== "pendente";
       });
@@ -259,6 +284,8 @@
         if (!resposta.ok) throw new Error("Meta indisponível");
         const dados = await resposta.json();
         if (token !== localStorage.getItem("token")) return;
+        // Identidades não são intercambiáveis: manter o OAuth pessoal separado.
+        identidadesVerificadas = dados;
         // Não aceitar um estado confirmado sem resposta autenticada do backend.
         if (dados.estado === "autorizado") {
           window.atualizarEstadoInstagramAds({ estado: "autorizado", motivo: dados.motivo });
@@ -277,6 +304,7 @@
       }
     }
     const montar = () => {
+      exibirIdentidadesSeparadas();
       sincronizarAvisoLegado();
       // Mesmo sem botão de desconexão (Instagram detectado pela Página),
       // verificar o status do bloco legado visível.

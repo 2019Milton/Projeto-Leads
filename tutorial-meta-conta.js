@@ -202,8 +202,7 @@
       for (const botao of document.querySelectorAll("button")) {
         if (!textoBotao.test((botao.textContent || "").replace(/\s+/g, " ").trim())) continue;
         if (botao.closest('[data-guia-instagram-anuncios]')) continue;
-        const alvo = botao.parentElement;
-        if (!alvo || alvo.nextElementSibling?.hasAttribute(MARCADOR)) continue;
+        if (botao.nextElementSibling?.hasAttribute(MARCADOR)) continue;
         const orientacao = document.createElement("details");
         orientacao.setAttribute(MARCADOR, "");
         orientacao.style.cssText = "margin:10px 0 0;padding:10px 12px;border:1px solid #806b43;border-radius:9px;background:#162b28;color:#e5f1ef;max-width:100%;font-size:12px;line-height:1.6";
@@ -241,7 +240,7 @@
         nota.textContent = "As autorizações são feitas na Meta. Este guia não modifica sua conexão atual.";
         nota.style.cssText = "margin:9px 0 0;opacity:.85";
         orientacao.appendChild(nota);
-        alvo.insertAdjacentElement("afterend", orientacao);
+        botao.insertAdjacentElement("afterend", orientacao);
       }
     };
     const iniciar = () => {

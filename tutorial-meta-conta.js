@@ -312,6 +312,20 @@
         agendado = true;
         requestAnimationFrame(() => { agendado = false; montar(); });
       }).observe(document.body, { childList: true, subtree: true });
+      // Reavaliar quando o usuário altera a conta de anúncios ou atualiza o status.
+      document.addEventListener("change", event => {
+        if (event.target?.closest?.("#modal-meta, #meta-modal, [id*='meta']")) {
+          ultimaConsulta = 0;
+          void consultarAutorizacaoInstagram();
+        }
+      });
+      document.addEventListener("click", event => {
+        const alvo = event.target?.closest?.("button");
+        if (!alvo || !alvo.closest("[id*='meta'], [class*='meta']")) return;
+        if (!/atualizar|verificar|conta de an[uú]ncios/i.test(alvo.textContent || "")) return;
+        ultimaConsulta = 0;
+        setTimeout(() => { void consultarAutorizacaoInstagram(); }, 600);
+      });
     };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", iniciar, { once: true });
     else iniciar();

@@ -239,13 +239,15 @@
 
     let consultaEmAndamento = false;
     let ultimaConsulta = 0;
+    let jaConsultou = false;
     async function consultarAutorizacaoInstagram() {
-      if (consultaEmAndamento || Date.now() - ultimaConsulta < 2500) return;
+      if (consultaEmAndamento || (jaConsultou && Date.now() - ultimaConsulta < 60000)) return;
       if (typeof API !== "string" || !API) return;
       const token = localStorage.getItem("token");
       if (!token) return;
       consultaEmAndamento = true;
       ultimaConsulta = Date.now();
+      jaConsultou = true;
       window.atualizarEstadoInstagramAds({ estado: "indeterminado", motivo: "VERIFICANDO" });
       try {
         const resposta = await fetch(API + "/meta/instagram/autorizacao-anuncios", {
@@ -276,7 +278,7 @@
       sincronizarAvisoLegado();
       // Mesmo sem botão de desconexão (Instagram detectado pela Página),
       // verificar o status do bloco legado visível.
-      if (document.body?.textContent?.includes("Encontrado, mas ainda não liberado para anunciar")) {
+      if (!jaConsultou && document.body?.textContent?.includes("Encontrado, mas ainda não liberado para anunciar")) {
         void consultarAutorizacaoInstagram();
       }
       for (const botao of document.querySelectorAll("button")) {
@@ -342,6 +344,7 @@
       document.addEventListener("change", event => {
         if (event.target?.closest?.("#modal-meta, #meta-modal, [id*='meta']")) {
           ultimaConsulta = 0;
+        jaConsultou = false;
           void consultarAutorizacaoInstagram();
         }
       });
@@ -350,6 +353,7 @@
         if (!alvo || !alvo.closest("[id*='meta'], [class*='meta']")) return;
         if (!/atualizar|verificar|conta de an[uú]ncios/i.test(alvo.textContent || "")) return;
         ultimaConsulta = 0;
+        jaConsultou = false;
         setTimeout(() => { void consultarAutorizacaoInstagram(); }, 600);
       });
     };

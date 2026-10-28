@@ -208,9 +208,15 @@
       const titulos = Array.from(document.querySelectorAll("div"))
         .filter(el => el.children.length === 0 && (el.textContent || "").includes("Encontrado, mas ainda não liberado para anunciar"));
       for (const titulo of titulos) {
-        const bloco = titulo.parentElement?.parentElement;
-        if (!bloco) continue;
-        bloco.style.display = statusAutorizacao.estado === "pendente" ? "" : "none";
+        // A mensagem está dentro de uma caixa de aviso; o avô é o cartão
+        // inteiro do Instagram. Nunca ocultar o cartão.
+        const aviso = titulo.parentElement;
+        if (!aviso || !aviso.classList.contains("meta-status-tile") && !aviso.closest(".meta-status-tile")) continue;
+        aviso.style.display = statusAutorizacao.estado === "pendente" ? "" : "none";
+        const acoes = aviso.nextElementSibling;
+        if (acoes && acoes.querySelector("button[onclick*='tentarVincularInstagramBusiness']")) {
+          acoes.style.display = statusAutorizacao.estado === "pendente" ? "flex" : "none";
+        }
       }
     }
     window.atualizarEstadoInstagramAds = function (resultado) {

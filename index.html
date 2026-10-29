@@ -47402,10 +47402,10 @@ function renderizarPerfilInstagramSeparado(statusMeta) {
       <small style="display:block;margin-top:3px;">Dados da conta profissional autorizada na conexão separada.</small>
       ${perfil ? `
         <div style="display:flex;gap:10px;align-items:center;margin-top:8px;min-width:0;">
-          ${foto ? `<img src="${escaparHtml(foto)}" alt="Foto de perfil do Instagram" referrerpolicy="no-referrer" style="width:44px;height:44px;flex:none;object-fit:cover;border-radius:50%;" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
-            <small hidden>Foto indisponível</small>` : `<small>Foto indisponível</small>`}
+          ${foto ? `<img src="${escaparHtml(foto)}" alt="Foto de perfil do Instagram" referrerpolicy="no-referrer" style="width:44px;height:44px;flex:none;object-fit:cover;border-radius:50%;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+            <small style="display:none;">Foto indisponível</small>` : `<small>Foto indisponível</small>`}
           <div style="min-width:0;overflow-wrap:anywhere;">
-            <strong style="display:block;">${perfil.username ? "@" + escaparHtml(String(perfil.username)) : "Nome de usuário indisponível"}</strong>
+            <strong style="display:block;font-size:12px;">${perfil.username ? "@" + escaparHtml(String(perfil.username)) : "Nome de usuário indisponível"}</strong>
             <small style="display:block;margin-top:4px;">ID do Instagram: ${escaparHtml(String(perfil.id || "Indisponível"))}</small>
           </div>
         </div>

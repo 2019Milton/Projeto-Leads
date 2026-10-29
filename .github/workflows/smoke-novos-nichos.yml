@@ -21,3 +21,5 @@ jobs:
         run: node --test tests/smoke-desconectar-instagram.mjs
       - name: Validar conexao Instagram Login separada
         run: node --test tests/smoke-instagram-login-separado.mjs
+      - name: Validar upload de video em novas plataformas
+        run: node --test tests/rascunho-video-meta.test.cjs

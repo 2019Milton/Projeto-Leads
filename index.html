@@ -37984,13 +37984,47 @@ function fecharEdicaoCampanha() {
 // Dispatcher fino, no mesmo espírito de criarCampanhaCompleta()/publicarCampanhaX():
 // coleta o token uma vez e despacha pra uma função de salvamento dedicada por
 // plataforma — cada uma sabe seu próprio payload/endpoint/unidade de orçamento.
+async function prepararVideoRascunhosMeta(rascunhos, arquivo, token, usuario_id) {
+  const destinos = rascunhos.filter(r =>
+    (r.plataforma === "facebook" || r.plataforma === "instagram") &&
+    !(r.plataforma === "instagram" && r.configuracoes_avancadas.escolha_midia_instagram === "imagens")
+  );
+  if (!destinos.length) return;
+  if (!arquivo) {
+    if (destinos.some(r => r.plataforma === "instagram" &&
+      r.configuracoes_avancadas.escolha_midia_instagram === "video")) {
+      throw new Error("Selecione o arquivo do vídeo para enviar à nova campanha do Instagram antes de salvar.");
+    }
+    return;
+  }
+  if (!validarArquivoVideoCampanha(arquivo)) {
+    throw new Error("O vídeo selecionado não é válido. Confira o arquivo antes de salvar.");
+  }
+  const upload = await uploadVideoCampanha({ arquivo, token, usuario_id });
+  if (!upload.video_id) throw new Error("Servidor não retornou o ID do vídeo enviado.");
+  for (const destino of destinos) {
+    Object.assign(destino.configuracoes_avancadas, {
+      criativo_tipo: "video",
+      video_id: upload.video_id,
+      videoId: upload.video_id,
+      video_url: upload.video_url || null,
+      videoUrl: upload.video_url || null,
+      video_nome: upload.video_nome,
+      video_tipo: upload.video_tipo,
+      video_tamanho: upload.video_tamanho,
+      video_removido: false,
+      midia_pendente_reanexar: false
+    });
+  }
+}
+
 async function salvarRascunhosPlataformasAdicionais() {
   if (!campanhaEmEdicao) return { ok: false };
 
   const novasRedes = plataformasNovasParaPublicarEdicao();
   if (!novasRedes.length) return { ok: true, rascunhos: [] };
 
-  const { token } = obterTokenEUsuarioIdCampanha();
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
   if (!token) return { ok: false };
 
   salvarOrcamentoRede(_orcamentoEdicaoPorRede, abaAtivaAddPlataformaEdicao);
@@ -38032,8 +38066,9 @@ async function salvarRascunhosPlataformasAdicionais() {
     cfgOrigem.videoUrl,
     cfgOrigem.video?.url
   ]);
+  const arquivoVideoNovo = obterArquivoVideoCampanha();
   const possuiArquivoNovo = Boolean(
-    obterArquivoVideoCampanha() ||
+    arquivoVideoNovo ||
     Array.from(document.querySelectorAll("#imagens-container .imagem-input"))
       .some(input => input.files?.[0])
   );
@@ -38105,6 +38140,7 @@ async function salvarRascunhosPlataformasAdicionais() {
   }
 
   try {
+    await prepararVideoRascunhosMeta(rascunhos, arquivoVideoNovo, token, usuario_id);
     const res = await fetch(`${API}/campanhas/${campanhaEmEdicao.id}/rascunhos-plataformas`, {
       method: "POST",
       headers: {
@@ -38153,8 +38189,8 @@ async function salvarEdicaoCampanha() {
   const novasRedes = plataformasNovasParaPublicarEdicao();
 
   // Salva primeiro as novas pernas como rascunhos locais independentes. Esta
-  // ação não chama nenhuma API de anúncios e não publica nada remotamente.
-  // O envio ao Google/TikTok/Meta acontece depois, no botão Publicar do card
+  // ação pode enviar mídia à Meta, mas não cria anúncios nem inicia veiculação.
+  // A publicação ao Google/TikTok/Meta acontece depois, no botão Publicar do card
   // da plataforma correspondente.
   if (novasRedes.length) {
     const resultadoRascunhos = await salvarRascunhosPlataformasAdicionais();

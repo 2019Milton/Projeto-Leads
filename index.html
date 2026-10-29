@@ -20496,7 +20496,7 @@ body.tema-claro .criar-campanha-descricao {
           onchange="aplicarFiltrosLeads()"
           style="display:none;"
         >
-          <option value="">Facebook/Instagram</option>
+          <option value="">Todas as redes</option>
         </select></label>
 
         <!-- Número de WhatsApp da empresa que recebeu a conversa -->
@@ -27557,7 +27557,7 @@ async function carregarLeads() {
   
   popularFiltroCampanhas(todosLeads);
   popularFiltroPlataformas(todosLeads);
-  popularFiltroRedeOrigem(todosLeads);
+  popularFiltroRedeOrigem(todosLeads, leads.redes_origem_campanhas || []);
   window.LeadsWhatsappReceptorUI?.popularFiltro(
     document.getElementById("filtro_whatsapp_receptor"),
     leads.whatsapp_numeros_disponiveis||[],todosLeads
@@ -27798,13 +27798,15 @@ function aplicarFiltrosLeads() {
     );
   }
 
-  // 📷 FACEBOOK/INSTAGRAM (posicionamento real do clique, só existe em leads de Click-to-WhatsApp)
+  // Identificação individual do lead ou Meta com rede ainda desconhecida.
   const redeOrigemSelecionada =
     document.getElementById("filtro_rede_origem")?.value || "";
 
   if (redeOrigemSelecionada) {
-    filtrados = filtrados.filter(
-      lead => lead.rede_origem === redeOrigemSelecionada
+    filtrados = filtrados.filter(lead =>
+      redeOrigemSelecionada === "meta_sem_rede"
+        ? leadEhMetaSemRede(lead)
+        : String(lead.rede_origem || "").trim().toLowerCase() === redeOrigemSelecionada
     );
   }
 
@@ -51390,20 +51392,31 @@ function popularFiltroPlataformas(leads) {
   }
 }
 
-// Só aparece quando existe pelo menos um lead com rede_origem preenchido
-// (leads de Click-to-WhatsApp) — pra não mostrar um filtro vazio/inútil pra
-// quem só usa Lead Ads ou outras plataformas sem esse dado.
-function popularFiltroRedeOrigem(leads) {
+// A configuração de uma campanha Meta publicada entra no filtro mesmo quando
+// ainda não existe um lead daquela rede. Não deduzimos a origem de cada lead.
+function leadEhMetaSemRede(lead) {
+  const plataformasMeta = ["meta", "facebook", "instagram"];
+  const rede = String(lead.rede_origem || "").trim().toLowerCase();
+  return !["facebook", "instagram"].includes(rede) &&
+    (plataformasMeta.includes(String(plataformaRealLead(lead)).toLowerCase()) ||
+      plataformasMeta.includes(String(lead.origem || "").toLowerCase()));
+}
+
+function popularFiltroRedeOrigem(leads, redesCampanhas = []) {
   const select = document.getElementById("filtro_rede_origem");
   if (!select) return;
 
   const valorAtual = select.value;
+  const redesIdentificadas = new Set([
+    ...leads.map(lead => String(lead.rede_origem || "").trim().toLowerCase()),
+    ...(Array.isArray(redesCampanhas) ? redesCampanhas : []).map(
+      rede => String(rede || "").trim().toLowerCase()
+    )
+  ]);
+  const redes = ["facebook", "instagram"].filter(rede => redesIdentificadas.has(rede));
+  const semRedeIdentificada = leads.some(leadEhMetaSemRede);
 
-  const redes = [
-    ...new Set(leads.map(l => l.rede_origem).filter(Boolean))
-  ];
-
-  if (!redes.length) {
+  if (!redes.length && !semRedeIdentificada) {
     select.style.display = "none";
     select.value = "";
     return;
@@ -51411,14 +51424,14 @@ function popularFiltroRedeOrigem(leads) {
 
   select.style.display = "";
   select.innerHTML =
-    `<option value="">Facebook/Instagram</option>` +
-    redes
-      .map(id => `<option value="${id}">${id === "instagram" ? "Instagram" : "Facebook"}</option>`)
-      .join("");
+    `<option value="">Todas as redes</option>` +
+    redes.map(rede => `<option value="${rede}">${rede === "instagram" ? "Instagram" : "Facebook"}</option>`).join("") +
+    (semRedeIdentificada
+      ? `<option value="meta_sem_rede">Facebook/Instagram (origem não identificada)</option>`
+      : "");
 
-  if (redes.includes(valorAtual)) {
-    select.value = valorAtual;
-  }
+  select.value = [...redes, ...(semRedeIdentificada ? ["meta_sem_rede"] : [])].includes(valorAtual)
+    ? valorAtual : "";
 }
 
 

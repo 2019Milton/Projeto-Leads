@@ -19,3 +19,5 @@ jobs:
         run: node tests/smoke-novos-nichos.mjs
       - name: Validar desconexao isolada de Instagram
         run: node --test tests/smoke-desconectar-instagram.mjs
+      - name: Validar conexao Instagram Login separada
+        run: node --test tests/smoke-instagram-login-separado.mjs

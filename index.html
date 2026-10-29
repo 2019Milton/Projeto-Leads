@@ -47386,6 +47386,10 @@ function montarSubpainelStatusMetaRede(nome, icone, dados) {
   `;
 }
 
+function precisaConectarInstagramSeparado(statusMeta) {
+  return statusMeta?.instagram_conexao_separada !== true;
+}
+
 async function carregarStatusMeta() {
 
   try {
@@ -47430,11 +47434,6 @@ async function carregarStatusMeta() {
         const facebookConectado =
           Boolean(data.usuario_meta?.id) &&
           Boolean(data.paginas?.length);
-        const instagramConectado =
-          Boolean(
-            data.instagram?.id ||
-            data.instagram?.username
-          );
         linkInstagramBusinessSettings =
           data.conta_anuncios?.business_id
             ? `https://business.facebook.com/settings/instagram-accounts?business_id=${encodeURIComponent(data.conta_anuncios.business_id)}`
@@ -47582,9 +47581,9 @@ async function carregarStatusMeta() {
                           <small style="color:#94a3b8;font-size:10px;line-height:1.5;">Remove a conexao avulsa nesta plataforma; nao altera Pagina, conta de anuncios ou vinculos no Business Manager.</small>
                         </div>
                       ` : ""}
-                      ${!instagramConectado ? `
+                      ${precisaConectarInstagramSeparado(data) ? `
                         <div style="margin-top:6px;font-size:10.5px;color:#94a3b8;line-height:1.5;">
-                          Isso é <strong>opcional</strong>: só é necessário se você quiser que os anúncios rodem também usando um perfil do Instagram como anunciante.
+                          Conexão opcional via Instagram Login para identificar uma conta profissional. Não altera a Página nem a identidade utilizada nos anúncios.
                         </div>
                         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
                           <button type="button" onclick="conectarInstagram()"

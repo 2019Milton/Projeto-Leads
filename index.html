@@ -47390,6 +47390,30 @@ function precisaConectarInstagramSeparado(statusMeta) {
   return statusMeta?.instagram_conexao_separada !== true;
 }
 
+function renderizarPerfilInstagramSeparado(statusMeta) {
+  if (statusMeta?.instagram_conexao_separada !== true) return "";
+  const perfil = statusMeta.instagram_perfil_separado;
+  const foto = typeof perfil?.profile_picture_url === "string" &&
+    /^https:\/\/[^\s]+$/i.test(perfil.profile_picture_url)
+      ? perfil.profile_picture_url : "";
+  return `
+    <div style="margin-top:10px;padding:10px;border:1px solid rgba(192,132,252,.35);border-radius:8px;">
+      <strong style="display:block;font-size:12px;color:#e9d5ff;">Perfil conectado via Instagram Login</strong>
+      <small style="display:block;margin-top:3px;">Dados da conta profissional autorizada na conexão separada.</small>
+      ${perfil ? `
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px;min-width:0;">
+          ${foto ? `<img src="${escaparHtml(foto)}" alt="Foto de perfil do Instagram" referrerpolicy="no-referrer" style="width:44px;height:44px;flex:none;object-fit:cover;border-radius:50%;" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+            <small hidden>Foto indisponível</small>` : `<small>Foto indisponível</small>`}
+          <div style="min-width:0;overflow-wrap:anywhere;">
+            <strong style="display:block;">${perfil.username ? "@" + escaparHtml(String(perfil.username)) : "Nome de usuário indisponível"}</strong>
+            <small style="display:block;margin-top:4px;">ID do Instagram: ${escaparHtml(String(perfil.id || "Indisponível"))}</small>
+          </div>
+        </div>
+      ` : `<small style="display:block;margin-top:8px;">Conexão separada registrada. Dados do perfil indisponíveis no momento.</small>`}
+    </div>
+  `;
+}
+
 async function carregarStatusMeta() {
 
   try {
@@ -47571,9 +47595,10 @@ async function carregarStatusMeta() {
                   <div class="meta-col-body">
 
                     <div class="meta-status-tile">
-                      <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : "🔴"} Conta do Instagram</span>
+                      <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : "🔴"} Instagram detectado pela Meta</span>
                       <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) + (data.paginas?.[0]?.instagram?.id === data.instagram?.id ? " · detectado pela Página" : "") : "Nenhum Instagram detectado ainda"}</small>
                       ${data.instagram_conexao_separada === true ? `
+                        ${renderizarPerfilInstagramSeparado(data)}
                         <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
                           <button type="button" onclick="desconectarSomenteInstagram(this)"
                             style="padding:5px 9px;border:1px solid rgba(251,113,133,.45);border-radius:6px;background:rgba(190,24,93,.12);color:#fda4af;font-size:11px;font-weight:700;cursor:pointer;"
@@ -47600,7 +47625,7 @@ async function carregarStatusMeta() {
                           >📘 Transformar em conta Comercial</button>
                         </div>
                         <div class="meta-warn-chip">
-                          ⚠️ <span>Use só se essa conta <strong>não</strong> estiver vinculada à Página do Facebook ao lado. Ela também precisa estar liberada no mesmo Business Manager da conta de anúncios "${escaparHtml(conta?.nome || conta?.name || "")}" — senão a Meta pode recusar na hora de publicar.</span>
+                          ℹ️ <span>O Instagram Login identifica a conta profissional autorizada. A disponibilidade dessa conta para anúncios é verificada separadamente pela Meta.</span>
                         </div>
                       ` : data.instagram_utilizavel_na_conta === false ? `
                         <div style="margin-top:6px;padding:8px 9px;background:rgba(250,204,21,0.08);border:1px solid rgba(250,204,21,0.3);border-radius:8px;">

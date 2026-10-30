@@ -67,3 +67,12 @@ body.tema-claro #card-leads-central {
   #card-leads-central .leads-tools-grid { grid-template-columns:1fr; }
   #card-leads-central .kanban-column { flex:0 0 268px; }
 }
+
+/* Tema claro: diferenciar os cartões de leads das colunas brancas do funil. */
+body.tema-claro #card-leads-central .lead-card {
+  background: linear-gradient(145deg, #edf5ff 0%, #f7fbff 100%) !important;
+  box-shadow: 0 4px 13px rgba(38, 79, 129, 0.11) !important;
+}
+body.tema-claro #card-leads-central .lead-card:hover {
+  box-shadow: 0 6px 18px rgba(38, 79, 129, 0.17) !important;
+}

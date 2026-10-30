@@ -4368,6 +4368,47 @@ body.tema-claro .perguntas-rapidas-ajuda {
   flex-wrap: wrap;
 }
 
+/* Uma criação ainda não publicada fica acessível mesmo com o modal fechado. */
+#card-campanhas .criar-campanha-acao-pendente {
+  display: inline-flex;
+  gap: 5px;
+  flex: 0 0 auto;
+  align-items: stretch;
+  border: 1px solid rgba(251, 191, 36, .72);
+  border-radius: 11px;
+  padding: 3px;
+  background: rgba(245, 158, 11, .13);
+  box-shadow: 0 0 12px rgba(245, 158, 11, .16);
+}
+#card-campanhas .criar-campanha-acao-pendente > button {
+  margin: 0;
+  border: 0;
+  cursor: pointer;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 8px;
+  min-height: 42px;
+}
+#card-campanhas .btn-continuar-criacao {
+  min-width: 194px;
+  padding: 9px 16px;
+  background: linear-gradient(120deg, #b45309, #7c3aed);
+}
+#card-campanhas .btn-excluir-criacao {
+  padding: 8px 11px;
+  background: rgba(239, 68, 68, .20);
+  border: 1px solid rgba(248, 113, 113, .48);
+}
+#card-campanhas .btn-continuar-criacao:hover { filter: brightness(1.14); }
+#card-campanhas .btn-excluir-criacao:hover { background: rgba(239, 68, 68, .40); }
+@media (max-width: 650px) {
+  #card-campanhas .criar-campanha-acao-pendente {
+    flex: 1 1 100%;
+  }
+  #card-campanhas .btn-continuar-criacao { flex: 1; min-width: 0; }
+}
+
 /* Barra de filtros de Campanhas: a regra global '.card select/input' usa width:100%.
    Em uma flexbox com wrap isso empilha campos enormes. Sobrescrever SÓ neste cartão. */
 #card-campanhas .campanhas-topo .campanhas-acoes {
@@ -20987,6 +21028,18 @@ body.tema-claro .criar-campanha-descricao {
           ➕ Criar campanha
         </button>
 
+        <div id="criar_campanha_acao_pendente" class="criar-campanha-acao-pendente" style="display:none;" aria-label="Campanha em criação">
+          <button type="button" id="btn-continuar-criacao" class="btn-continuar-criacao"
+                  onclick="abrirCriarCampanhaModal()" title="Voltar à campanha que você está preparando">
+            ✏️ Continuar edição
+          </button>
+          <button type="button" id="btn-excluir-criacao" class="btn-excluir-criacao"
+                  onclick="excluirCriacaoCampanha()" title="Descartar somente a criação em andamento"
+                  aria-label="Excluir criação em andamento">
+            🗑 Excluir criação
+          </button>
+        </div>
+
         <button
           id="btn-sync"
           class="btn-sync"
@@ -23476,6 +23529,7 @@ function aplicarPermissoesCampanhasUsuario() {
 
   const btnAbrirModal = document.getElementById("btn-abrir-criar-campanha");
   if (btnAbrirModal) btnAbrirModal.style.display = esconderCriacao ? "none" : "";
+  if (typeof atualizarAtalhoCriacaoCampanha === "function") atualizarAtalhoCriacaoCampanha();
 }
 
 // Indicador de "última sincronização" na sidebar — só lê do banco
@@ -30020,6 +30074,79 @@ function toggleCriarCampanha() {
 }
 
 let criarCampanhaModalOrigem = null;
+// Estado temporário do formulário na aba atual, sem criar registro no banco.
+let criacaoCampanhaEmAndamento = false;
+let criacaoCampanhaNecessitaLimpeza = false;
+
+function atualizarAtalhoCriacaoCampanha() {
+  const atalho = document.getElementById("criar_campanha_acao_pendente");
+  if (!atalho) return;
+  const podeCriar = !usuarioEhCorretorReceptor();
+  atalho.style.display = criacaoCampanhaEmAndamento && podeCriar ? "inline-flex" : "none";
+}
+
+// Limpa apenas os controles locais. Não exclui nem altera campanhas publicadas.
+function limparCriacaoCampanhaLocal() {
+  invalidarSugestoesCampanhaIA();
+  _dadosCampanhaPorRede = { facebook: null, instagram: null };
+  _orcamentoCampanhaPorRede = {};
+  redesSelecionadasCampanha.clear();
+  abaAtivaCampanha = null;
+  if (window._nichoFormState) window._nichoFormState = {};
+
+  const formulario = document.getElementById("card-criar-campanha");
+  if (formulario) {
+    formulario.querySelectorAll("input, select, textarea").forEach(campo => {
+      if (campo.matches('input[type="checkbox"], input[type="radio"]')) {
+        campo.checked = campo.defaultChecked;
+      } else if (campo.tagName === "SELECT") {
+        const indicePadrao = Array.from(campo.options).findIndex(opcao => opcao.defaultSelected);
+        campo.selectedIndex = indicePadrao < 0 ? 0 : indicePadrao;
+      } else if (campo.type === "file") {
+        campo.value = "";
+      } else {
+        campo.value = campo.defaultValue || "";
+      }
+    });
+  }
+
+  document.querySelectorAll(".plat-sel-btn[data-plat]").forEach(botao => botao.classList.remove("ativa"));
+  const conteinerImagens = document.getElementById("imagens-container");
+  if (conteinerImagens) {
+    conteinerImagens.replaceChildren(criarItemImagem());
+    atualizarPosicoes();
+  }
+  limparVideoCampanha();
+  const primeiraAba = document.querySelector("#nicho_campanha_tabs .nicho-tab");
+  const primeiroNicho = usuarioLogado?.nichos?.[0];
+  if (primeiraAba && primeiroNicho) {
+    selecionarNichoTab(primeiroNicho, primeiraAba, {
+      salvarEstadoAtual: false, restaurarEstado: false, limparSugestoes: false
+    });
+  }
+  limparValidacaoCampanha();
+  aplicarRedesCampanha();
+  atualizarEstadoBotaoGerarIA();
+}
+
+// Fechar o modal mantém dados, imagens e orçamentos separados das redes.
+function excluirCriacaoCampanha() {
+  if (!criacaoCampanhaEmAndamento) return;
+  if (!confirm("Excluir esta criação em andamento? Os dados não publicados serão perdidos. Campanhas já publicadas não serão alteradas.")) return;
+  fecharCriarCampanhaModal();
+  criacaoCampanhaEmAndamento = false;
+  criacaoCampanhaNecessitaLimpeza = true;
+  atualizarAtalhoCriacaoCampanha();
+  // Limpa na próxima abertura, para manter o descarte independente do modal de edição.
+}
+
+function finalizarCriacaoCampanhaLocal() {
+  criacaoCampanhaEmAndamento = false;
+  criacaoCampanhaNecessitaLimpeza = true;
+  _dadosCampanhaPorRede = { facebook: null, instagram: null };
+  _orcamentoCampanhaPorRede = {};
+  atualizarAtalhoCriacaoCampanha();
+}
 
 function abrirCriarCampanhaModal() {
   const modal = document.getElementById("criar_campanha_modal");
@@ -30031,6 +30158,14 @@ function abrirCriarCampanhaModal() {
     document.getElementById("card-criar-campanha");
   if (!modal || !corpo || !conteudo) return;
 
+  // Criar novamente durante um rascunho local SEMPRE retoma o mesmo formulário.
+  // Só após descarte ou publicação começamos uma sessão limpa.
+  if (!criacaoCampanhaEmAndamento && criacaoCampanhaNecessitaLimpeza) {
+    limparCriacaoCampanhaLocal();
+    criacaoCampanhaNecessitaLimpeza = false;
+  }
+  criacaoCampanhaEmAndamento = true;
+  atualizarAtalhoCriacaoCampanha();
   aplicarEstadoCriarCampanha(false); // sempre expandido dentro do modal
 
   criarCampanhaModalOrigem = conteudo.parentElement;
@@ -30071,8 +30206,7 @@ function fecharCriarCampanhaModal() {
     }
   }
   criarCampanhaModalOrigem = null;
-  _dadosCampanhaPorRede = { facebook: null, instagram: null };
-  _orcamentoCampanhaPorRede = {};
+  // Não limpar stores aqui: fechar clicando fora ou no X apenas pausa a criação.
 }
 
 const redesSelecionadasCampanha = new Set();
@@ -42274,11 +42408,14 @@ async function criarCampanhaCompleta() {
     // conectada de novo (redundante, já sabemos o resultado por `resultados`) e
     // termina com um alert() bloqueante, o que deixava o modal preso até o
     // usuário clicar OK mesmo com a lista já atualizada atrás dele.
-    await carregarCampanhas();
-    // Mostra também campanhas preservadas com confirmação pendente e fecha o
-    // criador para não incentivar uma nova publicação enquanto se confere a Meta.
-    // Falhas anteriores ao envio mantêm o formulário aberto para correção.
-    fecharCriarCampanhaModal();
+    try {
+      await carregarCampanhas();
+    } finally {
+      // Após publicar (ou confirmar publicação pendente) o atalho deixa de existir.
+      // Uma nova criação começa com formulário limpo; não republica a anterior.
+      finalizarCriacaoCampanhaLocal();
+      fecharCriarCampanhaModal();
+    }
   }
 
   setTimeout(() => mostrarResumoPublicacaoMultiRede(resultados), 800);

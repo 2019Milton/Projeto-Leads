@@ -17,6 +17,8 @@ jobs:
           node-version: "22"
       - name: Validar Faculdade/Universidade e Dentista
         run: node tests/smoke-novos-nichos.mjs
+      - name: Validar retomada e descarte da criação de campanha
+        run: node --test tests/criacao-campanha-em-andamento.test.cjs
       - name: Validar filtro de redes de origem da Central de Leads
         run: node --test tests/filtro-rede-origem.test.cjs
       - name: Verificar avisos de geração da IA

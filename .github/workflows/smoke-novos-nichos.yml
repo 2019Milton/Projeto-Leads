@@ -19,6 +19,8 @@ jobs:
         run: node tests/smoke-novos-nichos.mjs
       - name: Validar filtro de redes de origem da Central de Leads
         run: node --test tests/filtro-rede-origem.test.cjs
+      - name: Verificar avisos de geração da IA
+        run: node --test tests/aviso-criador-campanha.test.cjs
       - name: Validar desconexao isolada de Instagram
         run: node --test tests/smoke-desconectar-instagram.mjs
       - name: Validar conexao Instagram Login separada

@@ -31414,9 +31414,21 @@ async function gerarCampanhaComIA() {
     assinaturaSugestoesCampanhaIAAtual = assinaturaContexto;
     camposFaltantesSugestoesCampanhaIAAtual = new Set(idsCamposFaltantes);
     sugestoesCampanhaIAAtual = sugestoes;
+    // Só a identificação explícita de um provedor comprova geração por IA.
+    // Uma lista de 3 resultados, por si só, também pode ser modelo pronto.
+    const geradasPorIA = data._origem === "openai" || data._origem === "anthropic";
+    const origemTexto = data._origem === "openai"
+      ? "Opções geradas por IA — OpenAI"
+      : data._origem === "anthropic"
+      ? "Opções geradas por IA — Anthropic"
+      : "Modelos prontos — não gerados por IA";
+    const aviso = !geradasPorIA && !data.aviso
+      ? "A geração por IA não foi confirmada. Os exemplos abaixo são modelos prontos para adaptação."
+      : data.aviso;
     box.innerHTML =
-      htmlAvisoIA(data.aviso) +
-      renderizarOpcoesCampanhaIA(sugestoesCampanhaIAAtual);
+      `<div role="status" class="ia-origem-geracao" style="font-size:12px;font-weight:700;margin-bottom:8px;color:${geradasPorIA ? "#86efac" : "#fbbf24"};">${origemTexto}</div>` +
+      htmlAvisoIA(aviso) +
+      renderizarOpcoesCampanhaIA(sugestoesCampanhaIAAtual, geradasPorIA);
   } catch (err) {
     if (requisicaoAtual !== sequenciaGeracaoCampanhaIA) return;
     plataformasSugestoesCampanhaIAAtual = [];
@@ -31433,7 +31445,7 @@ async function gerarCampanhaComIA() {
   }
 }
 
-function renderizarOpcoesCampanhaIA(sugestoes) {
+function renderizarOpcoesCampanhaIA(sugestoes, geradasPorIA = false) {
   if (!sugestoes || !sugestoes.length) {
     return "IA nao retornou opcoes.";
   }
@@ -31512,7 +31524,7 @@ function renderizarOpcoesCampanhaIA(sugestoes) {
 
     return `
       <div class="ia-opcao-card" id="ia_opcao_card_${i}">
-        <div class="ia-opcao-numero">Opcao ${i + 1}</div>
+        <div class="ia-opcao-numero">${geradasPorIA ? "Opção" : "Modelo pronto"} ${i + 1}</div>
         ${plataformasLabel ? `<div class="ia-opcao-campo"><strong>Plataformas:</strong> ${escaparHtml(plataformasLabel)}</div>` : ""}
         ${titulo ? `<div class="ia-opcao-titulo">${escaparHtml(titulo)}</div>` : ""}
         ${texto ? `<div class="ia-opcao-campo"><strong>Texto:</strong> ${escaparHtml(texto)}</div>` : ""}

@@ -53,3 +53,20 @@ test("estado de visibilidade é atualizado sem recriar campanhas", () => {
   ctx.atualizarAtalhoCriacaoCampanha();
   assert.equal(dom.style.display, "inline-flex");
 });
+
+test("Criar campanha solicita escolha quando já existe edição em andamento", () => {
+  const acao = bloco("function solicitarNovaCriacaoCampanha()", "function abrirCriarCampanhaModal()");
+  assert.match(html, /id="btn-abrir-criar-campanha"[\\s\\S]{0,180}onclick="solicitarNovaCriacaoCampanha\\(\\)"/);
+  assert.match(acao, /if \\(!criacaoCampanhaEmAndamento\\)/);
+  assert.match(acao, /data-acao="continuar"/);
+  assert.match(acao, /data-acao="descartar"/);
+  assert.match(acao, /data-acao="cancelar"/);
+  assert.match(acao, /dialogo\\.showModal\\(\\)/);
+  assert.match(acao, /criacaoCampanhaNecessitaLimpeza = true/);
+  assert.match(acao, /abrirCriarCampanhaModal\\(\\)/);
+  assert.doesNotMatch(acao, /fetch\\(|DELETE|location\\.reload/);
+});
+test("atalho Continuar edição permanece independente da confirmação", () => {
+  assert.match(html, /id="btn-continuar-criacao"[\\s\\S]{0,150}onclick="abrirCriarCampanhaModal\\(\\)"/);
+  assert.match(html, /class="criar-campanha-grupo"/);
+});

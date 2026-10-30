@@ -4368,6 +4368,21 @@ body.tema-claro .perguntas-rapidas-ajuda {
   flex-wrap: wrap;
 }
 
+/* A ação de retomada fica logo abaixo do botão de criar campanha. */
+#card-campanhas .criar-campanha-grupo {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+#card-campanhas .criar-campanha-grupo > .btn-criar-campanha-topo { width: 100%; }
+#card-campanhas .criar-campanha-grupo > .criar-campanha-acao-pendente { width: 100%; box-sizing: border-box; }
+#card-campanhas .criar-campanha-grupo .btn-continuar-criacao { flex: 1 1 auto; min-width: 0; }
+@media (max-width: 650px) {
+  #card-campanhas .criar-campanha-grupo { flex: 1 1 100%; }
+}
+
 /* Uma criação ainda não publicada fica acessível mesmo com o modal fechado. */
 #card-campanhas .criar-campanha-acao-pendente {
   display: inline-flex;
@@ -21020,13 +21035,14 @@ body.tema-claro .criar-campanha-descricao {
           0 filtradas
         </span>
 
-        <button
-          id="btn-abrir-criar-campanha"
-          class="btn-sync btn-criar-campanha-topo"
-          onclick="abrirCriarCampanhaModal()"
-        >
-          ➕ Criar campanha
-        </button>
+        <div class="criar-campanha-grupo">
+          <button
+            id="btn-abrir-criar-campanha"
+            class="btn-sync btn-criar-campanha-topo"
+            onclick="abrirCriarCampanhaModal()"
+          >
+            ➕ Criar campanha
+          </button>
 
         <div id="criar_campanha_acao_pendente" class="criar-campanha-acao-pendente" style="display:none;" aria-label="Campanha em criação">
           <button type="button" id="btn-continuar-criacao" class="btn-continuar-criacao"
@@ -21038,6 +21054,7 @@ body.tema-claro .criar-campanha-descricao {
                   aria-label="Excluir criação em andamento">
             🗑 Excluir criação
           </button>
+        </div>
         </div>
 
         <button

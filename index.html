@@ -3528,6 +3528,53 @@ body.usuario-corretor-receptor .btn-encaminhar-campanha {
   position: relative;
 }
 
+/* Contraste explícito em sugestões geográficas: não herdar texto escuro do tema claro. */
+.geo-sugestoes,
+.targeting-results-autocomplete {
+  color: #f1f5f9;
+}
+.geo-sugestoes .geo-sugestao-item,
+.targeting-results-autocomplete .geo-sugestao-item {
+  color: #f1f5f9;
+}
+.geo-sugestoes .geo-sugestao-tipo,
+.targeting-results-autocomplete .geo-sugestao-tipo {
+  color: #cbd5e1;
+  opacity: 1;
+}
+.geo-sugestoes .geo-sugestao-item:hover,
+.geo-sugestoes .geo-sugestao-item:focus-visible,
+.targeting-results-autocomplete .geo-sugestao-item:hover,
+.targeting-results-autocomplete .geo-sugestao-item:focus-visible {
+  background: #1e3a5f;
+  color: #ffffff;
+}
+body.tema-claro .geo-chip {
+  color: #0f172a;
+}
+body.tema-claro .targeting-results-autocomplete,
+body.tema-claro .geo-sugestoes {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+body.tema-claro .geo-sugestoes .geo-sugestao-item,
+body.tema-claro .targeting-results-autocomplete .geo-sugestao-item {
+  color: #0f172a;
+  border-bottom-color: #e2e8f0;
+}
+body.tema-claro .geo-sugestoes .geo-sugestao-tipo,
+body.tema-claro .targeting-results-autocomplete .geo-sugestao-tipo {
+  color: #475569;
+}
+body.tema-claro .geo-sugestoes .geo-sugestao-item:hover,
+body.tema-claro .geo-sugestoes .geo-sugestao-item:focus-visible,
+body.tema-claro .targeting-results-autocomplete .geo-sugestao-item:hover,
+body.tema-claro .targeting-results-autocomplete .geo-sugestao-item:focus-visible {
+  background: #dbeafe;
+  color: #0f172a;
+}
+
 .geo-sugestoes {
 
   display: none;

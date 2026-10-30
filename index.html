@@ -4368,6 +4368,7 @@ body.tema-claro .perguntas-rapidas-ajuda {
   flex-wrap: wrap;
 }
 
+#dialogo-nova-criacao-campanha::backdrop { background: rgba(2,6,23,.78); }
 /* A ação de retomada fica logo abaixo do botão de criar campanha. */
 #card-campanhas .criar-campanha-grupo {
   display: flex;
@@ -21039,7 +21040,7 @@ body.tema-claro .criar-campanha-descricao {
           <button
             id="btn-abrir-criar-campanha"
             class="btn-sync btn-criar-campanha-topo"
-            onclick="abrirCriarCampanhaModal()"
+            onclick="solicitarNovaCriacaoCampanha()"
           >
             ➕ Criar campanha
           </button>
@@ -30163,6 +30164,45 @@ function finalizarCriacaoCampanhaLocal() {
   _dadosCampanhaPorRede = { facebook: null, instagram: null };
   _orcamentoCampanhaPorRede = {};
   atualizarAtalhoCriacaoCampanha();
+}
+
+// Solicita uma escolha explícita antes de substituir uma criação em andamento.
+function solicitarNovaCriacaoCampanha() {
+  if (!criacaoCampanhaEmAndamento) {
+    abrirCriarCampanhaModal();
+    return;
+  }
+  let dialogo = document.getElementById("dialogo-nova-criacao-campanha");
+  if (!dialogo) {
+    dialogo = document.createElement("dialog");
+    dialogo.id = "dialogo-nova-criacao-campanha";
+    dialogo.setAttribute("aria-labelledby", "titulo-nova-criacao-campanha");
+    dialogo.style.cssText = "max-width:min(460px,calc(100vw - 32px));width:100%;border:1px solid #475569;border-radius:16px;background:#111827;color:#f8fafc;padding:24px;box-shadow:0 24px 80px #0009;";
+    dialogo.innerHTML = `
+      <h3 id="titulo-nova-criacao-campanha" style="margin:0 0 12px;font-size:20px">Campanha em criação</h3>
+      <p style="margin:0 0 20px;line-height:1.5">Você já possui uma campanha em criação. Deseja continuar editando ou descartar a criação atual e começar uma nova?</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button type="button" data-acao="continuar" style="padding:12px;border:0;border-radius:9px;background:#7c3aed;color:white;font-weight:700;cursor:pointer">✏️ Continuar edição</button>
+        <button type="button" data-acao="descartar" style="padding:12px;border:1px solid #ef4444;border-radius:9px;background:#7f1d1d;color:white;font-weight:700;cursor:pointer">🗑 Descartar e criar nova</button>
+        <button type="button" data-acao="cancelar" style="padding:12px;border:1px solid #64748b;border-radius:9px;background:transparent;color:white;cursor:pointer">Cancelar</button>
+      </div>`;
+    dialogo.addEventListener("click", (evento) => {
+      const acao = evento.target.closest("button[data-acao]")?.dataset.acao;
+      if (!acao) return;
+      dialogo.close();
+      if (acao === "continuar") {
+        abrirCriarCampanhaModal();
+      } else if (acao === "descartar") {
+        // Descarta somente a sessão local; nenhuma campanha publicada é afetada.
+        criacaoCampanhaEmAndamento = false;
+        criacaoCampanhaNecessitaLimpeza = true;
+        atualizarAtalhoCriacaoCampanha();
+        abrirCriarCampanhaModal();
+      }
+    });
+    document.body.appendChild(dialogo);
+  }
+  if (!dialogo.open) dialogo.showModal();
 }
 
 function abrirCriarCampanhaModal() {

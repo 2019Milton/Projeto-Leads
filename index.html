@@ -18672,11 +18672,34 @@ body.tema-claro #card-campanhas .campanha-card:hover {
           body.tema-claro #site_formulario_painel p, body.tema-claro #site_formulario_painel details p, body.tema-claro #site_formulario_painel details li, body.tema-claro #site_formulario_painel .site-form-stats { color:#475569; }
           body.tema-claro #site_formulario_painel summary { color:#1e293b; }
           body.tema-claro #site_formulario_painel textarea { background:#fff; color:#0f172a; border-color:#94a3b8; }
+
+          #site_formulario_painel { padding:0; overflow:hidden; }
+          #site_formulario_painel .site-form-painel-detalhes { margin:0; }
+          #site_formulario_painel .site-form-painel-detalhes > summary { position:relative; display:flex; flex-direction:column; gap:5px; padding:18px 52px 18px 20px; list-style:none; cursor:pointer; color:#eef2ff; }
+          #site_formulario_painel .site-form-painel-detalhes > summary::-webkit-details-marker { display:none; }
+          #site_formulario_painel .site-form-painel-titulo { font-size:15px; font-weight:700; line-height:1.4; }
+          #site_formulario_painel .site-form-painel-subtitulo { font-size:12px; color:#a8b7cc; }
+          #site_formulario_painel .site-form-painel-seta { position:absolute; right:22px; top:50%; transform:translateY(-50%); font-size:24px; transition:transform .2s ease; }
+          #site_formulario_painel .site-form-painel-detalhes[open] > summary .site-form-painel-seta { transform:translateY(-50%) rotate(180deg); }
+          #site_formulario_painel .site-form-painel-detalhes > summary:focus-visible { outline:2px solid #60a5fa; outline-offset:-3px; border-radius:12px; }
+          #site_formulario_painel .site-form-painel-corpo { padding:0 20px 18px; }
+          body.tema-claro #site_formulario_painel .site-form-painel-detalhes > summary { color:#172554; }
+          body.tema-claro #site_formulario_painel .site-form-painel-subtitulo { color:#475569; }
+          @media(max-width:600px) { #site_formulario_painel .site-form-painel-detalhes > summary { padding:14px 42px 14px 14px; } #site_formulario_painel .site-form-painel-corpo { padding:0 14px 14px; } #site_formulario_painel .site-form-painel-seta { right:14px; } }
+
         </style>
         <div id="site_formulario_painel">
-          <h4>🌐 Formulário do seu site</h4>
-          <p>Para campanhas com destino <b>site</b>: cole o código abaixo na página onde o formulário deve aparecer. O lead entra na Central de Leads com a origem do anúncio (Meta, Google, TikTok ou LinkedIn), e os sinais de lead, qualificação e venda voltam para a rede certa.</p>
-          <div id="site_formulario_conteudo"><div style="color:#64748b;font-size:13px;">Carregando...</div></div>
+          <details id="site_formulario_expandir" class="site-form-painel-detalhes">
+            <summary aria-label="Expandir ou recolher a integração de captação de leads pelo site">
+              <span class="site-form-painel-titulo">🌐 Captação de Leads pelo Site — Formulário e Rastreamento de Campanhas</span>
+              <span class="site-form-painel-subtitulo">Instalação, identificação de origem e acompanhamento de conversões</span>
+              <span class="site-form-painel-seta" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="site-form-painel-corpo">
+              <p>Instale o formulário no seu site para receber leads automaticamente na Central de Leads, identificar a origem dos anúncios e acompanhar as conversões. O envio de eventos às redes depende das integrações e das configurações de cada campanha.</p>
+              <div id="site_formulario_conteudo"><div style="color:#64748b;font-size:13px;">Carregando...</div></div>
+            </div>
+          </details>
         </div>
       </div>
 

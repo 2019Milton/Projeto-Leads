@@ -28643,7 +28643,7 @@ function criarLeadCard(lead) {
 
       <!-- DATA DE CONTATO -->
       ${lead.data_contato ? `
-        <div class="lead-data-contato agendado" data-lead-action="agendar" data-lead-id="${Number(lead.id)}" data-lead-data="${escaparHtml(lead.data_contato)}" data-lead-obs="${escaparHtml(lead.observacao_agendamento || "")}" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, '${lead.data_contato}', ${JSON.stringify(lead.observacao_agendamento || '')})">
+        <div class="lead-data-contato agendado" data-lead-action="agendar" data-lead-id="${Number(lead.id)}" data-lead-data="${escaparHtml(lead.data_contato)}" data-lead-obs="${escaparHtml(lead.observacao_agendamento || "")}" onclick="event.stopPropagation(); abrirAgendadorContato(${Number(lead.id)}, this.dataset.leadData || '', this.dataset.leadObs || '')">
           📅 Contato em: <strong>${formatarDataContato(lead.data_contato)}</strong>
           ${lead.observacao_agendamento ? `<span style="display:block;font-size:11px;opacity:0.7;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escaparHtml(lead.observacao_agendamento)}</span>` : ''}
           <span class="lead-data-contato-remover" data-lead-action="remover-agendamento" data-lead-id="${Number(lead.id)}" onclick="event.stopPropagation(); removerDataContato(${Number(lead.id)})" title="Remover data">✕</span>
@@ -52314,7 +52314,7 @@ async function carregarPainelAdmin() {
                         : ""
                     }
                   >
-                    ${p.email}
+                    ${escaparHtml(p.email)}
                   </option>
                 `).join("")}
 
@@ -52344,7 +52344,7 @@ async function carregarPainelAdmin() {
               </button>
 
               <button
-                onclick='abrirTrocaSenha(${u.id}, ${JSON.stringify(u.email)})'
+                onclick='abrirTrocaSenha(${Number(u.id)}, ${escaparHtml(JSON.stringify(u.email))})'
               >
                 🔐 Senha
               </button>
@@ -52367,7 +52367,7 @@ async function carregarPainelAdmin() {
                     style="
                       background:linear-gradient(135deg,#dc2626,#991b1b);
                     "
-                    onclick='excluirUsuario(${u.id}, ${JSON.stringify(u.email)})'
+                    onclick='excluirUsuario(${Number(u.id)}, ${escaparHtml(JSON.stringify(u.email))})'
                   >
                     🗑️ Excluir
                   </button>
@@ -52726,7 +52726,7 @@ async function carregarPainelIAAdmin() {
                 <option value="anthropic" ${providerAtual === "anthropic" ? "selected" : ""}>Anthropic (Claude)</option>
               </select>
               <div style="display:flex;gap:4px;">
-                <button onclick='alterarLimitesIAUsuario(${u.id}, ${limite}, ${limiteCusto}, ${JSON.stringify(u.assinatura_status || "manual")}, ${usuarioIAAtiva})'>
+                <button onclick='alterarLimitesIAUsuario(${u.id}, ${limite}, ${limiteCusto}, ${escaparHtml(JSON.stringify(u.assinatura_status || "manual"))}, ${usuarioIAAtiva})'>
                   Limites
                 </button>
                 <button onclick='alterarIAUsuario(${u.id}, ${!usuarioIAAtiva})'>

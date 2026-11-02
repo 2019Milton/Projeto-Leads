@@ -18683,6 +18683,16 @@ body.tema-claro #card-campanhas .campanha-card:hover {
           #site_formulario_painel .site-form-painel-detalhes[open] > summary .site-form-painel-seta { transform:translateY(-50%) rotate(180deg); }
           #site_formulario_painel .site-form-painel-detalhes > summary:focus-visible { outline:2px solid #60a5fa; outline-offset:-3px; border-radius:12px; }
           #site_formulario_painel .site-form-painel-corpo { padding:0 20px 18px; }
+
+          #site_formulario_painel .site-form-diagnostico { border:1px solid #334155; background:rgba(30,58,95,.18); border-radius:10px; padding:12px; margin-bottom:14px; }
+          #site_formulario_painel .site-form-diagnostico-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+          #site_formulario_painel .site-form-diagnostico-heading button { width:auto; margin:0; padding:7px 12px; font-size:12px; }
+          #site_formulario_painel #site_formulario_diagnostico_resultado { font-size:12px; line-height:1.6; color:#d3e0ef; }
+          #site_formulario_painel #site_formulario_diagnostico_resultado p { margin:4px 0; font-size:12px; }
+          #site_formulario_painel .site-form-diagnostico-nota { opacity:.9; }
+          body.tema-claro #site_formulario_painel .site-form-diagnostico { border-color:#cbd5e1; background:#eaf2ff; }
+          body.tema-claro #site_formulario_painel #site_formulario_diagnostico_resultado { color:#334155; }
+
           body.tema-claro #site_formulario_painel .site-form-painel-detalhes > summary { color:#172554; }
           body.tema-claro #site_formulario_painel .site-form-painel-subtitulo { color:#475569; }
           @media(max-width:600px) { #site_formulario_painel .site-form-painel-detalhes > summary { padding:14px 42px 14px 14px; } #site_formulario_painel .site-form-painel-corpo { padding:0 14px 14px; } #site_formulario_painel .site-form-painel-seta { right:14px; } }
@@ -44890,6 +44900,10 @@ async function carregarFormularioSite() {
     const redes = (data.por_rede || []).map(r => `${escaparHtml(r.rede)}: ${Number(r.total)}`).join(" · ");
     conteudo.innerHTML = `
       ${statusCodigoSiteHtml(data)}
+      <div class="site-form-diagnostico">
+        <div class="site-form-diagnostico-heading"><strong>Diagnóstico da integração</strong><button type="button" class="btn" onclick="verificarIntegracaoFormularioSite(this)">Verificar integração</button></div>
+        <div id="site_formulario_diagnostico_resultado" role="status" aria-live="polite">Clique em Verificar integração para consultar o estado da instalação e das capturas.</div>
+      </div>
       <textarea id="site_formulario_codigo" readonly aria-label="Código do formulário do site">${escaparHtml(codigoFormularioSite(data.chave, false))}</textarea>
       <div class="site-form-acoes">
         <button type="button" class="btn" onclick="copiarCodigoFormularioSite(this, 'site_formulario_codigo')">Copiar código</button>
@@ -44919,6 +44933,39 @@ async function carregarFormularioSite() {
     `;
   } catch (e) {
     conteudo.innerHTML = `<div style="color:#f87171;font-size:13px;">Não foi possível carregar o formulário do site: ${escaparHtml(e.message || "")}</div>`;
+  }
+}
+
+// Diagnóstico seguro: consulta apenas a configuração já disponível para o usuário.
+// Não envia leads, não cria conversões e não altera campanhas.
+async function verificarIntegracaoFormularioSite(botao) {
+  const resultado = document.getElementById("site_formulario_diagnostico_resultado");
+  if (!resultado || botao.disabled) return;
+  botao.disabled = true;
+  resultado.textContent = "Verificando informações da integração...";
+  try {
+    const res = await fetch(`${API}/site-formulario/configuracao`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      cache: "no-store"
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.chave) throw new Error(data.error || "Não foi possível consultar a configuração.");
+    const visto = data.codigo_visto_em ? new Date(data.codigo_visto_em) : null;
+    const ultimo = data.estatisticas?.ultimo_lead_em ? new Date(data.estatisticas.ultimo_lead_em) : null;
+    const dataLegivel = d => d && !isNaN(d.getTime()) ? d.toLocaleString("pt-BR") : "data indisponível";
+    const recente = visto && !isNaN(visto.getTime()) && (Date.now() - visto.getTime() < 7 * 86400000);
+    const qtd = Number(data.estatisticas?.leads_30d || 0);
+    const origem = Number(data.estatisticas?.com_origem_30d || 0);
+    resultado.innerHTML = `
+      <p>✅ Configuração do formulário: acessível.</p>
+      <p>${visto && !isNaN(visto.getTime()) ? (recente ? "✅" : "⚠️") + " Código visto em " + escaparHtml(data.codigo_dominio || "domínio não informado") + " — " + escaparHtml(dataLegivel(visto)) + (recente ? "." : " (detecção antiga; verifique a instalação atual).") : "⚠️ Nenhuma instalação detectada. Abra a página onde o código foi instalado."}</p>
+      <p>${qtd ? "✅" : "ℹ️"} Últimos 30 dias: ${qtd} lead(s) recebido(s) pelo site; ${origem} com origem identificada.</p>
+      <p>Último lead recebido: ${escaparHtml(dataLegivel(ultimo))}.</p>
+      <p class="site-form-diagnostico-nota">Este teste é somente de leitura. Detecção do script não comprova envio de formulário, atribuição exata da campanha ou recebimento de eventos na Meta/Google. Para validar ponta a ponta, envie um lead de teste identificável pelo site e confira-o na Central de Leads, sem marcá-lo como venda.</p>`;
+  } catch (e) {
+    resultado.textContent = "⚠️ Falha na verificação: " + (e.message || "erro desconhecido") + ". Nenhum lead foi criado.";
+  } finally {
+    botao.disabled = false;
   }
 }
 

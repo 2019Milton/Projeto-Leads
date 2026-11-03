@@ -24469,7 +24469,7 @@ async function carregarFinanceiro() {
               <div style="font-size:11px;color:#94a3b8;">Pague via PIX${l.pix_tipo_label ? ` (${escaparHtml(l.pix_tipo_label)})` : ""}</div>
               <div style="display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap;">
                 <strong style="color:#4ade80;font-size:14px;word-break:break-all;">${escaparHtml(l.pix_chave)}</strong>
-                <button type="button" class="btn-video-anuncio" onclick="copiarChavePixFinanceiro('${escaparHtml(l.pix_chave).replace(/'/g, "\\'")}', this)">📋 Copiar</button>
+                <button type="button" class="btn-video-anuncio" onclick="copiarChavePixFinanceiro(${argJsInline(l.pix_chave)}, this)">📋 Copiar</button>
               </div>
             </div>
           ` : ""}
@@ -24599,7 +24599,7 @@ async function carregarFinanceiroUsuariosAdmin() {
           <td>${ultimo ? escaparHtml(formatarMesReferencia(ultimo.mes_referencia)) : "—"}</td>
           <td>${ultimo ? formatarMoeda(ultimo.valor) : "—"}</td>
           <td>${statusInfo ? `<span style="color:${statusInfo.cor};font-size:12px;">● ${statusInfo.texto}</span>` : "—"}</td>
-          <td><button class="btn" onclick="abrirDetalheFinanceiroUsuario(${u.id}, '${escaparHtml(u.nome).replace(/'/g, "\\'")}')">Gerenciar</button></td>
+          <td><button class="btn" onclick="abrirDetalheFinanceiroUsuario(${Number(u.id)}, ${argJsInline(u.nome)})">Gerenciar</button></td>
         </tr>
       `;
     }).join("") || `<tr><td colspan="6">Nenhum usuário encontrado.</td></tr>`;
@@ -24741,7 +24741,7 @@ function renderLancamentoFinanceiroAdmin(l) {
           : `<label class="btn-video-anuncio" style="cursor:pointer;">🧾 Enviar NF<input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" style="display:none;" onchange="enviarNFFinanceiro(${l.id}, this)"></label>`
         }
         ${l.status === "rascunho" ? `<button type="button" class="btn-video-anuncio" onclick="liberarLancamentoFinanceiro(${l.id})">✅ Liberar para o gestor</button>` : ""}
-        ${l.status === "rascunho" && l.competencia ? `<button type="button" class="btn-video-anuncio" onclick="recalcularFaturaGestor(${Number(l.usuario_id)}, '${escaparHtml(l.competencia)}')">↻ Recalcular</button>` : ""}
+        ${l.status === "rascunho" && l.competencia ? `<button type="button" class="btn-video-anuncio" onclick="recalcularFaturaGestor(${Number(l.usuario_id)}, ${argJsInline(l.competencia)})">↻ Recalcular</button>` : ""}
         <button type="button" class="btn-video-anuncio" onclick="iniciarEdicaoLancamentoFinanceiro(${l.id})">✏️ Editar</button>
         <button type="button" class="btn-video-anuncio remover" onclick="excluirLancamentoFinanceiro(${l.id})">🗑️ Excluir</button>
       </div>
@@ -29065,7 +29065,7 @@ function montarSeletorContaAnunciosMeta(data) {
         <div class="meta-acct-actions">
           ${ativa
             ? `<span style="font-size:10px;font-weight:700;color:#4ade80;padding:4px 2px;white-space:nowrap;">✓ Em uso</span>`
-            : `<button type="button" onclick="usarContaAnunciosMeta('${escaparHtmlMeta(c.id)}', this)" style="padding:4px 9px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Usar conta</button>`
+            : `<button type="button" onclick="usarContaAnunciosMeta(${argJsInline(c.id)}, this)" style="padding:4px 9px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Usar conta</button>`
           }
           <a href="${gerenciarUrl}" target="_blank" rel="noopener"
             style="padding:4px 9px;background:rgba(24,119,242,0.12);border:1px solid rgba(24,119,242,0.3);color:#60a5fa;border-radius:6px;font-size:10.5px;font-weight:700;text-decoration:none;white-space:nowrap;"
@@ -36554,10 +36554,19 @@ function escaparHtml(valor) {
     .replaceAll("'", "&#39;");
 }
 
+// Argumento de string dentro de on*="...": vira literal JS ("...") escapado para o HTML.
+// escaparHtml sozinho entre '...' não protege — o navegador decodifica &#39; antes de rodar
+// o JS, e o apóstrofo fecha a string (um nome D'Ávila quebrava o botão; um malicioso rodava script).
+function argJsInline(valor) {
+  return escaparHtml(JSON.stringify(String(valor ?? "")));
+}
+
+// O resultado vai dentro de '...' num onclick; encodeURIComponent deixa o apóstrofo cru e um
+// lead chamado x'-fetch(...)-' rodaria script ao clicar no card. %27 volta como ' no decode.
 function codificarJsonInline(valor) {
   return encodeURIComponent(
     JSON.stringify(valor || {})
-  );
+  ).replace(/'/g, "%27");
 }
 
 function decodificarJsonInline(valor) {
@@ -36590,7 +36599,7 @@ function renderizarInteressesSelecionados() {
           <button
             type="button"
             title="Remover interesse"
-            onclick="removerInteresseDetalhado('${escaparHtml(interesse.id)}')"
+            onclick="removerInteresseDetalhado(${argJsInline(interesse.id)})"
           >
             x
           </button>
@@ -36733,7 +36742,7 @@ async function buscarInteressesDetalhados(opcoes = {}) {
               type="button"
               class="targeting-option"
               title="${escaparHtml((interesse.caminho || []).join(" > "))}"
-              onclick="adicionarInteresseCodificado('${escaparHtml(interesse.id)}','${encodeURIComponent(interesse.nome)}')"
+              onclick="adicionarInteresseCodificado(${argJsInline(interesse.id)},${argJsInline(encodeURIComponent(interesse.nome))})"
             >
               + ${escaparHtml(interesse.nome)}
             </button>
@@ -36892,7 +36901,7 @@ async function buscarLocalidadeDetalhada() {
           return `
             <div
               class="geo-sugestao-item"
-              onclick="selecionarLocalidade('${escaparHtml(local.key)}','${escaparHtml(local.tipo)}','${encodeURIComponent(nomeCompleto)}')"
+              onclick="selecionarLocalidade(${argJsInline(local.key)},${argJsInline(local.tipo)},${argJsInline(encodeURIComponent(nomeCompleto))})"
             >
               ${escaparHtml(nomeCompleto)}
               <span class="geo-sugestao-tipo">${escaparHtml(rotulo)}</span>
@@ -41758,7 +41767,7 @@ function renderizarModalCompletarCampanhaGoogle(campanha, status, formularios) {
   if (status.tem_anuncio) {
     corpo.innerHTML = `
       <div class="channel-picker-status">✅ Esta campanha do Google Ads já está completa (grupo de anúncios, anúncio e palavras-chave já existem). Falta apenas ativá-la.</div>
-      <button type="button" style="margin-top:16px;width:100%;" onclick="ativarCampanhaGoogleJaCompleta('${escaparHtml(campanha.campaign_id)}', '${escaparHtml(campanha.status)}')">▶ Ativar campanha agora</button>
+      <button type="button" style="margin-top:16px;width:100%;" onclick="ativarCampanhaGoogleJaCompleta(${argJsInline(campanha.campaign_id)}, ${argJsInline(campanha.status)})">▶ Ativar campanha agora</button>
     `;
     return;
   }
@@ -41813,7 +41822,7 @@ function renderizarModalCompletarCampanhaGoogle(campanha, status, formularios) {
     <div id="cgc_mensagem_erro" class="channel-picker-status alerta" style="display:none;margin-top:14px;"></div>
     <div id="cgc_progresso_texto" style="display:none;margin-top:14px;font-size:13px;color:#94a3b8;"></div>
     <button type="button" id="cgc_btn_confirmar" style="margin-top:16px;width:100%;"
-      onclick="confirmarCompletarCampanhaGoogle(${Number(campanha.id)}, '${escaparHtml(campanha.campaign_id)}')">
+      onclick="confirmarCompletarCampanhaGoogle(${Number(campanha.id)}, ${argJsInline(campanha.campaign_id)})">
       🚀 Completar e publicar anúncio
     </button>
   `;
@@ -43702,7 +43711,7 @@ function blocoContaPagamentoGoogle(customerId, nomeConta, botaoHtml) {
           <span style="color:#94a3b8;">Conta para adicionar saldo:</span>
           ${nome ? `<b style="color:#e2e8f0;">${escaparHtml(nome)}</b>` : ""}
           <code style="color:${verde.texto};background:rgba(15,23,42,0.6);border:1px solid ${verde.border};padding:2px 8px;border-radius:5px;">${escaparHtml(cid)}</code>
-          <button type="button" onclick="copiarIdContaGoogle('${escaparHtml(cid)}', this)" style="${estiloAcaoRapida("sucesso")}">📋 Copiar ID</button>
+          <button type="button" onclick="copiarIdContaGoogle(${argJsInline(cid)}, this)" style="${estiloAcaoRapida("sucesso")}">📋 Copiar ID</button>
         </div>
         <div style="margin-top:10px;color:#cbd5e1;">
           <span style="color:${verde.texto};font-weight:700;">↳</span> Se o Google abrir a tela de outra conta (por exemplo, a gerenciadora):
@@ -46124,7 +46133,7 @@ function montarSeletorContaAnunciosGoogle(contas, customerIdAtual) {
         <div class="meta-acct-actions">
           ${ativa
             ? `<span style="font-size:10px;font-weight:700;color:#4ade80;padding:4px 2px;white-space:nowrap;">✓ Em uso</span>`
-            : `<button type="button" onclick="usarContaGoogle('${escaparHtml(String(c.customer_id))}', this)" style="padding:4px 9px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Usar conta</button>`
+            : `<button type="button" onclick="usarContaGoogle(${argJsInline(String(c.customer_id))}, this)" style="padding:4px 9px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Usar conta</button>`
           }
         </div>
       </div>
@@ -61349,8 +61358,8 @@ async function carregarPublicosMeta() {
             <div style="color:#94a3b8;font-size:11px;margin-top:2px;">${subtipo} · ${alcance}</div>
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;">
-            ${p.subtype !== "LOOKALIKE" ? `<button onclick="iniciarLookalike('${p.id}', '${escaparHtml(p.name).replace(/'/g,"\\'")}' )" style="background:#1e40af;border:none;color:white;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;">+ Lookalike</button>` : ""}
-            <button onclick="togglePublicoSelecionado('${p.id}', '${escaparHtml(p.name).replace(/'/g,"\\'")}' )" style="background:${selecionado ? "#15803d" : "#334155"};border:none;color:white;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;" id="btn_publico_${p.id}">
+            ${p.subtype !== "LOOKALIKE" ? `<button onclick="iniciarLookalike(${argJsInline(p.id)}, ${argJsInline(p.name)} )" style="background:#1e40af;border:none;color:white;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;">+ Lookalike</button>` : ""}
+            <button onclick="togglePublicoSelecionado(${argJsInline(p.id)}, ${argJsInline(p.name)} )" style="background:${selecionado ? "#15803d" : "#334155"};border:none;color:white;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;" id="btn_publico_${p.id}">
               ${selecionado ? "✓ Selecionado" : "Usar no adset"}
             </button>
           </div>

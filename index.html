@@ -48275,8 +48275,8 @@ async function carregarStatusMeta() {
       data.paginas?.forEach(p => {
 
         select.innerHTML += `
-          <option value="${p.id}">
-            ${p.name}
+          <option value="${escaparHtml(p.id)}">
+            ${escaparHtml(p.name)}
           </option>
         `;
       });
@@ -51714,11 +51714,12 @@ function popularFiltroCampanhas(leads) {
     </option>
   `;
 
+  // lead.campanha pode vir do utm_campaign do formulário público do site (texto livre).
   campanhas.forEach(campanha => {
 
     select.innerHTML += `
-      <option value="${campanha}">
-        ${campanha}
+      <option value="${escaparHtml(campanha)}">
+        ${escaparHtml(campanha)}
       </option>
     `;
   });

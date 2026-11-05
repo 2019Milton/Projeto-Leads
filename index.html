@@ -44793,10 +44793,14 @@ function renderResumoGoogle(conn, googleStatusCompleto) {
   const campanhasAtivas = googleStatusCompleto?.campanhas_ativas ?? 0;
   const campanhasTotal = googleStatusCompleto?.campanhas_total ?? 0;
   const leadsHoje = googleStatusCompleto?.leads_hoje ?? 0;
+  // O servidor pede reconexão quando o acesso foi revogado/expirou ou falta a permissão de conversões.
+  const avisoReconexao = googleStatusCompleto?.reconectar?.mensagem || "";
 
   return `
     <div class="integ-card-resumo">
-      ${hubResumoAlerta("Conta de anúncios selecionada. Use \"Sincronizar agora\" nos detalhes para importar campanhas e leads.", "ok")}
+      ${avisoReconexao
+        ? hubResumoAlerta(`⚠️ ${avisoReconexao}`, "warn")
+        : hubResumoAlerta("Conta de anúncios selecionada. Use \"Sincronizar agora\" nos detalhes para importar campanhas e leads.", "ok")}
       <div class="integ-resumo-grid">
         ${hubResumoItem("Conta Ads", contaInfo?.nome || customerId, "sucesso")}
         ${hubResumoItem("Status da conta", contaInfo?.status || "—")}
@@ -46537,6 +46541,8 @@ async function carregarStatusGoogle() {
               <div style="color:#22c55e;">🟢 WhatsApp conectado</div>
             </div>
           </div>
+
+          ${dataStatus.reconectar?.mensagem ? hubResumoAlerta(`⚠️ ${dataStatus.reconectar.mensagem}`, "warn") : ""}
 
           ${secaoColapsavel("📊 Status Google Ads", `
               <div class="meta-fbig-columns">

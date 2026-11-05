@@ -19918,6 +19918,7 @@ body.tema-claro #card-campanhas .campanha-card:hover {
               <div id="destino_tiktok_bloqueado_aviso" class="channel-picker-status alerta" style="display:none;">
                 O tipo de destino não pode ser trocado depois que a campanha é publicada. Para usar outro destino, publique uma nova campanha.
               </div>
+              <div id="tiktok_fluxo_aviso" class="channel-picker-status" style="display:none;"></div>
               <p style="font-size:11px;opacity:.65;margin:8px 0 0;">
                 No WhatsApp, o TikTok usa o número Business API conectado e abre a conversa com a mensagem inicial padrão. A campanha funciona por cliques, sem exigir uma integração adicional de Mensagens.
               </p>
@@ -30946,6 +30947,7 @@ function aplicarFormatoCriativoTikTok() {
     label.style.background = selecionado ? "rgba(34,197,94,.14)" : "";
   });
   atualizarDisponibilidadeVideoCampanha();
+  atualizarAvisoFluxoTikTok();
 }
 
 function plataformaMidiaCampanhaEmFoco() {
@@ -31288,6 +31290,76 @@ async function aplicarDestinoCampanhaGoogle() {
 let destinoCampanhaTikTokSelecionado = "lead_ads";
 let verificacaoWhatsappTikTokAtual = 0;
 
+// Espelha decidirFluxoCriacaoTikTok (backend, tiktok-smart-plus.ts): a partir
+// de 01/01/2027 o TikTok só cria campanhas de leads pelas APIs Smart+, que
+// aceitam vídeo, Formulário de Leads ou WhatsApp e conta TikTok vinculada.
+const CORTE_FLUXO_LEGADO_TIKTOK_MS = Date.UTC(2027, 0, 1);
+
+function avisoFluxoCampanhaTikTok({ destino, formato, identityType, agora = Date.now() }) {
+  const tipoIdentidade = String(identityType || "").toUpperCase();
+  let motivo = "";
+  if (destino === "site") {
+    motivo = "Para endereço do site, o formato Smart+ do TikTok exige um Pixel TikTok com evento de formulário, que a plataforma ainda não configura.";
+  } else if (formato === "imagem") {
+    motivo = "O formato Smart+ do TikTok não aceita anúncio de imagem única.";
+  } else if (tipoIdentidade && !["TT_USER", "BC_AUTH_TT"].includes(tipoIdentidade)) {
+    motivo = "O formato Smart+ do TikTok só publica com uma conta TikTok vinculada (TikTok User ou conta do Business Center), não com identidade personalizada.";
+  }
+
+  if (!motivo) {
+    return {
+      tipo: "smart_plus",
+      texto: "Publicação no formato Smart+ do TikTok: o texto do botão é escolhido automaticamente pelo TikTok entre opções de captação de lead (o botão escolhido no anúncio não é usado), e o vídeo sai como anúncio Spark da conta TikTok escolhida, visível só em anúncios."
+    };
+  }
+  if (agora < CORTE_FLUXO_LEGADO_TIKTOK_MS) {
+    return {
+      tipo: "legado",
+      texto: `${motivo} Esta publicação usa o fluxo antigo do TikTok, aceito só até 31/12/2026. A partir de 2027, use vídeo com Formulário de Leads ou WhatsApp e uma conta TikTok vinculada.`
+    };
+  }
+  return {
+    tipo: "bloqueado",
+    texto: `${motivo} Desde 01/01/2027 o TikTok não cria mais campanhas de leads no fluxo antigo.`
+  };
+}
+
+function atualizarAvisoFluxoTikTok() {
+  const aviso = document.getElementById("tiktok_fluxo_aviso");
+  if (!aviso) return;
+  const esconder = () => { aviso.style.display = "none"; };
+  try {
+    const tiktokEmFoco = redesSelecionadasCampanha.has("tiktok") &&
+      (!abaAtivaCampanha || abaAtivaCampanha === "tiktok");
+    if (!tiktokEmFoco) return esconder();
+
+    // Campanha TikTok já publicada: o fluxo não muda mais; só lembra a regra
+    // das campanhas Smart+.
+    const edicaoPublicada = campanhaEmEdicao &&
+      String(campanhaEmEdicao.plataforma || "").toLowerCase() === "tiktok" &&
+      campanhaJaFoiPublicada(campanhaEmEdicao);
+    if (edicaoPublicada) {
+      if (obterConfiguracoesCampanha(campanhaEmEdicao).tiktok_fluxo !== "smart_plus") return esconder();
+      aviso.classList.remove("alerta");
+      aviso.textContent = "Esta campanha foi publicada no formato Smart+ do TikTok: só aceita vídeo, e o texto do botão é escolhido automaticamente pelo TikTok.";
+      aviso.style.display = "";
+      return;
+    }
+
+    const { tipo, texto } = avisoFluxoCampanhaTikTok({
+      destino: destinoCampanhaTikTokSelecionado,
+      formato: obterFormatoCriativoTikTok(),
+      identityType: tiktokIdentidadeSelecionada?.identity_type
+    });
+    aviso.classList.toggle("alerta", tipo !== "smart_plus");
+    aviso.textContent = texto;
+    aviso.style.display = "";
+  } catch (_) {
+    // Chamado antes do restante do estado do modal existir.
+    esconder();
+  }
+}
+
 // Assim como no Google, o TikTok tem destinos próprios e independentes das
 // escolhas feitas nas abas Meta/LinkedIn/Kwai de uma publicação multirrede.
 async function aplicarDestinoCampanhaTikTok() {
@@ -31326,6 +31398,7 @@ async function aplicarDestinoCampanhaTikTok() {
   if (infoSite) {
     infoSite.style.display = tiktokEmFoco && destinoCampanhaTikTokSelecionado === "site" ? "" : "none";
   }
+  atualizarAvisoFluxoTikTok();
 
   if (!infoWhatsapp) return;
   if (!tiktokEmFoco || destinoCampanhaTikTokSelecionado !== "whatsapp") {
@@ -35210,6 +35283,7 @@ async function carregarIdentidadesTikTokCampanha() {
         identity_id: identidadePreferidaId,
         identity_type: identidadePreferidaTipo
       };
+      atualizarAvisoFluxoTikTok();
     } else if (identidades.length) {
       // Na criação, mantém o comportamento anterior: seleciona e persiste a
       // primeira identidade disponível. Ao editar, a identidade já salva tem
@@ -35227,6 +35301,7 @@ async function selecionarIdentidadeTikTokCampanha(valor) {
   if (!valor) return;
   const [identity_id, identity_type] = valor.split("|");
   tiktokIdentidadeSelecionada = { identity_id, identity_type };
+  atualizarAvisoFluxoTikTok();
 
   const { token } = obterTokenEUsuarioIdCampanha();
   if (!token) return;
@@ -41451,6 +41526,14 @@ async function publicarCampanhaTikTok(contexto, isMultiRede) {
     }
 
     setPublishProgress(100, `${prefixo}Campanha publicada com sucesso!`);
+    // Publicada pelo fluxo antigo (site, imagem única ou identidade
+    // personalizada): o TikTok só aceita esse caminho até 31/12/2026.
+    const avisoPrazoLegado = campanha.fluxo === "legado"
+      ? (Array.isArray(preflight.avisos) ? preflight.avisos : []).find(a => String(a).includes("31/12/2026"))
+      : null;
+    if (avisoPrazoLegado) {
+      return { ok: true, comAviso: true, mensagem: avisoPrazoLegado };
+    }
     return { ok: true };
   } catch (err) {
     console.error("ERRO publicarCampanhaTikTok:", err);

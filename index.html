@@ -34563,7 +34563,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
             <th>${agrupamento === "mensal" ? "Mes" : "Dia"}</th>
             <th>Gasto</th>
             ${ehMeta ? `
-              <th title="Quanto a Meta contabilizou do lado dela — pequenas diferenças com a coluna ao lado são normais">Leads (Meta)</th>
+              <th title="O que a Meta contabilizou do lado dela: conversas iniciadas em campanha de WhatsApp; leads em formulário e site. É o número usado no CPL.">Leads (Meta)</th>
               <th title="Quantos leads realmente chegaram e foram salvos na Central de Leads — esse é o número que vale pro seu dia a dia">Leads (Plataforma)</th>
             ` : `
               <th>Leads</th>
@@ -34583,12 +34583,12 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
     </div>
 
     <div class="performance-meta-note">
-      <strong>CPL</strong> e o custo medio por lead. ${ehMeta ? "A Meta cobra por impressoes; nem todo clique vira lead." : `${nomePlataforma} cobra por impressoes ou cliques, dependendo da campanha; nem todo clique vira lead.`}
+      <strong>CPL</strong> e o custo medio por lead. ${ehMeta ? "Aqui ele e o gasto dividido por Leads (Meta). A Meta cobra por impressoes; nem todo clique vira lead." : `${nomePlataforma} cobra por impressoes ou cliques, dependendo da campanha; nem todo clique vira lead.`}
       ${ehMeta ? `
         <br>
         Use a linha expandida para ver quais campanhas puxaram o gasto de cada dia.
         <br>
-        <strong>Leads (Meta)</strong> e o que a Meta contabilizou do lado dela; <strong>Leads (Plataforma)</strong> e o que realmente chegou e foi salvo na Central de Leads — as contagens podem divergir por atribuição, datas ou sincronização. Confira diferenças persistentes; este painel sozinho não comprova que todos os leads foram recebidos.
+        <strong>Leads (Meta)</strong> e o que a Meta contabilizou do lado dela (em campanha de WhatsApp, as conversas iniciadas); <strong>Leads (Plataforma)</strong> e o que realmente chegou e foi salvo na Central de Leads — as contagens podem divergir por atribuição, datas ou sincronização. Confira diferenças persistentes; este painel sozinho não comprova que todos os leads foram recebidos.
       ` : ""}
     </div>
   `;

@@ -42072,6 +42072,9 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
       await descartarCampanhaLinkedInCriadaPorFalha(campanhaCriadaId, token);
       return { ok: false, mensagem: adgroup.error };
     }
+    // Aviso não bloqueante do backend (ex.: a campanha foi criada, mas não foi
+    // associada à regra de conversão de lead qualificado) — vira toast de aviso.
+    const avisoConversaoLinkedIn = typeof adgroup.aviso === "string" ? adgroup.aviso.trim() : "";
 
     let imageUrn = null;
     let videoUrn = null;
@@ -42174,7 +42177,9 @@ async function publicarCampanhaLinkedIn(contexto, isMultiRede) {
     }
 
     setPublishProgress(100, `${prefixo}Rascunho criado com sucesso — ainda não está veiculando.`);
-    return { ok: true };
+    return avisoConversaoLinkedIn
+      ? { ok: true, comAviso: true, mensagem: avisoConversaoLinkedIn }
+      : { ok: true };
   } catch (err) {
     console.error("ERRO publicarCampanhaLinkedIn:", err);
     if (campanhaCriadaId) {
@@ -45809,6 +45814,7 @@ async function carregarDetalhesLinkedInHub(elAlvo = null) {
       `)}
 
       ${secaoColapsavel("🎯 Conversion Rules", `
+        ${renderBlocoConversoesLinkedIn(dataStatus?.conversoes, adAccountIdAtual)}
         <div style="font-size:11.5px;color:#64748b;margin:2px 0 8px;">
           Crie as regras no Campaign Manager e cole os URNs abaixo para enviar qualificação e fechamento.
         </div>
@@ -45916,6 +45922,165 @@ async function salvarConversionRulesLinkedIn(btnEl) {
       btnEl.innerHTML = estadoOriginal.html;
     }
   }
+}
+
+// ─── Leads qualificados → LinkedIn (Conversions API) ─────────────────────────
+// Só aparece quando o backend informa conversoes.habilitado (chave
+// LINKEDIN_CONVERSIONS_ENABLED ligada, com o escopo rw_conversions aprovado).
+// Enquanto estiver desligado, nada deste bloco é exibido.
+let mensagemConversoesLinkedInPendente = null;
+
+function renderBlocoConversoesLinkedIn(conversoes, adAccountId) {
+  if (conversoes?.habilitado !== true) return "";
+  const regraOk = conversoes.regra_lead_qualificado_configurada === true;
+  const otimizacao = conversoes.otimizacao_lead_qualificado === true;
+  const semConta = adAccountId ? "" : "disabled";
+  // Mensagem deixada por uma ação que recarregou o painel (aparece uma vez).
+  const pendente = mensagemConversoesLinkedInPendente;
+  mensagemConversoesLinkedInPendente = null;
+  const corMsg = pendente?.tom === "erro" ? "#f87171" : pendente?.tom === "ok" ? "#4ade80" : "#94a3b8";
+  return `
+    <div style="margin:2px 0 12px;padding-bottom:10px;border-bottom:1px solid rgba(148,163,184,.2);">
+      <div style="font-size:11.5px;color:#64748b;margin:0 0 8px;line-height:1.45;">
+        Envia ao LinkedIn os leads que a plataforma considera qualificados, para ele aprender a entregar seus anúncios a perfis parecidos.
+      </div>
+      <div class="integ-resumo-grid" style="margin-bottom:8px;">
+        ${hubResumoItem("Regra de lead qualificado", regraOk ? "Configurada" : "Não configurada", regraOk ? "sucesso" : "alerta")}
+        ${hubResumoItem("Otimização em campanhas novas", otimizacao ? "Leads qualificados" : "Desligada", otimizacao ? "sucesso" : "")}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button type="button" onclick="configurarConversoesLinkedIn(this)" ${semConta}>${regraOk ? "🔁 Verificar regra e campanhas" : "⚙️ Configurar conversões"}</button>
+        <button type="button" onclick="reenviarLeadsLinkedIn(this)" ${regraOk ? semConta : "disabled"}>📤 Reenviar leads dos últimos 30 dias</button>
+      </div>
+      <div id="linkedin_conversoes_msg" style="margin-top:8px;font-size:11.5px;line-height:1.45;color:${corMsg};">${escaparHtml(pendente?.texto || "")}</div>
+    </div>`;
+}
+
+// Texto do resultado vai sempre por textContent (nunca como HTML).
+function mostrarMensagemConversoesLinkedIn(texto, tom = "") {
+  const el = document.getElementById("linkedin_conversoes_msg");
+  if (!el) { alert(texto); return; }
+  el.style.color = tom === "erro" ? "#f87171" : tom === "ok" ? "#4ade80" : "#94a3b8";
+  el.textContent = texto;
+}
+
+async function chamarConversoesLinkedIn(caminho, corpo = {}) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(`${API}/linkedin/conversoes/${caminho}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(corpo)
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data };
+}
+
+async function executarComBotaoLinkedIn(btnEl, rotuloOcupado, tarefa) {
+  const estadoOriginal = btnEl ? { html: btnEl.innerHTML, disabled: btnEl.disabled } : null;
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = `<span class="spinner-toggle"></span> ${rotuloOcupado}`;
+  }
+  try {
+    await tarefa();
+  } finally {
+    if (btnEl && estadoOriginal && document.body.contains(btnEl)) {
+      btnEl.disabled = estadoOriginal.disabled;
+      btnEl.innerHTML = estadoOriginal.html;
+    }
+  }
+}
+
+// Cria (ou reaproveita) a regra de lead qualificado no LinkedIn e associa as
+// campanhas já otimizadas. Idempotente: pode ser clicado de novo.
+async function configurarConversoesLinkedIn(btnEl) {
+  if (!localStorage.getItem("token")) return;
+  await executarComBotaoLinkedIn(btnEl, "Configurando...", async () => {
+    mostrarMensagemConversoesLinkedIn("Configurando a regra de lead qualificado no LinkedIn...");
+    try {
+      const r = await chamarConversoesLinkedIn("configurar");
+      if (!r.ok) {
+        mostrarMensagemConversoesLinkedIn(r.data?.error || "Não foi possível configurar as conversões.", "erro");
+        return;
+      }
+      const associadas = Number(r.data.campanhas_associadas || 0);
+      const falhas = Array.isArray(r.data.campanhas_com_falha) ? r.data.campanhas_com_falha.length : 0;
+      const partes = [r.data.criada
+        ? "Regra de lead qualificado criada no LinkedIn."
+        : "A regra de lead qualificado já existia e foi reaproveitada."];
+      if (associadas) partes.push(`${associadas} campanha(s) associada(s) à regra.`);
+      if (falhas) partes.push(`${falhas} campanha(s) não puderam ser associadas — tente de novo.`);
+      const mensagem = { texto: partes.join(" "), tom: falhas ? "erro" : "ok" };
+
+      // Recarrega o painel para mostrar "Configurada"; a mensagem acompanha.
+      const alvo = btnEl?.closest("#integ-detalhes-linkedin") || document.getElementById("integ-detalhes-linkedin");
+      if (alvo) {
+        mensagemConversoesLinkedInPendente = mensagem;
+        carregarDetalhesLinkedInHub(alvo);
+      } else {
+        mostrarMensagemConversoesLinkedIn(mensagem.texto, mensagem.tom);
+      }
+    } catch (_) {
+      mostrarMensagemConversoesLinkedIn("Erro de conexão ao configurar as conversões.", "erro");
+    }
+  });
+}
+
+// Reenvia os leads dos últimos 30 dias que ficaram para trás. Sempre simula
+// primeiro (nada é enviado), mostra os números e só envia após a confirmação.
+async function reenviarLeadsLinkedIn(btnEl) {
+  if (!localStorage.getItem("token")) return;
+  await executarComBotaoLinkedIn(btnEl, "Verificando...", async () => {
+    try {
+      mostrarMensagemConversoesLinkedIn("Verificando quais leads ainda não foram enviados ao LinkedIn...");
+      const simulacao = await chamarConversoesLinkedIn("reenviar", { simular: true });
+      if (!simulacao.ok) {
+        mostrarMensagemConversoesLinkedIn(simulacao.data?.error || "Não foi possível verificar os leads.", "erro");
+        return;
+      }
+
+      const qualificados = Number(simulacao.data.a_enviar_qualificado || 0);
+      const fechados = Number(simulacao.data.a_enviar_fechado || 0);
+      const dias = Number(simulacao.data.periodo_dias || 30);
+      if (qualificados + fechados === 0) {
+        const semIdentificador = Number(simulacao.data.sem_identificador || 0);
+        mostrarMensagemConversoesLinkedIn(
+          `Nenhum lead pendente nos últimos ${dias} dias.` +
+          (semIdentificador ? ` ${semIdentificador} lead(s) não têm e-mail válido nem resposta de formulário e não podem ser enviados.` : ""),
+          "ok"
+        );
+        return;
+      }
+
+      const lote = Number(simulacao.data.lote_maximo || 100);
+      const confirmou = confirm(
+        `Pendentes nos últimos ${dias} dias: ${qualificados} lead(s) qualificado(s) e ${fechados} venda(s) fechada(s).\n\n` +
+        `O envio é feito em lotes de até ${lote} leads, e o que for enviado não pode ser desfeito pela plataforma.\n\n` +
+        `Enviar agora ao LinkedIn?`
+      );
+      if (!confirmou) {
+        mostrarMensagemConversoesLinkedIn("Reenvio cancelado. Nada foi enviado.");
+        return;
+      }
+
+      if (btnEl) btnEl.innerHTML = '<span class="spinner-toggle"></span> Enviando...';
+      mostrarMensagemConversoesLinkedIn("Enviando os leads ao LinkedIn...");
+      const envio = await chamarConversoesLinkedIn("reenviar", {});
+      if (!envio.ok) {
+        mostrarMensagemConversoesLinkedIn(envio.data?.error || "O LinkedIn recusou o envio.", "erro");
+        return;
+      }
+
+      const dados = envio.data;
+      const comErro = Number(dados.com_erro || 0);
+      const partes = [`Enviados: ${Number(dados.enviados_qualificado || 0)} lead(s) qualificado(s) e ${Number(dados.enviados_fechado || 0)} venda(s) fechada(s).`];
+      if (comErro) partes.push(`${comErro} com erro${dados.primeiro_erro ? `: ${dados.primeiro_erro}` : ""}.`);
+      if (dados.ha_mais) partes.push("Ainda há leads pendentes — clique de novo para enviar o próximo lote.");
+      mostrarMensagemConversoesLinkedIn(partes.join(" "), comErro ? "erro" : "ok");
+    } catch (_) {
+      mostrarMensagemConversoesLinkedIn("Erro de conexão ao reenviar os leads.", "erro");
+    }
+  });
 }
 
 async function sincronizarLinkedIn() {

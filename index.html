@@ -38843,6 +38843,12 @@ async function salvarEdicaoCampanhaTikTok(token, usuario_id) {
   });
   if (erroTikTok) return mostrarErro(erroTikTok);
 
+  // Campanhas publicadas no formato Smart+ do TikTok só aceitam vídeo; barra
+  // aqui para não enviar imagens que o backend recusaria depois.
+  if (cfgBanco.tiktok_fluxo === "smart_plus" && obterFormatoCriativoTikTok() === "imagem") {
+    return mostrarErro("Esta campanha foi publicada no formato Smart+ do TikTok, que só aceita vídeo. Escolha o formato Vídeo para trocar a mídia.");
+  }
+
   if (!videoArquivo && !imagensArquivos.length && !videoIdExistente && !imageIdsExistentes.length) {
     return mostrarErro("O criativo publicado não foi localizado. Adicione uma imagem ou um vídeo antes de salvar.");
   }

@@ -19910,7 +19910,7 @@ body.tema-claro #card-campanhas .campanha-card:hover {
                 O formulário será aberto dentro do TikTok, sem tirar a pessoa do aplicativo.
               </div>
               <div id="destino_tiktok_site_info" class="channel-picker-status" style="display:none;">
-                O clique será direcionado para o endereço informado abaixo. Para medir envios do formulário do site, instale o Pixel/evento do TikTok nessa página.
+                O clique será direcionado para o endereço informado abaixo. Instale nessa página o formulário da plataforma (painel "Captação de Leads pelo Site"): é ele que avisa o TikTok de cada lead.
               </div>
               <div id="destino_tiktok_whatsapp_info" class="channel-picker-status alerta" style="display:none;">
                 Verificando o WhatsApp conectado à plataforma...
@@ -30317,6 +30317,9 @@ function abrirCriarCampanhaModal() {
     document.getElementById("card-criar-campanha");
   if (!modal || !corpo || !conteudo) return;
 
+  // Formulário do site ou Pixel podem ter mudado desde a última consulta.
+  situacaoSiteSmartPlusTikTok = null;
+
   // Criar novamente durante um rascunho local SEMPRE retoma o mesmo formulário.
   // Só após descarte ou publicação começamos uma sessão limpa.
   if (!criacaoCampanhaEmAndamento && criacaoCampanhaNecessitaLimpeza) {
@@ -31292,30 +31295,81 @@ let verificacaoWhatsappTikTokAtual = 0;
 
 // Espelha decidirFluxoCriacaoTikTok (backend, tiktok-smart-plus.ts): a partir
 // de 01/01/2027 o TikTok só cria campanhas de leads pelas APIs Smart+, que
-// aceitam vídeo, Formulário de Leads ou WhatsApp e conta TikTok vinculada.
+// aceitam vídeo com conta TikTok vinculada. Site no Smart+ otimiza pelo evento
+// Lead do Pixel da plataforma: precisa do formulário do site instalado e de
+// acesso a Pixel na conta (GET /tiktok/site-smart-plus).
 const CORTE_FLUXO_LEGADO_TIKTOK_MS = Date.UTC(2027, 0, 1);
+const TEXTO_SMART_PLUS_TIKTOK = "Publicação no formato Smart+ do TikTok: o texto do botão é escolhido automaticamente pelo TikTok entre opções de captação de lead (o botão escolhido no anúncio não é usado), e o vídeo sai como anúncio Spark da conta TikTok escolhida, visível só em anúncios.";
 
-function avisoFluxoCampanhaTikTok({ destino, formato, identityType, agora = Date.now() }) {
+// { usuario, dados } da última consulta; dados = resposta da rota ou
+// { indisponivel: true }.
+let situacaoSiteSmartPlusTikTok = null;
+let consultandoSiteSmartPlusTikTok = false;
+
+function carregarSituacaoSiteSmartPlusTikTok() {
+  const { token, usuario_id } = obterTokenEUsuarioIdCampanha();
+  if (!token || consultandoSiteSmartPlusTikTok) return;
+  if (situacaoSiteSmartPlusTikTok && situacaoSiteSmartPlusTikTok.usuario === String(usuario_id || "")) return;
+  consultandoSiteSmartPlusTikTok = true;
+  fetch(`${API}/tiktok/site-smart-plus?usuario_id=${encodeURIComponent(usuario_id || "")}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json().then(dados => (res.ok ? dados : null)))
+    .catch(() => null)
+    .then(dados => {
+      situacaoSiteSmartPlusTikTok = { usuario: String(usuario_id || ""), dados: dados || { indisponivel: true } };
+      consultandoSiteSmartPlusTikTok = false;
+      atualizarAvisoFluxoTikTok();
+    });
+}
+
+function situacaoSiteSmartPlusTikTokAtual() {
+  const { usuario_id } = obterTokenEUsuarioIdCampanha();
+  return situacaoSiteSmartPlusTikTok && situacaoSiteSmartPlusTikTok.usuario === String(usuario_id || "")
+    ? situacaoSiteSmartPlusTikTok.dados
+    : null;
+}
+
+function avisoFluxoCampanhaTikTok({ destino, formato, identityType, site = null, agora = Date.now() }) {
   const tipoIdentidade = String(identityType || "").toUpperCase();
+  const depoisDoCorte = agora >= CORTE_FLUXO_LEGADO_TIKTOK_MS;
   let motivo = "";
-  if (destino === "site") {
-    motivo = "Para endereço do site, o formato Smart+ do TikTok exige um Pixel TikTok com evento de formulário, que a plataforma ainda não configura.";
-  } else if (formato === "imagem") {
+  if (formato === "imagem") {
     motivo = "O formato Smart+ do TikTok não aceita anúncio de imagem única.";
   } else if (tipoIdentidade && !["TT_USER", "BC_AUTH_TT"].includes(tipoIdentidade)) {
     motivo = "O formato Smart+ do TikTok só publica com uma conta TikTok vinculada (TikTok User ou conta do Business Center), não com identidade personalizada.";
+  } else if (destino === "site") {
+    if (!site) {
+      return { tipo: "carregando", texto: "Conferindo se o site pode sair no formato Smart+ do TikTok (formulário do site e Pixel)..." };
+    }
+    if (site.indisponivel) {
+      return {
+        tipo: "legado",
+        texto: "Para site, o formato Smart+ do TikTok precisa do formulário da plataforma instalado no site e do Pixel da plataforma na conta de anúncios. Não foi possível conferir agora: a plataforma confere ao publicar e, se faltar algo, usa o fluxo antigo, aceito até 31/12/2026."
+      };
+    }
+    if (site.pixel && (site.eventos || depoisDoCorte)) {
+      return site.eventos
+        ? { tipo: "smart_plus", texto: `${TEXTO_SMART_PLUS_TIKTOK} A campanha otimiza por lead: cada envio do formulário do site vindo do TikTok é informado ao Pixel da plataforma.` }
+        : { tipo: "aviso", texto: `${TEXTO_SMART_PLUS_TIKTOK} O formulário da plataforma ainda não foi detectado no site: a campanha é publicada, mas o TikTok só aprende quem vira lead depois que ele for instalado (painel "Captação de Leads pelo Site").` };
+    }
+    if (!site.pixel || depoisDoCorte) {
+      const detalhe = String(site.erro_pixel || "não foi possível usar o Pixel da plataforma nesta conta de anúncios").replace(/[.\s]+$/, "");
+      motivo = `No formato Smart+ do TikTok, a campanha para site precisa do Pixel da plataforma na conta de anúncios, e ${detalhe}.`;
+    } else {
+      motivo = site.sem_eventos_por_plano
+        ? "No formato Smart+ do TikTok, a campanha para site aprende com os leads enviados ao Pixel, e o seu plano não inclui o envio de eventos de conversão."
+        : "No formato Smart+ do TikTok, a campanha para site aprende com os leads do formulário do site, e o formulário da plataforma ainda não foi detectado no seu site (painel \"Captação de Leads pelo Site\").";
+    }
   }
 
   if (!motivo) {
-    return {
-      tipo: "smart_plus",
-      texto: "Publicação no formato Smart+ do TikTok: o texto do botão é escolhido automaticamente pelo TikTok entre opções de captação de lead (o botão escolhido no anúncio não é usado), e o vídeo sai como anúncio Spark da conta TikTok escolhida, visível só em anúncios."
-    };
+    return { tipo: "smart_plus", texto: TEXTO_SMART_PLUS_TIKTOK };
   }
-  if (agora < CORTE_FLUXO_LEGADO_TIKTOK_MS) {
+  if (!depoisDoCorte) {
     return {
       tipo: "legado",
-      texto: `${motivo} Esta publicação usa o fluxo antigo do TikTok, aceito só até 31/12/2026. A partir de 2027, use vídeo com Formulário de Leads ou WhatsApp e uma conta TikTok vinculada.`
+      texto: `${motivo} Esta publicação usa o fluxo antigo do TikTok, aceito só até 31/12/2026. A partir de 2027, só sai vídeo com uma conta TikTok vinculada${destino === "site" ? ", e o site precisa do formulário instalado e do Pixel" : ""}.`
     };
   }
   return {
@@ -31346,12 +31400,15 @@ function atualizarAvisoFluxoTikTok() {
       return;
     }
 
+    const site = destinoCampanhaTikTokSelecionado === "site" ? situacaoSiteSmartPlusTikTokAtual() : null;
+    if (destinoCampanhaTikTokSelecionado === "site" && !site) carregarSituacaoSiteSmartPlusTikTok();
     const { tipo, texto } = avisoFluxoCampanhaTikTok({
       destino: destinoCampanhaTikTokSelecionado,
       formato: obterFormatoCriativoTikTok(),
-      identityType: tiktokIdentidadeSelecionada?.identity_type
+      identityType: tiktokIdentidadeSelecionada?.identity_type,
+      site
     });
-    aviso.classList.toggle("alerta", tipo !== "smart_plus");
+    aviso.classList.toggle("alerta", tipo !== "smart_plus" && tipo !== "carregando");
     aviso.textContent = texto;
     aviso.style.display = "";
   } catch (_) {

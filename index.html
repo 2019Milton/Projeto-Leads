@@ -45943,6 +45943,7 @@ let mensagemConversoesLinkedInPendente = null;
 function renderBlocoConversoesLinkedIn(conversoes, adAccountId) {
   if (conversoes?.habilitado !== true) return "";
   const regraOk = conversoes.regra_lead_qualificado_configurada === true;
+  const vendaOk = conversoes.regra_venda_fechada_configurada === true;
   const otimizacao = conversoes.otimizacao_lead_qualificado === true;
   const semConta = adAccountId ? "" : "disabled";
   // Mensagem deixada por uma ação que recarregou o painel (aparece uma vez).
@@ -45956,10 +45957,11 @@ function renderBlocoConversoesLinkedIn(conversoes, adAccountId) {
       </div>
       <div class="integ-resumo-grid" style="margin-bottom:8px;">
         ${hubResumoItem("Regra de lead qualificado", regraOk ? "Configurada" : "Não configurada", regraOk ? "sucesso" : "alerta")}
+        ${hubResumoItem("Regra de venda fechada", vendaOk ? "Configurada" : "Não configurada", vendaOk ? "sucesso" : "alerta")}
         ${hubResumoItem("Otimização em campanhas novas", otimizacao ? "Leads qualificados" : "Desligada", otimizacao ? "sucesso" : "")}
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button type="button" onclick="configurarConversoesLinkedIn(this)" ${semConta}>${regraOk ? "🔁 Verificar regra e campanhas" : "⚙️ Configurar conversões"}</button>
+        <button type="button" onclick="configurarConversoesLinkedIn(this)" ${semConta}>${regraOk && vendaOk ? "🔁 Verificar regras e campanhas" : "⚙️ Configurar conversões"}</button>
         <button type="button" onclick="reenviarLeadsLinkedIn(this)" ${regraOk ? semConta : "disabled"}>📤 Reenviar leads dos últimos 30 dias</button>
       </div>
       <div id="linkedin_conversoes_msg" style="margin-top:8px;font-size:11.5px;line-height:1.45;color:${corMsg};">${escaparHtml(pendente?.texto || "")}</div>
@@ -46018,9 +46020,16 @@ async function configurarConversoesLinkedIn(btnEl) {
       const partes = [r.data.criada
         ? "Regra de lead qualificado criada no LinkedIn."
         : "A regra de lead qualificado já existia e foi reaproveitada."];
-      if (associadas) partes.push(`${associadas} campanha(s) associada(s) à regra.`);
-      if (falhas) partes.push(`${falhas} campanha(s) não puderam ser associadas — tente de novo.`);
-      const mensagem = { texto: partes.join(" "), tom: falhas ? "erro" : "ok" };
+      if (r.data.regra_fechada_urn) {
+        partes.push(r.data.regra_fechada_criada
+          ? "Regra de venda fechada criada no LinkedIn."
+          : "A regra de venda fechada já existia.");
+      }
+      const associadasVenda = Number(r.data.campanhas_associadas_venda || 0);
+      const falhasVenda = Array.isArray(r.data.campanhas_venda_com_falha) ? r.data.campanhas_venda_com_falha.length : 0;
+      if (associadas || associadasVenda) partes.push(`${associadas + associadasVenda} associação(ões) de campanha feita(s).`);
+      if (falhas || falhasVenda) partes.push(`${falhas + falhasVenda} associação(ões) de campanha falharam — tente de novo.`);
+      const mensagem = { texto: partes.join(" "), tom: falhas || falhasVenda ? "erro" : "ok" };
 
       // Recarrega o painel para mostrar "Configurada"; a mensagem acompanha.
       const alvo = btnEl?.closest("#integ-detalhes-linkedin") || document.getElementById("integ-detalhes-linkedin");

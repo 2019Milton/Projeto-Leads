@@ -34293,6 +34293,36 @@ function textoRegistroPerformance(registro, agrupamento) {
   );
 }
 
+// Conta que paga anúncio e não recebe lead porque todas as campanhas foram importadas. O backend
+// só manda aviso_captacao nesse caso (ver avisoCaptacaoImportadas) e diz qual caminho falta.
+function avisoCaptacaoImportadasHtml(aviso, nomePlataforma) {
+  const total = Number(aviso?.campanhas_importadas || 0);
+  if (!total) return "";
+
+  const titulo = total === 1
+    ? `a campanha de ${nomePlataforma} foi importada`
+    : `as ${total} campanhas de ${nomePlataforma} foram importadas`;
+
+  const passos = [];
+  if (!aviso.codigo_site_visto) {
+    passos.push(`<b>Anúncio que leva ao site:</b> instale na página de destino o código de <b>Plataformas → Captação de Leads pelo Site</b>. Se o site já tem formulário, use a opção "Já tenho um formulário no meu site".`);
+  }
+  if (!aviso.whatsapp_conectado) {
+    passos.push(`<b>Anúncio que leva ao WhatsApp:</b> conecte em <b>Whatsapp Bot</b> o número que recebe as conversas.`);
+  }
+
+  return `
+    <div class="performance-meta-alerta">
+      <span class="performance-meta-alerta-icone">i</span>
+      <span>
+        <b>Gasto sem leads: ${titulo}.</b>
+        ${total === 1 ? "Ela foi criada" : "Elas foram criadas"} fora da plataforma e, por enquanto, os leads não chegam aqui. Para os próximos entrarem na Central de Leads:
+        ${passos.map((passo) => `<br>• ${passo}`).join("")}
+      </span>
+    </div>
+  `;
+}
+
 function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
 
   const painel =
@@ -34367,8 +34397,11 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
   const diffLeadsMetaPlataforma =
     Number(resumo.leads_total || 0) - Number(resumo.leads_total_plataforma || 0);
 
+  const avisoCaptacaoHtml =
+    avisoCaptacaoImportadasHtml(data.aviso_captacao, nomePlataforma);
+
   const avisoDivergenciaLeadsHtml =
-    !ehMeta || diffLeadsMetaPlataforma === 0
+    !ehMeta || diffLeadsMetaPlataforma === 0 || avisoCaptacaoHtml
       ? ""
       : `
         <div class="performance-meta-alerta">
@@ -34539,6 +34572,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
     </div>
     ` : ""}
 
+    ${avisoCaptacaoHtml}
     ${avisoDivergenciaLeadsHtml}
 
     <div class="performance-meta-insights">

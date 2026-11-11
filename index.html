@@ -6784,6 +6784,40 @@ body.tema-claro .perguntas-rapidas-ajuda {
   border-color: rgba(34,197,94,0.38) !important;
 }
 
+/* Dias de um mês do Anual (abertos pelo ▶ do mês) */
+.perf-dia-mes td {
+  background: rgba(255,255,255,0.018);
+  font-size: 12.5px;
+}
+.perf-dia-mes td:first-child {
+  padding-left: 30px !important;
+}
+.perf-mes-filtrar {
+  margin-left: 8px !important;
+  padding: 1px 8px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  width: auto !important;
+  border: 1px solid rgba(148,163,184,0.22) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  box-shadow: none !important;
+  transform: none !important;
+  vertical-align: middle;
+}
+.perf-mes-filtrar:hover {
+  color: #86efac !important;
+  border-color: rgba(34,197,94,0.38) !important;
+}
+.performance-meta-periodo optgroup {
+  color: #94a3b8;
+  font-style: normal;
+}
+
 .perf-detalhe-row td {
   padding: 0 !important;
   border-bottom: 1px solid rgba(255,255,255,0.05) !important;
@@ -6831,6 +6865,9 @@ body.tema-claro .perf-detalhe-table td { color: #374151; border-bottom-color: rg
 body.tema-claro .perf-expand-btn { color: #475569; border-color: rgba(71,85,105,0.35); }
 body.tema-claro .perf-expand-btn:hover { color: #15803d; background: rgba(22,163,74,0.08); border-color: #16a34a; }
 body.tema-claro .perf-expand-btn.aberto { color: #15803d; }
+body.tema-claro .perf-dia-mes td { background: rgba(15,23,42,0.025); }
+body.tema-claro .perf-mes-filtrar { color: #475569 !important; border-color: rgba(71,85,105,0.3) !important; }
+body.tema-claro .perf-mes-filtrar:hover { color: #15803d !important; border-color: #16a34a !important; }
 
 /* ── Calendário picker ── */
 .cal-picker-btn {
@@ -34211,7 +34248,41 @@ function formatarRegistroPerformance(registro, agrupamento) {
   return formatarDataPerformance(registro.data);
 }
 
+const MESES_PERFORMANCE = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+
+// Filtro por mês: o período fica como "mes:AAAA-MM". Devolve o AAAA-MM, ou null nos demais.
+function mesDoPeriodoPerformance(periodo) {
+  const casamento = /^mes:(\d{4}-(0[1-9]|1[0-2]))$/.exec(String(periodo || ""));
+  return casamento ? casamento[1] : null;
+}
+
+function mesAtualPerformance(agora = new Date()) {
+  return `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function nomeMesPerformance(mes, maiuscula = false) {
+  const [ano, numero] = String(mes).split("-").map(Number);
+  const nome = `${MESES_PERFORMANCE[numero - 1] || numero} de ${ano}`;
+  return maiuscula ? nome.charAt(0).toUpperCase() + nome.slice(1) : nome;
+}
+
+// Últimos 12 meses do calendário, o atual primeiro.
+function mesesFiltroPerformance(agora = new Date()) {
+  return Array.from({ length: 12 }, (_, indice) =>
+    mesAtualPerformance(new Date(agora.getFullYear(), agora.getMonth() - indice, 1))
+  );
+}
+
+function opcoesMesesPerformance(periodoSelecionado, agora = new Date()) {
+  const atual = mesAtualPerformance(agora);
+  return mesesFiltroPerformance(agora).map((mes) => `
+          <option value="mes:${mes}" ${periodoSelecionado === `mes:${mes}` ? "selected" : ""}>${nomeMesPerformance(mes, true)}${mes === atual ? " (até hoje)" : ""}</option>`
+  ).join("");
+}
+
 function tituloPeriodoPerformance(periodo) {
+  const mes = mesDoPeriodoPerformance(periodo);
+  if (mes) return nomeMesPerformance(mes, true);
   if (periodo === "anual") return "Anual";
   if (periodo === "mensal") return "Mensal";
 
@@ -34219,10 +34290,84 @@ function tituloPeriodoPerformance(periodo) {
 }
 
 function descricaoPeriodoPerformance(periodo) {
+  const mes = mesDoPeriodoPerformance(periodo);
+  if (mes) return mes === mesAtualPerformance() ? "do dia 1 até hoje" : "mês inteiro";
   if (periodo === "anual") return "ultimos 12 meses";
   if (periodo === "mensal") return "ultimos 30 dias";
 
   return "ultimos 7 dias";
+}
+
+function textoCabecalhoPerformance(periodo) {
+  const mes = mesDoPeriodoPerformance(periodo);
+  if (mes) {
+    return `Registro de ${nomeMesPerformance(mes)} (${descricaoPeriodoPerformance(periodo)}), dia a dia, de gasto, leads e custo por lead.`;
+  }
+  const texto = `Registro ${tituloPeriodoPerformance(periodo).toLowerCase()} (${descricaoPeriodoPerformance(periodo)}) de gasto, leads e custo por lead.`;
+  return periodo === "anual" ? `${texto} Abra um mês (▶) para ver os dias.` : texto;
+}
+
+function rotuloCplMedioPerformance(periodo) {
+  return mesDoPeriodoPerformance(periodo)
+    ? "CPL medio do mes"
+    : `CPL medio ${tituloPeriodoPerformance(periodo).toLowerCase()}`;
+}
+
+// Num mês que já fechou não existe "hoje": o card mostra o último dia do mês.
+function rotuloCplDiaPerformance(periodo, hoje) {
+  const mes = mesDoPeriodoPerformance(periodo);
+  if (mes && mes !== mesAtualPerformance() && hoje?.data) {
+    return `CPL em ${formatarDataPerformance(hoje.data)} (último dia)`;
+  }
+  return "CPL hoje";
+}
+
+function diaTemDadosPerformance(registro) {
+  return Number(registro?.gasto || 0) > 0 ||
+    Number(registro?.leads || 0) > 0 ||
+    Number(registro?.leads_plataforma || 0) > 0 ||
+    Number(registro?.cliques || 0) > 0;
+}
+
+// Linha de um dia na tabela. Com `mes`, é um dia dentro de um mês do Anual: nasce escondida e
+// abre pelo ▶ do mês. Meta e Google ainda abrem as campanhas do dia (▶ do próprio dia).
+function linhaDiaPerformanceHtml(registro, { ehMeta, podeDetalhar, colunasTabela, mes = null }) {
+  const chave = String(registro.data || "").replace(/-/g, "");
+  const dentroDoMes = Boolean(mes);
+  const marcaMes = dentroDoMes ? ` data-mes="${mes}"` : "";
+  return `
+      <tr id="perf_row_${chave}" data-data="${registro.data}"${dentroDoMes ? ` class="perf-dia-mes"${marcaMes} style="display:none;"` : ""}>
+        <td>
+          ${diaTemDadosPerformance(registro) && podeDetalhar
+            ? `<button class="perf-expand-btn" id="btn_exp_${chave}" onclick="togglePerfDetalhe('${registro.data}')" title="Ver as campanhas do dia">▶</button>`
+            : `<span style="display:inline-block;width:22px;"></span>`
+          }
+          ${formatarRegistroPerformance(registro, "diario")}
+        </td>
+        <td>${formatarMoeda(registro.gasto)}</td>
+        <td>${registro.leads || 0}</td>
+        ${ehMeta ? `<td>${registro.leads_plataforma ?? 0}</td>` : ""}
+        <td>${
+          registro.custo_por_lead === null || registro.custo_por_lead === undefined
+            ? "-"
+            : formatarMoeda(registro.custo_por_lead)
+        }</td>
+        <td>${registro.cliques || 0}</td>
+      </tr>
+      ${
+        podeDetalhar
+          ? `
+            <tr class="perf-detalhe-row" id="perf_detalhe_${chave}"${marcaMes} style="display:none;">
+              <td colspan="${colunasTabela}">
+                <div class="perf-detalhe-inner">
+                  <span class="perf-detalhe-loading">Carregando campanhas...</span>
+                </div>
+              </td>
+            </tr>
+          `
+          : ""
+      }
+    `;
 }
 
 function valorPerformanceValido(valor) {
@@ -34344,8 +34489,11 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
   const economia =
     resumo.economia_percentual;
 
+  // O backend responde periodo "mes" no filtro por mês; aqui ele vira "mes:AAAA-MM".
   const periodo =
-    data.periodo || performanceMetaPeriodoAtual || "semanal";
+    data.periodo === "mes" && data.periodo_inicio
+      ? `mes:${String(data.periodo_inicio).slice(0, 7)}`
+      : data.periodo || performanceMetaPeriodoAtual || "semanal";
 
   const agrupamento =
     data.agrupamento || "diario";
@@ -34429,32 +34577,38 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
   // no backend — leads_meta sempre null pra essas duas).
   const colunasTabela = ehMeta ? 6 : 5;
 
+  // Detalhamento por campanha só existe pra Meta e Google (/<plataforma>/performance-diaria/
+  // :data/campanhas); TikTok/LinkedIn ainda não têm essa rota, então o dia não expande.
+  const podeDetalharDia = PLATAFORMAS_COM_DETALHE_DIARIO.includes(plataformaId);
+
+  // No Anual a resposta já traz os 365 dias (data.dias): cada mês abre os dias dele.
+  const diasPorMes = new Map();
+  if (agrupamento === "mensal") {
+    for (const dia of data.dias || []) {
+      const mes = String(dia.data || "").slice(0, 7);
+      if (!diasPorMes.has(mes)) diasPorMes.set(mes, []);
+      diasPorMes.get(mes).push(dia);
+    }
+  }
+
   const linhas = registrosOrdenados.map((registro) => {
-    const temDados =
-      registro.gasto > 0 ||
-      registro.leads > 0 ||
-      Number(registro.leads_plataforma || 0) > 0 ||
-      registro.cliques > 0;
+    if (agrupamento !== "mensal") {
+      return linhaDiaPerformanceHtml(registro, { ehMeta, podeDetalhar: podeDetalharDia, colunasTabela });
+    }
 
-    // Detalhamento por campanha só existe pra Meta e Google (/<plataforma>/performance-diaria/
-    // :data/campanhas); TikTok/LinkedIn ainda não têm essa rota, então a linha não expande.
-    const podeDetalhar =
-      agrupamento === "diario" && PLATAFORMAS_COM_DETALHE_DIARIO.includes(plataformaId);
+    const mes = String(registro.data || registro.periodo || "").slice(0, 7);
+    const chaveMes = mes.replace("-", "");
+    const diasComDados = (diasPorMes.get(mes) || []).filter(diaTemDadosPerformance).slice().reverse();
 
-    const chave =
-      String(registro.data || registro.periodo || "")
-        .replace(/-/g, "");
-
-    const rowId = `perf_row_${chave}`;
-    const detalheId = `perf_detalhe_${chave}`;
     return `
-      <tr id="${rowId}" data-data="${registro.data}">
+      <tr id="perf_mes_${chaveMes}" class="perf-mes-linha" data-mes-linha="${mes}">
         <td>
-          ${temDados && podeDetalhar
-            ? `<button class="perf-expand-btn" id="btn_exp_${chave}" onclick="togglePerfDetalhe('${registro.data}')">▶</button>`
+          ${diasComDados.length
+            ? `<button class="perf-expand-btn" id="btn_mes_${chaveMes}" onclick="togglePerfMes('${mes}')" title="Ver os dias de ${nomeMesPerformance(mes)} (${diasComDados.length} com dados)">▶</button>`
             : `<span style="display:inline-block;width:22px;"></span>`
           }
-          ${formatarRegistroPerformance(registro, agrupamento)}
+          ${formatarRegistroPerformance(registro, "mensal")}
+          <button type="button" class="perf-mes-filtrar" onclick="carregarPerformanceMeta('mes:${mes}')" title="Mostrar só ${nomeMesPerformance(mes)}, dia a dia">filtrar</button>
         </td>
         <td>${formatarMoeda(registro.gasto)}</td>
         <td>${registro.leads || 0}</td>
@@ -34466,19 +34620,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
         }</td>
         <td>${registro.cliques || 0}</td>
       </tr>
-      ${
-        podeDetalhar
-          ? `
-            <tr class="perf-detalhe-row" id="${detalheId}" style="display:none;">
-              <td colspan="${colunasTabela}">
-                <div class="perf-detalhe-inner">
-                  <span class="perf-detalhe-loading">Carregando campanhas...</span>
-                </div>
-              </td>
-            </tr>
-          `
-          : ""
-      }
+      ${diasComDados.map((dia) => linhaDiaPerformanceHtml(dia, { ehMeta, podeDetalhar: podeDetalharDia, colunasTabela, mes })).join("")}
     `;
   }).join("");
 
@@ -34487,7 +34629,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
       <div>
         <h3>📊 Performance de leads ${nomePlataforma}</h3>
         <small>
-          Registro ${tituloPeriodoPerformance(periodo).toLowerCase()} (${descricaoPeriodoPerformance(periodo)}) de gasto, leads e custo por lead.
+          ${textoCabecalhoPerformance(periodo)}
         </small>
       </div>
       <div class="performance-meta-actions">
@@ -34499,6 +34641,8 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
           <option value="semanal" ${periodo === "semanal" ? "selected" : ""}>Semanal - 7 dias</option>
           <option value="mensal" ${periodo === "mensal" ? "selected" : ""}>Mensal - 30 dias</option>
           <option value="anual" ${periodo === "anual" ? "selected" : ""}>Anual - 12 meses</option>
+          <optgroup label="Por mês (dia a dia)">${opcoesMesesPerformance(periodo)}
+          </optgroup>
         </select>
         <button
           type="button"
@@ -34529,7 +34673,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
         ${ehMeta ? `<small>Na plataforma: ${resumo.leads_total_plataforma ?? 0}</small>` : ""}
       </div>
       <div class="performance-meta-card">
-        <span>CPL hoje</span>
+        <span>${rotuloCplDiaPerformance(periodo, hoje)}</span>
         <strong>${
           valorPerformanceValido(hoje.custo_por_lead)
             ? formatarMoeda(hoje.custo_por_lead)
@@ -34537,7 +34681,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
         }</strong>
       </div>
       <div class="performance-meta-card">
-        <span>CPL medio ${tituloPeriodoPerformance(periodo).toLowerCase()}</span>
+        <span>${rotuloCplMedioPerformance(periodo)}</span>
         <strong>${
           valorPerformanceValido(resumo.custo_por_lead_medio)
             ? formatarMoeda(resumo.custo_por_lead_medio)
@@ -34617,6 +34761,7 @@ function renderizarPainelPerformanceMeta(data, plataformaId = "meta") {
     </div>
 
     <div class="performance-meta-note">
+      ${agrupamento === "mensal" ? `No anual, ▶ abre os dias de cada mês e <strong>filtrar</strong> mostra só aquele mês, dia a dia.<br>` : ""}
       <strong>CPL</strong> e o custo medio por lead. ${ehMeta ? "Aqui ele e o gasto dividido por Leads (Meta). A Meta cobra por impressoes; nem todo clique vira lead." : `${nomePlataforma} cobra por impressoes ou cliques, dependendo da campanha; nem todo clique vira lead.`}
       ${ehMeta ? `
         <br>
@@ -34862,7 +35007,7 @@ async function exportarPerformanceMetaXLSX() {
     XLSX.utils.book_append_sheet(workbook, wsCampanha, "Por Campanha");
   }
 
-  XLSX.writeFile(workbook, `Performance-${nomePlataforma.replace(/\s+/g, "")}-${periodo}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  XLSX.writeFile(workbook, `Performance-${nomePlataforma.replace(/\s+/g, "")}-${String(periodo).replace(/:/g, "-")}-${new Date().toISOString().slice(0, 10)}.xlsx`);
 
   // Nenhum dia devolveu detalhe: a planilha sai só com Resumo e Performance Diária, e o
   // usuário precisa saber por quê (antes ficava sem a aba, sem nenhum aviso).
@@ -35084,6 +35229,32 @@ function limparDataModal() {
   fecharCalendario();
 }
 
+// Abre ou fecha os dias de um mês no Anual. Fechar o mês fecha também as campanhas abertas
+// nos dias dele.
+function togglePerfMes(mes) {
+  const painel = document.getElementById("painel_performance_meta");
+  if (!painel) return;
+  const chave = String(mes).replace("-", "");
+  const btn = document.getElementById(`btn_mes_${chave}`);
+  const abrir = !btn?.classList.contains("aberto");
+  const linhasDias = painel.querySelectorAll(`tr.perf-dia-mes[data-mes="${mes}"]`);
+
+  linhasDias.forEach((linha) => { linha.style.display = abrir ? "" : "none"; });
+
+  if (!abrir) {
+    painel.querySelectorAll(`tr.perf-detalhe-row[data-mes="${mes}"]`).forEach((linha) => { linha.style.display = "none"; });
+    linhasDias.forEach((linha) => {
+      const botaoDia = linha.querySelector(".perf-expand-btn");
+      if (botaoDia) { botaoDia.textContent = "▶"; botaoDia.classList.remove("aberto"); }
+    });
+  }
+
+  if (btn) {
+    btn.textContent = abrir ? "▼" : "▶";
+    btn.classList.toggle("aberto", abrir);
+  }
+}
+
 const _perfDetalheCarregado = new Set();
 
 async function togglePerfDetalhe(data) {
@@ -35185,12 +35356,21 @@ async function carregarCampanhasDia(data) {
   }
 }
 
+// Troca rápida de período (ex.: passar pelos meses do seletor): só a última resposta desenha.
+let performanceMetaSequencia = 0;
+
 async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
 
   performanceMetaPeriodoAtual =
-    ["semanal", "mensal", "anual"].includes(periodo)
+    ["semanal", "mensal", "anual"].includes(periodo) || mesDoPeriodoPerformance(periodo)
       ? periodo
       : "semanal";
+
+  const sequencia = ++performanceMetaSequencia;
+  const mesPerformance = mesDoPeriodoPerformance(performanceMetaPeriodoAtual);
+  const parametroPeriodo = mesPerformance
+    ? `periodo=mes&mes=${mesPerformance}`
+    : `periodo=${performanceMetaPeriodoAtual}`;
 
   const token =
     localStorage.getItem("token");
@@ -35218,7 +35398,7 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
   try {
 
     const res = await fetch(
-      `${API}/${plataformaId}/performance-diaria?periodo=${performanceMetaPeriodoAtual}${plataformaId === "google" ? "&conversoes=1" : ""}`,
+      `${API}/${plataformaId}/performance-diaria?${parametroPeriodo}${plataformaId === "google" ? "&conversoes=1" : ""}`,
       {
         headers: {
           "Authorization": `Bearer ${token}`
@@ -35227,6 +35407,8 @@ async function carregarPerformanceMeta(periodo = performanceMetaPeriodoAtual) {
     );
 
     const data = await res.json();
+
+    if (sequencia !== performanceMetaSequencia) return;
 
     if (!res.ok || data.error) {
       console.warn(`PERFORMANCE ${plataformaId.toUpperCase()}:`, data);

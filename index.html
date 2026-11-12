@@ -17767,6 +17767,28 @@ body.tema-claro #card-campanhas .campanha-card.deleted-card {
 body.tema-claro #card-campanhas .campanha-card:hover {
   box-shadow: 0 9px 23px rgba(38, 79, 129, 0.18) !important;
 }
+
+.campanhas-erro-carregar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  border-radius: 10px;
+  background: rgba(248, 113, 113, 0.08);
+}
+.campanhas-erro-carregar p { margin: 0; flex: 1 1 260px; }
+.campanhas-erro-tentar {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(148, 163, 184, 0.12);
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.campanhas-erro-tentar:disabled { opacity: 0.6; cursor: wait; }
 </style>
 <link rel="stylesheet" href="landing-public.css">
 <link rel="stylesheet" href="paineis-visuais.css">
@@ -48841,6 +48863,25 @@ async function carregarStatusMeta() {
 }
 
 
+function mostrarErroCarregarCampanhas() {
+  const lista = document.getElementById("campanhas_lista");
+  if (!lista) return;
+  lista.innerHTML = `
+    <div class="campanhas-erro-carregar">
+      <p>Não foi possível carregar as campanhas agora. A Meta pode estar demorando para responder.</p>
+      <button type="button" class="campanhas-erro-tentar" onclick="tentarCarregarCampanhasDeNovo(this)">Tentar de novo</button>
+    </div>
+  `;
+}
+
+async function tentarCarregarCampanhasDeNovo(botao) {
+  if (botao) {
+    botao.disabled = true;
+    botao.textContent = "Carregando...";
+  }
+  await carregarCampanhas();
+}
+
 async function carregarCampanhas(somenteRenderizar = false) {
 
   let campanhas = campanhasAtuais;
@@ -48848,21 +48889,32 @@ async function carregarCampanhas(somenteRenderizar = false) {
     const token = localStorage.getItem("token");
 
     // 🔥 busca métricas reais
-    const res = await fetch(
-      `${API}/meta/metricas-campanhas`,
-      {
-        headers: {
-          "Authorization": `Bearer ${token}`
+    // Falha de rede/servidor não pode lançar: init() aguarda esta função e
+    // pararia antes de carregar os leads e os painéis.
+    try {
+      const res = await fetch(
+        `${API}/meta/metricas-campanhas`,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
         }
+      );
+
+      const resposta = await res.json().catch(() => null);
+
+      if (!res.ok || !Array.isArray(resposta)) {
+        throw new Error(resposta?.error || `HTTP ${res.status}`);
       }
-    );
 
-    campanhas = await res.json();
+      campanhas = resposta;
+    } catch (err) {
+      console.error("ERRO AO CARREGAR CAMPANHAS:", err);
+      mostrarErroCarregarCampanhas();
+      return;
+    }
 
-    campanhasAtuais =
-      Array.isArray(campanhas)
-        ? campanhas
-        : [];
+    campanhasAtuais = campanhas;
   }
 
   atualizarGuiaSecreto();

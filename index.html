@@ -35481,6 +35481,8 @@ let localidadesSelecionadas = [];
 let publicosPersonalizadosSelecionados = [];
 let paginasMetaDisponiveis = [];
 let contasInstagramAnuncioDisponiveis = [];
+// Instagram escolhido (ou único) para a conta de anúncios atual, se liberado nela.
+let instagramAnunciosEscolhidoMeta = null;
 let instagramActorIdSelecionado = null;
 let sincronizacaoMetaAtiva = false;
 
@@ -36800,8 +36802,15 @@ function atualizarCanaisPaginaMeta() {
   const instagram =
     pagina?.instagram;
 
+  // Página sem Instagram: o Instagram escolhido para esta conta de anúncios;
+  // sem escolha, o primeiro liberado (comportamento anterior).
   const instagramContaAnuncio =
-    contasInstagramAnuncioDisponiveis[0] || null;
+    (instagramAnunciosEscolhidoMeta &&
+      contasInstagramAnuncioDisponiveis.find(
+        conta => String(conta.id) === String(instagramAnunciosEscolhidoMeta.id)
+      )) ||
+    contasInstagramAnuncioDisponiveis[0] ||
+    null;
 
   const instagramDisponivel =
     instagram?.id || instagramContaAnuncio?.id || null;
@@ -48341,6 +48350,105 @@ function montarSubpainelStatusMetaRede(nome, icone, dados) {
   `;
 }
 
+// Texto do card: o Instagram da conta de anúncios escolhida e de onde ele vem.
+function textoInstagramContaMeta(data) {
+  const ig = data?.instagram;
+  if (ig?.username) {
+    const origem = ig.liberado_na_conta === true
+      ? " · liberado para esta conta"
+      : Array.isArray(ig.paginas) && ig.paginas.length
+      ? ` · vinculado à Página ${ig.paginas[0].name || ""}`.trimEnd()
+      : data.paginas?.[0]?.instagram?.id === ig.id
+      ? " · detectado pela Página"
+      : "";
+    return "@" + escaparHtmlMeta(ig.username) + escaparHtmlMeta(origem);
+  }
+  if (data?.instagram_selecao_pendente) {
+    return "Mais de um Instagram ligado a esta conta: escolha abaixo qual usar nos anúncios";
+  }
+  if (Array.isArray(data?.instagram_candidatos)) {
+    return "Nenhum Instagram ligado a esta conta de anúncios";
+  }
+  return "Nenhum Instagram detectado ainda";
+}
+
+// Seletor quando a conta de anúncios tem mais de um Instagram; passos quando não tem nenhum.
+function renderizarSeletorInstagramConta(data) {
+  const candidatos = data?.instagram_candidatos;
+  if (!Array.isArray(candidatos) || !data?.conta_anuncios) return "";
+
+  if (!candidatos.length) {
+    const nomeConta = escaparHtmlMeta(data.conta_anuncios?.nome || "");
+    return `
+      <div class="meta-ig-sem-conta" style="margin-top:6px;padding:8px 9px;background:rgba(250,204,21,0.08);border:1px solid rgba(250,204,21,0.3);border-radius:8px;">
+        <div style="font-size:11px;font-weight:700;color:#facc15;margin-bottom:3px;">⚠️ Nenhum Instagram ligado à conta "${nomeConta}"</div>
+        <div style="font-size:10.5px;color:#fde68a;line-height:1.6;">
+          Nenhum Instagram está liberado para essa conta de anúncios nem vinculado às Páginas dela. Para anunciar no Instagram:
+          <ol style="margin:4px 0 0 16px;padding:0;">
+            <li>No portfólio da empresa na Meta (Configurações do negócio → Contas → Contas do Instagram), adicione o Instagram.</li>
+            <li>Vincule esse Instagram à Página usada nos anúncios.</li>
+            <li>Nos ativos conectados desse Instagram, adicione esta conta de anúncios.</li>
+            <li>Aqui na plataforma, clique em Desconectar Meta e conecte de novo, marcando esse Instagram na tela de permissões.</li>
+          </ol>
+        </div>
+      </div>
+    `;
+  }
+
+  if (candidatos.length < 2) return "";
+
+  const atual =
+    data.instagram?.id && candidatos.some(c => String(c.id) === String(data.instagram.id))
+      ? String(data.instagram.id)
+      : "";
+
+  const opcoes = candidatos.map(c => {
+    const origem = c.liberado_na_conta === true
+      ? "liberado para esta conta"
+      : `via Página ${c.paginas?.[0]?.name || ""}`.trim();
+    return `<option value="${escaparHtmlMeta(c.id)}" ${String(c.id) === atual ? "selected" : ""}>@${escaparHtmlMeta(c.username || c.id)} — ${escaparHtmlMeta(origem)}</option>`;
+  }).join("");
+
+  return `
+    <div class="meta-ig-escolha" style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+      <label for="meta_instagram_conta_select" style="font-size:11px;font-weight:700;color:#e2e8f0;">Instagram usado nos anúncios desta conta</label>
+      <select id="meta_instagram_conta_select" onchange="escolherInstagramContaMeta(this)"
+        style="padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(15,23,42,0.6);color:#e2e8f0;font-size:12px;max-width:100%;">
+        ${atual ? "" : '<option value="" selected disabled>Escolha o Instagram…</option>'}
+        ${opcoes}
+      </select>
+    </div>
+  `;
+}
+
+async function escolherInstagramContaMeta(select) {
+  if (!select || !select.value) return;
+  select.disabled = true;
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API}/meta/instagram/escolher`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ instagram_id: select.value })
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || "Não foi possível salvar o Instagram escolhido.");
+    }
+
+    await carregarStatusMeta();
+  } catch (err) {
+    console.error("ERRO ESCOLHER INSTAGRAM:", err);
+    alert(err?.message || "Não foi possível salvar o Instagram escolhido.");
+    if (document.body.contains(select)) select.disabled = false;
+  }
+}
+
 function precisaConectarInstagramSeparado(statusMeta) {
   return statusMeta?.instagram_conexao_separada !== true;
 }
@@ -48550,8 +48658,9 @@ async function carregarStatusMeta() {
                   <div class="meta-col-body">
 
                     <div class="meta-status-tile">
-                      <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : "🔴"} Instagram detectado pela Meta</span>
-                      <small>${data.instagram?.username ? "@" + escaparHtml(data.instagram.username) + (data.paginas?.[0]?.instagram?.id === data.instagram?.id ? " · detectado pela Página" : "") : "Nenhum Instagram detectado ainda"}</small>
+                      <span>${data.instagram?.username ? (data.instagram_utilizavel_na_conta === false ? "🟡" : "🟢") : (data.instagram_selecao_pendente ? "🟡" : "🔴")} ${Array.isArray(data.instagram_candidatos) ? "Instagram desta conta de anúncios" : "Instagram detectado pela Meta"}</span>
+                      <small>${textoInstagramContaMeta(data)}</small>
+                      ${renderizarSeletorInstagramConta(data)}
                       ${data.instagram_conexao_separada === true ? `
                         ${renderizarPerfilInstagramSeparado(data)}
                         <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
@@ -48836,11 +48945,14 @@ async function carregarStatusMeta() {
           ? data.contas_instagram_anuncio
           : [];
 
+      instagramAnunciosEscolhidoMeta =
+        data.instagram?.liberado_na_conta === true ? data.instagram : null;
+
       data.paginas?.forEach(p => {
 
         select.innerHTML += `
           <option value="${escaparHtml(p.id)}">
-            ${escaparHtml(p.name)}
+            ${escaparHtml(p.name)}${p.da_conta_anuncios === false ? " (fora desta conta de anúncios)" : ""}
           </option>
         `;
       });

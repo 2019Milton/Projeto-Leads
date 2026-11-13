@@ -47455,7 +47455,11 @@ async function conectarWhatsapp(btnEl) {
         override_default_response_type: true,
         // Coexistência: mantém o corretor usando o app do WhatsApp Business depois do
         // [HANDOFF] do bot, com histórico sincronizado entre app e Cloud API.
-        extras: { setup: {}, featureType: "whatsapp_business_app_onboarding", sessionInfoVersion: "3" },
+        // Versão fixa: a v2/v3 foram desativadas pela Meta em 15/10/2026 e pedido sem
+        // versão passou a ser atendido como v4. Fixar evita que uma troca futura do
+        // padrão (a v5 liga a coexistência por padrão e muda as opções do fluxo) altere
+        // a conexão sem aviso. Na v4 o sessionInfoVersion não é mais usado (só a v2 exigia).
+        extras: { setup: {}, featureType: "whatsapp_business_app_onboarding", version: "v4" },
       }
     );
 
